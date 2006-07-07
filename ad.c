@@ -1,4 +1,4 @@
-#define VERSION "1.1"
+#define VERSION "1.1.1"
 /*
 **      ad -- ASCII dump
 **      ad.c: implementation
