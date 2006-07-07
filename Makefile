@@ -48,5 +48,5 @@ ad.o: ad.c
 clean::
 	rm -f *.o core
 
-clobber: clean
+clobber distclean: clean
 	rm -f $(TARGET)
