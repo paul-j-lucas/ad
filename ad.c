@@ -39,34 +39,18 @@
 
 #define BUF_SIZE    16                  /* bytes displayed on a line */
 
-#if !( defined(__STDC__) || defined(__cplusplus) )
-#   define KNR_C
-#endif
-
-#ifdef KNR_C
-#   define const                       /* throw away const */
-#endif
-
 typedef unsigned short ad_uint16;
 
 /*************************/
     ad_uint16
-#ifdef KNR_C
-flip_int16( i ) ad_uint16 i; {
-#else
 flip_int16( ad_uint16 i ) {
-#endif
     return (i << 8) & 0xFF00 |
            (i >> 8) & 0x00FF;
 }
 
 /*************************/
     int
-#ifdef KNR_C
-main( argc, argv ) int argc; char *argv[]; {
-#else
 main( int argc, char *argv[] ) {
-#endif
     char const  *me;                    /* our name */
     extern char *optarg;
     extern int  optind, opterr;
@@ -177,7 +161,9 @@ main( int argc, char *argv[] ) {
                 exit( 2 );
             }
             if ( lseek( fd, offset, 0 ) == -1 ) {
-                fprintf( stderr, "%s: can not seek to %ld\n", me, offset );
+                fprintf(
+                    stderr, "%s: can not seek to %ld\n", me, (long)offset
+                );
                 exit( 3 );
             }
             break;
