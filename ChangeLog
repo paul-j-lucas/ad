@@ -1,0 +1,21 @@
+2015-05-25  Paul J. Lucas  <paul@lucasmail.org>
+
+   * Initial version in git; now using configure.
+
+2010-11-07  Paul J. Lucas  <paul@lucasmail.org>
+
+   * ad.c: Removed K&R C-isms.
+
+2006-07-07  Paul J. Lucas  <paul@lucasmail.org>
+
+   * ad.c: Updated version to 1.1.1.
+
+   * ad.c: 1. Changed tabs to spaces. 2. Fixed little endian bug.
+
+   * ad.1: Updated e-mail address.
+
+   * Makefile: Added "distclean" target.
+
+2001-03-27  Paul J. Lucas  <paul@lucasmail.org>
+
+   * Initial versions in CVS.
