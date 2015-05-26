@@ -1,0 +1,53 @@
+.\"
+.\"	ad -- ASCII dump
+.\"	ad.1: manual page
+.\"
+.\"	Copyright (C) 1996  Paul J. Lucas
+.\"
+.\"	This program is free software; you can redistribute it and/or modify
+.\"	it under the terms of the GNU General Public License as published by
+.\"	the Free Software Foundation; either version 2 of the Licence, or
+.\"	(at your option) any later version.
+.\" 
+.\"	This program is distributed in the hope that it will be useful,
+.\"	but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"	GNU General Public License for more details.
+.\" 
+.\"	You should have received a copy of the GNU General Public License
+.\"	along with this program; if not, write to the Free Software
+.\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.TH \f3ad\f1 1 "May 25, 2015" "PJL TOOLS"
+.SH NAME
+ad \- ASCII dump
+.SH SYNOPSIS
+.B ad
+[
+.BR \- dhov
+] [
+.I file
+]
+[
+.RB [ + ]
+.I offset
+]
+.SH DESCRIPTION
+.B
+ad
+dumps the bytes of a file and prints their ASCII characters
+(for those bytes that are ASCII)
+to standard output.
+.SH OPTIONS
+.IP "\f3\-d\f1"
+Print file offset in decimal.
+.IP "\f3\-h\f1"
+Print file offset in hexadecimal
+(the default).
+.IP "\f3\-o\f1"
+Print file offset in octal.
+.SH SEE ALSO
+.BR od (1)
+.SH AUTHOR
+Paul J. Lucas
+.RI < paul@lucasmail.org >

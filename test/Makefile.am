@@ -1,52 +1,36 @@
 ##
 #	ad -- ASCII dump
-#	Makefile
+#	test/Makefile.am
 #
-#	Copyright (C) 1996  Paul J. Lucas
+#	Copyright (C) 2015  Paul J. Lucas
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
 #	the Free Software Foundation; either version 2 of the Licence, or
 #	(at your option) any later version.
-# 
+#
 #	This program is distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
 #	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #	GNU General Public License for more details.
-# 
+#
 #	You should have received a copy of the GNU General Public License
-#	along with this program; if not, write to the Free Software
-#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-SHELL=	/bin/sh
-CC=	cc
-CFLAGS=	-O
+AUTOMAKE_OPTIONS = 1.12			# needed for TEST_LOG_DRIVER
 
-########## You shouldn't have to change anything below this line. ##########
+TESTS =	tests/ad-no_options.test \
+	tests/ad-d.test \
+	tests/ad-h.test \
+	tests/ad-o.test
 
-TARGET=	ad
+AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
+TEST_EXTENSIONS = .test
+TEST_LOG_DRIVER = $(srcdir)/run_test.sh
 
-##
-# Build rules
-##
- 
-.SUFFIXES:
-.SUFFIXES: .c .o
+EXTRA_DIST = run_test.sh tests data expected
+dist-hook:
+	cd $(distdir)/tests && rm -f *.log *.trs
 
-all: $(TARGET)
-
-ad: ad.o
-	$(CC) -o $@ $?
-
-ad.o: ad.c
-
-##
-# Utility rules
-##
-
-clean::
-	rm -f *.o core
-
-clobber distclean: clean
-	rm -f $(TARGET)
+# vim:set noet sw=8 ts=8:
