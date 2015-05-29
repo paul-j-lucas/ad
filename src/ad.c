@@ -19,29 +19,24 @@
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-/*
-**      Options:
-**
-**          -d  Output offset in decimal.
-**          -o  Output offset in octal.
-**          -h  Output offset in hexadecimal (default).
-**          -v  Print version to stderr and exit.
-*/
-
 /* local */
 #include "util.h"
 
 /* system */
 #include <ctype.h>                      /* for isprint() */
+#include <errno.h>
 #include <fcntl.h>                      /* for O_RDONLY */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sys/types.h>
 #include <unistd.h>                     /* for lseek(), read(), ... */
-#include <netinet/in.h>                 /* for htons() */
+#include <netinet/in.h>                 /* for ntohs() */
 
 #define BUF_SIZE    16                  /* bytes displayed on a line */
+
+typedef uint8_t char_type;
+typedef uint16_t word_type;
 
 static void skip( int, off_t );
 static void usage();
@@ -51,23 +46,24 @@ char const *me;                         /* executable name */
 /*****************************************************************************/
 
 int main( int argc, char *argv[] ) {
-  extern char *optarg;
-  extern int  optind, opterr;
-  int         opt;                      /* command-line option */
-
-  char const *const format_spec[] = {   /* offset format in printf() */
+  char const *const offset_format[] = { /* offset format in printf() */
     "%016llu: ",                        /* 0: decimal */
     "%016llX: ",                        /* 1: hex */
     "%016llo: ",                        /* 2: octal */
   };
-  char const  opts[] = "dhov";          /* dho in same order as above */
-  int         which_format = strchr( opts, 'h' ) - opts;
+  int         offset_format_index = 1;  /* default to hex */
+  int         opt;                      /* command-line option */
+  char const  opts[] = "dhN:ov";
+  size_t      opt_max_bytes_to_read = SIZE_MAX;
   bool        plus = false;             /* specified '+'? */
 
-  int         fd = 0;                   /* Unix file descriptor */
-  off_t       offset = 0;               /* offset into file */
-  uint8_t     buf[ BUF_SIZE ];
+  char_type   buf[ BUF_SIZE ];
   ssize_t     bytes_read;
+  size_t      bytes_to_read = BUF_SIZE;
+  int         fd = STDIN_FILENO;        /* Unix file descriptor */
+  char const* file_name = "<stdin>";
+  off_t       offset = 0;               /* offset into file */
+  size_t      total_bytes_read = 0;
 
   /***************************************************************************/
 
@@ -76,12 +72,11 @@ int main( int argc, char *argv[] ) {
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
-      case 'd':
-      case 'o':
-      case 'h':
-        which_format = strchr( opts, opt ) - opts;
-        break;
-      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING ); exit( EXIT_OK );
+      case 'd': offset_format_index = 0;                              break;
+      case 'h': offset_format_index = 1;                              break;
+      case 'N': opt_max_bytes_to_read = check_atoul( optarg, false ); break;
+      case 'o': offset_format_index = 2;                              break;
+      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );  exit( EXIT_OK );
       default : usage();
     } /* switch */
   } /* while */
@@ -103,7 +98,7 @@ int main( int argc, char *argv[] ) {
         ** rather than a file name and that we should read from stdin.
         ** However, we can't seek() on stdin, so read and discard offset bytes.
         */
-        skip( fd, check_atoul( argv[1] ) );
+        skip( fd, check_atoul( argv[1], true ) );
         break;
       }
       /* no break; */
@@ -114,7 +109,7 @@ int main( int argc, char *argv[] ) {
         ** There really are two arguments (we didn't fall through from the
         ** above case): the 2nd argument is the offset.
         */
-        offset = check_atoul( argv[2] );
+        offset = check_atoul( argv[2], true  );
 
       } else if ( plus ) {
         /*
@@ -130,11 +125,16 @@ int main( int argc, char *argv[] ) {
       ** and seek to the proper offset.
       */
       if ( (fd = open( argv[1], O_RDONLY )) == -1 )
-        PMESSAGE_EXIT( READ_OPEN, "\"%s\": can not open", argv[1] );
+        PMESSAGE_EXIT( READ_OPEN,
+          "\"%s\": can not open: %s\n",
+          argv[1], strerror( errno )
+        );
       if ( lseek( fd, offset, 0 ) == -1 )
         PMESSAGE_EXIT( SEEK,
-          "\"%s\": can not seek to %ld", argv[1], (long)offset
+          "\"%s\": can not seek to offset %ld: %s\n",
+          argv[1], (long)offset, strerror( errno )
         );
+      file_name = argv[1];
       break;
 
     default:
@@ -143,21 +143,33 @@ int main( int argc, char *argv[] ) {
 
   /***************************************************************************/
 
-  while ( (bytes_read = read( fd, buf, BUF_SIZE )) > 0 ) {
-    uint16_t const *pword = (uint16_t*)buf;
-    uint8_t  const *pchar = (uint8_t*)buf;
+  if ( bytes_to_read > opt_max_bytes_to_read )
+    bytes_to_read = opt_max_bytes_to_read;
+
+  while ( true ) {
+    word_type const *pword;
+    char_type const *pchar;
     ssize_t i;
 
+    if ( total_bytes_read + bytes_to_read > opt_max_bytes_to_read )
+      bytes_to_read = opt_max_bytes_to_read - total_bytes_read;
+
+    bytes_read = read( fd, buf, bytes_to_read );
+    if ( bytes_read == -1 )
+      PMESSAGE_EXIT( READ_ERROR,
+        "\"%s\": read failed: %s", file_name, strerror( errno )
+      );
+    if ( bytes_read == 0 )
+      break;
+
     /* print offset */
-    printf( format_spec[ which_format ], offset );
+    printf( offset_format[ offset_format_index ], offset );
 
     /* print hex part */
-    for ( i = bytes_read / 2; i; --i, ++pword )
-      printf( "%04X ", htons( *pword ) );
-    if ( bytes_read & 1 ) {
-      /* there's an odd, left-over byte */
-      printf( "%02X ", (uint16_t)*(uint8_t*)pword );
-    }
+    for ( i = bytes_read / 2, pword = (word_type const*)buf; i; --i, ++pword )
+      printf( "%04X ", ntohs( *pword ) );
+    if ( bytes_read & 1 )               /* there's an odd, left-over byte */
+      printf( "%02X ", (word_type)*(char_type const*)pword );
 
     /* print padding if we read less than BUF_SIZE bytes */
     for ( i = BUF_SIZE - bytes_read; i; --i )
@@ -165,19 +177,20 @@ int main( int argc, char *argv[] ) {
     for ( i = (BUF_SIZE - bytes_read) / 2; i; --i )
       PUTCHAR( ' ' );
 
-    /* separator */
     PUTCHAR( ' ' );
 
-    /* print ascii part */
-    for ( i = 0; i < bytes_read; ++i, ++pchar )
-      PUTCHAR( (char)( isprint( *pchar ) ? *pchar : '.' ) );
+    /* print ASCII part */
+    for ( i = 0, pchar = (char_type const*)buf; i < bytes_read; ++i, ++pchar )
+      PUTCHAR( isprint( *pchar ) ? (char)*pchar : '.' );
 
     PUTCHAR( '\n' );
 
+    total_bytes_read += bytes_read;
+    if ( total_bytes_read >= opt_max_bytes_to_read )
+      break;
     if ( bytes_read < BUF_SIZE )
       break;
-
-    offset += BUF_SIZE;
+    offset += bytes_read;
   } /* while */
 
   /***************************************************************************/
