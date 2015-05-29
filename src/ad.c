@@ -41,6 +41,7 @@ typedef uint16_t word_type;
 static void skip( int, off_t );
 static void usage();
 
+char const *file_name = "<stdin>";
 char const *me;                         /* executable name */
 
 /*****************************************************************************/
@@ -61,7 +62,6 @@ int main( int argc, char *argv[] ) {
   ssize_t     bytes_read;
   size_t      bytes_to_read = BUF_SIZE;
   int         fd = STDIN_FILENO;        /* Unix file descriptor */
-  char const* file_name = "<stdin>";
   off_t       offset = 0;               /* offset into file */
   size_t      total_bytes_read = 0;
 
@@ -72,11 +72,11 @@ int main( int argc, char *argv[] ) {
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
-      case 'd': offset_format_index = 0;                              break;
-      case 'h': offset_format_index = 1;                              break;
-      case 'N': opt_max_bytes_to_read = check_atoul( optarg, false ); break;
-      case 'o': offset_format_index = 2;                              break;
-      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );  exit( EXIT_OK );
+      case 'd': offset_format_index = 0;                          break;
+      case 'h': offset_format_index = 1;                          break;
+      case 'N': opt_max_bytes_to_read = check_strtoul( optarg );  break;
+      case 'o': offset_format_index = 2;                          break;
+      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING ); exit( EXIT_OK );
       default : usage();
     } /* switch */
   } /* while */
@@ -98,7 +98,7 @@ int main( int argc, char *argv[] ) {
         ** rather than a file name and that we should read from stdin.
         ** However, we can't seek() on stdin, so read and discard offset bytes.
         */
-        skip( fd, check_atoul( argv[1], true ) );
+        skip( fd, check_strtoul( argv[1] ) );
         break;
       }
       /* no break; */
@@ -109,7 +109,7 @@ int main( int argc, char *argv[] ) {
         ** There really are two arguments (we didn't fall through from the
         ** above case): the 2nd argument is the offset.
         */
-        offset = check_atoul( argv[2], true  );
+        offset = check_strtoul( argv[2] );
 
       } else if ( plus ) {
         /*
@@ -124,17 +124,17 @@ int main( int argc, char *argv[] ) {
       ** The first (and perhaps only) argument is a file name: open the file
       ** and seek to the proper offset.
       */
-      if ( (fd = open( argv[1], O_RDONLY )) == -1 )
+      file_name = argv[1];
+      if ( (fd = open( file_name, O_RDONLY )) == -1 )
         PMESSAGE_EXIT( READ_OPEN,
           "\"%s\": can not open: %s\n",
-          argv[1], strerror( errno )
+          file_name, strerror( errno )
         );
       if ( lseek( fd, offset, 0 ) == -1 )
         PMESSAGE_EXIT( SEEK,
           "\"%s\": can not seek to offset %ld: %s\n",
-          argv[1], (long)offset, strerror( errno )
+          file_name, (long)offset, strerror( errno )
         );
-      file_name = argv[1];
       break;
 
     default:
@@ -213,13 +213,16 @@ static void skip( int fd, off_t skip_size ) {
       break;
     bytes_read = read( fd, buf, read_size );
     if ( bytes_read == -1 )
-      break;
+      PMESSAGE_EXIT( READ_OPEN,
+        "\"%s\": can not open: %s\n",
+        file_name, strerror( errno )
+      );
     skip_size -= bytes_read;
   } /* while */
 }
 
 static void usage() {
-  fprintf( stderr, "usage: %s [-dhov] [file] [ [+]offset ]\n", me );
+  fprintf( stderr, "usage: %s [-dhov] [-N length] [file] [[+]offset]\n", me );
   exit( EXIT_USAGE );
 }
 /* vim:set et sw=2 ts=2: */

@@ -23,6 +23,7 @@
 
 /* system */
 #include <assert.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for strtoul() */
 #include <string.h>
@@ -39,13 +40,14 @@ char const* base_name( char const *path_name ) {
   return path_name;
 }
 
-unsigned long check_atoul( char const *s, bool allow_leading_plus ) {
+unsigned long check_strtoul( char const *s ) {
   assert( s );
-  if ( allow_leading_plus && *s == '+' )
-    ++s;
-  if ( s[ strspn( s, "0123456789" ) ] )
+  char *end = NULL;
+  errno = 0;
+  unsigned long const n = strtoul( s, &end, 0 );
+  if ( end == s || *end || errno == ERANGE )
     PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
-  return strtoul( s, (char**)NULL, 10 );
+  return n;
 }
 
 /*****************************************************************************/

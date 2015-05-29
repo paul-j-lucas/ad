@@ -82,15 +82,12 @@ char const* base_name( char const *path_name );
 
 /**
  * Converts an ASCII string to an unsigned long integer.
- * Unlike strtoul(3), this function insists that all characters in \a s
- * are digits.
  * If conversion fails, prints an error message and exits.
  *
  * @param s The string to convert.
- * @param allow_leading_plus If \c true, allow a leading \c + sign.
  * @return Returns the unsigned long integer.
  */
-unsigned long check_atoul( char const *s, bool allow_leading_plus );
+unsigned long check_strtoul( char const *s );
 
 /*****************************************************************************/
 
