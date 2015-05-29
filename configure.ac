@@ -46,7 +46,7 @@ AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([perror])
+AC_CHECK_FUNCS([perror strerror])
 
 # Miscellaneous.
 AC_LANG(C)
