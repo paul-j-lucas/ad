@@ -87,9 +87,10 @@ char const* base_name( char const *path_name );
  * If conversion fails, prints an error message and exits.
  *
  * @param s The string to convert.
+ * @param allow_leading_plus If \c true, allow a leading \c + sign.
  * @return Returns the unsigned long integer.
  */
-unsigned long check_atoul( char const *s );
+unsigned long check_atoul( char const *s, bool allow_leading_plus );
 
 /*****************************************************************************/
 

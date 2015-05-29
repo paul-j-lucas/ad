@@ -22,6 +22,7 @@
 #include "util.h"
 
 /* system */
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for strtoul() */
 #include <string.h>
@@ -31,13 +32,17 @@ extern char const *me;
 /*****************************************************************************/
 
 char const* base_name( char const *path_name ) {
+  assert( path_name );
   char const *const slash = strrchr( path_name, '/' );
   if ( slash )
     return slash[1] ? slash + 1 : slash;
   return path_name;
 }
 
-unsigned long check_atoul( char const *s ) {
+unsigned long check_atoul( char const *s, bool allow_leading_plus ) {
+  assert( s );
+  if ( allow_leading_plus && *s == '+' )
+    ++s;
   if ( s[ strspn( s, "0123456789" ) ] )
     PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
   return strtoul( s, (char**)NULL, 10 );
