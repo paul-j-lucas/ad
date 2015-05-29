@@ -23,6 +23,14 @@ AUTOMAKE_OPTIONS = 1.12			# needed for TEST_LOG_DRIVER
 TESTS =	tests/ad-no_options.test \
 	tests/ad-d.test \
 	tests/ad-h.test \
+	tests/ad-N00.test \
+	tests/ad-N01.test \
+	tests/ad-N02.test \
+	tests/ad-N03.test \
+	tests/ad-N04.test \
+	tests/ad-N15.test \
+	tests/ad-N16.test \
+	tests/ad-N17.test \
 	tests/ad-o.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
