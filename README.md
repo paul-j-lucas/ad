@@ -1,9 +1,11 @@
 # ad
 
-**ad** dumps the bytes of a file
-and prints their ASCII characters
-(for those bytes that are ASCII)
+**ad** dumps the bytes of a file in hexadecimal
+and also prints their correcponding ASCII characters
+(for those bytes for which **isprint**(3) returns true)
 to standard output.
+For those bytes that are not printable,
+prints '`.`' (dot) instead.
 
 ## Installation
 
