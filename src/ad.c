@@ -27,12 +27,12 @@
 #include <ctype.h>                      /* for isprint() */
 #include <errno.h>
 #include <fcntl.h>                      /* for O_RDONLY */
+#include <netinet/in.h>                 /* for ntohs() */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit(), strtoul(), ... */
 #include <string.h>                     /* for str...() */
 #include <sys/types.h>
 #include <unistd.h>                     /* for lseek(), read(), ... */
-#include <netinet/in.h>                 /* for ntohs() */
 
 #define BUF_SIZE    16                  /* bytes displayed on a line */
 
@@ -267,8 +267,8 @@ static void skip_stdin( off_t bytes_to_skip ) {
 
 static void usage() {
   fprintf( stderr,
-"usage: %s [-dhov] [-j offset] [-N length] [file] [[+]offset]\n"
-"       %s [-dhov] [-j offset] [-N length] [+offset] [file]\n"
+"usage: %s [-dhov] [-j offset[b|k|m]] [-N length] [file] [[+]offset[b|k|m]]\n"
+"       %s [-dhov] [-j offset[b|k|m]] [-N length] [+offset[b|k|m]] [file]\n"
     , me, me
   );
   exit( EXIT_USAGE );
