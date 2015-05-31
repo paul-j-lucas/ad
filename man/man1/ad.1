@@ -2,7 +2,7 @@
 .\"	ad -- ASCII dump
 .\"	ad.1: manual page
 .\"
-.\"	Copyright (C) 1996  Paul J. Lucas
+.\"	Copyright (C) 1996-2015  Paul J. Lucas
 .\"
 .\"	This program is free software; you can redistribute it and/or modify
 .\"	it under the terms of the GNU General Public License as published by
@@ -18,36 +18,102 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "May 25, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "May 30, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
 .B ad
-[
-.BR \- dhov
-] [
-.I file
-]
-[
-.RB [ + ]
-.I offset
-]
+.RB [ \-dhov ]
+[\f3+\f1\f3offset\f1]
+[\f3\-j\fP \f2offset\fP]
+[\f3\-N\fP \f2length\fP]
+[\f2file\f1]
+.br
+.B ad
+.RB [ \-dhov ]
+[\f3\-j\fP \f2offset\fP]
+[\f3\-N\fP \f2length\fP]
+[\f2file\f1]
+[[\f3+\f1]\f2offset\f1]
 .SH DESCRIPTION
 .B
 ad
-dumps the bytes of a file and prints their ASCII characters
-(for those bytes that are ASCII)
+dumps the bytes of a file in hexadecimal
+and also prints their corresponding ASCII characters
+(for those bytes for which
+.BR isprint (3)
+returns true)
 to standard output.
+For those bytes that are not printable,
+prints `\f(CW.\f1' (dot) instead.
 .SH OPTIONS
-.IP "\f3\-d\f1"
-Print file offset in decimal.
-.IP "\f3\-h\f1"
-Print file offset in hexadecimal
+.TP 8
+\f3+\f2n\f1[\f2u\f1]
+Skips reading
+.I n
+bytes of data before dumping.
+If
+.I n
+starts with either
+.B 0x
+or
+.BR 0X,
+then
+.I n
+is interpreted as hexedecimal.
+If specified, the unit
+.I u
+may be one of
+.B b
+(512-byte blocks),
+.B k
+(kilobytes),
+or
+.B m
+(megabytes).
+.TP
+.B \-d
+Prints offsets in decimal.
+.TP
+.B \-h
+Prints offsets in hexadecimal
 (the default).
-.IP "\f3\-o\f1"
-Print file offset in octal.
-.SH SEE ALSO
-.BR od (1)
+.TP
+\f3\-j\f1 \f2n\f1[\f2u\f1]
+Same as the
+.B +
+option.
+(If both options are specified,
+their values are added.)
+.TP
+.BI \-N " n"
+Dumps at most
+.I n
+bytes.
+.TP
+.B \-o
+Prints offsets in octal.
+.TP
+.B \-v
+Prints the version number to
+.I stderr
+and exit.
+.SH EXIT STATUS
+.PD 0
+.IP 0
+Success.
+.IP 1
+Error in command-line.
+.IP 10
+Error opening file for reading.
+.IP 11
+Read error.
+.IP 12
+Seek error.
+.PD
 .SH AUTHOR
 Paul J. Lucas
 .RI < paul@lucasmail.org >
+.SH SEE ALSO
+.BR od (1),
+.BR isprint (3)

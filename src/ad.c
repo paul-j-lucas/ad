@@ -20,14 +20,15 @@
 */
 
 /* local */
-#include "util.h"
+#include "config.h"
 
 /* system */
+#include <assert.h>
 #include <ctype.h>                      /* for isprint() */
 #include <errno.h>
 #include <fcntl.h>                      /* for O_RDONLY */
 #include <stdio.h>
-#include <stdlib.h>                     /* for exit() */
+#include <stdlib.h>                     /* for exit(), strtoul(), ... */
 #include <string.h>                     /* for str...() */
 #include <sys/types.h>
 #include <unistd.h>                     /* for lseek(), read(), ... */
@@ -35,34 +36,48 @@
 
 #define BUF_SIZE    16                  /* bytes displayed on a line */
 
-typedef uint8_t char_type;
-typedef uint16_t word_type;
+/* exit(3) status codes */
+#define EXIT_OK             0
+#define EXIT_USAGE          1
+#define EXIT_READ_OPEN      10
+#define EXIT_READ_ERROR     11
+#define EXIT_SEEK_ERROR     12
 
-static void skip( int, off_t );
-static void usage();
+#define BLOCK(...) \
+  do { __VA_ARGS__ } while (0)
 
-char const *file_name = "<stdin>";
+#define PMESSAGE_EXIT(STATUS,FORMAT,...) \
+  BLOCK( fprintf( stderr, "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
+
+typedef enum {
+  OFMT_DEC,
+  OFMT_HEX,
+  OFMT_OCT
+} OFFSET_FMT;
+
+static char const*    base_name( char const* );
+static void           dump( off_t, OFFSET_FMT, char const[], size_t );
+static int            open_file( char const*, off_t );
+static unsigned long  parse_number( char const* );
+static void           skip_stdin( off_t );
+static void           usage();
+
 char const *me;                         /* executable name */
 
 /*****************************************************************************/
 
 int main( int argc, char *argv[] ) {
-  char const *const offset_format[] = { /* offset format in printf() */
-    "%016llu: ",                        /* 0: decimal */
-    "%016llX: ",                        /* 1: hex */
-    "%016llo: ",                        /* 2: octal */
-  };
-  int         offset_format_index = 1;  /* default to hex */
+  OFFSET_FMT  offset_fmt = OFMT_HEX;
   int         opt;                      /* command-line option */
-  char const  opts[] = "dhN:ov";
+  char const  opts[] = "dhj:N:ov";
   size_t      opt_max_bytes_to_read = SIZE_MAX;
-  bool        plus = false;             /* specified '+'? */
 
-  char_type   buf[ BUF_SIZE ];
+  char        buf[ BUF_SIZE ];
   ssize_t     bytes_read;
   size_t      bytes_to_read = BUF_SIZE;
   int         fd = STDIN_FILENO;        /* Unix file descriptor */
   off_t       offset = 0;               /* offset into file */
+  char const *path_name;
   size_t      total_bytes_read = 0;
 
   /***************************************************************************/
@@ -72,69 +87,44 @@ int main( int argc, char *argv[] ) {
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
-      case 'd': offset_format_index = 0;                          break;
-      case 'h': offset_format_index = 1;                          break;
-      case 'N': opt_max_bytes_to_read = check_strtoul( optarg );  break;
-      case 'o': offset_format_index = 2;                          break;
-      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING ); exit( EXIT_OK );
+      case 'd': offset_fmt = OFMT_DEC;                          break;
+      case 'h': offset_fmt = OFMT_HEX;                          break;
+      case 'j': offset += parse_number( optarg );               break;
+      case 'N': opt_max_bytes_to_read = parse_number( optarg ); break;
+      case 'o': offset_fmt = OFMT_OCT;                          break;
+      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
       default : usage();
     } /* switch */
   } /* while */
   argc -= optind, argv += optind - 1;
 
   switch ( argc ) {
-
-    case 0:
-      /*
-      ** No arguments: read from stdin with no offset.
-      */
+    case 0:                             /* read from stdin with no offset */
       break;
 
-    case 1:
-      plus = (*argv[1] == '+');
-      if ( plus ) {
-        /*
-        ** The argument has a leading '+' indicating that it is an offset
-        ** rather than a file name and that we should read from stdin.
-        ** However, we can't seek() on stdin, so read and discard offset bytes.
-        */
-        skip( fd, check_strtoul( argv[1] ) );
-        break;
+    case 1:                             /* offset OR file */
+      if ( *argv[1] == '+' ) {
+        path_name = "<stdin>";
+        skip_stdin( parse_number( argv[1] ) );
+      } else {
+        path_name = argv[1];
+        fd = open_file( path_name, offset );
       }
-      /* no break; */
+      break;
 
-    case 2:
-      if ( argc == 2 ) {
-        /*
-        ** There really are two arguments (we didn't fall through from the
-        ** above case): the 2nd argument is the offset.
-        */
-        offset = check_strtoul( argv[2] );
-
-      } else if ( plus ) {
-        /*
-        ** There is only one argument (we fell through from the above case) and
-        ** a '+' was given, hence that single argument was an offset and we
-        ** should read from stdin.
-        */
-        break;
+    case 2:                             /* offset & file OR file & offset */
+      if ( *argv[1] == '+' ) {
+        if ( *argv[2] == '+' )
+          PMESSAGE_EXIT( USAGE,
+            "'%c': can not specify for more than one argument\n", '+'
+          );
+        offset += parse_number( argv[1] );
+        path_name = argv[2];
+      } else {
+        path_name = argv[1];
+        offset += parse_number( argv[2] );
       }
-
-      /*
-      ** The first (and perhaps only) argument is a file name: open the file
-      ** and seek to the proper offset.
-      */
-      file_name = argv[1];
-      if ( (fd = open( file_name, O_RDONLY )) == -1 )
-        PMESSAGE_EXIT( READ_OPEN,
-          "\"%s\": can not open: %s\n",
-          file_name, strerror( errno )
-        );
-      if ( lseek( fd, offset, 0 ) == -1 )
-        PMESSAGE_EXIT( SEEK,
-          "\"%s\": can not seek to offset %ld: %s\n",
-          file_name, (long)offset, strerror( errno )
-        );
+      fd = open_file( path_name, offset );
       break;
 
     default:
@@ -146,44 +136,19 @@ int main( int argc, char *argv[] ) {
   if ( bytes_to_read > opt_max_bytes_to_read )
     bytes_to_read = opt_max_bytes_to_read;
 
-  while ( true ) {
-    word_type const *pword;
-    char_type const *pchar;
-    ssize_t i;
-
+  for ( ;; ) {
     if ( total_bytes_read + bytes_to_read > opt_max_bytes_to_read )
       bytes_to_read = opt_max_bytes_to_read - total_bytes_read;
 
     bytes_read = read( fd, buf, bytes_to_read );
     if ( bytes_read == -1 )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read failed: %s", file_name, strerror( errno )
+        "\"%s\": read failed: %s", path_name, strerror( errno )
       );
     if ( bytes_read == 0 )
       break;
 
-    /* print offset */
-    printf( offset_format[ offset_format_index ], offset );
-
-    /* print hex part */
-    for ( i = bytes_read / 2, pword = (word_type const*)buf; i; --i, ++pword )
-      printf( "%04X ", ntohs( *pword ) );
-    if ( bytes_read & 1 )               /* there's an odd, left-over byte */
-      printf( "%02X ", (word_type)*(char_type const*)pword );
-
-    /* print padding if we read less than BUF_SIZE bytes */
-    for ( i = BUF_SIZE - bytes_read; i; --i )
-      printf( "  " );
-    for ( i = (BUF_SIZE - bytes_read) / 2; i; --i )
-      PUTCHAR( ' ' );
-
-    PUTCHAR( ' ' );
-
-    /* print ASCII part */
-    for ( i = 0, pchar = (char_type const*)buf; i < bytes_read; ++i, ++pchar )
-      PUTCHAR( isprint( *pchar ) ? (char)*pchar : '.' );
-
-    PUTCHAR( '\n' );
+    dump( offset, offset_fmt, buf, bytes_read );
 
     total_bytes_read += bytes_read;
     if ( total_bytes_read >= opt_max_bytes_to_read )
@@ -191,7 +156,7 @@ int main( int argc, char *argv[] ) {
     if ( bytes_read < BUF_SIZE )
       break;
     offset += bytes_read;
-  } /* while */
+  } /* for */
 
   /***************************************************************************/
 
@@ -201,28 +166,111 @@ int main( int argc, char *argv[] ) {
 
 /*****************************************************************************/
 
-static void skip( int fd, off_t skip_size ) {
+static char const* base_name( char const *path_name ) {
+  assert( path_name );
+  char const *const slash = strrchr( path_name, '/' );
+  if ( slash )
+    return slash[1] ? slash + 1 : slash;
+  return path_name;
+}
+
+static void dump( off_t offset, OFFSET_FMT offset_fmt, char const buf[],
+                  size_t bytes_read ) {
+  static char const *const offset_fmt_printf[] = {
+    "%016llu: ",                        /* decimal */
+    "%016llX: ",                        /* hex */
+    "%016llo: ",                        /* octal */
+  };
+
+  uint16_t const *pword;
+  char const *pchar;
+  size_t i;
+
+  /* print offset */
+  printf( offset_fmt_printf[ offset_fmt ], offset );
+
+  /* print hex part */
+  for ( i = bytes_read / 2, pword = (uint16_t const*)buf; i; --i, ++pword )
+    printf( "%04X ", ntohs( *pword ) );
+  if ( bytes_read & 1 )               /* there's an odd, left-over byte */
+    printf( "%02X ", (uint16_t)*(uint8_t const*)pword );
+
+  /* print padding if we read less than BUF_SIZE bytes */
+  for ( i = BUF_SIZE - bytes_read; i; --i )
+    printf( "  " );
+  for ( i = (BUF_SIZE - bytes_read) / 2 + 1; i; --i )
+    putchar( ' ' );
+
+  /* print ASCII part */
+  for ( pchar = buf; pchar < buf + bytes_read; ++pchar )
+    putchar( isprint( *pchar ) ? *pchar : '.' );
+
+  putchar( '\n' );
+}
+
+static int open_file( char const *path_name, off_t offset ) {
+  int const fd = open( path_name, O_RDONLY );
+  if ( fd == -1 )
+    PMESSAGE_EXIT( READ_OPEN,
+      "\"%s\": can not open: %s\n",
+      path_name, strerror( errno )
+    );
+  if ( offset && lseek( fd, offset, 0 ) == -1 )
+    PMESSAGE_EXIT( SEEK_ERROR,
+      "\"%s\": can not seek to offset %ld: %s\n",
+      path_name, (long)offset, strerror( errno )
+    );
+  return fd;
+}
+
+unsigned long parse_number( char const *s ) {
+  assert( s );
+  char *end = NULL;
+  errno = 0;
+  unsigned long n = strtoul( s, &end, 0 );
+  if ( end == s || errno == ERANGE )
+    goto error;
+  if ( end[0] ) {                       /* possibly 'b', 'k', or 'm' */
+    if ( end[1] )                       /* not a single char */
+      goto error;
+    switch ( end[0] ) {
+      case 'b': n *=         512; break;
+      case 'k': n *=        1024; break;
+      case 'm': n *= 1024 * 1024; break;
+      default : goto error;
+    } /* switch */
+  }
+  return n;
+error:
+  PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
+}
+
+static void skip_stdin( off_t bytes_to_skip ) {
   char buf[ 8192 ];
   ssize_t bytes_read;
-  off_t read_size = sizeof( buf );
+  off_t bytes_to_read = sizeof( buf );
 
-  while ( true ) {
-    if ( read_size > skip_size )
-      read_size = skip_size;
-    if ( !read_size )
+  for ( ;; ) {
+    if ( bytes_to_read > bytes_to_skip )
+      bytes_to_read = bytes_to_skip;
+    if ( !bytes_to_read )
       break;
-    bytes_read = read( fd, buf, read_size );
+    bytes_read = read( STDIN_FILENO, buf, bytes_to_read );
     if ( bytes_read == -1 )
       PMESSAGE_EXIT( READ_OPEN,
-        "\"%s\": can not open: %s\n",
-        file_name, strerror( errno )
+        "\"<stdin>\": can not read: %s\n",
+        strerror( errno )
       );
-    skip_size -= bytes_read;
-  } /* while */
+    bytes_to_skip -= bytes_read;
+  } /* for */
 }
 
 static void usage() {
-  fprintf( stderr, "usage: %s [-dhov] [-N length] [file] [[+]offset]\n", me );
+  fprintf( stderr,
+"usage: %s [-dhov] [-j offset] [-N length] [file] [[+]offset]\n"
+"       %s [-dhov] [-j offset] [-N length] [+offset] [file]\n"
+    , me, me
+  );
   exit( EXIT_USAGE );
 }
 /* vim:set et sw=2 ts=2: */
