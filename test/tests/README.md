@@ -5,7 +5,7 @@ Test files must be a single line in the following format:
 
 *command* `|` *options* `|` *input* `|` *exit*
 
-that is five fields separated by the pipe (`|`) character
+that is four fields separated by the pipe (`|`) character
 (with optional whitespace)
 where:
 
