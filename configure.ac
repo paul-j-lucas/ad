@@ -35,6 +35,7 @@ AC_CHECK_HEADERS([assert.h])
 AC_CHECK_HEADERS([ctype.h])
 AC_CHECK_HEADERS([errno.h])
 AC_CHECK_HEADERS([fcntl.h])
+AC_CHECK_HEADERS([libgen.h])
 AC_CHECK_HEADERS([netinet/in.h])
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
@@ -48,7 +49,7 @@ AC_TYPE_SSIZE_T
 AC_TYPE_UINT16_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([getopt strerror])
+AC_CHECK_FUNCS([basename getopt strerror])
 
 # Miscellaneous.
 AC_LANG(C)

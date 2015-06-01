@@ -27,6 +27,7 @@
 #include <ctype.h>                      /* for isprint() */
 #include <errno.h>
 #include <fcntl.h>                      /* for O_RDONLY */
+#include <libgen.h>                     /* for basename() */
 #include <netinet/in.h>                 /* for ntohs() */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit(), strtoul(), ... */
@@ -55,7 +56,6 @@ typedef enum {
   OFMT_OCT
 } OFFSET_FMT;
 
-static char const*    base_name( char const* );
 static void           dump( off_t, OFFSET_FMT, char const[], size_t );
 static int            open_file( char const*, off_t );
 static unsigned long  parse_number( char const* );
@@ -82,7 +82,7 @@ int main( int argc, char *argv[] ) {
 
   /***************************************************************************/
 
-  me = base_name( argv[0] );
+  me = basename( argv[0] );
 
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
@@ -165,14 +165,6 @@ int main( int argc, char *argv[] ) {
 }
 
 /*****************************************************************************/
-
-static char const* base_name( char const *path_name ) {
-  assert( path_name );
-  char const *const slash = strrchr( path_name, '/' );
-  if ( slash )
-    return slash[1] ? slash + 1 : slash;
-  return path_name;
-}
 
 static void dump( off_t offset, OFFSET_FMT offset_fmt, char const buf[],
                   size_t bytes_read ) {
