@@ -207,7 +207,7 @@ static int open_file( char const *path_name, off_t offset ) {
       "\"%s\": can not open: %s\n",
       path_name, strerror( errno )
     );
-  if ( offset && lseek( fd, offset, 0 ) == -1 )
+  if ( offset && lseek( fd, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
       "\"%s\": can not seek to offset %ld: %s\n",
       path_name, (long)offset, strerror( errno )
