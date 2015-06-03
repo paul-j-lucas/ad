@@ -77,7 +77,7 @@ int main( int argc, char *argv[] ) {
   size_t      bytes_to_read = BUF_SIZE;
   int         fd = STDIN_FILENO;        /* Unix file descriptor */
   off_t       offset = 0;               /* offset into file */
-  char const *path_name;
+  char const *path_name = "<stdin>";
   size_t      total_bytes_read = 0;
 
   /***************************************************************************/
@@ -104,7 +104,6 @@ int main( int argc, char *argv[] ) {
 
     case 1:                             /* offset OR file */
       if ( *argv[1] == '+' ) {
-        path_name = "<stdin>";
         skip_stdin( parse_number( argv[1] ) );
       } else {
         path_name = argv[1];
