@@ -56,81 +56,38 @@ typedef enum {
   OFMT_OCT
 } OFFSET_FMT;
 
-static void           dump( off_t, OFFSET_FMT, char const[], size_t );
+static void           dump_file();
+static void           dump_line( char const[], size_t );
 static int            open_file( char const*, off_t );
 static unsigned long  parse_number( char const* );
+static void           parse_options( int, char*[] );
 static void           skip_stdin( off_t );
 static void           usage();
 
+int         fd = STDIN_FILENO;          /* Unix file descriptor */
 char const *me;                         /* executable name */
+off_t       offset = 0;                 /* offset into file */
+size_t      opt_max_bytes_to_read = SIZE_MAX;
+OFFSET_FMT  opt_offset_fmt = OFMT_HEX;
+char const *path_name = "<stdin>";
 
 /*****************************************************************************/
 
 int main( int argc, char *argv[] ) {
-  OFFSET_FMT  offset_fmt = OFMT_HEX;
-  int         opt;                      /* command-line option */
-  char const  opts[] = "dhj:N:ov";
-  size_t      opt_max_bytes_to_read = SIZE_MAX;
-
-  char        buf[ BUF_SIZE ];
-  ssize_t     bytes_read;
-  size_t      bytes_to_read = BUF_SIZE;
-  int         fd = STDIN_FILENO;        /* Unix file descriptor */
-  off_t       offset = 0;               /* offset into file */
-  char const *path_name = "<stdin>";
-  size_t      total_bytes_read = 0;
-
-  /***************************************************************************/
-
   me = basename( argv[0] );
+  parse_options( argc, argv );
+  dump_file();
+  close( fd );
+  exit( EXIT_OK );
+}
 
-  opterr = 1;
-  while ( (opt = getopt( argc, argv, opts )) != EOF ) {
-    switch ( opt ) {
-      case 'd': offset_fmt = OFMT_DEC;                          break;
-      case 'h': offset_fmt = OFMT_HEX;                          break;
-      case 'j': offset += parse_number( optarg );               break;
-      case 'N': opt_max_bytes_to_read = parse_number( optarg ); break;
-      case 'o': offset_fmt = OFMT_OCT;                          break;
-      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
-      default : usage();
-    } /* switch */
-  } /* while */
-  argc -= optind, argv += optind - 1;
+/*****************************************************************************/
 
-  switch ( argc ) {
-    case 0:                             /* read from stdin with no offset */
-      break;
-
-    case 1:                             /* offset OR file */
-      if ( *argv[1] == '+' ) {
-        skip_stdin( parse_number( argv[1] ) );
-      } else {
-        path_name = argv[1];
-        fd = open_file( path_name, offset );
-      }
-      break;
-
-    case 2:                             /* offset & file OR file & offset */
-      if ( *argv[1] == '+' ) {
-        if ( *argv[2] == '+' )
-          PMESSAGE_EXIT( USAGE,
-            "'%c': can not specify for more than one argument\n", '+'
-          );
-        offset += parse_number( argv[1] );
-        path_name = argv[2];
-      } else {
-        path_name = argv[1];
-        offset += parse_number( argv[2] );
-      }
-      fd = open_file( path_name, offset );
-      break;
-
-    default:
-      usage();
-  } /* switch */
-
-  /***************************************************************************/
+static void dump_file() {
+  char    buf[ BUF_SIZE ];
+  ssize_t bytes_read;
+  size_t  bytes_to_read = BUF_SIZE;
+  size_t  total_bytes_read = 0;
 
   if ( bytes_to_read > opt_max_bytes_to_read )
     bytes_to_read = opt_max_bytes_to_read;
@@ -147,7 +104,7 @@ int main( int argc, char *argv[] ) {
     if ( bytes_read == 0 )
       break;
 
-    dump( offset, offset_fmt, buf, bytes_read );
+    dump_line( buf, bytes_read );
 
     total_bytes_read += bytes_read;
     if ( total_bytes_read >= opt_max_bytes_to_read )
@@ -156,17 +113,9 @@ int main( int argc, char *argv[] ) {
       break;
     offset += bytes_read;
   } /* for */
-
-  /***************************************************************************/
-
-  close( fd );
-  exit( EXIT_OK );
 }
 
-/*****************************************************************************/
-
-static void dump( off_t offset, OFFSET_FMT offset_fmt, char const buf[],
-                  size_t bytes_read ) {
+static void dump_line( char const buf[], size_t bytes_read ) {
   static char const *const offset_fmt_printf[] = {
     "%016llu: ",                        /* decimal */
     "%016llX: ",                        /* hex */
@@ -178,7 +127,7 @@ static void dump( off_t offset, OFFSET_FMT offset_fmt, char const buf[],
   size_t i;
 
   /* print offset */
-  printf( offset_fmt_printf[ offset_fmt ], offset );
+  printf( offset_fmt_printf[ opt_offset_fmt ], offset );
 
   /* print hex part */
   for ( i = bytes_read / 2, pword = (uint16_t const*)buf; i; --i, ++pword )
@@ -234,6 +183,58 @@ unsigned long parse_number( char const *s ) {
   return n;
 error:
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
+}
+
+static void parse_options( int argc, char *argv[] ) {
+  int         opt;                      /* command-line option */
+  char const  opts[] = "dhj:N:ov";
+
+  opterr = 1;
+  while ( (opt = getopt( argc, argv, opts )) != EOF ) {
+    switch ( opt ) {
+      case 'd': opt_offset_fmt = OFMT_DEC;                      break;
+      case 'h': opt_offset_fmt = OFMT_HEX;                      break;
+      case 'j': offset += parse_number( optarg );               break;
+      case 'N': opt_max_bytes_to_read = parse_number( optarg ); break;
+      case 'o': opt_offset_fmt = OFMT_OCT;                      break;
+      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
+      default : usage();
+    } /* switch */
+  } /* while */
+  argc -= optind, argv += optind - 1;
+
+  switch ( argc ) {
+    case 0:                             /* read from stdin with no offset */
+      break;
+
+    case 1:                             /* offset OR file */
+      if ( *argv[1] == '+' ) {
+        skip_stdin( parse_number( argv[1] ) );
+      } else {
+        path_name = argv[1];
+        fd = open_file( path_name, offset );
+      }
+      break;
+
+    case 2:                             /* offset & file OR file & offset */
+      if ( *argv[1] == '+' ) {
+        if ( *argv[2] == '+' )
+          PMESSAGE_EXIT( USAGE,
+            "'%c': can not specify for more than one argument\n", '+'
+          );
+        offset += parse_number( argv[1] );
+        path_name = argv[2];
+      } else {
+        path_name = argv[1];
+        offset += parse_number( argv[2] );
+      }
+      fd = open_file( path_name, offset );
+      break;
+
+    default:
+      usage();
+  } /* switch */
+
 }
 
 static void skip_stdin( off_t bytes_to_skip ) {
