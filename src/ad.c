@@ -153,7 +153,6 @@ static void dump_line( char const buf[], size_t bytes_read ) {
 
 static int open_file( char const *path_name, off_t offset ) {
   int fd;
-
   assert( path_name );
   if ( (fd = open( path_name, O_RDONLY )) == -1 )
     PMESSAGE_EXIT( READ_OPEN,
