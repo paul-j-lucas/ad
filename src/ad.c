@@ -152,8 +152,10 @@ static void dump_line( char const buf[], size_t bytes_read ) {
 }
 
 static int open_file( char const *path_name, off_t offset ) {
-  int const fd = open( path_name, O_RDONLY );
-  if ( fd == -1 )
+  int fd;
+
+  assert( path_name );
+  if ( (fd = open( path_name, O_RDONLY )) == -1 )
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n",
       path_name, ERROR_STR
@@ -167,8 +169,8 @@ static int open_file( char const *path_name, off_t offset ) {
 }
 
 unsigned long parse_number( char const *s ) {
-  assert( s );
   char *end = NULL;
+  assert( s );
   errno = 0;
   unsigned long n = strtoul( s, &end, 0 );
   if ( end == s || errno == ERANGE )
