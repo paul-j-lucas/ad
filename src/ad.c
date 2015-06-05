@@ -35,8 +35,6 @@
 #include <sys/types.h>
 #include <unistd.h>                     /* for lseek(), read(), ... */
 
-#define BUF_SIZE    16                  /* bytes displayed on a line */
-
 /* exit(3) status codes */
 #define EXIT_OK             0
 #define EXIT_USAGE          1
@@ -44,11 +42,16 @@
 #define EXIT_READ_ERROR     11
 #define EXIT_SEEK_ERROR     12
 
-#define BLOCK(...) \
-  do { __VA_ARGS__ } while (0)
+#define BLOCK(...)          do { __VA_ARGS__ } while (0)
+
+#define ERROR_STR           strerror( errno )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( fprintf( stderr, "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
+
+/*****************************************************************************/
+
+#define BUF_SIZE      16                /* bytes displayed on a line */
 
 typedef enum {
   OFMT_DEC,
@@ -99,7 +102,7 @@ static void dump_file() {
     bytes_read = read( fd, buf, bytes_to_read );
     if ( bytes_read == -1 )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read failed: %s", path_name, strerror( errno )
+        "\"%s\": read failed: %s", path_name, ERROR_STR
       );
     if ( bytes_read == 0 )
       break;
@@ -153,12 +156,12 @@ static int open_file( char const *path_name, off_t offset ) {
   if ( fd == -1 )
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n",
-      path_name, strerror( errno )
+      path_name, ERROR_STR
     );
   if ( offset && lseek( fd, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
       "\"%s\": can not seek to offset %ld: %s\n",
-      path_name, (long)offset, strerror( errno )
+      path_name, (long)offset, ERROR_STR
     );
   return fd;
 }
@@ -249,9 +252,9 @@ static void skip_stdin( off_t bytes_to_skip ) {
       break;
     bytes_read = read( STDIN_FILENO, buf, bytes_to_read );
     if ( bytes_read == -1 )
-      PMESSAGE_EXIT( READ_OPEN,
-        "\"<stdin>\": can not read: %s\n",
-        strerror( errno )
+      PMESSAGE_EXIT( READ_ERROR,
+        "\"%s\": can not read: %s\n",
+        path_name, ERROR_STR
       );
     bytes_to_skip -= bytes_read;
   } /* for */
