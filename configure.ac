@@ -34,19 +34,24 @@ AC_PROG_INSTALL
 AC_CHECK_HEADERS([assert.h])
 AC_CHECK_HEADERS([ctype.h])
 AC_CHECK_HEADERS([errno.h])
-AC_CHECK_HEADERS([fcntl.h])
 AC_CHECK_HEADERS([libgen.h])
-AC_CHECK_HEADERS([netinet/in.h])
 AC_CHECK_HEADERS([stdlib.h])
 AC_CHECK_HEADERS([string.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([unistd.h])
+AC_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
+AC_C_INLINE
+AC_CHECK_SIZEOF([unsigned long])
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 
 # Checks for library functions.
 AC_CHECK_FUNCS([basename getopt strerror])
