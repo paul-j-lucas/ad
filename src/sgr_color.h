@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      color.h: implementation
+**      sgr_color.h: implementation
 **
 **      Copyright (C) 2015  Paul J. Lucas
 **
@@ -19,8 +19,8 @@
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef pjl_color_H
-#define pjl_color_H
+#ifndef sgr_color_H
+#define sgr_color_H
 
 /* standard */
 #include <stdio.h>
@@ -45,15 +45,6 @@
 #define SGR_FG_COLOR_CYAN           "36"
 #define SGR_FG_COLOR_WHITE          "37"
 
-#define SGR_FG_COLOR_BRIGHT_BLACK   SGR_FG_COLOR_BLACK    ";1"
-#define SGR_FG_COLOR_BRIGHT_RED     SGR_FG_COLOR_RED      ";1"
-#define SGR_FG_COLOR_BRIGHT_GREEN   SGR_FG_COLOR_GREEN    ";1"
-#define SGR_FG_COLOR_BRIGHT_YELLOW  SGR_FG_COLOR_YELLOW   ";1"
-#define SGR_FG_COLOR_BRIGHT_BLUE    SGR_FG_COLOR_BLUE     ";1"
-#define SGR_FG_COLOR_BRIGHT_MAGENTA SGR_FG_COLOR_MAGENTA  ";1"
-#define SGR_FG_COLOR_BRIGHT_CYAN    SGR_FG_COLOR_CYAN     ";1"
-#define SGR_FG_COLOR_BRIGHT_WHITE   SGR_FG_COLOR_WHITE    ";1"
-
 #define SGR_BG_COLOR_BLACK          "40"
 #define SGR_BG_COLOR_RED            "41"
 #define SGR_BG_COLOR_GREEN          "42"
@@ -63,15 +54,6 @@
 #define SGR_BG_COLOR_CYAN           "46"
 #define SGR_BG_COLOR_WHITE          "47"
 
-#define SGR_BG_COLOR_BRIGHT_BLACK   SGR_BG_COLOR_BLACK    ";1"
-#define SGR_BG_COLOR_BRIGHT_RED     SGR_BG_COLOR_RED      ";1"
-#define SGR_BG_COLOR_BRIGHT_GREEN   SGR_BG_COLOR_GREEN    ";1"
-#define SGR_BG_COLOR_BRIGHT_YELLOW  SGR_BG_COLOR_YELLOW   ";1"
-#define SGR_BG_COLOR_BRIGHT_BLUE    SGR_BG_COLOR_BLUE     ";1"
-#define SGR_BG_COLOR_BRIGHT_MAGENTA SGR_BG_COLOR_MAGENTA  ";1"
-#define SGR_BG_COLOR_BRIGHT_CYAN    SGR_BG_COLOR_CYAN     ";1"
-#define SGR_BG_COLOR_BRIGHT_WHITE   SGR_BG_COLOR_WHITE    ";1"
-
 #define SGR_START_FMT               "\33[%sm\33[K"
 #define SGR_END_FMT                 "\33[m\33[K"
 
@@ -80,5 +62,5 @@
 
 /*****************************************************************************/
 
-#endif /* pjl_color_H */
+#endif /* sgr_color_H */
 /* vim:set et sw=2 ts=2: */

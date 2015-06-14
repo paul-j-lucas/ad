@@ -22,6 +22,7 @@
 /* local */
 #include "config.h"
 #include "sgr_color.h"
+#include "util.h"
 
 /* system */
 #include <assert.h>
@@ -32,160 +33,45 @@
 #include <stdlib.h>                     /* for exit(), strtoul(), ... */
 #include <string.h>                     /* for str...() */
 #include <sys/types.h>
-#include <unistd.h>                     /* for lseek(), read(), ... */
-
-/* define a "bool" type */
-#ifdef HAVE_STDBOOL_H
-# include <stdbool.h>
-#else
-# ifndef HAVE__BOOL
-#   ifdef __cplusplus
-typedef bool _Bool;
-#   else
-#     define _Bool signed char
-#   endif /* __cplusplus */
-# endif /* HAVE__BOOL */
-# define bool   _Bool
-# define false  0
-# define true   1
-# define __bool_true_false_are_defined 1
-#endif /* HAVE_STDBOOL_H */
-
-/* exit(3) status codes */
-#define EXIT_OK             0
-#define EXIT_USAGE          1
-#define EXIT_OUT_OF_MEMORY  3
-#define EXIT_READ_OPEN      10
-#define EXIT_READ_ERROR     11
-#define EXIT_WRITE_ERROR    13
-#define EXIT_SEEK_ERROR     20
-
-#define BLOCK(...)          do { __VA_ARGS__ } while (0)
-
-#define ERROR_STR           strerror( errno )
-
-#define PERROR_EXIT(STATUS) \
-  BLOCK( perror( me ); exit( EXIT_##STATUS ); )
-
-#define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( fprintf( stderr, "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
-
-#define PRINTF(...) \
-  BLOCK( if ( printf( __VA_ARGS__ ) < 0 ) PERROR_EXIT( WRITE_ERROR ); )
-
-#define PUTCHAR(C) \
-  BLOCK( if ( putchar( C ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+#include <unistd.h>                     /* for getopt() */
 
 /*****************************************************************************/
 
 #define BUF_SIZE      16                /* bytes displayed on a line */
 
-typedef enum {
-  ENDIAN_UNSPECIFIED,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE
-} endian_t;
-
 typedef int kmp_value;
 
-typedef enum {
+enum offset_fmt {
   OFMT_DEC,
   OFMT_HEX,
   OFMT_OCT
-} offset_fmt_t;
+};
+typedef enum offset_fmt offset_fmt_t;
 
-FILE*         file;                     /* file to read from */
-char const*   me;                       /* executable name */
-off_t         offset;                   /* curent offset into file */
-bool          opt_case_insensitive = false;
-size_t        opt_max_bytes_to_read = SIZE_MAX;
-offset_fmt_t  opt_offset_fmt = OFMT_HEX;
-char const*   path_name = "<stdin>";
-size_t        total_bytes_read;
+char const*           me;               /* executable name */
+char const*           path_name = "<stdin>";
 
-char*         search_buf;               /* not NULL-terminated when numeric */
-endian_t      search_endian;            /* if searching for a number */
-size_t        search_len;               /* number of bytes in search_buf */
-char const*   search_match_color = SGR_BG_COLOR_BRIGHT_RED;
-unsigned long search_number;            /* the number to search for */
+static FILE*          file;             /* file to read from */
+static free_node_t*   free_head;        /* linked list of stuff to free */
+static off_t          offset;           /* curent offset into file */
+static bool           opt_case_insensitive = false;
+static size_t         opt_max_bytes_to_read = SIZE_MAX;
+static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
+
+static char*          search_buf;       /* not NULL-terminated when numeric */
+static endian_t       search_endian;    /* if searching for a number */
+static size_t         search_len;       /* number of bytes in search_buf */
+static char const*    search_match_color = SGR_BG_COLOR_RED;
+static unsigned long  search_number;    /* the number to search for */
 
 /* local functions */
-static void*          check_realloc( void*, size_t );
-static void           dump();
-static void           fskip( size_t, FILE* );
-static bool           get_byte( uint8_t* );
+static void           clean_up();
+static void           init( int, char*[] );
 static kmp_value*     kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_value const*, uint8_t* );
-static FILE*          open_file( char const*, off_t );
-static bool           parse_ul( char const*, unsigned long* );
-static unsigned long  parse_ul_or_exit( char const* );
-static unsigned long  parse_offset( char const* );
 static void           parse_options( int, char*[] );
-static size_t         prep_search_number( unsigned long* );
 static void           set_match_color();
-static char*          tolower_s( char* );
 static void           usage();
-
-/* inline functions **********************************************************/
-
-static inline size_t byte_len( unsigned long n ) {
-  if ( n < 0x10000 )
-    return n < 0x100 ? 1 : 2;
-  else
-    return n < 0x100000000L ? 4 : 8;
-}
-
-static inline char const* skip_ws( char const *s ) {
-  assert( s );
-  while ( *s && isspace( *s ) )
-    ++s;
-  return s;
-}
-
-static inline uint16_t swap_16( uint16_t n ) {
-  return  (n >> 8)
-        | (n << 8);
-}
-
-static inline uint32_t swap_32( uint32_t n ) {
-  return  ( n                >> 24)
-        | ((n & 0x00FF0000u) >>  8)
-        | ((n & 0x0000FF00u) <<  8)
-        | ( n                << 24);
-}
-
-#if SIZEOF_UNSIGNED_LONG == 8
-static inline uint64_t swap_64( uint64_t n ) {
-  return  ( n                         >> 56)
-        | ((n & 0x00FF000000000000ul) >> 40)
-        | ((n & 0x0000FF0000000000ul) >> 24)
-        | ((n & 0x000000FF00000000ul) >>  8)
-        | ((n & 0x00000000FF000000ul) <<  8)
-        | ((n & 0x0000000000FF0000ul) << 24)
-        | ((n & 0x000000000000FF00ul) << 40)
-        | ( n                         << 56);
-}
-#endif /* SIZEOF_UNSIGNED_LONG */
-
-/*****************************************************************************/
-
-int main( int argc, char *argv[] ) {
-  me = basename( argv[0] );
-  parse_options( argc, argv );
-
-  if ( search_buf )
-    search_len = strlen( search_buf );
-  else if ( search_endian ) {
-    search_len = prep_search_number( &search_number );
-    search_buf = (char*)&search_number;
-  }
-
-  if ( search_buf )
-    set_match_color();
-  dump();
-  fclose( file );
-  exit( EXIT_OK );
-}
 
 /*****************************************************************************/
 
@@ -197,32 +83,7 @@ int main( int argc, char *argv[] ) {
 #define COLOR_ON()  COLOR_ON_IF( matches )
 #define COLOR_OFF() COLOR_OFF_IF( matches )
 
-/**
- * Calls \c realloc(3) and checks for failure.
- * If reallocation fails, prints an error message and exits.
- *
- * @param p The pointer to reallocate.  If NULL, new memory is allocated.
- * @param size The number of bytes to allocate.
- * @return Returns a pointer to the allocated memory.
- */
-void* check_realloc( void *p, size_t size ) {
-  void *r;
-  /*
-   * Autoconf, 5.5.1:
-   *
-   * realloc
-   *    The C standard says a call realloc(NULL, size) is equivalent to
-   *    malloc(size), but some old systems don't support this (e.g., NextStep).
-   */
-  if ( !size )
-    size = 1;
-  r = p ? realloc( p, size ) : malloc( size );
-  if ( !r )
-    PERROR_EXIT( OUT_OF_MEMORY );
-  return r;
-}
-
-static void dump() {
+int main( int argc, char *argv[] ) {
   static char const *const offset_fmt_printf[] = {
     "%016llu: ",                        /* decimal */
     "%016llX: ",                        /* hex */
@@ -236,12 +97,14 @@ static void dump() {
   bool matches_prev = false;
   size_t i;
 
-  kmp_value const *kmp_values;
-  uint8_t *match_buf;                   /* not NULL-terminated */
+  kmp_value *kmp_values;
+  uint8_t *match_buf;                   /* working storage for match_byte() */
+
+  init( argc, argv );
 
   if ( search_len ) {
-    kmp_values = kmp_init( search_buf, search_len );
-    match_buf = check_realloc( NULL, search_len );
+    kmp_values = freelist_add( kmp_init( search_buf, search_len ), &free_head );
+    match_buf = freelist_add( check_realloc( NULL, search_len ), &free_head );
   } else {
     kmp_values = NULL;
     match_buf = NULL;
@@ -302,53 +165,49 @@ ascii:  COLOR_OFF();
     }
   } /* while */
 
-  free( (void*)kmp_values );
-  free( match_buf );
+  exit( EXIT_OK );
 }
 
-static void fskip( size_t bytes_to_skip, FILE *file ) {
-  char    buf[ 8192 ];
-  ssize_t bytes_read;
-  size_t  bytes_to_read = sizeof( buf );
+/*****************************************************************************/
 
-  while ( bytes_to_skip && !feof( file ) ) {
-    if ( bytes_to_read > bytes_to_skip )
-      bytes_to_read = bytes_to_skip;
-    bytes_read = fread( buf, 1, bytes_to_read, file );
-    if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": can not read: %s\n",
-        path_name, ERROR_STR
-      );
-    bytes_to_skip -= bytes_read;
-  } /* while */
+static void clean_up() {
+  freelist_free( free_head );
+  if ( file )
+    fclose( file );
 }
 
-static bool get_byte( uint8_t *pbyte ) {
-  if ( total_bytes_read < opt_max_bytes_to_read ) {
-    int const c = getc( file );
-    if ( c != EOF ) {
-      ++total_bytes_read;
-      assert( pbyte );
-      *pbyte = (uint8_t)c;
-      return true;
-    }
-    if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read byte failed: %s", path_name, ERROR_STR
-      );
+static void init( int argc, char *argv[] ) {
+  me = basename( argv[0] );
+  atexit( clean_up );
+  parse_options( argc, argv );
+
+  if ( search_buf )
+    search_len = strlen( search_buf );
+  else if ( search_endian ) {
+    if ( !search_len )                  /* default to smallest possible size */
+      search_len = ulong_len( search_number );
+    ulong_rearrange_bytes( &search_number, search_len, search_endian );
+    search_buf = (char*)&search_number;
   }
-  return false;
+
+  if ( search_buf )
+    set_match_color();
 }
 
-static inline void unget_byte( uint8_t byte ) {
-  if ( ungetc( byte, file ) == EOF )
-    PMESSAGE_EXIT( READ_ERROR,
-      "\"%s\": unget byte failed: %s", path_name, ERROR_STR
-    );
-  --total_bytes_read;
-}
-
+/**
+ * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
+ * string searching algorithm.
+ *
+ * For the small search patterns and there being no requirement for super-fast
+ * performance for this application, brute-force searching would have been
+ * fine.  However, KMP has the advantage of never having to back up within the
+ * string being searched which is a requirement when reading from stdin.
+ *
+ * @param pattern The search pattern to use.
+ * @param pattern_len The length of the pattern.
+ * @return Returns an array containing the values comprising the partial-match
+ * table.  The caller is responsible for freeing the array.
+ */
 static kmp_value* kmp_init( char const *pattern, size_t pattern_len ) {
   kmp_value *kmp_values;
   size_t i, j = 0;
@@ -373,7 +232,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   typedef enum {
     S_READING,                          /* just reading; not matching */
     S_MATCHING,                         /* matching search string */
-    S_MATCHING_2,
+    S_MATCHING_CONT,                    /* matching after a mismatch */
     S_MATCHED,                          /* a complete match */
     S_NOT_MATCHED,                      /* didn't match after all */
     S_DONE                              /* no more input */
@@ -384,7 +243,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   static size_t buf_drain;
   static size_t kmp;
 
-  uint8_t byte_copy;
+  uint8_t byte;
 
   assert( pbyte );
   assert( matches );
@@ -395,17 +254,18 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   for ( ;; ) {
     switch ( state ) {
 
-#define GOTO_STATE(S) { buf_pos = 0; state = (S); continue; }
+#define GOTO_STATE(S)       { buf_pos = 0; state = (S); continue; }
+#define MAYBE_NO_CASE(BYTE) ( opt_case_insensitive ? tolower( BYTE ) : (BYTE) )
+#define RETURN(BYTE)        BLOCK( *pbyte = (BYTE); return true; )
 
       case S_READING:
-        if ( !get_byte( pbyte ) )
+        if ( !get_byte( &byte, opt_max_bytes_to_read, file ) )
           GOTO_STATE( S_DONE );
         if ( !search_len )
-          return true;
-        byte_copy = opt_case_insensitive ? tolower( *pbyte ) : *pbyte;
-        if ( byte_copy != search_buf[0] )
-          return true;
-        buf[ 0 ] = *pbyte;
+          RETURN( byte );
+        if ( MAYBE_NO_CASE( byte ) != search_buf[0] )
+          RETURN( byte );
+        buf[ 0 ] = byte;
         kmp = 0;
         GOTO_STATE( S_MATCHING );
 
@@ -415,18 +275,18 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           buf_drain = buf_pos;
           GOTO_STATE( S_MATCHED );
         }
-      case S_MATCHING_2:
-        if ( !get_byte( pbyte ) ) {
+        /* no break; */
+      case S_MATCHING_CONT:
+        if ( !get_byte( &byte, opt_max_bytes_to_read, file ) ) {
           buf_drain = buf_pos;
           GOTO_STATE( S_NOT_MATCHED );
         }
-        byte_copy = opt_case_insensitive ? tolower( *pbyte ) : *pbyte;
-        if ( byte_copy == search_buf[ buf_pos ] ) {
-          buf[ buf_pos ] = *pbyte;
+        if ( MAYBE_NO_CASE( byte ) == search_buf[ buf_pos ] ) {
+          buf[ buf_pos ] = byte;
           state = S_MATCHING;
-          break;
+          continue;
         }
-        unget_byte( *pbyte );
+        unget_byte( byte, file );
         kmp = kmp_values[ buf_pos ];
         buf_drain = buf_pos - kmp;
         GOTO_STATE( S_NOT_MATCHED );
@@ -434,121 +294,64 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
       case S_MATCHED:
       case S_NOT_MATCHED:
         if ( buf_pos == buf_drain ) {
-          buf_pos = kmp ? kmp - 1 : 0;
-          state = kmp ? S_MATCHING : S_READING;
+          buf_pos = kmp;
+          state = buf_pos ? S_MATCHING_CONT : S_READING;
           continue;
         }
-        *pbyte = buf[ buf_pos++ ];
         *matches = state == S_MATCHED;
-        return true;
+        RETURN( buf[ buf_pos++ ] );
 
       case S_DONE:
         return false;
 
 #undef GOTO_STATE
+#undef MAYBE_NO_CASE
+#undef RETURN
 
     } /* switch */
   } /* for */
 }
 
-static FILE* open_file( char const *path_name, off_t offset ) {
-  FILE *file;
-  assert( path_name );
-  if ( (file = fopen( path_name, "r" )) == NULL )
-    PMESSAGE_EXIT( READ_OPEN,
-      "\"%s\": can not open: %s\n",
-      path_name, ERROR_STR
+static void check_number_size( size_t given_size, size_t actual_size,
+                               char opt ) {
+  if ( given_size < actual_size )
+    PMESSAGE_EXIT( USAGE,
+      "%lu: value for -%c option is too small for %lu; must be at least %lu\n",
+      given_size, opt, search_number, actual_size
     );
-  if ( offset && fseek( file, offset, SEEK_SET ) == -1 )
-    PMESSAGE_EXIT( SEEK_ERROR,
-      "\"%s\": can not seek to offset %ld: %s\n",
-      path_name, (long)offset, ERROR_STR
-    );
-  return file;
 }
 
-/**
- * Parses a string into an unsigned long offset.
- * Unlike \c strtoul(3):
- *  + Insists that \a s is non-negative.
- *  + May be followed by one of \c b, \c k, or \c m
- *    for 512-byte blocks, kilobytes, and megabytes, respectively.
- *
- * @param s The NULL-terminated string to parse.
- * @return Returns the parsed offset.
- */
-static unsigned long parse_offset( char const *s ) {
-  char *end = NULL;
-  unsigned long n;
-  assert( s );
-
-  s = skip_ws( s );
-  if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
-    return false;
-
-  errno = 0;
-  n = strtoul( s, &end, 0 );
-  if ( end == s || errno == ERANGE )
-    goto error;
-  if ( end[0] ) {                       /* possibly 'b', 'k', or 'm' */
-    if ( end[1] )                       /* not a single char */
-      goto error;
-    switch ( end[0] ) {
-      case 'b': n *=         512; break;
-      case 'k': n *=        1024; break;
-      case 'm': n *= 1024 * 1024; break;
-      default : goto error;
-    } /* switch */
-  }
-  return n;
-error:
-  PMESSAGE_EXIT( USAGE, "\"%s\": invalid offset\n", s );
+static void options_mutually_exclusive( char const *opt1, char const *opt2 ) {
+  PMESSAGE_EXIT( USAGE,
+    "-%s and -%s options are mutually exclusive\n", opt1, opt2
+  );
 }
 
-/**
- * Parses a string into an unsigned long.
- * Unlike \c strtoul(3), insists that \a s is entirely a non-negative number.
- *
- * @param s The NULL-terminated string to parse.
- * @param n A pointer to receive the parsed number.
- * @return Returns \c true only if \a s is entirely a non-negative number.
- */
-static bool parse_ul( char const *s, unsigned long *n ) {
-  unsigned long temp;
-  char *end = NULL;
-
-  s = skip_ws( s );
-  if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
-    return false;
-
-  errno = 0;
-  temp = strtoul( s, &end, 0 );
-  if ( end == s || *end || errno == ERANGE )
-    return false;
-
-  assert( n );
-  *n = temp;
-  return true;
-}
-
-static unsigned long parse_ul_or_exit( char const *s ) {
-  unsigned long n;
-  if ( !parse_ul( s, &n ) )
-    PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
-  return n;
+static void option_required( char const *opt, char const *req ) {
+  bool const opt_multiple = strlen( opt ) > 1;
+  bool const req_multiple = strlen( req ) > 1;
+  PMESSAGE_EXIT( USAGE,
+    "-%s: option%s require%s -%s option%s to be given also\n",
+    opt, (opt_multiple ? "s" : ""), (opt_multiple ? "" : "s"),
+    req, (req_multiple ? "s" : "")
+  );
 }
 
 static void parse_options( int argc, char *argv[] ) {
   int         opt;                      /* command-line option */
-  char const  opts[] = "de:E:hij:N:os:v";
+  char const  opts[] = "b:B:de:E:hij:N:os:v";
+
+  size_t size_in_bits = 0, size_in_bytes = 0;
 
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
+      case 'b': size_in_bits = parse_ul( optarg );              break;
+      case 'B': size_in_bytes = parse_ul( optarg );             break;
       case 'd': opt_offset_fmt = OFMT_DEC;                      break;
-      case 'e': search_number = parse_ul_or_exit( optarg );
+      case 'e': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_LITTLE;                  break;
-      case 'E': search_number = parse_ul_or_exit( optarg );
+      case 'E': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_BIG;                     break;
       case 'h': opt_offset_fmt = OFMT_HEX;                      break;
       case 'i': opt_case_insensitive = true;                    break;
@@ -563,16 +366,63 @@ static void parse_options( int argc, char *argv[] ) {
   argc -= optind, argv += optind - 1;
 
   if ( search_endian && search_buf )
-    PMESSAGE_EXIT( USAGE,
-      "-[%c%c] and -%c: options are mutually exclusive\n", 'e', 'E', 's'
-    );
+    options_mutually_exclusive( "eE", "s" );
 
   if ( opt_case_insensitive ) {
     if ( !search_buf )
-      PMESSAGE_EXIT( USAGE,
-        "-%c: option requires -%c option to be given also\n", 'i', 's'
-      );
+      option_required( "i", "s" );
     tolower_s( search_buf );
+  }
+
+  if ( size_in_bits && size_in_bytes )
+    options_mutually_exclusive( "b", "B" );
+
+  if ( size_in_bits ) {
+    if ( !search_endian )
+      option_required( "b", "eE" );
+    switch ( size_in_bits ) {
+      case  8:
+      case 16:
+      case 32:
+#if SIZEOF_UNSIGNED_LONG == 8
+      case 64:
+#endif /* SIZEOF_UNSIGNED_LONG */
+        search_len = size_in_bits * 8;
+        break;
+      default:
+        PMESSAGE_EXIT( USAGE,
+          "%lu: invalid value for -%c option; must be one of: 8, 16, 32"
+#if SIZEOF_UNSIGNED_LONG == 8
+          ", 64"
+#endif /* SIZEOF_UNSIGNED_LONG */
+          "\n", size_in_bits, 'b'
+        );
+    } /* switch */
+    check_number_size( size_in_bits, ulong_len( search_number ) * 8, 'b' );
+  }
+
+  if ( size_in_bytes ) {
+    if ( !search_endian )
+      option_required( "B", "eE" );
+    switch ( size_in_bytes ) {
+      case 1:
+      case 2:
+      case 4:
+#if SIZEOF_UNSIGNED_LONG == 8
+      case 8:
+#endif /* SIZEOF_UNSIGNED_LONG */
+        search_len = size_in_bytes;
+        break;
+      default:
+        PMESSAGE_EXIT( USAGE,
+          "%lu: invalid value for -%c option; must be one of: 1, 2, 4"
+#if SIZEOF_UNSIGNED_LONG == 8
+          ", 8"
+#endif /* SIZEOF_UNSIGNED_LONG */
+          "\n", size_in_bytes, 'B'
+        );
+    } /* switch */
+    check_number_size( size_in_bytes, ulong_len( search_number ), 'B' );
   }
 
   switch ( argc ) {
@@ -613,52 +463,6 @@ static void parse_options( int argc, char *argv[] ) {
     exit( EXIT_OK );
 }
 
-static size_t prep_search_number( unsigned long *n ) {
-  size_t const len = byte_len( *n );
-  switch ( search_endian ) {
-#ifdef WORDS_BIGENDIAN
-
-    case ENDIAN_BIG:
-      /* move bytes to start of buffer */
-      *n <<= (sizeof( unsigned long ) - len) * 8;
-      break;
-
-    case ENDIAN_LITTLE:
-      switch ( len ) {
-        case 1: /* do nothing */    break;
-        case 2: *n = swap_16( *n ); break;
-        case 4: *n = swap_32( *n ); break;
-#if SIZEOF_UNSIGNED_LONG == 8
-        case 8: *n = swap_64( *n ); break;
-#endif /* SIZEOF_UNSIGNED_LONG */
-      } /* switch */
-      break;
-
-#else /* words are little endian */
-
-    case ENDIAN_BIG:
-      switch ( len ) {
-        case 1: /* do nothing */    break;
-        case 2: *n = swap_16( *n ); break;
-        case 4: *n = swap_32( *n ); break;
-#if SIZEOF_UNSIGNED_LONG == 8
-        case 8: *n = swap_64( *n ); break;
-#endif /* SIZEOF_UNSIGNED_LONG */
-      } /* switch */
-      break;
-
-    case ENDIAN_LITTLE:
-      /* do nothing */
-      break;
-#endif /* WORDS_BIGENDIAN */
-
-    case ENDIAN_UNSPECIFIED:            /* here only to suppress warning */
-      /* do nothing */
-      break;
-  } /* switch */
-  return len;
-}
-
 static void set_match_color() {
   static char const *const env_vars[] = {
     "AD_COLOR",
@@ -670,24 +474,11 @@ static void set_match_color() {
   for ( env_var = env_vars; *env_var; ++env_var ) {
     char const *const color = getenv( *env_var );
     unsigned long dont_care;            /* only care if it will parse */
-    if ( color && parse_ul( color, &dont_care ) ) {
+    if ( color && parse_ul_impl( color, &dont_care ) ) {
       search_match_color = color;
       break;
     }
   } /* for */
-}
-
-/**
- * Converts a string to lower-case in-place.
- *
- * @param s The NULL-terminated string to convert.
- * @return Returns \a s.
- */
-static char* tolower_s( char *s ) {
-  assert( s );
-  for ( ; *s; ++s )
-    *s = tolower( *s );
-  return s;
 }
 
 static void usage() {
@@ -698,4 +489,6 @@ static void usage() {
   );
   exit( EXIT_USAGE );
 }
+
+/*****************************************************************************/
 /* vim:set et sw=2 ts=2: */
