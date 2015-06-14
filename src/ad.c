@@ -316,7 +316,8 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( USAGE,
-      "%lu: value for -%c option is too small for %lu; must be at least %lu\n",
+      "\"%lu\": value for -%c option is too small for \"%lu\""
+      "; must be at least %lu\n",
       given_size, opt, search_number, actual_size
     );
 }
@@ -391,7 +392,7 @@ static void parse_options( int argc, char *argv[] ) {
         break;
       default:
         PMESSAGE_EXIT( USAGE,
-          "%lu: invalid value for -%c option; must be one of: 8, 16, 32"
+          "\"%lu\": invalid value for -%c option; must be one of: 8, 16, 32"
 #if SIZEOF_UNSIGNED_LONG == 8
           ", 64"
 #endif /* SIZEOF_UNSIGNED_LONG */
@@ -415,7 +416,7 @@ static void parse_options( int argc, char *argv[] ) {
         break;
       default:
         PMESSAGE_EXIT( USAGE,
-          "%lu: invalid value for -%c option; must be one of: 1, 2, 4"
+          "\"%lu\": invalid value for -%c option; must be one of: 1, 2, 4"
 #if SIZEOF_UNSIGNED_LONG == 8
           ", 8"
 #endif /* SIZEOF_UNSIGNED_LONG */
