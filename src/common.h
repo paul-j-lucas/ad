@@ -40,7 +40,6 @@ enum endian {
 };
 typedef enum endian endian_t;
 
-
 /*****************************************************************************/
 
 #endif /* ad_common_H */
