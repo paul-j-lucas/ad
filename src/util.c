@@ -220,29 +220,47 @@ error:
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid offset\n", s );
 }
 
-unsigned long parse_ul( char const *s ) {
-  unsigned long n;
-  if ( !parse_ul_impl( s, &n ) )
-    PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
-  return n;
+bool parse_sgr( char const *sgr_color ) {
+  if ( !sgr_color )
+    return false;
+  for ( ;; ) {
+    char *end;
+    unsigned long n;
+
+    if ( !isdigit( *sgr_color ) )
+      return false;
+    errno = 0;
+    n = strtoul( sgr_color, &end, 10 );
+    if ( errno || n > 255 )
+      return false;
+    switch ( *end ) {
+      case '\0':
+        return true;
+      case ';':
+        sgr_color = end + 1;
+        continue;
+      default:
+        return false;
+    } /* switch */
+  } /* for */
 }
 
-bool parse_ul_impl( char const *s, unsigned long *n ) {
-  unsigned long temp;
+unsigned long parse_ul( char const *s ) {
+  unsigned long n;
   char *end = NULL;
 
   s = skip_ws( s );
   if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
-    return false;
+    goto error;
 
   errno = 0;
-  temp = strtoul( s, &end, 0 );
-  if ( end == s || *end || errno == ERANGE )
-    return false;
+  n = strtoul( s, &end, 0 );
+  if ( errno || end == s || *end )
+    goto error;
 
-  assert( n );
-  *n = temp;
   return true;
+error:
+  PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
 }
 
 char* tolower_s( char *s ) {

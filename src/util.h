@@ -56,8 +56,7 @@ typedef bool _Bool;
 
 #define ERROR_STR           strerror( errno )
 
-#define PERROR_EXIT(STATUS) \
-  BLOCK( perror( me ); exit( EXIT_##STATUS ); )
+#define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( fprintf( stderr, "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
@@ -67,6 +66,9 @@ typedef bool _Bool;
 
 #define PUTCHAR(C) \
   BLOCK( if ( putchar( C ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+
+#define SGR_START(SGR)      PRINTF( "\33[%sm\33[K", (SGR) )
+#define SGR_END()           PRINTF( "\33[m\33[K" )
 
 /*****************************************************************************/
 
@@ -144,6 +146,18 @@ FILE* open_file( char const *path_name, off_t offset );
 unsigned long parse_offset( char const *s );
 
 /**
+ * Parses an SGR (Select Graphic Rendition) value that matches the regular
+ * expression of \c n(;n)* or a semicolon-separated list of numbers in the
+ * range 0-255.
+ *
+ * See: http://en.wikipedia.org/wiki/ANSI_escape_code
+ *
+ * @param sgr_color The NULL-terminated allegedly SGR string to parse.
+ * @return Returns \c true only only if \a s contains a valid SGR value.
+ */
+bool parse_sgr( char const *sgr_color );
+
+/**
  * Parses a string into an unsigned long.
  * Unlike \c strtoul(3), insists that \a s is entirely a non-negative number.
  *
@@ -153,16 +167,6 @@ unsigned long parse_offset( char const *s );
  * number or prints an error message and exits if there was an error.
  */
 unsigned long parse_ul( char const *s );
-
-/**
- * Parses a string into an unsigned long.
- * Unlike \c strtoul(3), insists that \a s is entirely a non-negative number.
- *
- * @param s The NULL-terminated string to parse.
- * @param n A pointer to receive the parsed number.
- * @return Returns \c true only if \a s is entirely a non-negative number.
- */
-bool parse_ul_impl( char const *s, unsigned long *n );
 
 /**
  * Converts a string to lower-case in-place.
