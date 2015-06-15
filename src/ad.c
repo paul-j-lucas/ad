@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit(), strtoul(), ... */
 #include <string.h>                     /* for str...() */
+#include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
 #include <unistd.h>                     /* for getopt() */
 
@@ -51,6 +52,7 @@ typedef enum offset_fmt offset_fmt_t;
 char const*           me;               /* executable name */
 char const*           path_name = "<stdin>";
 
+static bool           colorize;         /* colorize the output? */
 static FILE*          file;             /* file to read from */
 static free_node_t*   free_head;        /* linked list of stuff to free */
 static off_t          offset;           /* curent offset into file */
@@ -69,6 +71,7 @@ static char const*    sgr_hex_match;    /* hex match color */
 static char const*    sgr_ascii_match;  /* ASCII match color */
 
 /* local functions */
+static bool           auto_color( void );
 static void           init( int, char*[] );
 static kmp_value*     kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_value const*, uint8_t* );
@@ -331,7 +334,7 @@ static void option_required( char const *opt, char const *req ) {
 
 static void parse_options( int argc, char *argv[] ) {
   int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:de:E:hij:N:os:S:v";
+  char const  opts[] = "b:B:cCde:E:hij:N:os:S:v";
 
   size_t size_in_bits = 0, size_in_bytes = 0;
 
@@ -340,6 +343,8 @@ static void parse_options( int argc, char *argv[] ) {
     switch ( opt ) {
       case 'b': size_in_bits = parse_ul( optarg );              break;
       case 'B': size_in_bytes = parse_ul( optarg );             break;
+      case 'c': colorize = auto_color();                        break;
+      case 'C': colorize = true;                                break;
       case 'd': opt_offset_fmt = OFMT_DEC;                      break;
       case 'e': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_LITTLE;                  break;
@@ -472,6 +477,8 @@ static void usage( void ) {
                    ", 8"
 #endif /* SIZEOF_UNSIGNED_LONG */
                    " [default: auto].\n"
+"       -c         Automatically dump output in color (or not).\n"
+"       -C         Always dump output in color.\n"
 "       -d         Print offset in decimal.\n"
 "       -e number  Search for little-endian number.\n"
 "       -E number  Search for big-endian number.\n"
@@ -499,6 +506,33 @@ struct color_cap {
   void (*cap_set_func)( char const* );  /* ... OR function to call */
 };
 typedef struct color_cap color_cap_t;
+
+/**
+ * Automatically determines whether we should emit escape sequences for color.
+ *
+ * @return Returns \c true only if we should do color.
+ */
+static bool auto_color( void ) {
+  struct stat stdout_stat;
+  FSTAT( STDOUT_FILENO, &stdout_stat );
+  /*
+   * We want to do color only we're writing either to a TTY or to a pipe (so
+   * the common case of piping to less(1) will still show color) but NOT when
+   * writing to a file because we don't want the escape sequences polluting it.
+   *
+   * Results from testing using isatty(3) and fstat(3) are given in the
+   * following table:
+   *
+   *    COMMAND   Should? isatty ISCHR ISFIFO ISREG
+   *    ========= ======= ====== ===== ====== =====
+   *    ad           Y      Y      Y     N      N
+   *    ad > file    N      N      N     N    >>Y<<
+   *    ad | less    Y      N      N     Y      N
+   *
+   * Hence, we want to do color _except_ when ISREG=Y.
+   */
+  return !S_ISREG( stdout_stat.st_mode );
+}
 
 /**
  * Sets the SGR color for the given capability.
@@ -610,6 +644,9 @@ static void init( int argc, char *argv[] ) {
   me = basename( argv[0] );
   atexit( clean_up );
   parse_options( argc, argv );
+
+  if ( search_buf || search_endian )
+    colorize = true;
 
   if ( search_buf )
     search_len = strlen( search_buf );

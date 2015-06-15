@@ -56,6 +56,9 @@ typedef bool _Bool;
 
 #define ERROR_STR           strerror( errno )
 
+#define FSTAT(...) \
+  BLOCK( if ( fstat( __VA_ARGS__ ) < 0 ) PERROR_EXIT( STAT_ERROR ); )
+
 #define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
@@ -147,7 +150,7 @@ unsigned long parse_offset( char const *s );
 
 /**
  * Parses an SGR (Select Graphic Rendition) value that matches the regular
- * expression of \c n(;n)* or a semicolon-separated list of numbers in the
+ * expression of \c n(;n)* or a semicolon-separated list of integers in the
  * range 0-255.
  *
  * See: http://en.wikipedia.org/wiki/ANSI_escape_code

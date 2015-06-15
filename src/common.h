@@ -32,6 +32,7 @@
 #define EXIT_READ_ERROR     11
 #define EXIT_WRITE_ERROR    13
 #define EXIT_SEEK_ERROR     20
+#define EXIT_STAT_ERROR     21
 
 enum endian {
   ENDIAN_UNSPECIFIED,

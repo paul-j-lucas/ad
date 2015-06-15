@@ -18,26 +18,21 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "May 30, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "June 15, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
 .B ad
-.RB [ \-dhov ]
-[\f3+\f1\f3offset\f1]
-[\f3\-j\fP \f2offset\fP]
-[\f3\-N\fP \f2length\fP]
-[\f2file\f1]
+.RI [ options ]
+[\f3+\f2offset\f1]
+.RI [ file ]
 .br
 .B ad
-.RB [ \-dhov ]
-[\f3\-j\fP \f2offset\fP]
-[\f3\-N\fP \f2length\fP]
-[\f2file\f1]
+.RI [ options ]
+.RI [ file ]
 [[\f3+\f1]\f2offset\f1]
 .SH DESCRIPTION
-.B
-ad
+.B ad
 dumps the bytes of a file in hexadecimal
 and also prints their corresponding ASCII characters
 (for those bytes for which
@@ -46,12 +41,26 @@ returns true)
 to standard output.
 For those bytes that are not printable,
 prints `\f(CW.\f1' (dot) instead.
+.PP
+.B ad
+is similar to both
+.BR hextdump (1)
+and
+.BR od (1)
+except that
+.B ad
+can also highlight matching strings or numbers
+similar to
+.BR grep (1).
 .SH OPTIONS
-.TP 8
-\f3+\f2n\f1[\f2u\f1]
-Skips reading
+An option argument
 .I n
-bytes of data before dumping.
+means
+.IR "unsigned integer"
+and
+.I s
+means
+.IR string .
 If
 .I n
 starts with either
@@ -61,6 +70,11 @@ or
 then
 .I n
 is interpreted as hexedecimal.
+.TP 8
+\f3+\f2n\f1[\f2u\f1]
+Skips reading
+.I n
+bytes of data before dumping.
 If specified, the unit
 .I u
 may be one of
@@ -72,12 +86,83 @@ or
 .B m
 (megabytes).
 .TP
+.BI \-b " n"
+Sets the search number size to
+.I n
+bits
+(and therefore the number of bytes is set to
+.I n
+divided by 8).
+Must be one of 8, 16, 32, or 64
+on systems that have 64-bit long integers
+(default is automatically calculated
+based on the argument to either the
+.B \-e
+or
+.B \-E
+option).
+.TP
+.BI \-B " n"
+Same as the
+.B \-b
+option
+but in
+.I n
+bytes.
+Must be one of 1, 2, 4, or 8
+on systems that have 64-bit long integers.
+.TP
+.B \-c
+Automatically dumps output in color (or not)
+depending on whether standard output
+is writing to a file:
+if it is,
+output is
+.I not
+in color.
+.TP
+.B \-C
+Always dumps output in color.
+.TP
 .B \-d
 Prints offsets in decimal.
+.TP
+.BI \-e " n"
+Searches for the number
+.I n
+in little-endian order
+and highlights matches.
+.TP
+.B ""
+The number of bytes to search for is automatically calculated
+as the minimum number of bytes needed to represent
+.IR n .
+For example,
+if
+.I n
+were in the range 0\-255,
+the number of bytes would be 1;
+if
+.I n
+were in the range 256\-65535,
+the number of bytes would be 2;
+and so on.
+.TP
+.BI \-E " n"
+Same as the
+.B \-e
+option
+but in big-endian order.
 .TP
 .B \-h
 Prints offsets in hexadecimal
 (the default).
+.TP
+.B \-i
+Performs a case-insensitive search
+of the string specified by the
+.B \-s
+option.
 .TP
 \f3\-j\f1 \f2n\f1[\f2u\f1]
 Same as the
@@ -94,6 +179,22 @@ bytes.
 .B \-o
 Prints offsets in octal.
 .TP
+.BI \-s " s"
+Searches for the string
+.I s
+and highlights matches.
+.TP
+.BI \-S " s"
+Searches for the string
+.I s
+in a case-insensitive manner
+and highlights matches.
+(This option is the same as specifying both the
+.B \-s
+and
+.B \-i
+options.)
+.TP
 .B \-v
 Prints the version number to
 .I stderr
@@ -104,17 +205,141 @@ and exit.
 Success.
 .IP 1
 Error in command-line.
+.IP 3
+Out of memory.
 .IP 10
 Error opening file for reading.
 .IP 11
 Read error.
-.IP 12
+.IP 13
+Write error.
+.IP 20
 Seek error.
 .PD
+.SH ENVIRONMENT
+.TP 4
+.B AD_COLORS
+This variable specifies the colors and other attributes
+used to highlight various parts of the output
+in a manner similar to the
+.B GREP_COLORS
+variable
+used by
+.BR grep .
+.TP
+.B ""
+As with
+.BR grep ,
+the value is comprised of a colon-separated sequence of capabilities.
+Each capability is of the form
+.IR name [= SGR ]
+where
+.I name
+is a two-character capability name
+and
+.IR SGR ,
+if present,
+is a
+``Select Graphic Rendition''
+value
+that is a semicolon-separated list of integers
+in the range 0\-255.
+An example SGR value is \f(CW31;1\fP
+that specifies a bright red foreground color
+on the terminal's default background color.
+.TP
+.B ""
+Capability names in upper-case are unique to
+.BR ad ;
+those in lower-case are upwards compatibile with
+.BR grep .
+.RS
+.TP 8
+.BI MA= SGR
+SGR for matched ASCII characters.
+(Default is TODO.)
+.TP
+.BI MH= SGR
+SGR for matched hexadecimal.
+.TP
+.BI MB= SGR
+SGR for both matched ASCII and hexadecimal.
+(This capability is the same as specifying both the
+.B MA
+and
+.B MH
+capabilities
+with the same
+.IR SGR ).
+.TP
+.BI mt= SGR
+Same as
+.B MB
+for compatibility with
+.BR grep .
+.TP
+.BI bn= SGR
+SGR for the byte offset
+(as with
+.BR grep ).
+.TP
+.BI se= SGR
+SGR for the ``\f(CW:\fP'' separator
+(as with
+.BR grep ).
+.RE
+.TP
+.B ""
+Other
+.B grep
+capabilities, if present, are ignored
+because they don't apply in
+.BR ad .
+.TP
+.B GREP_COLOR
+This variable is used for compatibility with older versions of
+.BR grep .
+It specifies the colors and other attributes
+used to highlight matched bytes.
+As with
+.BR grep ,
+it is deprecated in favor of
+.BR GREP_COLORS .
+It can only specify the colors used to highlight
+both the matching bytes ASCII and hexadecimal bytes
+(same as the
+.B MB
+capability).
+This variable is used only when it contains a valid SGR value
+and both
+.B AD_COLORS
+and
+.B GREP_COLORS
+are either unset or empty.
+.TP
+.B GREP_COLORS
+This variable is used for compatibility with newer versions of
+.BR grep .
+It is used exactly as
+.B AD_COLORS
+but only when
+.B AD_COLORS
+is either unset or empty.
+Capabilities in
+.B grep
+that are unsupported by
+.B ad
+(because they don't apply)
+are ignored.
 .SH AUTHOR
 Paul J. Lucas
 .RI < paul@lucasmail.org >
 .SH SEE ALSO
+.BR grep (1),
 .BR hexdump (1),
 .BR od (1),
 .BR isprint (3)
+.PP
+.nf
+.I "ANSI escape code,"
+<https://en.wikipedia.org/wiki/ANSI_escape_code>
