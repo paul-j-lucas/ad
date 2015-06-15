@@ -331,7 +331,7 @@ static void option_required( char const *opt, char const *req ) {
 
 static void parse_options( int argc, char *argv[] ) {
   int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:de:E:hij:N:os:v";
+  char const  opts[] = "b:B:de:E:hij:N:os:S:v";
 
   size_t size_in_bits = 0, size_in_bytes = 0;
 
@@ -346,6 +346,7 @@ static void parse_options( int argc, char *argv[] ) {
       case 'E': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_BIG;                     break;
       case 'h': opt_offset_fmt = OFMT_HEX;                      break;
+      case 'S': search_buf = optarg;                      /* no break; */
       case 'i': opt_case_insensitive = true;                    break;
       case 'j': offset += parse_offset( optarg );               break;
       case 'N': opt_max_bytes_to_read = parse_offset( optarg ); break;
