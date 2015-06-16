@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "June 15, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "June 16, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -84,7 +84,10 @@ may be one of
 (kilobytes),
 or
 .B m
-(megabytes).
+(megabytes),
+and
+.I n
+is interpreted accordingly.
 .TP
 .BI \-b " n"
 Sets the search number size to
@@ -94,13 +97,13 @@ bits
 .I n
 divided by 8).
 Must be one of 8, 16, 32, or 64
-on systems that have 64-bit long integers
-(default is automatically calculated
+(on systems that have 64-bit long integers).
+The default is automatically calculated
 based on the argument to either the
 .B \-e
 or
 .B \-E
-option).
+option.
 .TP
 .BI \-B " n"
 Same as the
@@ -110,28 +113,71 @@ but in
 .I n
 bytes.
 Must be one of 1, 2, 4, or 8
-on systems that have 64-bit long integers.
+(on systems that have 64-bit long integers).
 .TP
-.B \-c
-Automatically dumps output in color (or not)
-depending on whether standard output
-is writing to a file:
-if it is,
-output is
+.BI \-c " w"
+Sets when to colorize output to
+.I w
+(which is case-insensitive).
+(See the
+.B AD_COLORS
+environment variable about colorization.)
+The choices for
+.I w
+are:
+.RS
+.TP 10
+.B always
+Always colorize.
+.TP
+.B isatty
+Colorize only when standard output is connected to a TTY
+(terminal)
+and the TERM environment variable
+is not empty and not equal to
+.BR dumb .
+(This is equivalent to
+.BR grep 's
+.B --color=auto
+option.)
+.TP
+.B not_file
+Colorize only when
 .I not
-in color.
+writing to a regular file
+(hence writing to a TTY or pipe)
+and the TERM environment variable
+is not empty and not equal to
+.BR dumb .
 .TP
-.B \-C
-Always dumps output in color.
+.B ""
+This is more useful than
+.B isatty
+since it allows color output to be piped to
+.BR less (1)
+and still display in color since
+.B less
+understands
+.I SGR
+(``Select Graphic Rendition'')
+ASCII terminal escape sequences
+that produce color.
+.TP
+.B never
+Never colorize.
+.RE
+.TP
+.B ""
+The default is
+.BR not_file .
 .TP
 .B \-d
 Prints offsets in decimal.
 .TP
 .BI \-e " n"
-Searches for the number
+Hightlights all occurrences of the number
 .I n
-in little-endian order
-and highlights matches.
+in little-endian byte order.
 .TP
 .B ""
 The number of bytes to search for is automatically calculated
@@ -152,7 +198,7 @@ and so on.
 Same as the
 .B \-e
 option
-but in big-endian order.
+but in big-endian byte order.
 .TP
 .B \-h
 Prints offsets in hexadecimal
@@ -215,6 +261,9 @@ Read error.
 Write error.
 .IP 20
 Seek error.
+.IP 21
+.B stat
+error.
 .PD
 .SH ENVIRONMENT
 .TP 4
@@ -275,8 +324,8 @@ with the same
 .BI mt= SGR
 Same as
 .B MB
-for compatibility with
-.BR grep .
+(for compatibility with
+.BR grep ).
 .TP
 .BI bn= SGR
 SGR for the byte offset
@@ -295,6 +344,11 @@ Other
 capabilities, if present, are ignored
 because they don't apply in
 .BR ad .
+The term ``color'' is used loosely.
+In addition to colors,
+other character attributes
+such as bold, underlined, reverse video, etc.,
+may be possible depending on the capabilities of your terminal.
 .TP
 .B GREP_COLOR
 This variable is used for compatibility with older versions of
@@ -331,6 +385,11 @@ that are unsupported by
 .B ad
 (because they don't apply)
 are ignored.
+.TP
+.B TERM
+The type of the terminal on which
+.B ad
+is being run.
 .SH AUTHOR
 Paul J. Lucas
 .RI < paul@lucasmail.org >
@@ -338,6 +397,7 @@ Paul J. Lucas
 .BR grep (1),
 .BR hexdump (1),
 .BR od (1),
+.BR less (1),
 .BR isprint (3)
 .PP
 .nf
