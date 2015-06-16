@@ -107,6 +107,13 @@ void* check_realloc( void *p, size_t size ) {
   return r;
 }
 
+char* check_strdup( char const *s ) {
+  char *const t = strdup( s );
+  if ( !t )
+    PERROR_EXIT( OUT_OF_MEMORY );
+  return t;
+}
+
 void* freelist_add( void *p, free_node_t **pphead ) {
   free_node_t *new_node;
   assert( pphead );

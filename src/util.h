@@ -92,6 +92,15 @@ typedef struct free_node free_node_t;
 void* check_realloc( void *p, size_t size );
 
 /**
+ * Calls \c strdup(3) and checks for failure.
+ * If memory allocation fails, prints an error message and exits.
+ *
+ * @param s The NULL-terminated string to duplicate.
+ * @return Returns a copy of \a s.
+ */
+char* check_strdup( char const *s );
+
+/**
  * Adds a pointer to the head of the free-list.
  *
  * @param p The pointer to add.
