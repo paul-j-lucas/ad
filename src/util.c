@@ -108,10 +108,11 @@ void* check_realloc( void *p, size_t size ) {
 }
 
 char* check_strdup( char const *s ) {
-  char *const t = strdup( s );
-  if ( !t )
+  char *dup;
+  assert( s );
+  if ( !(dup = strdup( s )) )
     PERROR_EXIT( OUT_OF_MEMORY );
-  return t;
+  return dup;
 }
 
 void* freelist_add( void *p, free_node_t **pphead ) {
@@ -202,7 +203,6 @@ FILE* open_file( char const *path_name, off_t offset ) {
 unsigned long parse_offset( char const *s ) {
   char *end = NULL;
   unsigned long n;
-  assert( s );
 
   s = skip_ws( s );
   if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
@@ -210,7 +210,7 @@ unsigned long parse_offset( char const *s ) {
 
   errno = 0;
   n = strtoul( s, &end, 0 );
-  if ( end == s || errno == ERANGE )
+  if ( errno || end == s )
     goto error;
   if ( end[0] ) {                       /* possibly 'b', 'k', or 'm' */
     if ( end[1] )                       /* not a single char */
@@ -253,27 +253,23 @@ bool parse_sgr( char const *sgr_color ) {
 }
 
 unsigned long parse_ul( char const *s ) {
-  unsigned long n;
-  char *end = NULL;
-
   s = skip_ws( s );
-  if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
-    goto error;
-
-  errno = 0;
-  n = strtoul( s, &end, 0 );
-  if ( errno || end == s || *end )
-    goto error;
-
-  return true;
-error:
+  if ( *s && *s != '-') {               /* strtoul(3) wrongly allows '-' */
+    char *end = NULL;
+    unsigned long n;
+    errno = 0;
+    n = strtoul( s, &end, 0 );
+    if ( !errno && !*end )
+      return n;
+  }
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
 }
 
 char* tolower_s( char *s ) {
   assert( s );
-  for ( ; *s; ++s )
-    *s = tolower( *s );
+  char *t;
+  for ( t = s; *t; ++t )
+    *t = tolower( *t );
   return s;
 }
 
