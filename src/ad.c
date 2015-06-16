@@ -42,6 +42,14 @@
 
 typedef int kmp_value;
 
+enum colorize {
+  COLOR_NEVER,                          /* never colorize */
+  COLOR_ISATTY,                         /* colorize only if isatty(3) */
+  COLOR_NOT_ISREG,                      /* colorize only if !ISREG stdout */
+  COLOR_ALWAYS                          /* always colorize */
+};
+typedef enum colorize colorize_t;
+
 enum offset_fmt {
   OFMT_DEC,
   OFMT_HEX,
@@ -52,7 +60,6 @@ typedef enum offset_fmt offset_fmt_t;
 char const*           me;               /* executable name */
 char const*           path_name = "<stdin>";
 
-static bool           colorize;         /* colorize the output? */
 static FILE*          file;             /* file to read from */
 static free_node_t*   free_head;        /* linked list of stuff to free */
 static off_t          offset;           /* curent offset into file */
@@ -71,11 +78,16 @@ static char const*    sgr_hex_match;    /* hex match color */
 static char const*    sgr_ascii_match;  /* ASCII match color */
 
 /* local functions */
-static bool           auto_color( void );
 static void           init( int, char*[] );
 static kmp_value*     kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_value const*, uint8_t* );
+static bool           parse_grep_color( char const* );
+static bool           parse_grep_colors( char const* );
+static void           set_both_match( char const* );
+static bool           should_colorize( colorize_t );
 static void           usage( void );
+
+#define FREE_LATER(P) freelist_add( (P), &free_head )
 
 /*****************************************************************************/
 
@@ -110,8 +122,8 @@ int main( int argc, char *argv[] ) {
   init( argc, argv );
 
   if ( search_len ) {
-    kmp_values = freelist_add( kmp_init( search_buf, search_len ), &free_head );
-    match_buf = freelist_add( check_realloc( NULL, search_len ), &free_head );
+    kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
+    match_buf = FREE_LATER( check_realloc( NULL, search_len ) );
   } else {
     kmp_values = NULL;
     match_buf = NULL;
@@ -304,7 +316,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   } /* for */
 }
 
-/*****************************************************************************/
+/********** option parsing ***************************************************/
 
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -332,19 +344,39 @@ static void option_required( char const *opt, char const *req ) {
   );
 }
 
-static void parse_options( int argc, char *argv[] ) {
-  int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:cCde:E:hij:N:os:S:v";
+static colorize_t parse_colorize( char const *s ) {
+  static char const *const colorize_strs[] = {
+    "never",
+    "isatty",
+    "not_isreg",
+    "always"
+  };
 
-  size_t size_in_bits = 0, size_in_bytes = 0;
+  char const *const t = tolower_s( FREE_LATER( check_strdup( s ) ) );
+  size_t i;
+
+  for ( i = 0; i < sizeof( colorize_strs ) / sizeof( char* ); ++i )
+    if ( strcmp( t, colorize_strs[i] ) == 0 )
+      return (colorize_t)i;
+
+  PMESSAGE_EXIT( USAGE,
+    "\"%s\": invalid value for -c option; must be one of: never, isatty, not_isreg, always\n",
+    s
+  );
+}
+
+static void parse_options( int argc, char *argv[] ) {
+  colorize_t  colorize = COLOR_NOT_ISREG;
+  int         opt;                      /* command-line option */
+  char const  opts[] = "b:B:c:de:E:hij:N:os:S:v";
+  size_t      size_in_bits = 0, size_in_bytes = 0;
 
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
       case 'b': size_in_bits = parse_ul( optarg );              break;
       case 'B': size_in_bytes = parse_ul( optarg );             break;
-      case 'c': colorize = auto_color();                        break;
-      case 'C': colorize = true;                                break;
+      case 'c': colorize = parse_colorize( optarg );            break;
       case 'd': opt_offset_fmt = OFMT_DEC;                      break;
       case 'e': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_LITTLE;                  break;
@@ -376,8 +408,6 @@ static void parse_options( int argc, char *argv[] ) {
     options_mutually_exclusive( "b", "B" );
 
   if ( size_in_bits ) {
-    if ( !search_endian )
-      option_required( "b", "eE" );
     switch ( size_in_bits ) {
       case  8:
       case 16:
@@ -396,12 +426,12 @@ static void parse_options( int argc, char *argv[] ) {
           "\n", size_in_bits, 'b'
         );
     } /* switch */
+    if ( !search_endian )
+      option_required( "b", "eE" );
     check_number_size( size_in_bits, ulong_len( search_number ) * 8, 'b' );
   }
 
   if ( size_in_bytes ) {
-    if ( !search_endian )
-      option_required( "B", "eE" );
     switch ( size_in_bytes ) {
       case 1:
       case 2:
@@ -420,7 +450,17 @@ static void parse_options( int argc, char *argv[] ) {
           "\n", size_in_bytes, 'B'
         );
     } /* switch */
+    if ( !search_endian )
+      option_required( "B", "eE" );
     check_number_size( size_in_bytes, ulong_len( search_number ), 'B' );
+  }
+
+  if ( should_colorize( colorize ) ) {
+    if ( !(parse_grep_colors( "AD_COLORS"   )
+        || parse_grep_colors( "GREP_COLORS" )
+        || parse_grep_color ( "GREP_COLOR"  )) ) {
+      set_both_match( SGR_MATCH_DEFAULT );
+    }
   }
 
   switch ( argc ) {
@@ -508,33 +548,6 @@ struct color_cap {
 typedef struct color_cap color_cap_t;
 
 /**
- * Automatically determines whether we should emit escape sequences for color.
- *
- * @return Returns \c true only if we should do color.
- */
-static bool auto_color( void ) {
-  struct stat stdout_stat;
-  FSTAT( STDOUT_FILENO, &stdout_stat );
-  /*
-   * We want to do color only we're writing either to a TTY or to a pipe (so
-   * the common case of piping to less(1) will still show color) but NOT when
-   * writing to a file because we don't want the escape sequences polluting it.
-   *
-   * Results from testing using isatty(3) and fstat(3) are given in the
-   * following table:
-   *
-   *    COMMAND   Should? isatty ISCHR ISFIFO ISREG
-   *    ========= ======= ====== ===== ====== =====
-   *    ad           Y      Y      Y     N      N
-   *    ad > file    N      N      N     N    >>Y<<
-   *    ad | less    Y      N      N     Y      N
-   *
-   * Hence, we want to do color _except_ when ISREG=Y.
-   */
-  return !S_ISREG( stdout_stat.st_mode );
-}
-
-/**
  * Sets the SGR color for the given capability.
  *
  * @param cap The color capability to set the color for.
@@ -575,11 +588,11 @@ static void set_both_match( char const *sgr_color ) {
  * to avoid conflict with grep.  Lower-case names are for grep compatibility.
  */
 static color_cap_t const color_caps[] = {
+  { "bn", &sgr_offset,      NULL           }, /* grep: byte offset */
   { "MA", &sgr_ascii_match, NULL           }, /* matched ASCII */
   { "MH", &sgr_hex_match,   NULL           }, /* matched hex */
   { "MB", NULL,             set_both_match }, /* matched both */
   { "mt", NULL,             set_both_match }, /* grep: matched both */
-  { "bn", &sgr_offset,      NULL           }, /* grep: byte offset */
   { "se", &sgr_sep,         NULL           }, /* grep: separator */
   { NULL, NULL,             NULL           }
 };
@@ -610,7 +623,7 @@ static bool parse_grep_colors( char const *env_name ) {
   bool set_something = false;
 
   if ( env_val ) {
-    char *const env_val_dup = strdup( env_val );
+    char *const env_val_dup = check_strdup( env_val );
     char *mutable_env_val = env_val_dup;
     char *cap_name_val;
 
@@ -632,6 +645,52 @@ static bool parse_grep_colors( char const *env_name ) {
   return set_something;
 }
 
+/**
+ * Determines whether we should emit escape sequences for color.
+ *
+ * @param c The colorize value.
+ * @return Returns \c true only if we should do color.
+ */
+static bool should_colorize( colorize_t c ) {
+  struct stat stdout_stat;
+  char const *term;
+
+  switch ( c ) {                        /* handle easy cases */
+    case COLOR_ALWAYS: return true;
+    case COLOR_NEVER : return false;
+    default          : break;
+  }
+
+  /*
+   * If TERM is unset, empty, or "dumb", color probably won't work.
+   */
+  term = getenv( "TERM" );
+  if ( !term || !*term || strcmp( term, "dumb" ) == 0 )
+    return false;
+
+  if ( c == COLOR_ISATTY )              /* emulate grep's --color=auto */
+    return isatty( STDOUT_FILENO );
+
+  /*
+   * We want to do color only we're writing either to a TTY or to a pipe (so
+   * the common case of piping to less(1) will still show color) but NOT when
+   * writing to a file because we don't want the escape sequences polluting it.
+   *
+   * Results from testing using isatty(3) and fstat(3) are given in the
+   * following table:
+   *
+   *    COMMAND   Should? isatty ISCHR ISFIFO ISREG
+   *    ========= ======= ====== ===== ====== =====
+   *    ad           T      T      T     F      F
+   *    ad > file    F      F      F     F    >>T<<
+   *    ad | less    T      F      F     T      F
+   *
+   * Hence, we want to do color _except_ when ISREG=T.
+   */
+  FSTAT( STDOUT_FILENO, &stdout_stat );
+  return !S_ISREG( stdout_stat.st_mode );
+}
+
 /*****************************************************************************/
 
 static void clean_up( void ) {
@@ -645,9 +704,6 @@ static void init( int argc, char *argv[] ) {
   atexit( clean_up );
   parse_options( argc, argv );
 
-  if ( search_buf || search_endian )
-    colorize = true;
-
   if ( search_buf )
     search_len = strlen( search_buf );
   else if ( search_endian ) {
@@ -655,12 +711,6 @@ static void init( int argc, char *argv[] ) {
       search_len = ulong_len( search_number );
     ulong_rearrange_bytes( &search_number, search_len, search_endian );
     search_buf = (char*)&search_number;
-  }
-
-  if ( !(parse_grep_colors( "AD_COLORS"   )
-      || parse_grep_colors( "GREP_COLORS" )
-      || parse_grep_color ( "GREP_COLOR"  )) ) {
-    set_both_match( SGR_MATCH_DEFAULT );
   }
 }
 
