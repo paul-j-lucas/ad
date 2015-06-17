@@ -37,7 +37,11 @@
 
 /*****************************************************************************/
 
-#define BUF_SIZE          16            /* bytes displayed on a line */
+#define LINE_BUF_SIZE     16            /* bytes displayed on a line */
+
+#define SGR_START         "\33[%sm"     /* start color sequence */
+#define SGR_END           "\33[m"       /* end color sequence */
+#define SGR_EL            "\33[K"       /* Erase in Line (EL) sequence */
 #define SGR_MATCH_DEFAULT "41"          /* default match color: red bg */
 
 typedef int kmp_value;
@@ -45,7 +49,7 @@ typedef int kmp_value;
 enum colorize {
   COLOR_NEVER,                          /* never colorize */
   COLOR_ISATTY,                         /* colorize only if isatty(3) */
-  COLOR_NOT_ISREG,                      /* colorize only if !ISREG stdout */
+  COLOR_NOT_FILE,                       /* colorize only if !ISREG stdout */
   COLOR_ALWAYS                          /* always colorize */
 };
 typedef enum colorize colorize_t;
@@ -57,33 +61,35 @@ enum offset_fmt {
 };
 typedef enum offset_fmt offset_fmt_t;
 
-char const*           me;               /* executable name */
-char const*           path_name = "<stdin>";
-
 static FILE*          file;             /* file to read from */
 static free_node_t*   free_head;        /* linked list of stuff to free */
+char const*           me;               /* executable name */
 static off_t          offset;           /* curent offset into file */
 static bool           opt_case_insensitive = false;
 static size_t         opt_max_bytes_to_read = SIZE_MAX;
 static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
+char const*           path_name = "<stdin>";
 
 static char*          search_buf;       /* not NULL-terminated when numeric */
 static endian_t       search_endian;    /* if searching for a number */
 static size_t         search_len;       /* number of bytes in search_buf */
 static unsigned long  search_number;    /* the number to search for */
 
+static char const*    sgr_start = SGR_START SGR_EL;
+static char const*    sgr_end   = SGR_END SGR_EL;
 static char const*    sgr_offset;       /* offset color */
 static char const*    sgr_sep;          /* separator color */
 static char const*    sgr_hex_match;    /* hex match color */
 static char const*    sgr_ascii_match;  /* ASCII match color */
 
 /* local functions */
+static void           cap_mt( char const* );
+static void           cap_ne( char const* );
 static void           init( int, char*[] );
 static kmp_value*     kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_value const*, uint8_t* );
 static bool           parse_grep_color( char const* );
 static bool           parse_grep_colors( char const* );
-static void           set_both_match( char const* );
 static bool           should_colorize( colorize_t );
 static void           usage( void );
 
@@ -91,8 +97,8 @@ static void           usage( void );
 
 /*****************************************************************************/
 
-#define SGR_START_IF(EXPR)      BLOCK( if ( EXPR ) SGR_START( EXPR ); )
-#define SGR_END_IF(EXPR)        BLOCK( if ( EXPR ) SGR_END(); )
+#define SGR_START_IF(EXPR)  BLOCK( if ( EXPR ) PRINTF( sgr_start, (EXPR) ); )
+#define SGR_END_IF(EXPR)    BLOCK( if ( EXPR ) PRINTF( "%s", sgr_end ); )
 
 #define MATCH_HEX_ON_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_hex_match ); )
@@ -100,7 +106,7 @@ static void           usage( void );
 #define MATCH_ASCII_ON_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
-#define MATCH_OFF_IF(EXPR)      SGR_END_IF( EXPR )
+#define MATCH_OFF_IF(EXPR)  SGR_END_IF( EXPR )
 
 int main( int argc, char *argv[] ) {
   static char const *const offset_fmt_printf[] = {
@@ -109,7 +115,7 @@ int main( int argc, char *argv[] ) {
     "%016llo",                          /* octal */
   };
 
-  uint8_t buf[ BUF_SIZE ];              /* store bytes to print ASCII later */
+  uint8_t buf[ LINE_BUF_SIZE ];         /* store bytes to print ASCII later */
   size_t buf_pos = 0;
   bool done = false;
   uint16_t match_bits = 0;              /* bit set = byte matches */
@@ -135,9 +141,9 @@ int main( int argc, char *argv[] ) {
     if ( done ) {
       SGR_END_IF( matches_prev );
       if ( buf_pos ) {                  /* print padding */
-        for ( i = BUF_SIZE - buf_pos; i; --i )
+        for ( i = LINE_BUF_SIZE - buf_pos; i; --i )
           PRINTF( "  " );
-        for ( i = (BUF_SIZE - buf_pos) / 2; i; --i )
+        for ( i = (LINE_BUF_SIZE - buf_pos) / 2; i; --i )
           PUTCHAR( ' ' );
         goto ascii;                     /* print final ASCII part */
       }
@@ -145,7 +151,7 @@ int main( int argc, char *argv[] ) {
     }
 
     if ( !buf_pos ) {                   /* print offset */
-      SGR_END();
+      SGR_END_IF( true );
       SGR_START_IF( sgr_offset );
       PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
       SGR_END_IF( sgr_offset );
@@ -172,7 +178,7 @@ int main( int argc, char *argv[] ) {
     PRINTF( "%02X", (unsigned)buf[ buf_pos ] );
     matches_prev = matches;
 
-    if ( ++buf_pos == BUF_SIZE ) {      /* print ASCII part */
+    if ( ++buf_pos == LINE_BUF_SIZE ) { /* print ASCII part */
 ascii:
       MATCH_OFF_IF( matches );
       matches_prev = false;
@@ -231,11 +237,21 @@ static kmp_value* kmp_init( char const *pattern, size_t pattern_len ) {
   return kmp_values;
 }
 
+/**
+ * TODO.
+ *
+ * @param pbyte TODO.
+ * @param matches TODO.
+ * @param kmp_values TODO.
+ * @param buf TODO.
+ * @return Returns \c true if a byte was read successfully
+ * and the number of bytes read does not exceed \a max_bytes_to_read.
+ */
 static bool match_byte( uint8_t *pbyte, bool *matches,
                         kmp_value const *kmp_values, uint8_t *buf ) {
   typedef enum {
     S_READING,                          /* just reading; not matching */
-    S_MATCHING,                         /* matching search string */
+    S_MATCHING,                         /* matching search bytes */
     S_MATCHING_CONT,                    /* matching after a mismatch */
     S_MATCHED,                          /* a complete match */
     S_NOT_MATCHED,                      /* didn't match after all */
@@ -243,9 +259,9 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   } state_t;
 
   static size_t buf_pos;
-  static state_t state = S_READING;
   static size_t buf_drain;
   static size_t kmp;
+  static state_t state = S_READING;
 
   uint8_t byte;
 
@@ -348,7 +364,7 @@ static colorize_t parse_colorize( char const *s ) {
   static char const *const colorize_strs[] = {
     "never",
     "isatty",
-    "not_isreg",
+    "not_file",
     "always"
   };
 
@@ -360,13 +376,13 @@ static colorize_t parse_colorize( char const *s ) {
       return (colorize_t)i;
 
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid value for -c option; must be one of: never, isatty, not_isreg, always\n",
+    "\"%s\": invalid value for -c option; must be one of: never, isatty, not_file, always\n",
     s
   );
 }
 
 static void parse_options( int argc, char *argv[] ) {
-  colorize_t  colorize = COLOR_NOT_ISREG;
+  colorize_t  colorize = COLOR_NOT_FILE;
   int         opt;                      /* command-line option */
   char const  opts[] = "b:B:c:de:E:hij:N:os:S:v";
   size_t      size_in_bits = 0, size_in_bytes = 0;
@@ -459,7 +475,7 @@ static void parse_options( int argc, char *argv[] ) {
     if ( !(parse_grep_colors( "AD_COLORS"   )
         || parse_grep_colors( "GREP_COLORS" )
         || parse_grep_color ( "GREP_COLOR"  )) ) {
-      set_both_match( SGR_MATCH_DEFAULT );
+      cap_mt( SGR_MATCH_DEFAULT );
     }
   }
 
@@ -517,8 +533,7 @@ static void usage( void ) {
                    ", 8"
 #endif /* SIZEOF_UNSIGNED_LONG */
                    " [default: auto].\n"
-"       -c         Automatically dump output in color (or not).\n"
-"       -C         Always dump output in color.\n"
+"       -c when    Specify when to colorize output [default: not_file].\n"
 "       -d         Print offset in decimal.\n"
 "       -e number  Search for little-endian number.\n"
 "       -E number  Search for big-endian number.\n"
@@ -534,7 +549,7 @@ static void usage( void ) {
   exit( EXIT_USAGE );
 }
 
-/*****************************************************************************/
+/********** color ************************************************************/
 
 /**
  * Color capability used to map an AD_COLORS/GREP_COLORS "capability" either to
@@ -543,7 +558,7 @@ static void usage( void ) {
 struct color_cap {
   char const *cap_name;                 /* capability name */
   char const **cap_var_to_set;          /* variable to set ... */
-  void (*cap_set_func)( char const* );  /* ... OR function to call */
+  void (*cap_func)( char const* );      /* ... OR function to call */
 };
 typedef struct color_cap color_cap_t;
 
@@ -556,7 +571,7 @@ typedef struct color_cap color_cap_t;
  */
 static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   assert( cap );
-  assert( cap->cap_var_to_set || cap->cap_set_func );
+  assert( cap->cap_var_to_set || cap->cap_func );
 
   if ( sgr_color ) {
     if ( !*sgr_color )                  /* empty string -> NULL = unset */
@@ -568,19 +583,32 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   if ( cap->cap_var_to_set )
     *cap->cap_var_to_set = sgr_color;
   else
-    (*cap->cap_set_func)( sgr_color );
+    (*cap->cap_func)( sgr_color );
   return true;
 }
 
 /**
  * Sets both the hex and ASCII match color.
  * (This function is needed for the color capabilities table to support the
- * grep "mt" capability.)
+ * "MB" and "mt" capabilities.)
  *
  * @param sgr_color The SGR color to set or empty or NULL to unset.
  */
-static void set_both_match( char const *sgr_color ) {
+static void cap_mt( char const *sgr_color ) {
+  if ( !*sgr_color )                    /* empty string -> NULL = unset */
+    sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
+}
+
+/**
+ * Turns off using the EL (Erase in Line) sequence.
+ *
+ * @param sgr_color Not used.
+ */
+static void cap_ne( char const *sgr_color ) {
+  (void)sgr_color;                      /* suppress warning */
+  sgr_start = SGR_START;
+  sgr_end   = SGR_END;
 }
 
 /**
@@ -588,13 +616,14 @@ static void set_both_match( char const *sgr_color ) {
  * to avoid conflict with grep.  Lower-case names are for grep compatibility.
  */
 static color_cap_t const color_caps[] = {
-  { "bn", &sgr_offset,      NULL           }, /* grep: byte offset */
-  { "MA", &sgr_ascii_match, NULL           }, /* matched ASCII */
-  { "MH", &sgr_hex_match,   NULL           }, /* matched hex */
-  { "MB", NULL,             set_both_match }, /* matched both */
-  { "mt", NULL,             set_both_match }, /* grep: matched both */
-  { "se", &sgr_sep,         NULL           }, /* grep: separator */
-  { NULL, NULL,             NULL           }
+  { "bn", &sgr_offset,      NULL   },   /* grep: byte offset */
+  { "MA", &sgr_ascii_match, NULL   },   /* matched ASCII */
+  { "MH", &sgr_hex_match,   NULL   },   /* matched hex */
+  { "MB", NULL,             cap_mt },   /* matched both */
+  { "mt", NULL,             cap_mt },   /* grep: matched text (both) */
+  { "se", &sgr_sep,         NULL   },   /* grep: separator */
+  { "ne", NULL,             cap_ne },   /* grep: no EL on SGR_* */
+  { NULL, NULL,             NULL   }
 };
 
 /**
@@ -606,7 +635,7 @@ static color_cap_t const color_caps[] = {
 static bool parse_grep_color( char const *env_name ) {
   char const *const sgr_color = getenv( env_name );
   if ( parse_sgr( sgr_color ) ) {
-    set_both_match( sgr_color );
+    cap_mt( sgr_color );
     return true;
   }
   return false;
@@ -624,10 +653,10 @@ static bool parse_grep_colors( char const *env_name ) {
 
   if ( env_val ) {
     char *const env_val_dup = check_strdup( env_val );
-    char *mutable_env_val = env_val_dup;
+    char *next_cap = env_val_dup;
     char *cap_name_val;
 
-    while ( (cap_name_val = strsep( &mutable_env_val, ":" )) ) {
+    while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
       color_cap_t const *cap;
       char const *const cap_name = strsep( &cap_name_val, "=" );
 
@@ -691,7 +720,7 @@ static bool should_colorize( colorize_t c ) {
   return !S_ISREG( stdout_stat.st_mode );
 }
 
-/*****************************************************************************/
+/********** initialization & clean-up ****************************************/
 
 static void clean_up( void ) {
   freelist_free( free_head );

@@ -336,6 +336,26 @@ SGR for the byte offset
 SGR for the ``\f(CW:\fP'' separator
 (as with
 .BR grep ).
+.TP
+.B ne
+Boolean value that,
+when true,
+prevents clearing to the end of a line using the Erase in Line
+(EL)
+SGR escape sequence
+(as with
+.BR grep ).
+.TP
+.B ""
+This is needed on terminals on which EL is not supported.
+It is otherwise useful on terminals for which the
+.B back_color_erase
+(BCE)
+Boolean terminfo capability does not apply,
+when the chosen highlight colors do not affect the background,
+or when EL is too slow or causes too much flicker.
+The default is false
+(i.e., EL is used for clearing to the end of a line).
 .RE
 .TP
 .B ""

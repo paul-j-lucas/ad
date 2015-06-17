@@ -70,9 +70,6 @@ typedef bool _Bool;
 #define PUTCHAR(C) \
   BLOCK( if ( putchar( C ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
 
-#define SGR_START(SGR)      PRINTF( "\33[%sm\33[K", (SGR) )
-#define SGR_END()           PRINTF( "\33[m\33[K" )
-
 /*****************************************************************************/
 
 struct free_node {
