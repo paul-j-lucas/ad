@@ -44,8 +44,6 @@
 #define SGR_END         "\33[m"         /* end color sequence */
 #define SGR_EL          "\33[K"         /* Erase in Line (EL) sequence */
 
-typedef int kmp_value;
-
 enum colorize {
   COLOR_NEVER,                          /* never colorize */
   COLOR_ISATTY,                         /* colorize only if isatty(3) */
@@ -53,6 +51,8 @@ enum colorize {
   COLOR_ALWAYS                          /* always colorize */
 };
 typedef enum colorize colorize_t;
+
+typedef int kmp_t;
 
 enum offset_fmt {
   OFMT_DEC,
@@ -86,8 +86,9 @@ static char const*    sgr_ascii_match;  /* ASCII match color */
 static void           cap_mt( char const* );
 static void           cap_ne( char const* );
 static void           init( int, char*[] );
-static kmp_value*     kmp_init( char const*, size_t );
-static bool           match_byte( uint8_t*, bool*, kmp_value const*, uint8_t* );
+static kmp_t*         kmp_init( char const*, size_t );
+static bool           match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
+static size_t         match_line( uint8_t*, uint16_t*, kmp_t const*, uint8_t* );
 static bool           parse_grep_color( char const* );
 static bool           parse_grep_colors( char const* );
 static bool           should_colorize( colorize_t );
@@ -109,20 +110,8 @@ static void           usage( void );
 #define MATCH_OFF_IF(EXPR)  SGR_END_IF( EXPR )
 
 int main( int argc, char *argv[] ) {
-  static char const *const offset_fmt_printf[] = {
-    "%016llu",                          /* decimal */
-    "%016llX",                          /* hex */
-    "%016llo",                          /* octal */
-  };
-
-  uint8_t buf[ LINE_BUF_SIZE ];         /* store bytes to print ASCII later */
-  size_t buf_pos = 0;
-  bool done = false;
-  uint16_t match_bits = 0;              /* bit set = byte matches */
-  bool matches_prev = false;
-  size_t i;
-
-  kmp_value *kmp_values;
+  size_t buf_len;
+  kmp_t *kmp_values;
   uint8_t *match_buf;                   /* working storage for match_byte() */
 
   init( argc, argv );
@@ -135,69 +124,75 @@ int main( int argc, char *argv[] ) {
     match_buf = NULL;
   }
 
-  while ( !done ) {
-    bool matches;
-    done = !match_byte( buf + buf_pos, &matches, kmp_values, match_buf );
-    if ( done ) {
-      SGR_END_IF( matches_prev );
-      if ( buf_pos ) {                  /* print padding */
-        for ( i = LINE_BUF_SIZE - buf_pos; i; --i )
-          PRINTF( "  " );
-        for ( i = (LINE_BUF_SIZE - buf_pos) / 2; i; --i )
-          PUTCHAR( ' ' );
-        goto ascii;                     /* print final ASCII part */
-      }
-      break;
-    }
+  do {
+    uint8_t line_buf[ LINE_BUF_SIZE ];
+    uint16_t match_bits;                /* bit set = byte matches */
+    bool matches_prev;
+    size_t buf_pos;
 
-    if ( !buf_pos ) {                   /* print offset */
-      SGR_END_IF( true );
+    buf_len = match_line( line_buf, &match_bits, kmp_values, match_buf );
+    if ( buf_len ) {
+      static char const *const offset_fmt_printf[] = {
+        "%016llu",                      /* decimal */
+        "%016llX",                      /* hex */
+        "%016llo",                      /* octal */
+      };
+
+      /* print offset */
       SGR_START_IF( sgr_offset );
       PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
       SGR_END_IF( sgr_offset );
 
-      SGR_START_IF( sgr_sep );          /* print separator */
+      /* print separator */
+      SGR_START_IF( sgr_sep );
       PUTCHAR( ':' );
       SGR_END_IF( sgr_sep );
 
-      PUTCHAR( ' ' );
-      MATCH_HEX_ON_IF( matches );
-    } else if ( buf_pos % 2 == 0 ) {    /* print space between hex columns */
+      /* dump hex part */
+      matches_prev = false;
+      for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
+        bool const matches = match_bits & (1 << buf_pos);
+        if ( buf_pos % 2 == 0 ) {    /* print space between hex columns */
+          MATCH_OFF_IF( matches_prev );
+          PUTCHAR( ' ' );
+          MATCH_HEX_ON_IF( matches_prev );
+        }
+
+        if ( matches )
+          MATCH_HEX_ON_IF( matches != matches_prev );
+        else
+          MATCH_OFF_IF( matches != matches_prev );
+
+        PRINTF( "%02X", (unsigned)line_buf[ buf_pos ] );
+        matches_prev = matches;
+      } /* for */
+
+      /* print padding if necessary (last line only)  */
+      while ( buf_pos < LINE_BUF_SIZE ) {
+        if ( buf_pos++ % 2 == 0 )       /* print space between hex columns */
+          PUTCHAR( ' ' );
+        PRINTF( "  " );
+      } /* while */
+
+      /* dump ASCII part */
       MATCH_OFF_IF( matches_prev );
-      PUTCHAR( ' ' );
-      MATCH_HEX_ON_IF( matches_prev );
-    }
-    ++offset;
-
-    if ( matches ) {                    /* print hex part */
-      MATCH_HEX_ON_IF( matches != matches_prev );
-      match_bits |= 1 << buf_pos;
-    } else {
-      MATCH_OFF_IF( matches != matches_prev );
-    }
-    PRINTF( "%02X", (unsigned)buf[ buf_pos ] );
-    matches_prev = matches;
-
-    if ( ++buf_pos == LINE_BUF_SIZE ) { /* print ASCII part */
-ascii:
-      MATCH_OFF_IF( matches );
       matches_prev = false;
       PRINTF( "  " );
-      for ( i = 0; i < buf_pos; ++i ) {
-        matches = match_bits & (1 << i);
+      for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
+        bool const matches = match_bits & (1 << buf_pos);
         if ( matches )
           MATCH_ASCII_ON_IF( matches != matches_prev );
         else
           MATCH_OFF_IF( matches != matches_prev );
-        PUTCHAR( isprint( buf[i] ) ? buf[i] : '.' );
+        PUTCHAR( isprint( line_buf[ buf_pos ] ) ? line_buf[ buf_pos ] : '.' );
         matches_prev = matches;
       } /* for */
-      MATCH_OFF_IF( matches );
+      MATCH_OFF_IF( matches_prev );
       PUTCHAR( '\n' );
-      buf_pos = 0;
-      match_bits = 0;
+
+      offset += buf_len;
     }
-  } /* while */
+  } while ( buf_len == LINE_BUF_SIZE );
 
   exit( EXIT_OK );
 }
@@ -218,12 +213,12 @@ ascii:
  * @return Returns an array containing the values comprising the partial-match
  * table.  The caller is responsible for freeing the array.
  */
-static kmp_value* kmp_init( char const *pattern, size_t pattern_len ) {
-  kmp_value *kmp_values;
+static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
+  kmp_t *kmp_values;
   size_t i, j = 0;
 
   assert( pattern );
-  kmp_values = check_realloc( NULL, pattern_len * sizeof( kmp_value ) );
+  kmp_values = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
 
   kmp_values[0] = -1;
   for ( i = 1; i < pattern_len; ) {
@@ -248,7 +243,7 @@ static kmp_value* kmp_init( char const *pattern, size_t pattern_len ) {
  * and the number of bytes read does not exceed \a max_bytes_to_read.
  */
 static bool match_byte( uint8_t *pbyte, bool *matches,
-                        kmp_value const *kmp_values, uint8_t *buf ) {
+                        kmp_t const *kmp_values, uint8_t *buf ) {
   enum state {
     S_READING,                          /* just reading; not matching */
     S_MATCHING,                         /* matching search bytes */
@@ -331,6 +326,37 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
 
     } /* switch */
   } /* for */
+}
+
+/**
+ * TODO
+ *
+ * @param line_buf TODO
+ * @param match_bits TODO
+ * @param kmp_values TODO
+ * @param match_buf TODO
+ * @return Returns TODO
+ */
+static size_t match_line( uint8_t *line_buf, uint16_t *match_bits,
+                          kmp_t const *kmp_values, uint8_t *match_buf ) {
+  size_t buf_len;
+
+  assert( match_bits );
+  *match_bits = 0;
+
+  for ( buf_len = 0; buf_len < LINE_BUF_SIZE; ++buf_len ) {
+    bool matches;
+    if ( !match_byte( line_buf + buf_len, &matches, kmp_values, match_buf ) ) {
+      if ( buf_len ) {                  /* pad remainder of line */
+        size_t const short_by = LINE_BUF_SIZE - buf_len;
+        memset( line_buf + buf_len, ' ', short_by * 2 + short_by / 2 );
+      }
+      break;
+    }
+    if ( matches )
+      *match_bits |= 1 << buf_len;
+  } /* for */
+  return buf_len;
 }
 
 /********** option parsing ***************************************************/
