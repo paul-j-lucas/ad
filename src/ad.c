@@ -249,14 +249,15 @@ static kmp_value* kmp_init( char const *pattern, size_t pattern_len ) {
  */
 static bool match_byte( uint8_t *pbyte, bool *matches,
                         kmp_value const *kmp_values, uint8_t *buf ) {
-  typedef enum {
+  enum state {
     S_READING,                          /* just reading; not matching */
     S_MATCHING,                         /* matching search bytes */
     S_MATCHING_CONT,                    /* matching after a mismatch */
     S_MATCHED,                          /* a complete match */
     S_NOT_MATCHED,                      /* didn't match after all */
     S_DONE                              /* no more input */
-  } state_t;
+  };
+  typedef enum state state_t;
 
   static size_t buf_pos;
   static size_t buf_drain;
