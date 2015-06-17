@@ -37,12 +37,12 @@
 
 /*****************************************************************************/
 
-#define LINE_BUF_SIZE     16            /* bytes displayed on a line */
+#define DEFAULT_COLORS  "bn=32:mt=41;1:se=36"
+#define LINE_BUF_SIZE   16              /* bytes displayed on a line */
 
-#define SGR_START         "\33[%sm"     /* start color sequence */
-#define SGR_END           "\33[m"       /* end color sequence */
-#define SGR_EL            "\33[K"       /* Erase in Line (EL) sequence */
-#define SGR_MATCH_DEFAULT "41"          /* default match color: red bg */
+#define SGR_START       "\33[%sm"       /* start color sequence */
+#define SGR_END         "\33[m"         /* end color sequence */
+#define SGR_EL          "\33[K"         /* Erase in Line (EL) sequence */
 
 typedef int kmp_value;
 
@@ -475,7 +475,7 @@ static void parse_options( int argc, char *argv[] ) {
     if ( !(parse_grep_colors( "AD_COLORS"   )
         || parse_grep_colors( "GREP_COLORS" )
         || parse_grep_color ( "GREP_COLOR"  )) ) {
-      cap_mt( SGR_MATCH_DEFAULT );
+      parse_grep_colors( DEFAULT_COLORS );
     }
   }
 
