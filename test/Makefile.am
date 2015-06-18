@@ -41,21 +41,26 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-N16.test \
 	tests/ad-N17+02.test \
 	tests/ad-N17.test \
+	tests/ad-S02.test \
 	tests/ad-b1-e1.test \
 	tests/ad-b16-B2.test \
 	tests/ad-b16-e65536.test \
 	tests/ad-b16.test \
 	tests/ad-b32-e4294967296.test \
 	tests/ad-b8-e257.test \
+	tests/ad-c01.test \
 	tests/ad-d.test \
 	tests/ad-e1-sx-2.test \
 	tests/ad-h.test \
+	tests/ad-i-s01.test \
 	tests/ad-i.test \
 	tests/ad-j02-N14.test \
 	tests/ad-j02-N17.test \
 	tests/ad-j1k-N16.test \
 	tests/ad-j1x.test \
-	tests/ad-o.test
+	tests/ad-m-s01.test \
+	tests/ad-o.test \
+	tests/ad-s01.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .test
