@@ -115,10 +115,11 @@ static void           usage( void );
 int main( int argc, char *argv[] ) {
   size_t buf_len;
   kmp_t *kmp_values;
-  off_t last_starting_offset = offset;
+  off_t last_starting_offset;
   uint8_t *match_buf;                   /* working storage for match_byte() */
 
   init( argc, argv );
+  last_starting_offset = offset;
 
   if ( search_len ) {
     kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
@@ -142,6 +143,7 @@ int main( int argc, char *argv[] ) {
         "%0" OFFSET_WIDTH_S "llo",      /* octal */
       };
 
+      /* print row separator (if necessary) */
       if ( last_starting_offset + LINE_BUF_SIZE < offset ) {
         size_t i;
         SGR_START_IF( sgr_sep );
@@ -151,12 +153,10 @@ int main( int argc, char *argv[] ) {
         SGR_END_IF( sgr_sep );
       }
 
-      /* print offset */
+      /* print offset & column separator */
       SGR_START_IF( sgr_offset );
       PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
       SGR_END_IF( sgr_offset );
-
-      /* print separator */
       SGR_START_IF( sgr_sep );
       PUTCHAR( ':' );
       SGR_END_IF( sgr_sep );
