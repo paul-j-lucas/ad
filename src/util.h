@@ -70,6 +70,9 @@ typedef bool _Bool;
 #define PUTCHAR(C) \
   BLOCK( if ( putchar( C ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
 
+#define STRINGIFY_HELPER(S) #S
+#define STRINGIFY(S)        STRINGIFY_HELPER(S)
+
 /*****************************************************************************/
 
 struct free_node {

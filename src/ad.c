@@ -39,6 +39,8 @@
 
 #define DEFAULT_COLORS  "bn=32:mt=41;1:se=36"
 #define LINE_BUF_SIZE   16              /* bytes displayed on a line */
+#define OFFSET_WIDTH    16              /* number of offset digits */
+#define OFFSET_WIDTH_S  STRINGIFY(OFFSET_WIDTH)
 
 #define SGR_START       "\33[%sm"       /* start color sequence */
 #define SGR_END         "\33[m"         /* end color sequence */
@@ -65,9 +67,10 @@ static FILE*          file;             /* file to read from */
 static free_node_t*   free_head;        /* linked list of stuff to free */
 char const*           me;               /* executable name */
 static off_t          offset;           /* curent offset into file */
-static bool           opt_case_insensitive = false;
+static bool           opt_case_insensitive;
 static size_t         opt_max_bytes_to_read = SIZE_MAX;
 static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
+bool                  opt_only_matching;
 char const*           path_name = "<stdin>";
 
 static char*          search_buf;       /* not NULL-terminated when numeric */
@@ -112,6 +115,7 @@ static void           usage( void );
 int main( int argc, char *argv[] ) {
   size_t buf_len;
   kmp_t *kmp_values;
+  off_t last_starting_offset = offset;
   uint8_t *match_buf;                   /* working storage for match_byte() */
 
   init( argc, argv );
@@ -131,12 +135,21 @@ int main( int argc, char *argv[] ) {
     size_t buf_pos;
 
     buf_len = match_line( line_buf, &match_bits, kmp_values, match_buf );
-    if ( buf_len ) {
+    if ( buf_len && (!opt_only_matching || match_bits) ) {
       static char const *const offset_fmt_printf[] = {
-        "%016llu",                      /* decimal */
-        "%016llX",                      /* hex */
-        "%016llo",                      /* octal */
+        "%0" OFFSET_WIDTH_S "llu",      /* decimal */
+        "%0" OFFSET_WIDTH_S "llX",      /* hex */
+        "%0" OFFSET_WIDTH_S "llo",      /* octal */
       };
+
+      if ( last_starting_offset + LINE_BUF_SIZE < offset ) {
+        size_t i;
+        SGR_START_IF( sgr_sep );
+        for ( i = 0; i < OFFSET_WIDTH; ++i )
+          PUTCHAR( '-' );
+        PUTCHAR( '\n' );
+        SGR_END_IF( sgr_sep );
+      }
 
       /* print offset */
       SGR_START_IF( sgr_offset );
@@ -189,9 +202,9 @@ int main( int argc, char *argv[] ) {
       } /* for */
       MATCH_OFF_IF( matches_prev );
       PUTCHAR( '\n' );
-
-      offset += buf_len;
+      last_starting_offset = offset;
     }
+    offset += buf_len;
   } while ( buf_len == LINE_BUF_SIZE );
 
   exit( EXIT_OK );
@@ -233,17 +246,18 @@ static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 }
 
 /**
- * TODO.
+ * Gets a byte and whether it matches one of the bytes in the search buffer.
  *
- * @param pbyte TODO.
- * @param matches TODO.
- * @param kmp_values TODO.
- * @param buf TODO.
+ * @param pbyte A pointer to receive the byte.
+ * @param matches A pointer to receive whether the byte matches.
+ * @param kmp_values A pointer to the array of KMP values to use.
+ * @param match_buf A pointer to a buffer to use while matching.
+ * It must be at least as large as the search buffer.
  * @return Returns \c true if a byte was read successfully
  * and the number of bytes read does not exceed \a max_bytes_to_read.
  */
 static bool match_byte( uint8_t *pbyte, bool *matches,
-                        kmp_t const *kmp_values, uint8_t *buf ) {
+                        kmp_t const *kmp_values, uint8_t *match_buf ) {
   enum state {
     S_READING,                          /* just reading; not matching */
     S_MATCHING,                         /* matching search bytes */
@@ -281,7 +295,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           RETURN( byte );
         if ( MAYBE_NO_CASE( byte ) != search_buf[0] )
           RETURN( byte );
-        buf[ 0 ] = byte;
+        match_buf[ 0 ] = byte;
         kmp = 0;
         GOTO_STATE( S_MATCHING );
 
@@ -298,7 +312,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           GOTO_STATE( S_NOT_MATCHED );
         }
         if ( MAYBE_NO_CASE( byte ) == search_buf[ buf_pos ] ) {
-          buf[ buf_pos ] = byte;
+          match_buf[ buf_pos ] = byte;
           state = S_MATCHING;
           continue;
         }
@@ -315,7 +329,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           continue;
         }
         *matches = state == S_MATCHED;
-        RETURN( buf[ buf_pos++ ] );
+        RETURN( match_buf[ buf_pos++ ] );
 
       case S_DONE:
         return false;
@@ -329,13 +343,18 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
 }
 
 /**
- * TODO
+ * Gets a "line" of bytes (row of LINE_BUF_SIZE) and whether each byte matches
+ * bytes in the search buffer.
  *
- * @param line_buf TODO
- * @param match_bits TODO
- * @param kmp_values TODO
- * @param match_buf TODO
- * @return Returns TODO
+ * @param line_buf A pointer to the "line" buffer.
+ * @param match_bits A pointer to receive which bytes matched.  Note that the
+ * bytes in the buffer are numbered left-to-right where as their corresponding
+ * bits are numbered right-to-left.
+ * @param kmp_values A pointer to the array of KMP values to use.
+ * @param match_buf A pointer to a buffer to use while matching.
+ * @return Returns the number of bytes in \a line_buf.  It should always be
+ * \c LINE_BUF_SIZE except on the last line in which case it will be less than
+ * \c LINE_BUF_SIZE.
  */
 static size_t match_line( uint8_t *line_buf, uint16_t *match_bits,
                           kmp_t const *kmp_values, uint8_t *match_buf ) {
@@ -411,7 +430,7 @@ static colorize_t parse_colorize( char const *s ) {
 static void parse_options( int argc, char *argv[] ) {
   colorize_t  colorize = COLOR_NOT_FILE;
   int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:c:de:E:hij:N:os:S:v";
+  char const  opts[] = "b:B:c:de:E:hij:mN:os:S:v";
   size_t      size_in_bits = 0, size_in_bytes = 0;
 
   opterr = 1;
@@ -429,6 +448,7 @@ static void parse_options( int argc, char *argv[] ) {
       case 'S': search_buf = optarg;                      /* no break; */
       case 'i': opt_case_insensitive = true;                    break;
       case 'j': offset += parse_offset( optarg );               break;
+      case 'm': opt_only_matching = true;                       break;
       case 'N': opt_max_bytes_to_read = parse_offset( optarg ); break;
       case 'o': opt_offset_fmt = OFMT_OCT;                      break;
       case 's': search_buf = optarg;                            break;
@@ -446,6 +466,9 @@ static void parse_options( int argc, char *argv[] ) {
       option_required( "i", "s" );
     tolower_s( search_buf );
   }
+
+  if ( opt_only_matching && !(search_endian || search_buf) )
+    option_required( "m", "eEsS" );
 
   if ( size_in_bits && size_in_bytes )
     options_mutually_exclusive( "b", "B" );
@@ -567,9 +590,11 @@ static void usage( void ) {
 "       -h         Print offset in hexadecimal [default].\n"
 "       -i         Search for case-insensitive string [default: no].\n"
 "       -j offset  Jump to offset before dumping [default: 0].\n"
+"       -m         Only dump lines that contain matches [default: no].\n"
 "       -N bytes   Dump max number of bytes [default: unlimited].\n"
 "       -o         Print offset in octal.\n"
 "       -s string  Search for string.\n"
+"       -S string  Search for case-insensitive string.\n"
 "       -v         Print version and exit.\n"
     , me, me
   );
