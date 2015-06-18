@@ -27,6 +27,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-B2-e65536.test \
 	tests/ad-B2.test \
 	tests/ad-B4-e4294967296.test \
+	tests/ad-E0xD8FF-m.test \
+	tests/ad-E0xFFD8-m.test \
 	tests/ad-E1-sx-1.test \
 	tests/ad-N00.test \
 	tests/ad-N01.test \
