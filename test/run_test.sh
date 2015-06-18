@@ -1,9 +1,9 @@
 #! /bin/sh
 ##
-#       wrap -- text reformatter
+#       ad -- ASCII dump
 #       test/run_test.sh
 #
-#       Copyright (C) 2013-2014  Paul J. Lucas
+#       Copyright (C) 2015  Paul J. Lucas
 #
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -179,7 +179,7 @@ esac
 DATA_DIR=$srcdir/data
 EXPECTED_DIR=$srcdir/expected
 TEST_NAME=`local_basename "$TEST_NAME"`
-OUTPUT=/tmp/wrap_test_output_$$_
+OUTPUT=/tmp/ad_test_output_$$_
 
 ########## Run test ###########################################################
 
@@ -192,9 +192,14 @@ EXPECTED_EXIT=`echo $EXPECTED_EXIT`     # trims whitespace
 EXPECTED_OUTPUT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
 
 ##
-# Must put BUILD_SRC first in PATH so we get the correct version of wrap/wrapc.
+# Must put BUILD_SRC first in PATH so we get the correct version of ad.
 ##
 PATH=$BUILD_SRC:$PATH
+
+##
+# Must unset these so we get the default colors in test output.
+##
+unset AD_COLORS GREP_COLOR GREP_COLORS
 
 #echo $PROG "$OPTIONS" $INPUT \> $OUTPUT
 if $PROG $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
