@@ -59,6 +59,7 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-j1k-N16.test \
 	tests/ad-j1x.test \
 	tests/ad-m-s01.test \
+	tests/ad-m.test \
 	tests/ad-o.test \
 	tests/ad-s01.test
 
