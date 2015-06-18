@@ -407,23 +407,47 @@ static void option_required( char const *opt, char const *req ) {
 }
 
 static colorize_t parse_colorize( char const *s ) {
-  static char const *const colorize_strs[] = {
-    "never",
-    "isatty",
-    "not_file",
-    "always"
+  struct colorize_map {
+    char const *map_name;
+    colorize_t map_colorize;
+  };
+  typedef struct colorize_map colorize_map_t;
+  static colorize_map_t const colorize_map[] = {
+    { "always",    COLOR_ALWAYS   },
+    { "auto",      COLOR_ISATTY   },    /* grep compatibility */
+    { "isatty",    COLOR_ISATTY   },    /* explicit synonym for auto */
+    { "never",     COLOR_NEVER    },
+    { "not_file",  COLOR_NOT_FILE },
+    { "not_isreg", COLOR_NOT_FILE },    /* synonym for not_isfile */
+    { "tty",       COLOR_ISATTY   },    /* synonym for isatty */
+    { NULL,        COLOR_NEVER    }
   };
 
   char const *const t = tolower_s( FREE_LATER( check_strdup( s ) ) );
-  size_t i;
+  colorize_map_t const *m;
+  char *names_buf, *pnames;
+  size_t names_buf_size = 1;            /* for trailing NULL */
 
-  for ( i = 0; i < sizeof( colorize_strs ) / sizeof( char* ); ++i )
-    if ( strcmp( t, colorize_strs[i] ) == 0 )
-      return (colorize_t)i;
+  for ( m = colorize_map; m->map_name; ++m ) {
+    if ( strcmp( t, m->map_name ) == 0 )
+      return m->map_colorize;
+    names_buf_size += strlen( m->map_name ) + 2 /* ", " */;
+  } /* for */
 
+  /* name not found: construct valid name list for error message */
+  names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
+  pnames = names_buf;
+  for ( m = colorize_map; m->map_name; ++m ) {
+    if ( pnames > names_buf ) {
+      strcpy( pnames, ", " );
+      pnames += 2;
+    }
+    strcpy( pnames, m->map_name );
+    pnames += strlen( m->map_name );
+  } /* for */
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid value for -c option; must be one of: never, isatty, not_file, always\n",
-    s
+    "\"%s\": invalid value for -c option; must be one of:\n\t%s\n",
+    s, names_buf
   );
 }
 
@@ -752,9 +776,10 @@ static bool should_colorize( colorize_t c ) {
     return isatty( STDOUT_FILENO );
 
   /*
-   * We want to do color only we're writing either to a TTY or to a pipe (so
-   * the common case of piping to less(1) will still show color) but NOT when
-   * writing to a file because we don't want the escape sequences polluting it.
+   * Otherwise we want to do color only we're writing either to a TTY or to a
+   * pipe (so the common case of piping to less(1) will still show color) but
+   * NOT when writing to a file because we don't want the escape sequences
+   * polluting it.
    *
    * Results from testing using isatty(3) and fstat(3) are given in the
    * following table:

@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "June 17, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "June 18, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -126,9 +126,15 @@ The choices for
 .I w
 are:
 .RS
-.TP 10
+.TP 11
 .B always
 Always colorize.
+.TP
+.B auto
+Same as
+.B isatty
+(for compatibility with
+.BR grep ).
 .TP
 .B isatty
 Colorize only when standard output is connected to a TTY
@@ -139,7 +145,18 @@ is not empty and not equal to
 (This is equivalent to
 .BR grep 's
 .B --color=auto
-option.)
+option,
+but explicit about what ``auto'' means.)
+.TP
+.B never
+Never colorize.
+Note that this renderes the
+.BR \-e ,
+.BR \-E ,
+.BR \-s ,
+and
+.B \-S
+options useless since matches won't be highlighted.
 .TP
 .B not_file
 Colorize only when
@@ -149,11 +166,15 @@ writing to a regular file
 and the TERM environment variable
 is not empty and not equal to
 .BR dumb .
+(Specifically,
+.BR fstat (3)
+is called on standard output:
+colorize only if \f(CWS_IFREG\fP is false.)
 .TP
 .B ""
 This is more useful than
 .B isatty
-since it allows color output to be piped to
+since it accomodates the common case of allowing color output to be piped to
 .BR less (1)
 and still display in color since
 .B less
@@ -163,12 +184,26 @@ understands
 ASCII terminal escape sequences
 that produce color.
 .TP
-.B never
-Never colorize.
+.B not_isreg
+An explicit synonym for
+.BR not_file .
+.TP
+.B tty
+A shorthand synonym for
+.BR isatty .
 .RE
 .TP
 .B ""
 The default is
+.B never
+except when one of the
+.BR \-e ,
+.BR \-E ,
+.BR \-s ,
+or
+.B \-S
+options is given
+in which case the default is
 .BR not_file .
 .TP
 .B \-d
@@ -297,8 +332,8 @@ value
 that is a semicolon-separated list of integers
 in the range 0\-255.
 An example SGR value is \f(CW31;1\fP
-that specifies a bright red foreground color
-on the terminal's default background color.
+that specifies a bright red foreground
+on the terminal's default background.
 .TP
 .B ""
 Capability names in upper-case are unique to
@@ -309,10 +344,13 @@ those in lower-case are upwards compatibile with
 .TP 8
 .BI MA= SGR
 SGR for matched ASCII characters.
-(Default is TODO.)
+Default is \f(CW41;1\fP
+(current terminal foreground over a bright red background).
 .TP
 .BI MH= SGR
 SGR for matched hexadecimal.
+Default is \f(CW41;1\fP
+(current terminal foreground over a bright red background).
 .TP
 .BI MB= SGR
 SGR for both matched ASCII and hexadecimal.
@@ -334,11 +372,15 @@ Same as
 SGR for the byte offset
 (as with
 .BR grep ).
+Default is \f(CW36\fP
+(green foreground over current terminal background).
 .TP
 .BI se= SGR
-SGR for the ``\f(CW:\fP'' separator
+SGR for the ``\f(CW:\fP'' and ``\f(CW-\fP'' separators
 (as with
 .BR grep ).
+Default is \f(CW36\fP
+(cyan foreground over current terminal background).
 .TP
 .B ne
 Boolean value that,
@@ -421,6 +463,8 @@ Paul J. Lucas
 .BR hexdump (1),
 .BR od (1),
 .BR less (1),
+.BR fstat (2),
+.BR isatty (3),
 .BR isprint (3)
 .PP
 .nf
