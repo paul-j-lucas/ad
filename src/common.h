@@ -26,7 +26,8 @@
 
 /* exit(3) status codes */
 #define EXIT_OK             0
-#define EXIT_USAGE          1
+#define EXIT_NO_MATCHES     1
+#define EXIT_USAGE          2
 #define EXIT_OUT_OF_MEMORY  3
 #define EXIT_READ_OPEN      10
 #define EXIT_READ_ERROR     11

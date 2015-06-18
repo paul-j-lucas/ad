@@ -113,6 +113,7 @@ static void           usage( void );
 #define MATCH_OFF_IF(EXPR)  SGR_END_IF( EXPR )
 
 int main( int argc, char *argv[] ) {
+  bool any_matches = false;
   size_t buf_len;
   kmp_t *kmp_values;
   off_t last_starting_offset;
@@ -202,12 +203,15 @@ int main( int argc, char *argv[] ) {
       } /* for */
       MATCH_OFF_IF( matches_prev );
       PUTCHAR( '\n' );
+
       last_starting_offset = offset;
+      if ( match_bits )
+        any_matches = true;
     }
     offset += buf_len;
   } while ( buf_len == LINE_BUF_SIZE );
 
-  exit( EXIT_OK );
+  exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
 }
 
 /*****************************************************************************/
@@ -588,9 +592,6 @@ static void parse_options( int argc, char *argv[] ) {
     default:
       usage();
   } /* switch */
-
-  if ( !opt_max_bytes_to_read )
-    exit( EXIT_OK );
 }
 
 static void usage( void ) {
@@ -819,6 +820,9 @@ static void init( int argc, char *argv[] ) {
     ulong_rearrange_bytes( &search_number, search_len, search_endian );
     search_buf = (char*)&search_number;
   }
+
+  if ( !opt_max_bytes_to_read )
+    exit( search_len ? EXIT_NO_MATCHES : EXIT_OK );
 }
 
 /*****************************************************************************/
