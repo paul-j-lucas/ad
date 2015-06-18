@@ -522,9 +522,9 @@ static void parse_options( int argc, char *argv[] ) {
   }
 
   if ( should_colorize( colorize ) ) {
-    if ( !(parse_grep_colors( "AD_COLORS"   )
-        || parse_grep_colors( "GREP_COLORS" )
-        || parse_grep_color ( "GREP_COLOR"  )) ) {
+    if ( !(parse_grep_colors( getenv( "AD_COLORS"   ) )
+        || parse_grep_colors( getenv( "GREP_COLORS" ) )
+        || parse_grep_color ( getenv( "GREP_COLOR"  ) )) ) {
       parse_grep_colors( DEFAULT_COLORS );
     }
   }
@@ -679,13 +679,12 @@ static color_cap_t const color_caps[] = {
 };
 
 /**
- * Parses the value of the legacy GREP_COLOR environment variable.
+ * Parses a single SGR color and, if successful, sets the match color.
  *
- * @param env_name The name of the environment variable to use.
+ * @param sgr_color An SGR color to parse.
  * @return Returns \c true only if the value was parsed successfully.
  */
-static bool parse_grep_color( char const *env_name ) {
-  char const *const sgr_color = getenv( env_name );
+static bool parse_grep_color( char const *sgr_color ) {
   if ( parse_sgr( sgr_color ) ) {
     cap_mt( sgr_color );
     return true;
@@ -694,18 +693,19 @@ static bool parse_grep_color( char const *env_name ) {
 }
 
 /**
- * Parses the value of the GREP_COLORS (plural) environment variable.
+ * Parses and sets the sequence of grep color capabilities.
  *
- * @param env_name The name of the environment variable to use.
- * @return Returns \c true only if the value was parsed successfully.
+ * @param capabilities The grep capabilities to parse.
+ * @return Returns \c true only if at least one capability was parsed
+ * successfully.
  */
-static bool parse_grep_colors( char const *env_name ) {
-  char const *const env_val = getenv( env_name );
+static bool parse_grep_colors( char const *capabilities ) {
   bool set_something = false;
 
-  if ( env_val ) {
-    char *const env_val_dup = check_strdup( env_val );
-    char *next_cap = env_val_dup;
+  if ( capabilities ) {
+    /* We free this later since the sgr_* variables point to substrings. */
+    char *const capabilities_dup = FREE_LATER( check_strdup( capabilities ) );
+    char *next_cap = capabilities_dup;
     char *cap_name_val;
 
     while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
@@ -721,7 +721,6 @@ static bool parse_grep_colors( char const *env_name ) {
         }
       } /* for */
     } /* while */
-    free( env_val_dup );
   }
   return set_something;
 }
