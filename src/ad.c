@@ -285,15 +285,17 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
     switch ( state ) {
 
 #define GOTO_STATE(S)       { buf_pos = 0; state = (S); continue; }
-#define MAYBE_NO_CASE(BYTE) ( opt_case_insensitive ? tolower( BYTE ) : (BYTE) )
 #define RETURN(BYTE)        BLOCK( *pbyte = (BYTE); return true; )
+
+#define MAYBE_NO_CASE(BYTE) \
+  ( opt_case_insensitive ? (uint8_t)tolower( (char)(BYTE) ) : (BYTE) )
 
       case S_READING:
         if ( !get_byte( &byte, opt_max_bytes_to_read, file ) )
           GOTO_STATE( S_DONE );
         if ( !search_len )
           RETURN( byte );
-        if ( MAYBE_NO_CASE( byte ) != search_buf[0] )
+        if ( MAYBE_NO_CASE( byte ) != (uint8_t)search_buf[0] )
           RETURN( byte );
         match_buf[ 0 ] = byte;
         kmp = 0;
@@ -311,7 +313,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           buf_drain = buf_pos;
           GOTO_STATE( S_NOT_MATCHED );
         }
-        if ( MAYBE_NO_CASE( byte ) == search_buf[ buf_pos ] ) {
+        if ( MAYBE_NO_CASE( byte ) == (uint8_t)search_buf[ buf_pos ] ) {
           match_buf[ buf_pos ] = byte;
           state = S_MATCHING;
           continue;
