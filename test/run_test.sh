@@ -185,8 +185,8 @@ OUTPUT=/tmp/ad_test_output_$$_
 
 trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
-IFS='|' read PROG OPTIONS INPUT EXPECTED_EXIT < $TEST
-PROG=`echo $PROG`                       # trims whitespace
+IFS='|' read COMMAND OPTIONS INPUT EXPECTED_EXIT < $TEST
+COMMAND=`echo $COMMAND`                 # trims whitespace
 INPUT=$DATA_DIR/`echo $INPUT`           # trims whitespace
 EXPECTED_EXIT=`echo $EXPECTED_EXIT`     # trims whitespace
 EXPECTED_OUTPUT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
@@ -201,8 +201,8 @@ PATH=$BUILD_SRC:$PATH
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-#echo $PROG "$OPTIONS" $INPUT \> $OUTPUT
-if $PROG $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
+#echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
+if $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
 then
   if [ 0 -eq $EXPECTED_EXIT ]
   then
