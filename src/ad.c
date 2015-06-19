@@ -92,7 +92,7 @@ static void           cap_ne( char const* );
 static void           init( int, char*[] );
 static kmp_t*         kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
-static size_t         match_line( uint8_t*, uint16_t*, kmp_t const*, uint8_t* );
+static size_t         match_row( uint8_t*, uint16_t*, kmp_t const*, uint8_t* );
 static bool           parse_grep_color( char const* );
 static bool           parse_grep_colors( char const* );
 static bool           should_colorize( colorize_t );
@@ -138,7 +138,7 @@ int main( int argc, char *argv[] ) {
     bool matches_prev;
     size_t buf_pos;
 
-    buf_len = match_line( line_buf, &match_bits, kmp_values, match_buf );
+    buf_len = match_row( line_buf, &match_bits, kmp_values, match_buf );
     if ( buf_len &&
          (!opt_only_matching || match_bits) &&
          (!opt_only_printing || any_printable( (char*)line_buf, buf_len )) ) {
@@ -303,10 +303,10 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
       case S_READING:
         if ( !get_byte( &byte, opt_max_bytes_to_read, file ) )
           GOTO_STATE( S_DONE );
-        if ( !search_len )
+        if ( !search_len )              /* user isn't searching for anything */
           RETURN( byte );
         if ( MAYBE_NO_CASE( byte ) != (uint8_t)search_buf[0] )
-          RETURN( byte );
+          RETURN( byte );               /* searching, but no match yet */
         match_buf[ 0 ] = byte;
         kmp = 0;
         GOTO_STATE( S_MATCHING );
@@ -355,8 +355,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
 }
 
 /**
- * Gets a "line" of bytes (row of LINE_BUF_SIZE) and whether each byte matches
- * bytes in the search buffer.
+ * Gets a row of bytes (of LINE_BUF_SIZE) and whether each byte matches bytes
+ * in the search buffer.
  *
  * @param line_buf A pointer to the "line" buffer.
  * @param match_bits A pointer to receive which bytes matched.  Note that the
@@ -368,8 +368,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
  * \c LINE_BUF_SIZE except on the last line in which case it will be less than
  * \c LINE_BUF_SIZE.
  */
-static size_t match_line( uint8_t *line_buf, uint16_t *match_bits,
-                          kmp_t const *kmp_values, uint8_t *match_buf ) {
+static size_t match_row( uint8_t *line_buf, uint16_t *match_bits,
+                         kmp_t const *kmp_values, uint8_t *match_buf ) {
   size_t buf_len;
 
   assert( match_bits );
@@ -377,13 +377,8 @@ static size_t match_line( uint8_t *line_buf, uint16_t *match_bits,
 
   for ( buf_len = 0; buf_len < LINE_BUF_SIZE; ++buf_len ) {
     bool matches;
-    if ( !match_byte( line_buf + buf_len, &matches, kmp_values, match_buf ) ) {
-      if ( buf_len ) {                  /* pad remainder of line */
-        size_t const short_by = LINE_BUF_SIZE - buf_len;
-        memset( line_buf + buf_len, ' ', short_by * 2 + short_by / 2 );
-      }
+    if ( !match_byte( line_buf + buf_len, &matches, kmp_values, match_buf ) )
       break;
-    }
     if ( matches )
       *match_bits |= 1 << buf_len;
   } /* for */
@@ -418,12 +413,20 @@ static void option_required( char const *opt, char const *req ) {
   );
 }
 
-static colorize_t parse_colorize( char const *s ) {
+/**
+ * Parses a colorization "when" value.
+ *
+ * @param when The NULL-terminated "when" string to parse.
+ * @return Returns the associated \c colorize_t
+ * or prints an error message and exits.
+ */
+static colorize_t parse_colorize( char const *when ) {
   struct colorize_map {
-    char const *map_name;
+    char const *map_when;
     colorize_t map_colorize;
   };
   typedef struct colorize_map colorize_map_t;
+
   static colorize_map_t const colorize_map[] = {
     { "always",    COLOR_ALWAYS   },
     { "auto",      COLOR_ISATTY   },    /* grep compatibility */
@@ -435,31 +438,32 @@ static colorize_t parse_colorize( char const *s ) {
     { NULL,        COLOR_NEVER    }
   };
 
-  char const *const t = tolower_s( FREE_LATER( check_strdup( s ) ) );
+  char const *const when_lc = tolower_s( FREE_LATER( check_strdup( when ) ) );
   colorize_map_t const *m;
   char *names_buf, *pnames;
   size_t names_buf_size = 1;            /* for trailing NULL */
 
-  for ( m = colorize_map; m->map_name; ++m ) {
-    if ( strcmp( t, m->map_name ) == 0 )
+  for ( m = colorize_map; m->map_when; ++m ) {
+    if ( strcmp( when_lc, m->map_when ) == 0 )
       return m->map_colorize;
-    names_buf_size += strlen( m->map_name ) + 2 /* ", " */;
+    /* sum sizes of names in case we need to construct an error message */
+    names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
   } /* for */
 
-  /* name not found: construct valid name list for error message */
+  /* name not found: construct valid name list for an error message */
   names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
   pnames = names_buf;
-  for ( m = colorize_map; m->map_name; ++m ) {
+  for ( m = colorize_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
     }
-    strcpy( pnames, m->map_name );
-    pnames += strlen( m->map_name );
+    strcpy( pnames, m->map_when );
+    pnames += strlen( m->map_when );
   } /* for */
   PMESSAGE_EXIT( USAGE,
     "\"%s\": invalid value for -c option; must be one of:\n\t%s\n",
-    s, names_buf
+    when, names_buf
   );
 }
 
