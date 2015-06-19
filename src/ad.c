@@ -54,7 +54,7 @@ enum colorize {
 };
 typedef enum colorize colorize_t;
 
-typedef int kmp_t;
+typedef size_t kmp_t;
 
 enum offset_fmt {
   OFMT_DEC,
@@ -243,7 +243,7 @@ static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   assert( pattern );
   kmp_values = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
 
-  kmp_values[0] = -1;
+  kmp_values[0] = 0;
   for ( i = 1; i < pattern_len; ) {
     if ( pattern[i] == pattern[j] )
       kmp_values[++i] = ++j;
