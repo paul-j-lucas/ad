@@ -61,8 +61,10 @@ typedef bool _Bool;
 
 #define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 
+#define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
+
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( fprintf( stderr, "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
+  BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
 
 #define PRINTF(...) \
   BLOCK( if ( printf( __VA_ARGS__ ) < 0 ) PERROR_EXIT( WRITE_ERROR ); )

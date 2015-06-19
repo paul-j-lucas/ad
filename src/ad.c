@@ -472,24 +472,24 @@ static void parse_options( int argc, char *argv[] ) {
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
-      case 'b': size_in_bits = parse_ul( optarg );              break;
-      case 'B': size_in_bytes = parse_ul( optarg );             break;
-      case 'c': colorize = parse_colorize( optarg );            break;
-      case 'd': opt_offset_fmt = OFMT_DEC;                      break;
+      case 'b': size_in_bits = parse_ul( optarg );                  break;
+      case 'B': size_in_bytes = parse_ul( optarg );                 break;
+      case 'c': colorize = parse_colorize( optarg );                break;
+      case 'd': opt_offset_fmt = OFMT_DEC;                          break;
       case 'e': search_number = parse_ul( optarg );
-                search_endian = ENDIAN_LITTLE;                  break;
+                search_endian = ENDIAN_LITTLE;                      break;
       case 'E': search_number = parse_ul( optarg );
-                search_endian = ENDIAN_BIG;                     break;
-      case 'h': opt_offset_fmt = OFMT_HEX;                      break;
-      case 'S': search_buf = optarg;                      /* no break; */
-      case 'i': opt_case_insensitive = true;                    break;
-      case 'j': offset += parse_offset( optarg );               break;
-      case 'm': opt_only_matching = true;                       break;
-      case 'N': opt_max_bytes_to_read = parse_offset( optarg ); break;
-      case 'o': opt_offset_fmt = OFMT_OCT;                      break;
-      case 'p': opt_only_printing = true;                       break;
-      case 's': search_buf = optarg;                            break;
-      case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
+                search_endian = ENDIAN_BIG;                         break;
+      case 'h': opt_offset_fmt = OFMT_HEX;                          break;
+      case 'S': search_buf = FREE_LATER( check_strdup( optarg ) );
+      case 'i': opt_case_insensitive = true;                        break;
+      case 'j': offset += parse_offset( optarg );                   break;
+      case 'm': opt_only_matching = true;                           break;
+      case 'N': opt_max_bytes_to_read = parse_offset( optarg );     break;
+      case 'o': opt_offset_fmt = OFMT_OCT;                          break;
+      case 'p': opt_only_printing = true;                           break;
+      case 's': search_buf = FREE_LATER( check_strdup( optarg ) );  break;
+      case 'v': PRINT_ERR( "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
       default : usage();
     } /* switch */
   } /* while */
@@ -602,7 +602,7 @@ static void parse_options( int argc, char *argv[] ) {
 }
 
 static void usage( void ) {
-  fprintf( stderr,
+  PRINT_ERR(
 "usage: %s [options] [+offset] [file]\n"
 "       %s [options] [file] [[+]offset]\n"
 "\n"
