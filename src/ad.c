@@ -38,9 +38,9 @@
 /*****************************************************************************/
 
 #define DEFAULT_COLORS  "bn=32:mt=41;1:se=36"
-#define LINE_BUF_SIZE   16              /* bytes displayed on a line */
 #define OFFSET_WIDTH    16              /* number of offset digits */
 #define OFFSET_WIDTH_S  STRINGIFY(OFFSET_WIDTH)
+#define ROW_BUF_SIZE   16               /* bytes displayed in a row */
 
 #define SGR_START       "\33[%sm"       /* start color sequence */
 #define SGR_END         "\33[m"         /* end color sequence */
@@ -133,15 +133,15 @@ int main( int argc, char *argv[] ) {
   }
 
   do {
-    uint8_t line_buf[ LINE_BUF_SIZE ];
+    uint8_t row_buf[ ROW_BUF_SIZE ];
     uint16_t match_bits;                /* bit set = byte matches */
     bool matches_prev;
     size_t buf_pos;
 
-    buf_len = match_row( line_buf, &match_bits, kmp_values, match_buf );
+    buf_len = match_row( row_buf, &match_bits, kmp_values, match_buf );
     if ( buf_len &&
          (!opt_only_matching || match_bits) &&
-         (!opt_only_printing || any_printable( (char*)line_buf, buf_len )) ) {
+         (!opt_only_printing || any_printable( (char*)row_buf, buf_len )) ) {
 
       static char const *const offset_fmt_printf[] = {
         "%0" OFFSET_WIDTH_S "llu",      /* decimal */
@@ -150,7 +150,7 @@ int main( int argc, char *argv[] ) {
       };
 
       /* print row separator (if necessary) */
-      if ( last_dumped_offset + LINE_BUF_SIZE < offset && any_dumped ) {
+      if ( last_dumped_offset + ROW_BUF_SIZE < offset && any_dumped ) {
         size_t i;
         SGR_START_IF( sgr_sep );
         for ( i = 0; i < OFFSET_WIDTH; ++i )
@@ -182,12 +182,12 @@ int main( int argc, char *argv[] ) {
         else
           MATCH_OFF_IF( matches != matches_prev );
 
-        PRINTF( "%02X", (unsigned)line_buf[ buf_pos ] );
+        PRINTF( "%02X", (unsigned)row_buf[ buf_pos ] );
         matches_prev = matches;
       } /* for */
 
-      /* print padding if necessary (last line only)  */
-      while ( buf_pos < LINE_BUF_SIZE ) {
+      /* print padding if necessary (last row only)  */
+      while ( buf_pos < ROW_BUF_SIZE ) {
         if ( buf_pos++ % 2 == 0 )       /* print space between hex columns */
           PUTCHAR( ' ' );
         PRINTF( "  " );
@@ -203,7 +203,7 @@ int main( int argc, char *argv[] ) {
           MATCH_ASCII_ON_IF( matches != matches_prev );
         else
           MATCH_OFF_IF( matches != matches_prev );
-        PUTCHAR( isprint( line_buf[ buf_pos ] ) ? line_buf[ buf_pos ] : '.' );
+        PUTCHAR( isprint( row_buf[ buf_pos ] ) ? row_buf[ buf_pos ] : '.' );
         matches_prev = matches;
       } /* for */
       MATCH_OFF_IF( matches_prev );
@@ -215,7 +215,7 @@ int main( int argc, char *argv[] ) {
       last_dumped_offset = offset;
     }
     offset += buf_len;
-  } while ( buf_len == LINE_BUF_SIZE );
+  } while ( buf_len == ROW_BUF_SIZE );
 
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
 }
@@ -355,29 +355,29 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
 }
 
 /**
- * Gets a row of bytes (of LINE_BUF_SIZE) and whether each byte matches bytes
+ * Gets a row of bytes (of \c ROW_BUF_SIZE) and whether each byte matches bytes
  * in the search buffer.
  *
- * @param line_buf A pointer to the "line" buffer.
+ * @param row_buf A pointer to the row buffer.
  * @param match_bits A pointer to receive which bytes matched.  Note that the
  * bytes in the buffer are numbered left-to-right where as their corresponding
  * bits are numbered right-to-left.
  * @param kmp_values A pointer to the array of KMP values to use.
  * @param match_buf A pointer to a buffer to use while matching.
- * @return Returns the number of bytes in \a line_buf.  It should always be
- * \c LINE_BUF_SIZE except on the last line in which case it will be less than
- * \c LINE_BUF_SIZE.
+ * @return Returns the number of bytes in \a row_buf.  It should always be
+ * \c ROW_BUF_SIZE except on the last row in which case it will be less than
+ * \c ROW_BUF_SIZE.
  */
-static size_t match_row( uint8_t *line_buf, uint16_t *match_bits,
+static size_t match_row( uint8_t *row_buf, uint16_t *match_bits,
                          kmp_t const *kmp_values, uint8_t *match_buf ) {
   size_t buf_len;
 
   assert( match_bits );
   *match_bits = 0;
 
-  for ( buf_len = 0; buf_len < LINE_BUF_SIZE; ++buf_len ) {
+  for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
     bool matches;
-    if ( !match_byte( line_buf + buf_len, &matches, kmp_values, match_buf ) )
+    if ( !match_byte( row_buf + buf_len, &matches, kmp_values, match_buf ) )
       break;
     if ( matches )
       *match_bits |= 1 << buf_len;
