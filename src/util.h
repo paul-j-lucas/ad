@@ -82,6 +82,15 @@ struct free_node {
 typedef struct free_node free_node_t;
 
 /**
+ * Checks whethere there is at least one printable character in \a s.
+ *
+ * @param s The string to check.
+ * @param s_len The number of characters to check.
+ * @return Returns \c true only if there is at least one printable character.
+ */
+bool any_printable( char const *s, size_t s_len );
+
+/**
  * Calls \c realloc(3) and checks for failure.
  * If reallocation fails, prints an error message and exits.
  *

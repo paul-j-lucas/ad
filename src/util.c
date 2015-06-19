@@ -43,7 +43,7 @@ static size_t       total_bytes_read;
 /* local functions */
 static char const*  skip_ws( char const *s );
 
-/*****************************************************************************/
+/********** inline functions *************************************************/
 
 /**
  * Flips the endianness of the given 16-bit value.
@@ -89,6 +89,14 @@ static inline uint64_t swap_64( uint64_t n ) {
 #endif /* SIZEOF_UNSIGNED_LONG */
 
 /*****************************************************************************/
+
+bool any_printable( char const *s, size_t s_len ) {
+  assert( s );
+  for ( ; s_len; --s_len, ++s )
+    if ( isprint( *s ) )
+      return true;
+  return false;
+}
 
 void* check_realloc( void *p, size_t size ) {
   void *r;

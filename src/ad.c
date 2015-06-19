@@ -71,6 +71,7 @@ static bool           opt_case_insensitive;
 static size_t         opt_max_bytes_to_read = SIZE_MAX;
 static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
 bool                  opt_only_matching;
+bool                  opt_only_printing;
 char const*           path_name = "<stdin>";
 
 static char*          search_buf;       /* not NULL-terminated when numeric */
@@ -138,7 +139,10 @@ int main( int argc, char *argv[] ) {
     size_t buf_pos;
 
     buf_len = match_line( line_buf, &match_bits, kmp_values, match_buf );
-    if ( buf_len && (!opt_only_matching || match_bits) ) {
+    if ( buf_len &&
+         (!opt_only_matching || match_bits) &&
+         (!opt_only_printing || any_printable( (char*)line_buf, buf_len )) ) {
+
       static char const *const offset_fmt_printf[] = {
         "%0" OFFSET_WIDTH_S "llu",      /* decimal */
         "%0" OFFSET_WIDTH_S "llX",      /* hex */
@@ -216,7 +220,7 @@ int main( int argc, char *argv[] ) {
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
 }
 
-/*****************************************************************************/
+/********** matching *********************************************************/
 
 /**
  * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
@@ -462,7 +466,7 @@ static colorize_t parse_colorize( char const *s ) {
 static void parse_options( int argc, char *argv[] ) {
   colorize_t  colorize = COLOR_NOT_FILE;
   int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:c:de:E:hij:mN:os:S:v";
+  char const  opts[] = "b:B:c:de:E:hij:mN:ops:S:v";
   size_t      size_in_bits = 0, size_in_bytes = 0;
 
   opterr = 1;
@@ -483,6 +487,7 @@ static void parse_options( int argc, char *argv[] ) {
       case 'm': opt_only_matching = true;                       break;
       case 'N': opt_max_bytes_to_read = parse_offset( optarg ); break;
       case 'o': opt_offset_fmt = OFMT_OCT;                      break;
+      case 'p': opt_only_printing = true;                       break;
       case 's': search_buf = optarg;                            break;
       case 'v': fprintf( stderr, "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
       default : usage();
@@ -619,9 +624,10 @@ static void usage( void ) {
 "       -h         Print offset in hexadecimal [default].\n"
 "       -i         Search for case-insensitive string [default: no].\n"
 "       -j offset  Jump to offset before dumping [default: 0].\n"
-"       -m         Only dump lines that contain matches [default: no].\n"
+"       -m         Only dump rows having matches [default: no].\n"
 "       -N bytes   Dump max number of bytes [default: unlimited].\n"
 "       -o         Print offset in octal.\n"
+"       -p         Only dump rows having printable characters [default: no].\n"
 "       -s string  Search for string.\n"
 "       -S string  Search for case-insensitive string.\n"
 "       -v         Print version and exit.\n"
