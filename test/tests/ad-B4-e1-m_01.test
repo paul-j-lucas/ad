@@ -1,0 +1,1 @@
+ad | -c always -B4 -e1 -m | endian.bin | 0

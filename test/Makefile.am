@@ -25,9 +25,11 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-B1-e257.test \
 	tests/ad-B16-e1.test \
 	tests/ad-B2-E1-m_02.test \
+	tests/ad-B2-e1-m_01.test \
 	tests/ad-B2-e65536.test \
 	tests/ad-B2.test \
 	tests/ad-B4-E1-m_02.test \
+	tests/ad-B4-e1-m_01.test \
 	tests/ad-B4-e4294967296.test \
 	tests/ad-E0x0102-m_02.test \
 	tests/ad-E0x01020304-m_02.test \
