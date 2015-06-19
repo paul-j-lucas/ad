@@ -113,14 +113,15 @@ static void           usage( void );
 #define MATCH_OFF_IF(EXPR)  SGR_END_IF( EXPR )
 
 int main( int argc, char *argv[] ) {
-  bool any_matches = false;
+  bool any_dumped = false;              /* any data dumped yet? */
+  bool any_matches = false;             /* if matching, any data matched yet? */
   size_t buf_len;
   kmp_t *kmp_values;
-  off_t last_starting_offset;
+  off_t last_dumped_offset;
   uint8_t *match_buf;                   /* working storage for match_byte() */
 
   init( argc, argv );
-  last_starting_offset = offset;
+  last_dumped_offset = offset;
 
   if ( search_len ) {
     kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
@@ -145,7 +146,7 @@ int main( int argc, char *argv[] ) {
       };
 
       /* print row separator (if necessary) */
-      if ( last_starting_offset + LINE_BUF_SIZE < offset ) {
+      if ( last_dumped_offset + LINE_BUF_SIZE < offset && any_dumped ) {
         size_t i;
         SGR_START_IF( sgr_sep );
         for ( i = 0; i < OFFSET_WIDTH; ++i )
@@ -204,9 +205,10 @@ int main( int argc, char *argv[] ) {
       MATCH_OFF_IF( matches_prev );
       PUTCHAR( '\n' );
 
-      last_starting_offset = offset;
+      any_dumped = true;
       if ( match_bits )
         any_matches = true;
+      last_dumped_offset = offset;
     }
     offset += buf_len;
   } while ( buf_len == LINE_BUF_SIZE );
