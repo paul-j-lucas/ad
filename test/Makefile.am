@@ -30,42 +30,42 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-E0xD8FF-m.test \
 	tests/ad-E0xFFD8-m.test \
 	tests/ad-E1-sx-1.test \
-	tests/ad-N00.test \
-	tests/ad-N01.test \
-	tests/ad-N02.test \
-	tests/ad-N03.test \
-	tests/ad-N04.test \
-	tests/ad-N0x00.test \
-	tests/ad-N0x01.test \
-	tests/ad-N0x0f.test \
+	tests/ad-N0.test \
+	tests/ad-N0x0.test \
+	tests/ad-N0x1.test \
+	tests/ad-N0xf.test \
+	tests/ad-N1.test \
 	tests/ad-N14+02.test \
 	tests/ad-N15.test \
 	tests/ad-N16.test \
 	tests/ad-N17+02.test \
 	tests/ad-N17.test \
-	tests/ad-S02.test \
+	tests/ad-N2.test \
+	tests/ad-N3.test \
+	tests/ad-N4.test \
+	tests/ad-S_02.test \
 	tests/ad-b1-e1.test \
 	tests/ad-b16-B2.test \
 	tests/ad-b16-e65536.test \
 	tests/ad-b16.test \
 	tests/ad-b32-e4294967296.test \
 	tests/ad-b8-e257.test \
-	tests/ad-c01.test \
+	tests/ad-c_01.test \
 	tests/ad-d.test \
 	tests/ad-e1-sx-2.test \
 	tests/ad-h.test \
-	tests/ad-i-s01.test \
+	tests/ad-i-s_01.test \
 	tests/ad-i.test \
-	tests/ad-j02-N14.test \
-	tests/ad-j02-N17.test \
 	tests/ad-j1k-N16.test \
 	tests/ad-j1x.test \
-	tests/ad-m-s01.test \
+	tests/ad-j2-N14.test \
+	tests/ad-j2-N17.test \
+	tests/ad-m-s_01.test \
+	tests/ad-m-s_02.test \
 	tests/ad-m.test \
 	tests/ad-o.test \
-	tests/ad-p-01.test \
-	tests/ad-row_sep-01.test \
-	tests/ad-s01.test \
+	tests/ad-p.test \
+	tests/ad-s_01.test \
 	tests/ad-sxxx.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
