@@ -25,7 +25,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
-AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_INSTALL
 
 # Checks for libraries.

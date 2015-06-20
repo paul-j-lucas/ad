@@ -200,8 +200,8 @@ FILE* open_file( char const *path_name, off_t offset ) {
     );
   if ( offset && fseek( file, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
-      "\"%s\": can not seek to offset %ld: %s\n",
-      path_name, (long)offset, ERROR_STR
+      "\"%s\": can not seek to offset %lld: %s\n",
+      path_name, (long long)offset, ERROR_STR
     );
   return file;
 }
