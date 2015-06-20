@@ -19,39 +19,39 @@
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-/* local */
+// local
 #include "config.h"
 #include "util.h"
 
-/* system */
+// system
 #include <assert.h>
-#include <ctype.h>                      /* for isprint() */
+#include <ctype.h>                      // for isprint()
 #include <errno.h>
-#include <libgen.h>                     /* for basename() */
+#include <libgen.h>                     // for basename()
 #include <stdio.h>
-#include <stdlib.h>                     /* for exit(), strtoul(), ... */
-#include <string.h>                     /* for str...() */
-#include <sys/stat.h>                   /* for fstat() */
+#include <stdlib.h>                     // for exit(), strtoul(), ...
+#include <string.h>                     // for str...()
+#include <sys/stat.h>                   // for fstat()
 #include <sys/types.h>
-#include <unistd.h>                     /* for getopt() */
+#include <unistd.h>                     // for getopt()
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
-#define COLUMN_WIDTH    2               /* bytes per hex column */
+#define COLUMN_WIDTH    2               // bytes per hex column
 #define DEFAULT_COLORS  "bn=32:EC=35:MB=41;1:se=36"
-#define OFFSET_WIDTH    16              /* number of offset digits */
+#define OFFSET_WIDTH    16              // number of offset digits
 #define OFFSET_WIDTH_S  STRINGIFY(OFFSET_WIDTH)
-#define ROW_BUF_SIZE    16              /* bytes displayed in a row */
+#define ROW_BUF_SIZE    16              // bytes displayed in a row
 
-#define SGR_START       "\33[%sm"       /* start color sequence */
-#define SGR_END         "\33[m"         /* end color sequence */
-#define SGR_EL          "\33[K"         /* Erase in Line (EL) sequence */
+#define SGR_START       "\33[%sm"       // start color sequence
+#define SGR_END         "\33[m"         // end color sequence
+#define SGR_EL          "\33[K"         // Erase in Line (EL) sequence
 
 enum colorization {
-  COLOR_NEVER,                          /* never colorize */
-  COLOR_ISATTY,                         /* colorize only if isatty(3) */
-  COLOR_NOT_FILE,                       /* colorize only if !ISREG stdout */
-  COLOR_ALWAYS                          /* always colorize */
+  COLOR_NEVER,                          // never colorize
+  COLOR_ISATTY,                         // colorize only if isatty(3)
+  COLOR_NOT_FILE,                       // colorize only if !ISREG stdout
+  COLOR_ALWAYS                          // always colorize
 };
 typedef enum colorization colorization_t;
 
@@ -64,14 +64,14 @@ enum offset_fmt {
 };
 typedef enum offset_fmt offset_fmt_t;
 
-/* extern global variables */
-char const*           me;               /* executable name */
+// extern global variables
+char const*           me;               // executable name
 char const*           path_name = "<stdin>";
 
-static bool           colorize;         /* dump in color? */
-static FILE*          file;             /* file to read from */
-static free_node_t*   free_head;        /* linked list of stuff to free */
-static off_t          offset;           /* curent offset into file */
+static bool           colorize;         // dump in color?
+static FILE*          file;             // file to read from
+static free_node_t*   free_head;        // linked list of stuff to free
+static off_t          offset;           // curent offset into file
 static bool           opt_case_insensitive;
 static size_t         opt_max_bytes_to_read = SIZE_MAX;
 static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
@@ -79,33 +79,32 @@ static bool           opt_only_matching;
 static bool           opt_only_printing;
 static bool           opt_verbose;
 
-static char*          search_buf;       /* not NULL-terminated when numeric */
-static endian_t       search_endian;    /* if searching for a number */
-static size_t         search_len;       /* number of bytes in search_buf */
-static unsigned long  search_number;    /* the number to search for */
+static char*          search_buf;       // not NULL-terminated when numeric
+static endian_t       search_endian;    // if searching for a number
+static size_t         search_len;       // number of bytes in search_buf
+static unsigned long  search_number;    // the number to search for
 
 static char const*    sgr_start = SGR_START SGR_EL;
 static char const*    sgr_end   = SGR_END SGR_EL;
-static char const*    sgr_offset;       /* offset color */
-static char const*    sgr_sep;          /* separator color */
-static char const*    sgr_elided;       /* elided byte count */
-static char const*    sgr_hex_match;    /* hex match color */
-static char const*    sgr_ascii_match;  /* ASCII match color */
+static char const*    sgr_offset;       // offset color
+static char const*    sgr_sep;          // separator color
+static char const*    sgr_elided;       // elided byte count
+static char const*    sgr_hex_match;    // hex match color
+static char const*    sgr_ascii_match;  // ASCII match color
 
-/* local functions */
+// local functions
 static void           init( int, char*[] );
 static kmp_t*         kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
 static size_t         match_row( uint8_t*, uint16_t*, kmp_t const*, uint8_t* );
 static bool           parse_grep_color( char const* );
 static bool           parse_grep_colors( char const* );
-static void           print_offset( void );
 static bool           should_colorize( colorization_t );
 static void           usage( void );
 
 #define FREE_LATER(P) freelist_add( (P), &free_head )
 
-/********** dumping **********************************************************/
+/////////// dumping ///////////////////////////////////////////////////////////
 
 #define SGR_START_IF(EXPR) \
   BLOCK( if ( colorize && (EXPR) ) PRINTF( sgr_start, (EXPR) ); )
@@ -127,18 +126,24 @@ int main( int argc, char *argv[] ) {
   };
   typedef struct row_buf row_buf_t;
 
-  bool        any_dumped = false;       /* any data dumped yet? */
-  bool        any_matches = false;      /* if matching, any data matched yet? */
+  static char const *const offset_fmt_printf[] = {
+    "%0" OFFSET_WIDTH_S "llu",          // decimal
+    "%0" OFFSET_WIDTH_S "llX",          // hex
+    "%0" OFFSET_WIDTH_S "llo",          // octal
+  };
+
+  bool        any_dumped = false;       // any data dumped yet?
+  bool        any_matches = false;      // if matching, any data matched yet?
   row_buf_t   buf[2];
   row_buf_t  *cur = buf, *next = buf + 1;
   bool        is_same_row = false;
-  kmp_t      *kmp_values = NULL;        /* used only by match_byte() */
-  uint8_t    *match_buf = NULL;         /* used only by match_byte() */
+  kmp_t      *kmp_values = NULL;        // used only by match_byte()
+  uint8_t    *match_buf = NULL;         // used only by match_byte()
 
-  init( argc, argv );                   /* sets offset */
+  init( argc, argv );                   // sets offset
   off_t dumped_offset = offset;
 
-  if ( search_len ) {                   /* is user searching for anything? */
+  if ( search_len ) {                   // is user searching for anything?
     kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
     match_buf = FREE_LATER( check_realloc( NULL, search_len ) );
   }
@@ -159,13 +164,12 @@ int main( int argc, char *argv[] ) {
          (!opt_only_printing ||
             any_printable( (char*)cur->bytes, cur->len )) ) ) {
 
+      // print row separator (if necessary)
       if ( !opt_only_matching && !opt_only_printing ) {
-        /* print row separator (if necessary) */
         off_t const offset_delta = offset - dumped_offset - ROW_BUF_SIZE;
         if ( offset_delta && any_dumped ) {
           SGR_START_IF( sgr_elided );
-          size_t i;
-          for ( i = 0; i < OFFSET_WIDTH; ++i )
+          for ( size_t i = 0; i < OFFSET_WIDTH; ++i )
             PUTCHAR( '-' );
           SGR_END_IF( sgr_elided );
           SGR_START_IF( sgr_sep );
@@ -179,10 +183,15 @@ int main( int argc, char *argv[] ) {
         }
       }
 
-      /* print offset & column separator */
-      print_offset();
+      // print offset & column separator
+      SGR_START_IF( sgr_offset );
+      PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
+      SGR_END_IF( sgr_offset );
+      SGR_START_IF( sgr_sep );
+      PUTCHAR( ':' );
+      SGR_END_IF( sgr_sep );
 
-      /* dump hex part */
+      // dump hex part
       prev_matches = false;
       for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
         bool const matches = cur->match_bits & (1 << buf_pos);
@@ -190,7 +199,7 @@ int main( int argc, char *argv[] ) {
 
         if ( buf_pos % COLUMN_WIDTH == 0 ) {
           SGR_END_IF( prev_matches );
-          PUTCHAR( ' ' );               /* print space between hex columns */
+          PUTCHAR( ' ' );               // print space between hex columns
           SGR_HEX_START_IF( prev_matches );
         }
         if ( matches )
@@ -199,17 +208,17 @@ int main( int argc, char *argv[] ) {
           SGR_END_IF( matches_changed );
         PRINTF( "%02X", (unsigned)cur->bytes[ buf_pos ] );
         prev_matches = matches;
-      } /* for */
+      } // for
       SGR_END_IF( prev_matches );
 
-      /* print padding if necessary (last row only)  */
+      // print padding if necessary (last row only) 
       while ( buf_pos < ROW_BUF_SIZE ) {
         if ( buf_pos++ % COLUMN_WIDTH == 0 )
-          PUTCHAR( ' ' );             /* print space between hex columns */
+          PUTCHAR( ' ' );             // print space between hex columns
         PRINTF( "  " );
-      } /* while */
+      } // while
 
-      /* dump ASCII part */
+      // dump ASCII part
       PRINTF( "  " );
       prev_matches = false;
       for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
@@ -223,7 +232,7 @@ int main( int argc, char *argv[] ) {
           SGR_END_IF( matches_changed );
         PUTCHAR( isprint( byte ) ? byte : '.' );
         prev_matches = matches;
-      } /* for */
+      } // for
       SGR_END_IF( prev_matches );
       PUTCHAR( '\n' );
 
@@ -240,35 +249,12 @@ int main( int argc, char *argv[] ) {
     cur = next, next = temp;
 
     offset += ROW_BUF_SIZE;
-  } /* while */
-
-#if 0
-  if ( is_same_row ) {
-    /* print offset & column separator */
-    print_offset();
-    PUTCHAR( '\n' );
-  }
-#endif
+  } // while
 
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
 }
 
-static void print_offset( void ) {
-  static char const *const offset_fmt_printf[] = {
-    "%0" OFFSET_WIDTH_S "llu",          /* decimal */
-    "%0" OFFSET_WIDTH_S "llX",          /* hex */
-    "%0" OFFSET_WIDTH_S "llo",          /* octal */
-  };
-
-  SGR_START_IF( sgr_offset );
-  PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
-  SGR_END_IF( sgr_offset );
-  SGR_START_IF( sgr_sep );
-  PUTCHAR( ':' );
-  SGR_END_IF( sgr_sep );
-}
-
-/********** matching *********************************************************/
+/////////// matching //////////////////////////////////////////////////////////
 
 /**
  * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
@@ -286,19 +272,16 @@ static void print_offset( void ) {
  */
 static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   assert( pattern );
-
-  size_t i, j = 0;
   kmp_t *const kmps = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
-
   kmps[0] = 0;
-  for ( i = 1; i < pattern_len; ) {
+  for ( size_t i = 1, j = 0; i < pattern_len; ) {
     if ( pattern[i] == pattern[j] )
       kmps[++i] = ++j;
     else if ( j > 0 )
       j = kmps[j-1];
     else
       kmps[++i] = 0;
-  } /* for */
+  } // for
   return kmps;
 }
 
@@ -316,12 +299,12 @@ static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 static bool match_byte( uint8_t *pbyte, bool *matches,
                         kmp_t const *kmp_values, uint8_t *match_buf ) {
   enum state {
-    S_READING,                          /* just reading; not matching */
-    S_MATCHING,                         /* matching search bytes */
-    S_MATCHING_CONT,                    /* matching after a mismatch */
-    S_MATCHED,                          /* a complete match */
-    S_NOT_MATCHED,                      /* didn't match after all */
-    S_DONE                              /* no more input */
+    S_READING,                          // just reading; not matching
+    S_MATCHING,                         // matching search bytes
+    S_MATCHING_CONT,                    // matching after a mismatch
+    S_MATCHED,                          // a complete match
+    S_NOT_MATCHED,                      // didn't match after all
+    S_DONE                              // no more input
   };
   typedef enum state state_t;
 
@@ -350,10 +333,10 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
       case S_READING:
         if ( !get_byte( &byte, opt_max_bytes_to_read, file ) )
           GOTO_STATE( S_DONE );
-        if ( !search_len )              /* user isn't searching for anything */
+        if ( !search_len )              // user isn't searching for anything
           RETURN( byte );
         if ( MAYBE_NO_CASE( byte ) != (uint8_t)search_buf[0] )
-          RETURN( byte );               /* searching, but no match yet */
+          RETURN( byte );               // searching, but no match yet
         match_buf[ 0 ] = byte;
         kmp = 0;
         GOTO_STATE( S_MATCHING );
@@ -364,7 +347,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           buf_drain = buf_pos;
           GOTO_STATE( S_MATCHED );
         }
-        /* no break; */
+        // no break;
       case S_MATCHING_CONT:
         if ( !get_byte( &byte, opt_max_bytes_to_read, file ) ) {
           buf_drain = buf_pos;
@@ -397,8 +380,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
 #undef MAYBE_NO_CASE
 #undef RETURN
 
-    } /* switch */
-  } /* for */
+    } // switch
+  } // for
 }
 
 /**
@@ -417,25 +400,24 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
  */
 static size_t match_row( uint8_t *row_buf, uint16_t *match_bits,
                          kmp_t const *kmp_values, uint8_t *match_buf ) {
-  size_t buf_len;
-
   assert( match_bits );
   *match_bits = 0;
 
+  size_t buf_len;
   for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
     bool matches;
     if ( !match_byte( row_buf + buf_len, &matches, kmp_values, match_buf ) ) {
-      /* pad remainder of line */
+      // pad remainder of line
       memset( row_buf + buf_len, 0, ROW_BUF_SIZE - buf_len );
       break;
     }
     if ( matches )
       *match_bits |= 1 << buf_len;
-  } /* for */
+  } // for
   return buf_len;
 }
 
-/********** option parsing ***************************************************/
+/////////// option parsing ////////////////////////////////////////////////////
 
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -479,37 +461,36 @@ static colorization_t parse_colorization( char const *when ) {
 
   static colorize_map_t const colorize_map[] = {
     { "always",    COLOR_ALWAYS   },
-    { "auto",      COLOR_ISATTY   },    /* grep compatibility */
-    { "isatty",    COLOR_ISATTY   },    /* explicit synonym for auto */
+    { "auto",      COLOR_ISATTY   },    // grep compatibility
+    { "isatty",    COLOR_ISATTY   },    // explicit synonym for auto
     { "never",     COLOR_NEVER    },
     { "not_file",  COLOR_NOT_FILE },
-    { "not_isreg", COLOR_NOT_FILE },    /* synonym for not_isfile */
-    { "tty",       COLOR_ISATTY   },    /* synonym for isatty */
+    { "not_isreg", COLOR_NOT_FILE },    // synonym for not_isfile
+    { "tty",       COLOR_ISATTY   },    // synonym for isatty
     { NULL,        COLOR_NEVER    }
   };
 
   char const *const when_lc = tolower_s( FREE_LATER( check_strdup( when ) ) );
-  colorize_map_t const *m;
-  size_t names_buf_size = 1;            /* for trailing NULL */
+  size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( m = colorize_map; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
     if ( strcmp( when_lc, m->map_when ) == 0 )
       return m->map_colorization;
-    /* sum sizes of names in case we need to construct an error message */
+    // sum sizes of names in case we need to construct an error message
     names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
-  } /* for */
+  } // for
 
-  /* name not found: construct valid name list for an error message */
+  // name not found: construct valid name list for an error message
   char *const names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
   char *pnames = names_buf;
-  for ( m = colorize_map; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
     }
     strcpy( pnames, m->map_when );
     pnames += strlen( m->map_when );
-  } /* for */
+  } // for
   PMESSAGE_EXIT( USAGE,
     "\"%s\": invalid value for -c option; must be one of:\n\t%s\n",
     when, names_buf
@@ -518,7 +499,7 @@ static colorization_t parse_colorization( char const *when ) {
 
 static void parse_options( int argc, char *argv[] ) {
   colorization_t  colorization = COLOR_NOT_FILE;
-  int             opt;                  /* command-line option */
+  int             opt;                  // command-line option
   char const      opts[] = "b:B:c:de:E:hij:mN:ops:S:vV";
   size_t          size_in_bits = 0, size_in_bytes = 0;
 
@@ -545,8 +526,8 @@ static void parse_options( int argc, char *argv[] ) {
       case 'v': PRINT_ERR( "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
       case 'V': opt_verbose = true;                                 break;
       default : usage();
-    } /* switch */
-  } /* while */
+    } // switch
+  } // while
   argc -= optind, argv += optind - 1;
 
   if ( search_endian && search_buf )
@@ -582,7 +563,7 @@ static void parse_options( int argc, char *argv[] ) {
 #endif /* SIZEOF_UNSIGNED_LONG */
           "\n", size_in_bits, 'b'
         );
-    } /* switch */
+    } // switch
     if ( !search_endian )
       option_required( "b", "eE" );
     check_number_size( size_in_bits, ulong_len( search_number ) * 8, 'b' );
@@ -606,7 +587,7 @@ static void parse_options( int argc, char *argv[] ) {
 #endif /* SIZEOF_UNSIGNED_LONG */
           "\n", size_in_bytes, 'B'
         );
-    } /* switch */
+    } // switch
     if ( !search_endian )
       option_required( "B", "eE" );
     check_number_size( size_in_bytes, ulong_len( search_number ), 'B' );
@@ -622,11 +603,11 @@ static void parse_options( int argc, char *argv[] ) {
   }
 
   switch ( argc ) {
-    case 0:                             /* read from stdin with no offset */
+    case 0:                             // read from stdin with no offset
       file = fdopen( STDIN_FILENO, "r" );
       break;
 
-    case 1:                             /* offset OR file */
+    case 1:                             // offset OR file
       if ( *argv[1] == '+' ) {
         file = fdopen( STDIN_FILENO, "r" );
         fskip( parse_offset( argv[1] ), file );
@@ -636,7 +617,7 @@ static void parse_options( int argc, char *argv[] ) {
       }
       break;
 
-    case 2:                             /* offset & file OR file & offset */
+    case 2:                             // offset & file OR file & offset
       if ( *argv[1] == '+' ) {
         if ( *argv[2] == '+' )
           PMESSAGE_EXIT( USAGE,
@@ -653,7 +634,7 @@ static void parse_options( int argc, char *argv[] ) {
 
     default:
       usage();
-  } /* switch */
+  } // switch
 }
 
 static void usage( void ) {
@@ -692,16 +673,16 @@ static void usage( void ) {
   exit( EXIT_USAGE );
 }
 
-/********** color ************************************************************/
+/////////// color /////////////////////////////////////////////////////////////
 
 /**
  * Color capability used to map an AD_COLORS/GREP_COLORS "capability" either to
  * the variable to set or the function to call.
  */
 struct color_cap {
-  char const *cap_name;                 /* capability name */
-  char const **cap_var_to_set;          /* variable to set ... */
-  void (*cap_func)( char const* );      /* ... OR function to call */
+  char const *cap_name;                 // capability name
+  char const **cap_var_to_set;          // variable to set ...
+  void (*cap_func)( char const* );      // ... OR function to call
 };
 typedef struct color_cap color_cap_t;
 
@@ -717,7 +698,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   assert( cap->cap_var_to_set || cap->cap_func );
 
   if ( sgr_color ) {
-    if ( !*sgr_color )                  /* empty string -> NULL = unset */
+    if ( !*sgr_color )                  // empty string -> NULL = unset
       sgr_color = NULL;
     else if ( !parse_sgr( sgr_color ) )
       return false;
@@ -738,7 +719,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  * @param sgr_color The SGR color to set or empty or NULL to unset.
  */
 static void cap_mt( char const *sgr_color ) {
-  if ( !*sgr_color )                    /* empty string -> NULL = unset */
+  if ( !*sgr_color )                    // empty string -> NULL = unset
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
 }
@@ -749,7 +730,7 @@ static void cap_mt( char const *sgr_color ) {
  * @param sgr_color Not used.
  */
 static void cap_ne( char const *sgr_color ) {
-  (void)sgr_color;                      /* suppress warning */
+  (void)sgr_color;                      // suppress warning
   sgr_start = SGR_START;
   sgr_end   = SGR_END;
 }
@@ -759,14 +740,14 @@ static void cap_ne( char const *sgr_color ) {
  * to avoid conflict with grep.  Lower-case names are for grep compatibility.
  */
 static color_cap_t const color_caps[] = {
-  { "bn", &sgr_offset,      NULL   },   /* grep: byte offset */
-  { "EC", &sgr_elided,      NULL   },   /* elided count */
-  { "MA", &sgr_ascii_match, NULL   },   /* matched ASCII */
-  { "MH", &sgr_hex_match,   NULL   },   /* matched hex */
-  { "MB", NULL,             cap_mt },   /* matched both */
-  { "mt", NULL,             cap_mt },   /* grep: matched text (both) */
-  { "se", &sgr_sep,         NULL   },   /* grep: separator */
-  { "ne", NULL,             cap_ne },   /* grep: no EL on SGR_* */
+  { "bn", &sgr_offset,      NULL   },   // grep: byte offset
+  { "EC", &sgr_elided,      NULL   },   // elided count
+  { "MA", &sgr_ascii_match, NULL   },   // matched ASCII
+  { "MH", &sgr_hex_match,   NULL   },   // matched hex
+  { "MB", NULL,             cap_mt },   // matched both
+  { "mt", NULL,             cap_mt },   // grep: matched text (both)
+  { "se", &sgr_sep,         NULL   },   // grep: separator
+  { "ne", NULL,             cap_ne },   // grep: no EL on SGR
   { NULL, NULL,             NULL   }
 };
 
@@ -795,24 +776,22 @@ static bool parse_grep_colors( char const *capabilities ) {
   bool set_something = false;
 
   if ( capabilities ) {
-    /* free this later since the sgr_* variables point to substrings */
+    // free this later since the sgr_* variables point to substrings
     char *const capabilities_dup = FREE_LATER( check_strdup( capabilities ) );
     char *next_cap = capabilities_dup;
     char *cap_name_val;
 
     while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
-      color_cap_t const *cap;
       char const *const cap_name = strsep( &cap_name_val, "=" );
-
-      for ( cap = color_caps; cap->cap_name; ++cap ) {
+      for ( color_cap_t const *cap = color_caps; cap->cap_name; ++cap ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
           char const *const cap_value = strsep( &cap_name_val, "=" );
           if ( cap_set( cap, cap_value ) )
             set_something = true;
           break;
         }
-      } /* for */
-    } /* while */
+      } // for
+    } // while
   }
   return set_something;
 }
@@ -824,45 +803,45 @@ static bool parse_grep_colors( char const *capabilities ) {
  * @return Returns \c true only if we should do color.
  */
 static bool should_colorize( colorization_t c ) {
-  switch ( c ) {                        /* handle easy cases */
+  switch ( c ) {                        // handle easy cases
     case COLOR_ALWAYS: return true;
     case COLOR_NEVER : return false;
     default          : break;
   }
 
-  /*
-   * If TERM is unset, empty, or "dumb", color probably won't work.
-   */
+  //
+  // If TERM is unset, empty, or "dumb", color probably won't work.
+  //
   char const *const term = getenv( "TERM" );
   if ( !term || !*term || strcmp( term, "dumb" ) == 0 )
     return false;
 
-  if ( c == COLOR_ISATTY )              /* emulate grep's --color=auto */
+  if ( c == COLOR_ISATTY )              // emulate grep's --color=auto
     return isatty( STDOUT_FILENO );
 
-  /*
-   * Otherwise we want to do color only we're writing either to a TTY or to a
-   * pipe (so the common case of piping to less(1) will still show color) but
-   * NOT when writing to a file because we don't want the escape sequences
-   * polluting it.
-   *
-   * Results from testing using isatty(3) and fstat(3) are given in the
-   * following table:
-   *
-   *    COMMAND   Should? isatty ISCHR ISFIFO ISREG
-   *    ========= ======= ====== ===== ====== =====
-   *    ad           T      T      T     F      F
-   *    ad > file    F      F      F     F    >>T<<
-   *    ad | less    T      F      F     T      F
-   *
-   * Hence, we want to do color _except_ when ISREG=T.
-   */
+  //
+  // Otherwise we want to do color only we're writing either to a TTY or to a
+  // pipe (so the common case of piping to less(1) will still show color) but
+  // NOT when writing to a file because we don't want the escape sequences
+  // polluting it.
+  //
+  // Results from testing using isatty(3) and fstat(3) are given in the
+  // following table:
+  //
+  //    COMMAND   Should? isatty ISCHR ISFIFO ISREG
+  //    ========= ======= ====== ===== ====== =====
+  //    ad           T      T      T     F      F
+  //    ad > file    F      F      F     F    >>T<<
+  //    ad | less    T      F      F     T      F
+  //
+  // Hence, we want to do color _except_ when ISREG=T.
+  //
   struct stat stdout_stat;
   FSTAT( STDOUT_FILENO, &stdout_stat );
   return !S_ISREG( stdout_stat.st_mode );
 }
 
-/********** initialization & clean-up ****************************************/
+/////////// initialization & clean-up /////////////////////////////////////////
 
 static void clean_up( void ) {
   freelist_free( free_head );
@@ -878,7 +857,7 @@ static void init( int argc, char *argv[] ) {
   if ( search_buf )
     search_len = strlen( search_buf );
   else if ( search_endian ) {
-    if ( !search_len )                  /* default to smallest possible size */
+    if ( !search_len )                  // default to smallest possible size
       search_len = ulong_len( search_number );
     ulong_rearrange_bytes( &search_number, search_len, search_endian );
     search_buf = (char*)&search_number;
@@ -888,5 +867,5 @@ static void init( int argc, char *argv[] ) {
     exit( search_len ? EXIT_NO_MATCHES : EXIT_OK );
 }
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */

@@ -20,7 +20,7 @@
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-AC_INIT([ad], [2.0], [paul@lucasmail.org],,[https://github.com/paul-j-lucas/ad])
+AC_INIT([ad], [3.0], [paul@lucasmail.org],,[https://github.com/paul-j-lucas/ad])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
@@ -31,14 +31,12 @@ AC_PROG_INSTALL
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([assert.h])
 AC_CHECK_HEADERS([ctype.h])
 AC_CHECK_HEADERS([errno.h])
 AC_CHECK_HEADERS([libgen.h])
-AC_CHECK_HEADERS([stdlib.h])
-AC_CHECK_HEADERS([string.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([unistd.h])
+AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
 
 # Checks for typedefs, structures, and compiler characteristics.

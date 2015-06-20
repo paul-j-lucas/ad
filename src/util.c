@@ -19,31 +19,32 @@
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-/* local */
+// local
 #include "common.h"
 #include "config.h"
 #include "util.h"
 
-/* system */
+// system
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>                     /* for exit(), strtoul(), ... */
-#include <string.h>                     /* for str...() */
+#include <stdlib.h>                     // for exit(), strtoul(), ...
+#include <string.h>                     // for str...()
 #include <sys/types.h>
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
+// extern global variables
 extern char const*  me;
 extern char const*  path_name;
 
 static size_t       total_bytes_read;
 
-/* local functions */
+// local functions
 static char const*  skip_ws( char const *s );
 
-/********** inline functions *************************************************/
+/////////// inline functions //////////////////////////////////////////////////
 
 /**
  * Flips the endianness of the given 16-bit value.
@@ -88,7 +89,7 @@ static inline uint64_t swap_64( uint64_t n ) {
 }
 #endif /* SIZEOF_UNSIGNED_LONG */
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
 bool any_printable( char const *s, size_t s_len ) {
   assert( s );
@@ -99,13 +100,13 @@ bool any_printable( char const *s, size_t s_len ) {
 }
 
 void* check_realloc( void *p, size_t size ) {
-  /*
-   * Autoconf, 5.5.1:
-   *
-   * realloc
-   *    The C standard says a call realloc(NULL, size) is equivalent to
-   *    malloc(size), but some old systems don't support this (e.g., NextStep).
-   */
+  //
+  // Autoconf, 5.5.1:
+  //
+  // realloc
+  //    The C standard says a call realloc(NULL, size) is equivalent to
+  //    malloc(size), but some old systems don't support this (e.g., NextStep).
+  //
   if ( !size )
     size = 1;
   void *const r = p ? realloc( p, size ) : malloc( size );
@@ -137,7 +138,7 @@ void freelist_free( free_node_t *phead ) {
     free( phead->p );
     free( phead );
     phead = next;
-  } /* while */
+  } // while
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
@@ -155,7 +156,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
         path_name, ERROR_STR
       );
     bytes_to_skip -= bytes_read;
-  } /* while */
+  } // while
 }
 
 bool get_byte( uint8_t *pbyte, size_t max_bytes_to_read, FILE *file ) {
@@ -208,7 +209,7 @@ FILE* open_file( char const *path_name, off_t offset ) {
 
 unsigned long parse_offset( char const *s ) {
   s = skip_ws( s );
-  if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
+  if ( !*s || *s == '-' )               // strtoul(3) wrongly allows '-'
     return false;
 
   char *end = NULL;
@@ -216,15 +217,15 @@ unsigned long parse_offset( char const *s ) {
   unsigned long n = strtoul( s, &end, 0 );
   if ( errno || end == s )
     goto error;
-  if ( end[0] ) {                       /* possibly 'b', 'k', or 'm' */
-    if ( end[1] )                       /* not a single char */
+  if ( end[0] ) {                       // possibly 'b', 'k', or 'm'
+    if ( end[1] )                       // not a single char
       goto error;
     switch ( end[0] ) {
       case 'b': n *=         512; break;
       case 'k': n *=        1024; break;
       case 'm': n *= 1024 * 1024; break;
       default : goto error;
-    } /* switch */
+    } // switch
   }
   return n;
 error:
@@ -250,13 +251,13 @@ bool parse_sgr( char const *sgr_color ) {
         continue;
       default:
         return false;
-    } /* switch */
-  } /* for */
+    } // switch
+  } // for
 }
 
 unsigned long parse_ul( char const *s ) {
   s = skip_ws( s );
-  if ( *s && *s != '-') {               /* strtoul(3) wrongly allows '-' */
+  if ( *s && *s != '-') {               // strtoul(3) wrongly allows '-'
     char *end = NULL;
     errno = 0;
     unsigned long const n = strtoul( s, &end, 0 );
@@ -268,8 +269,7 @@ unsigned long parse_ul( char const *s ) {
 
 char* tolower_s( char *s ) {
   assert( s );
-  char *t;
-  for ( t = s; *t; ++t )
+  for ( char *t = s; *t; ++t )
     *t = tolower( *t );
   return s;
 }
@@ -303,7 +303,7 @@ void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian ) {
 #ifdef WORDS_BIGENDIAN
 
     case ENDIAN_BIG:
-      /* move bytes to start of buffer */
+      // move bytes to start of buffer
       *n <<= (sizeof( unsigned long ) - bytes) * 8;
       break;
 
@@ -315,8 +315,8 @@ void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian ) {
 #if SIZEOF_UNSIGNED_LONG == 8
         case 8 : *n = swap_64( *n );  break;
 #endif /* SIZEOF_UNSIGNED_LONG */
-      } /* switch */
-      /* post-swap, bytes are at start of buffer */
+      } // switch
+      // post-swap, bytes are at start of buffer
       break;
 
 #else /* machine words are little endian */
@@ -329,18 +329,18 @@ void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian ) {
 #if SIZEOF_UNSIGNED_LONG == 8
         case 8 : *n = swap_64( *n );  break;
 #endif /* SIZEOF_UNSIGNED_LONG */
-      } /* switch */
+      } // switch
       break;
 
     case ENDIAN_LITTLE:
-      /* do nothing */
+      // do nothing
       break;
 
 #endif /* WORDS_BIGENDIAN */
 
     default:
       assert( true );
-  } /* switch */
+  } // switch
 }
 
 void unget_byte( uint8_t byte, FILE *file ) {
@@ -351,5 +351,5 @@ void unget_byte( uint8_t byte, FILE *file ) {
   --total_bytes_read;
 }
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */

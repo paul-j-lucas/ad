@@ -22,20 +22,20 @@
 #ifndef ad_util_H
 #define ad_util_H
 
-/* local */
+// local
 #include "common.h"
 #include "config.h"
 
-/* system */
+// system
 #include <errno.h>
-#include <stdint.h>                     /* for uint8_t, ... */
+#include <stdint.h>                     // for uint8_t, ...
 #include <stdio.h>
-#include <string.h>                     /* for str...() */
+#include <string.h>                     // for str...()
 #include <sys/types.h>
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
-/* define a "bool" type */
+// define a "bool" type
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
 #else
@@ -75,7 +75,7 @@ typedef bool _Bool;
 #define STRINGIFY_HELPER(S) #S
 #define STRINGIFY(S)        STRINGIFY_HELPER(S)
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
 struct free_node {
   void *p;
@@ -235,7 +235,7 @@ void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian );
  */
 void unget_byte( uint8_t byte, FILE *file );
 
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
 
 #endif /* ad_util_H */
 /* vim:set et sw=2 ts=2: */
