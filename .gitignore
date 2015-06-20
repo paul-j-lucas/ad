@@ -10,3 +10,4 @@ install-sh
 Makefile
 missing
 *.o
+.*.swp
