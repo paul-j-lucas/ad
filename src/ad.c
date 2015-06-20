@@ -37,22 +37,23 @@
 
 /*****************************************************************************/
 
-#define DEFAULT_COLORS  "bn=32:mt=41;1:se=36"
+#define COLUMN_WIDTH    2               /* bytes per hex column */
+#define DEFAULT_COLORS  "bn=32:EC=35:MB=41;1:se=36"
 #define OFFSET_WIDTH    16              /* number of offset digits */
 #define OFFSET_WIDTH_S  STRINGIFY(OFFSET_WIDTH)
-#define ROW_BUF_SIZE   16               /* bytes displayed in a row */
+#define ROW_BUF_SIZE    16              /* bytes displayed in a row */
 
 #define SGR_START       "\33[%sm"       /* start color sequence */
 #define SGR_END         "\33[m"         /* end color sequence */
 #define SGR_EL          "\33[K"         /* Erase in Line (EL) sequence */
 
-enum colorize {
+enum colorization {
   COLOR_NEVER,                          /* never colorize */
   COLOR_ISATTY,                         /* colorize only if isatty(3) */
   COLOR_NOT_FILE,                       /* colorize only if !ISREG stdout */
   COLOR_ALWAYS                          /* always colorize */
 };
-typedef enum colorize colorize_t;
+typedef enum colorization colorization_t;
 
 typedef size_t kmp_t;
 
@@ -63,16 +64,20 @@ enum offset_fmt {
 };
 typedef enum offset_fmt offset_fmt_t;
 
+/* extern global variables */
+char const*           me;               /* executable name */
+char const*           path_name = "<stdin>";
+
+static bool           colorize;         /* dump in color? */
 static FILE*          file;             /* file to read from */
 static free_node_t*   free_head;        /* linked list of stuff to free */
-char const*           me;               /* executable name */
 static off_t          offset;           /* curent offset into file */
 static bool           opt_case_insensitive;
 static size_t         opt_max_bytes_to_read = SIZE_MAX;
 static offset_fmt_t   opt_offset_fmt = OFMT_HEX;
-bool                  opt_only_matching;
-bool                  opt_only_printing;
-char const*           path_name = "<stdin>";
+static bool           opt_only_matching;
+static bool           opt_only_printing;
+static bool           opt_verbose;
 
 static char*          search_buf;       /* not NULL-terminated when numeric */
 static endian_t       search_endian;    /* if searching for a number */
@@ -83,141 +88,184 @@ static char const*    sgr_start = SGR_START SGR_EL;
 static char const*    sgr_end   = SGR_END SGR_EL;
 static char const*    sgr_offset;       /* offset color */
 static char const*    sgr_sep;          /* separator color */
+static char const*    sgr_elided;       /* elided byte count */
 static char const*    sgr_hex_match;    /* hex match color */
 static char const*    sgr_ascii_match;  /* ASCII match color */
 
 /* local functions */
-static void           cap_mt( char const* );
-static void           cap_ne( char const* );
 static void           init( int, char*[] );
 static kmp_t*         kmp_init( char const*, size_t );
 static bool           match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
 static size_t         match_row( uint8_t*, uint16_t*, kmp_t const*, uint8_t* );
 static bool           parse_grep_color( char const* );
 static bool           parse_grep_colors( char const* );
-static bool           should_colorize( colorize_t );
+static void           print_offset( void );
+static bool           should_colorize( colorization_t );
 static void           usage( void );
 
 #define FREE_LATER(P) freelist_add( (P), &free_head )
 
-/*****************************************************************************/
+/********** dumping **********************************************************/
 
-#define SGR_START_IF(EXPR)  BLOCK( if ( EXPR ) PRINTF( sgr_start, (EXPR) ); )
-#define SGR_END_IF(EXPR)    BLOCK( if ( EXPR ) PRINTF( "%s", sgr_end ); )
+#define SGR_START_IF(EXPR) \
+  BLOCK( if ( colorize && (EXPR) ) PRINTF( sgr_start, (EXPR) ); )
 
-#define MATCH_HEX_ON_IF(EXPR) \
+#define SGR_END_IF(EXPR) \
+  BLOCK( if ( colorize && (EXPR) ) PRINTF( "%s", sgr_end ); )
+
+#define SGR_HEX_START_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_hex_match ); )
 
-#define MATCH_ASCII_ON_IF(EXPR) \
+#define SGR_ASCII_START_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
-#define MATCH_OFF_IF(EXPR)  SGR_END_IF( EXPR )
-
 int main( int argc, char *argv[] ) {
-  bool any_dumped = false;              /* any data dumped yet? */
-  bool any_matches = false;             /* if matching, any data matched yet? */
-  size_t buf_len;
-  kmp_t *kmp_values;
-  off_t last_dumped_offset;
-  uint8_t *match_buf;                   /* working storage for match_byte() */
+  struct row_buf {
+    uint8_t   bytes[ ROW_BUF_SIZE ];
+    size_t    len;
+    uint16_t  match_bits;
+  };
+  typedef struct row_buf row_buf_t;
 
-  init( argc, argv );
-  last_dumped_offset = offset;
+  bool        any_dumped = false;       /* any data dumped yet? */
+  bool        any_matches = false;      /* if matching, any data matched yet? */
+  row_buf_t   buf[2];
+  row_buf_t  *cur = buf, *next = buf + 1;
+  bool        is_same_row = false;
+  kmp_t      *kmp_values = NULL;        /* used only by match_byte() */
+  uint8_t    *match_buf = NULL;         /* used only by match_byte() */
 
-  if ( search_len ) {
+  init( argc, argv );                   /* sets offset */
+  off_t dumped_offset = offset;
+
+  if ( search_len ) {                   /* is user searching for anything? */
     kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
     match_buf = FREE_LATER( check_realloc( NULL, search_len ) );
-  } else {
-    kmp_values = NULL;
-    match_buf = NULL;
   }
 
-  do {
-    uint8_t row_buf[ ROW_BUF_SIZE ];
-    uint16_t match_bits;                /* bit set = byte matches */
-    bool matches_prev;
-    size_t buf_pos;
+  cur->len = match_row( cur->bytes, &cur->match_bits, kmp_values, match_buf );
 
-    buf_len = match_row( row_buf, &match_bits, kmp_values, match_buf );
-    if ( buf_len &&
-         (!opt_only_matching || match_bits) &&
-         (!opt_only_printing || any_printable( (char*)row_buf, buf_len )) ) {
+  while ( cur->len ) {
+    size_t  buf_pos;
+    bool    prev_matches;
 
-      static char const *const offset_fmt_printf[] = {
-        "%0" OFFSET_WIDTH_S "llu",      /* decimal */
-        "%0" OFFSET_WIDTH_S "llX",      /* hex */
-        "%0" OFFSET_WIDTH_S "llo",      /* octal */
-      };
+    next->len = cur->len < ROW_BUF_SIZE ? 0 :
+      match_row( next->bytes, &next->match_bits, kmp_values, match_buf );
+    bool const is_last_row = next->len < ROW_BUF_SIZE;
 
-      /* print row separator (if necessary) */
-      if ( last_dumped_offset + ROW_BUF_SIZE < offset && any_dumped ) {
-        size_t i;
-        SGR_START_IF( sgr_sep );
-        for ( i = 0; i < OFFSET_WIDTH; ++i )
-          PUTCHAR( '-' );
-        PUTCHAR( '\n' );
-        SGR_END_IF( sgr_sep );
+    if ( (is_last_row && (!opt_only_matching || cur->match_bits)) || (
+         ( opt_verbose || !is_same_row || cur->match_bits) &&
+         (!opt_only_matching || cur->match_bits) &&
+         (!opt_only_printing ||
+            any_printable( (char*)cur->bytes, cur->len )) ) ) {
+
+      if ( !opt_only_matching && !opt_only_printing ) {
+        /* print row separator (if necessary) */
+        off_t const offset_delta = offset - dumped_offset - ROW_BUF_SIZE;
+        if ( offset_delta && any_dumped ) {
+          SGR_START_IF( sgr_elided );
+          size_t i;
+          for ( i = 0; i < OFFSET_WIDTH; ++i )
+            PUTCHAR( '-' );
+          SGR_END_IF( sgr_elided );
+          SGR_START_IF( sgr_sep );
+          PUTCHAR( ':' );
+          SGR_END_IF( sgr_sep );
+          PUTCHAR( ' ' );
+          SGR_START_IF( sgr_elided );
+          PRINTF( "(%lld | 0x%llX)", offset_delta, offset_delta );
+          SGR_END_IF( sgr_elided );
+          PUTCHAR( '\n' );
+        }
       }
 
       /* print offset & column separator */
-      SGR_START_IF( sgr_offset );
-      PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
-      SGR_END_IF( sgr_offset );
-      SGR_START_IF( sgr_sep );
-      PUTCHAR( ':' );
-      SGR_END_IF( sgr_sep );
+      print_offset();
 
       /* dump hex part */
-      matches_prev = false;
-      for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
-        bool const matches = match_bits & (1 << buf_pos);
-        if ( buf_pos % 2 == 0 ) {    /* print space between hex columns */
-          MATCH_OFF_IF( matches_prev );
-          PUTCHAR( ' ' );
-          MATCH_HEX_ON_IF( matches_prev );
+      prev_matches = false;
+      for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
+        bool const matches = cur->match_bits & (1 << buf_pos);
+        bool const matches_changed = matches != prev_matches;
+
+        if ( buf_pos % COLUMN_WIDTH == 0 ) {
+          SGR_END_IF( prev_matches );
+          PUTCHAR( ' ' );               /* print space between hex columns */
+          SGR_HEX_START_IF( prev_matches );
         }
-
         if ( matches )
-          MATCH_HEX_ON_IF( matches != matches_prev );
+          SGR_HEX_START_IF( matches_changed );
         else
-          MATCH_OFF_IF( matches != matches_prev );
-
-        PRINTF( "%02X", (unsigned)row_buf[ buf_pos ] );
-        matches_prev = matches;
+          SGR_END_IF( matches_changed );
+        PRINTF( "%02X", (unsigned)cur->bytes[ buf_pos ] );
+        prev_matches = matches;
       } /* for */
+      SGR_END_IF( prev_matches );
 
       /* print padding if necessary (last row only)  */
       while ( buf_pos < ROW_BUF_SIZE ) {
-        if ( buf_pos++ % 2 == 0 )       /* print space between hex columns */
-          PUTCHAR( ' ' );
+        if ( buf_pos++ % COLUMN_WIDTH == 0 )
+          PUTCHAR( ' ' );             /* print space between hex columns */
         PRINTF( "  " );
       } /* while */
 
       /* dump ASCII part */
-      MATCH_OFF_IF( matches_prev );
-      matches_prev = false;
       PRINTF( "  " );
-      for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
-        bool const matches = match_bits & (1 << buf_pos);
+      prev_matches = false;
+      for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
+        bool const matches = cur->match_bits & (1 << buf_pos);
+        bool const matches_changed = matches != prev_matches;
+        uint8_t const byte = cur->bytes[ buf_pos ];
+
         if ( matches )
-          MATCH_ASCII_ON_IF( matches != matches_prev );
+          SGR_ASCII_START_IF( matches_changed );
         else
-          MATCH_OFF_IF( matches != matches_prev );
-        PUTCHAR( isprint( row_buf[ buf_pos ] ) ? row_buf[ buf_pos ] : '.' );
-        matches_prev = matches;
+          SGR_END_IF( matches_changed );
+        PUTCHAR( isprint( byte ) ? byte : '.' );
+        prev_matches = matches;
       } /* for */
-      MATCH_OFF_IF( matches_prev );
+      SGR_END_IF( prev_matches );
       PUTCHAR( '\n' );
 
       any_dumped = true;
-      if ( match_bits )
+      if ( cur->match_bits )
         any_matches = true;
-      last_dumped_offset = offset;
+      dumped_offset = offset;
     }
-    offset += buf_len;
-  } while ( buf_len == ROW_BUF_SIZE );
+
+    is_same_row = !opt_verbose && !is_last_row &&
+      memcmp( cur->bytes, next->bytes, ROW_BUF_SIZE ) == 0;
+
+    row_buf_t *const temp = cur;
+    cur = next, next = temp;
+
+    offset += ROW_BUF_SIZE;
+  } /* while */
+
+#if 0
+  if ( is_same_row ) {
+    /* print offset & column separator */
+    print_offset();
+    PUTCHAR( '\n' );
+  }
+#endif
 
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
+}
+
+static void print_offset( void ) {
+  static char const *const offset_fmt_printf[] = {
+    "%0" OFFSET_WIDTH_S "llu",          /* decimal */
+    "%0" OFFSET_WIDTH_S "llX",          /* hex */
+    "%0" OFFSET_WIDTH_S "llo",          /* octal */
+  };
+
+  SGR_START_IF( sgr_offset );
+  PRINTF( offset_fmt_printf[ opt_offset_fmt ], offset );
+  SGR_END_IF( sgr_offset );
+  SGR_START_IF( sgr_sep );
+  PUTCHAR( ':' );
+  SGR_END_IF( sgr_sep );
 }
 
 /********** matching *********************************************************/
@@ -237,22 +285,21 @@ int main( int argc, char *argv[] ) {
  * table.  The caller is responsible for freeing the array.
  */
 static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
-  kmp_t *kmp_values;
-  size_t i, j = 0;
-
   assert( pattern );
-  kmp_values = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
 
-  kmp_values[0] = 0;
+  size_t i, j = 0;
+  kmp_t *const kmps = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
+
+  kmps[0] = 0;
   for ( i = 1; i < pattern_len; ) {
     if ( pattern[i] == pattern[j] )
-      kmp_values[++i] = ++j;
+      kmps[++i] = ++j;
     else if ( j > 0 )
-      j = kmp_values[j-1];
+      j = kmps[j-1];
     else
-      kmp_values[++i] = 0;
+      kmps[++i] = 0;
   } /* for */
-  return kmp_values;
+  return kmps;
 }
 
 /**
@@ -377,8 +424,11 @@ static size_t match_row( uint8_t *row_buf, uint16_t *match_bits,
 
   for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
     bool matches;
-    if ( !match_byte( row_buf + buf_len, &matches, kmp_values, match_buf ) )
+    if ( !match_byte( row_buf + buf_len, &matches, kmp_values, match_buf ) ) {
+      /* pad remainder of line */
+      memset( row_buf + buf_len, 0, ROW_BUF_SIZE - buf_len );
       break;
+    }
     if ( matches )
       *match_bits |= 1 << buf_len;
   } /* for */
@@ -417,13 +467,13 @@ static void option_required( char const *opt, char const *req ) {
  * Parses a colorization "when" value.
  *
  * @param when The NULL-terminated "when" string to parse.
- * @return Returns the associated \c colorize_t
+ * @return Returns the associated \c colorization_t.
  * or prints an error message and exits.
  */
-static colorize_t parse_colorize( char const *when ) {
+static colorization_t parse_colorization( char const *when ) {
   struct colorize_map {
     char const *map_when;
-    colorize_t map_colorize;
+    colorization_t map_colorization;
   };
   typedef struct colorize_map colorize_map_t;
 
@@ -440,19 +490,18 @@ static colorize_t parse_colorize( char const *when ) {
 
   char const *const when_lc = tolower_s( FREE_LATER( check_strdup( when ) ) );
   colorize_map_t const *m;
-  char *names_buf, *pnames;
   size_t names_buf_size = 1;            /* for trailing NULL */
 
   for ( m = colorize_map; m->map_when; ++m ) {
     if ( strcmp( when_lc, m->map_when ) == 0 )
-      return m->map_colorize;
+      return m->map_colorization;
     /* sum sizes of names in case we need to construct an error message */
     names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
   } /* for */
 
   /* name not found: construct valid name list for an error message */
-  names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
-  pnames = names_buf;
+  char *const names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
+  char *pnames = names_buf;
   for ( m = colorize_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
@@ -468,17 +517,17 @@ static colorize_t parse_colorize( char const *when ) {
 }
 
 static void parse_options( int argc, char *argv[] ) {
-  colorize_t  colorize = COLOR_NOT_FILE;
-  int         opt;                      /* command-line option */
-  char const  opts[] = "b:B:c:de:E:hij:mN:ops:S:v";
-  size_t      size_in_bits = 0, size_in_bytes = 0;
+  colorization_t  colorization = COLOR_NOT_FILE;
+  int             opt;                  /* command-line option */
+  char const      opts[] = "b:B:c:de:E:hij:mN:ops:S:vV";
+  size_t          size_in_bits = 0, size_in_bytes = 0;
 
   opterr = 1;
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
       case 'b': size_in_bits = parse_ul( optarg );                  break;
       case 'B': size_in_bytes = parse_ul( optarg );                 break;
-      case 'c': colorize = parse_colorize( optarg );                break;
+      case 'c': colorization = parse_colorization( optarg );        break;
       case 'd': opt_offset_fmt = OFMT_DEC;                          break;
       case 'e': search_number = parse_ul( optarg );
                 search_endian = ENDIAN_LITTLE;                      break;
@@ -494,6 +543,7 @@ static void parse_options( int argc, char *argv[] ) {
       case 'p': opt_only_printing = true;                           break;
       case 's': search_buf = FREE_LATER( check_strdup( optarg ) );  break;
       case 'v': PRINT_ERR( "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
+      case 'V': opt_verbose = true;                                 break;
       default : usage();
     } /* switch */
   } /* while */
@@ -562,7 +612,8 @@ static void parse_options( int argc, char *argv[] ) {
     check_number_size( size_in_bytes, ulong_len( search_number ), 'B' );
   }
 
-  if ( should_colorize( colorize ) ) {
+  colorize = should_colorize( colorization );
+  if ( colorize ) {
     if ( !(parse_grep_colors( getenv( "AD_COLORS"   ) )
         || parse_grep_colors( getenv( "GREP_COLORS" ) )
         || parse_grep_color ( getenv( "GREP_COLOR"  ) )) ) {
@@ -635,6 +686,7 @@ static void usage( void ) {
 "       -s string  Search for string.\n"
 "       -S string  Search for case-insensitive string.\n"
 "       -v         Print version and exit.\n"
+"       -V         Dump all data, including repeated rows [default: no].\n"
     , me, me
   );
   exit( EXIT_USAGE );
@@ -708,6 +760,7 @@ static void cap_ne( char const *sgr_color ) {
  */
 static color_cap_t const color_caps[] = {
   { "bn", &sgr_offset,      NULL   },   /* grep: byte offset */
+  { "EC", &sgr_elided,      NULL   },   /* elided count */
   { "MA", &sgr_ascii_match, NULL   },   /* matched ASCII */
   { "MH", &sgr_hex_match,   NULL   },   /* matched hex */
   { "MB", NULL,             cap_mt },   /* matched both */
@@ -742,7 +795,7 @@ static bool parse_grep_colors( char const *capabilities ) {
   bool set_something = false;
 
   if ( capabilities ) {
-    /* We free this later since the sgr_* variables point to substrings. */
+    /* free this later since the sgr_* variables point to substrings */
     char *const capabilities_dup = FREE_LATER( check_strdup( capabilities ) );
     char *next_cap = capabilities_dup;
     char *cap_name_val;
@@ -767,13 +820,10 @@ static bool parse_grep_colors( char const *capabilities ) {
 /**
  * Determines whether we should emit escape sequences for color.
  *
- * @param c The colorize value.
+ * @param c The colorization value.
  * @return Returns \c true only if we should do color.
  */
-static bool should_colorize( colorize_t c ) {
-  struct stat stdout_stat;
-  char const *term;
-
+static bool should_colorize( colorization_t c ) {
   switch ( c ) {                        /* handle easy cases */
     case COLOR_ALWAYS: return true;
     case COLOR_NEVER : return false;
@@ -783,7 +833,7 @@ static bool should_colorize( colorize_t c ) {
   /*
    * If TERM is unset, empty, or "dumb", color probably won't work.
    */
-  term = getenv( "TERM" );
+  char const *const term = getenv( "TERM" );
   if ( !term || !*term || strcmp( term, "dumb" ) == 0 )
     return false;
 
@@ -807,6 +857,7 @@ static bool should_colorize( colorize_t c ) {
    *
    * Hence, we want to do color _except_ when ISREG=T.
    */
+  struct stat stdout_stat;
   FSTAT( STDOUT_FILENO, &stdout_stat );
   return !S_ISREG( stdout_stat.st_mode );
 }

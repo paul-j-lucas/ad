@@ -99,7 +99,6 @@ bool any_printable( char const *s, size_t s_len ) {
 }
 
 void* check_realloc( void *p, size_t size ) {
-  void *r;
   /*
    * Autoconf, 5.5.1:
    *
@@ -109,24 +108,23 @@ void* check_realloc( void *p, size_t size ) {
    */
   if ( !size )
     size = 1;
-  r = p ? realloc( p, size ) : malloc( size );
+  void *const r = p ? realloc( p, size ) : malloc( size );
   if ( !r )
     PERROR_EXIT( OUT_OF_MEMORY );
   return r;
 }
 
 char* check_strdup( char const *s ) {
-  char *dup;
   assert( s );
-  if ( !(dup = strdup( s )) )
+  char *const dup = strdup( s );
+  if ( !dup )
     PERROR_EXIT( OUT_OF_MEMORY );
   return dup;
 }
 
 void* freelist_add( void *p, free_node_t **pphead ) {
-  free_node_t *new_node;
   assert( pphead );
-  new_node = check_realloc( NULL, sizeof( free_node_t ) );
+  free_node_t *const new_node = check_realloc( NULL, sizeof( free_node_t ) );
   new_node->p = p;
   new_node->next = *pphead ? *pphead : NULL;
   *pphead = new_node;
@@ -193,9 +191,9 @@ char const* skip_ws( char const *s ) {
 }
 
 FILE* open_file( char const *path_name, off_t offset ) {
-  FILE *file;
   assert( path_name );
-  if ( (file = fopen( path_name, "r" )) == NULL )
+  FILE *const file = fopen( path_name, "r" );
+  if ( !file )
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n",
       path_name, ERROR_STR
@@ -209,15 +207,13 @@ FILE* open_file( char const *path_name, off_t offset ) {
 }
 
 unsigned long parse_offset( char const *s ) {
-  char *end = NULL;
-  unsigned long n;
-
   s = skip_ws( s );
   if ( !*s || *s == '-' )               /* strtoul(3) wrongly allows '-' */
     return false;
 
+  char *end = NULL;
   errno = 0;
-  n = strtoul( s, &end, 0 );
+  unsigned long n = strtoul( s, &end, 0 );
   if ( errno || end == s )
     goto error;
   if ( end[0] ) {                       /* possibly 'b', 'k', or 'm' */
@@ -239,13 +235,11 @@ bool parse_sgr( char const *sgr_color ) {
   if ( !sgr_color )
     return false;
   for ( ;; ) {
-    char *end;
-    unsigned long n;
-
     if ( !isdigit( *sgr_color ) )
       return false;
+    char *end;
     errno = 0;
-    n = strtoul( sgr_color, &end, 10 );
+    unsigned long const n = strtoul( sgr_color, &end, 10 );
     if ( errno || n > 255 )
       return false;
     switch ( *end ) {
@@ -264,9 +258,8 @@ unsigned long parse_ul( char const *s ) {
   s = skip_ws( s );
   if ( *s && *s != '-') {               /* strtoul(3) wrongly allows '-' */
     char *end = NULL;
-    unsigned long n;
     errno = 0;
-    n = strtoul( s, &end, 0 );
+    unsigned long const n = strtoul( s, &end, 0 );
     if ( !errno && !*end )
       return n;
   }
@@ -285,9 +278,9 @@ size_t ulong_len( unsigned long n ) {
   if ( n < 0x10000 )
     return n < 0x100 ? 1 : 2;
 #if SIZEOF_UNSIGNED_LONG == 8
-    return n < 0x100000000L ? 4 : 8;
+  return n < 0x100000000L ? 4 : 8;
 #else
-    return 4;
+  return 4;
 #endif /* SIZEOF_UNSIGNED_LONG */
 }
 
