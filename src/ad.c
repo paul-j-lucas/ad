@@ -145,7 +145,7 @@ int main( int argc, char *argv[] ) {
 
   if ( search_len ) {                   // is user searching for anything?
     kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
-    match_buf = FREE_LATER( check_realloc( NULL, search_len ) );
+    match_buf = FREE_LATER( MALLOC( uint8_t, search_len ) );
   }
 
   cur->len = match_row( cur->bytes, &cur->match_bits, kmp_values, match_buf );
@@ -272,7 +272,7 @@ int main( int argc, char *argv[] ) {
  */
 static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   assert( pattern );
-  kmp_t *const kmps = check_realloc( NULL, pattern_len * sizeof( kmp_t ) );
+  kmp_t *const kmps = MALLOC( kmp_t, pattern_len );
   kmps[0] = 0;
   for ( size_t i = 1, j = 0; i < pattern_len; ) {
     if ( pattern[i] == pattern[j] )
@@ -481,7 +481,7 @@ static colorization_t parse_colorization( char const *when ) {
   } // for
 
   // name not found: construct valid name list for an error message
-  char *const names_buf = FREE_LATER( check_realloc( NULL, names_buf_size ) );
+  char *const names_buf = FREE_LATER( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
   for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {

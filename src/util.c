@@ -125,7 +125,7 @@ char* check_strdup( char const *s ) {
 
 void* freelist_add( void *p, free_node_t **pphead ) {
   assert( pphead );
-  free_node_t *const new_node = check_realloc( NULL, sizeof( free_node_t ) );
+  free_node_t *const new_node = MALLOC( free_node_t, 1 );
   new_node->p = p;
   new_node->next = *pphead ? *pphead : NULL;
   *pphead = new_node;
