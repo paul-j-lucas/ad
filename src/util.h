@@ -28,9 +28,9 @@
 
 // system
 #include <errno.h>
-#include <stdint.h>                     // for uint8_t, ...
+#include <stdint.h>                     /* for uint8_t, ... */
 #include <stdio.h>
-#include <string.h>                     // for str...()
+#include <string.h>                     /* for str...() */
 #include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////

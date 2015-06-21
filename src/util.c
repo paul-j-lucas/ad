@@ -29,8 +29,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>                     // for exit(), strtoul(), ...
-#include <string.h>                     // for str...()
+#include <stdlib.h>                     /* for exit(), strtoul(), ... */
+#include <string.h>                     /* for str...() */
 #include <sys/types.h>
 
 ///////////////////////////////////////////////////////////////////////////////

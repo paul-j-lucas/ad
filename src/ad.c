@@ -25,27 +25,27 @@
 
 // system
 #include <assert.h>
-#include <ctype.h>                      // for isprint()
+#include <ctype.h>                      /* for isprint() */
 #include <errno.h>
-#include <libgen.h>                     // for basename()
+#include <libgen.h>                     /* for basename() */
 #include <stdio.h>
-#include <stdlib.h>                     // for exit(), strtoul(), ...
-#include <string.h>                     // for str...()
-#include <sys/stat.h>                   // for fstat()
+#include <stdlib.h>                     /* for exit(), strtoul(), ... */
+#include <string.h>                     /* for str...() */
+#include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
-#include <unistd.h>                     // for getopt()
+#include <unistd.h>                     /* for getopt() */
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define COLUMN_WIDTH    2               // bytes per hex column
+#define COLUMN_WIDTH    2               /* bytes per hex column */
 #define DEFAULT_COLORS  "bn=32:EC=35:MB=41;1:se=36"
-#define OFFSET_WIDTH    16              // number of offset digits
+#define OFFSET_WIDTH    16              /* number of offset digits */
 #define OFFSET_WIDTH_S  STRINGIFY(OFFSET_WIDTH)
-#define ROW_BUF_SIZE    16              // bytes displayed in a row
+#define ROW_BUF_SIZE    16              /* bytes displayed in a row */
 
-#define SGR_START       "\33[%sm"       // start color sequence
-#define SGR_END         "\33[m"         // end color sequence
-#define SGR_EL          "\33[K"         // Erase in Line (EL) sequence
+#define SGR_START       "\33[%sm"       /* start color sequence */
+#define SGR_END         "\33[m"         /* end color sequence */
+#define SGR_EL          "\33[K"         /* Erase in Line (EL) sequence */
 
 enum colorization {
   COLOR_NEVER,                          // never colorize
