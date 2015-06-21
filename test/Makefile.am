@@ -29,6 +29,7 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-B2-e65536.test \
 	tests/ad-B2.test \
 	tests/ad-B4-E1-m_02.test \
+	tests/ad-B4-E8-m-p.test \
 	tests/ad-B4-e1-m_01.test \
 	tests/ad-B4-e4294967296.test \
 	tests/ad-E0x0102-m_02.test \
@@ -71,7 +72,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-m-s_01.test \
 	tests/ad-m.test \
 	tests/ad-o.test \
-	tests/ad-p.test \
+	tests/ad-p_01.test \
+	tests/ad-p_02.test \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test
 
