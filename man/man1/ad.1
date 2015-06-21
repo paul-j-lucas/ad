@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "June 18, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "June 21, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -33,8 +33,10 @@ ad \- ASCII dump
 [[\f3+\f1]\f2offset\f1]
 .SH DESCRIPTION
 .B ad
-dumps the bytes of a file in hexadecimal
-and also prints their corresponding ASCII characters
+dumps a file
+as rows of 16 bytes
+in both hexadecimal
+and also ASCII
 (for those bytes for which
 .BR isprint (3)
 returns true)
@@ -150,13 +152,18 @@ but explicit about what ``auto'' means.)
 .TP
 .B never
 Never colorize.
-Note that this renderes the
+Note that this greatly diminishes the usefulness of the
 .BR \-e ,
 .BR \-E ,
 .BR \-s ,
 and
 .B \-S
-options useless since matches won't be highlighted.
+options since matches won't be highlighted.
+(However,
+the
+.B \-m
+option
+can be used to dump only rows having matches.)
 .TP
 .B not_file
 Colorize only when
@@ -169,7 +176,7 @@ is not empty and not equal to
 (Specifically,
 .BR fstat (3)
 is called on standard output:
-colorize only if \f(CWS_IFREG\fP is false.)
+colorize only if \f(CWS_IFREG\f1 is false.)
 .TP
 .B ""
 This is more useful than
@@ -201,7 +208,7 @@ The default is
 Prints offsets in decimal.
 .TP
 .BI \-e " n"
-Hightlights all occurrences of the number
+Hightlights all occurrences of the unsigned integer
 .I n
 in little-endian byte order.
 .TP
@@ -219,6 +226,11 @@ if
 were in the range 256\-65535,
 the number of bytes would be 2;
 and so on.
+This can be overridden by either the
+.B \-b
+or
+.B \-B
+options.
 .TP
 .BI \-E " n"
 Same as the
@@ -274,6 +286,23 @@ and
 options.)
 .TP
 .B \-v
+Be verbose by dumping all bytes of data.
+Ordinarily,
+rows of bytes that match
+the previous row
+are elided
+so as not to dump
+possibly many rows of repeated data.
+Instead,
+a separator of ``\f(CW-\f1'' characters is printed
+along with the number of bytes elided
+in both decimal and hexadecimal.
+However,
+the last row of data is always dumped
+even if it matches the previous row
+to indicate the end of the file.
+.TP
+.B \-V
 Prints the version number to
 .I stderr
 and exit.
@@ -333,7 +362,7 @@ is a
 value
 that is a semicolon-separated list of integers
 in the range 0\-255.
-An example SGR value is \f(CW31;1\fP
+An example SGR value is \f(CW31;1\f1
 that specifies a bright red foreground
 on the terminal's default background.
 .TP
@@ -344,14 +373,25 @@ those in lower-case are upwards compatibile with
 .BR grep .
 .RS
 .TP 8
+.BI bn= SGR
+SGR for the byte offset
+(as with
+.BR grep ).
+The default is \f(CW36\f1
+(green foreground over current terminal background).
+.TP
+.BI EC= SGR
+SGR for elided rows and byte counts.
+The default is \f(CW35\f1
+(magenta foreground over current terminal background).
 .BI MA= SGR
 SGR for matched ASCII characters.
-Default is \f(CW41;1\fP
+The default is \f(CW41;1\f1
 (current terminal foreground over a bright red background).
 .TP
 .BI MH= SGR
 SGR for matched hexadecimal.
-Default is \f(CW41;1\fP
+The default is \f(CW41;1\f1
 (current terminal foreground over a bright red background).
 .TP
 .BI MB= SGR
@@ -369,20 +409,6 @@ Same as
 .B MB
 (for compatibility with
 .BR grep ).
-.TP
-.BI bn= SGR
-SGR for the byte offset
-(as with
-.BR grep ).
-Default is \f(CW36\fP
-(green foreground over current terminal background).
-.TP
-.BI se= SGR
-SGR for the ``\f(CW:\fP'' and ``\f(CW-\fP'' separators
-(as with
-.BR grep ).
-Default is \f(CW36\fP
-(cyan foreground over current terminal background).
 .TP
 .B ne
 Boolean value that,
@@ -403,6 +429,13 @@ when the chosen highlight colors do not affect the background,
 or when EL is too slow or causes too much flicker.
 The default is false
 (i.e., EL is used for clearing to the end of a line).
+.TP
+.BI se= SGR
+SGR for the ``\f(CW:\f1'' and ``\f(CW-\f1'' separators
+(as with
+.BR grep ).
+The default is \f(CW36\f1
+(cyan foreground over current terminal background).
 .RE
 .TP
 .B ""

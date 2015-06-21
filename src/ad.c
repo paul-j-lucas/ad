@@ -158,13 +158,13 @@ int main( int argc, char *argv[] ) {
       match_row( next->bytes, &next->match_bits, kmp_values, match_buf );
     bool const is_last_row = next->len < ROW_BUF_SIZE;
 
-    bool const any_matching = !opt_only_matching || cur->match_bits;
-    bool const any_printing = !opt_only_printing || cur->match_bits ||
+    bool const any_printing = !opt_only_printing ||
       any_printable( (char*)cur->bytes, cur->len );
 
-    if ( (is_last_row && any_matching && any_printing) ||
-         ((opt_verbose || !is_same_row || cur->match_bits) &&
-           any_matching && any_printing) ) {
+    if ( cur->match_bits ||
+         (is_last_row && !opt_only_matching && any_printing) ||
+         ((opt_verbose || !is_same_row) &&
+          !opt_only_matching && any_printing) ) {
 
       // print row separator (if necessary)
       if ( !opt_only_matching && !opt_only_printing ) {
@@ -247,7 +247,7 @@ int main( int argc, char *argv[] ) {
     is_same_row = !opt_verbose && !is_last_row &&
       memcmp( cur->bytes, next->bytes, ROW_BUF_SIZE ) == 0;
 
-    row_buf_t *const temp = cur;
+    row_buf_t *const temp = cur;        // swap to avoid memcpy()
     cur = next, next = temp;
 
     offset += ROW_BUF_SIZE;
@@ -525,15 +525,21 @@ static void parse_options( int argc, char *argv[] ) {
       case 'o': opt_offset_fmt = OFMT_OCT;                          break;
       case 'p': opt_only_printing = true;                           break;
       case 's': search_buf = FREE_LATER( check_strdup( optarg ) );  break;
-      case 'v': PRINT_ERR( "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
-      case 'V': opt_verbose = true;                                 break;
+      case 'v': opt_verbose = true;                                 break;
+      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );      exit( EXIT_OK );
       default : usage();
     } // switch
   } // while
   argc -= optind, argv += optind - 1;
 
+  if ( size_in_bits && size_in_bytes )
+    options_mutually_exclusive( "b", "B" );
   if ( search_endian && search_buf )
     options_mutually_exclusive( "eE", "s" );
+  if ( opt_only_matching && opt_verbose )
+    options_mutually_exclusive( "m", "v" );
+  if ( opt_only_printing && opt_verbose )
+    options_mutually_exclusive( "p", "v" );
 
   if ( opt_case_insensitive ) {
     if ( !search_buf )
@@ -543,9 +549,6 @@ static void parse_options( int argc, char *argv[] ) {
 
   if ( opt_only_matching && !(search_endian || search_buf) )
     option_required( "m", "eEsS" );
-
-  if ( size_in_bits && size_in_bytes )
-    options_mutually_exclusive( "b", "B" );
 
   if ( size_in_bits ) {
     switch ( size_in_bits ) {

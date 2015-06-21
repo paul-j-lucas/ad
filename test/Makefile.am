@@ -72,12 +72,15 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-last_row_01.test \
 	tests/ad-last_row_02.test \
 	tests/ad-m-s_01.test \
+	tests/ad-m-v.test \
 	tests/ad-m.test \
 	tests/ad-o.test \
+	tests/ad-p-v.test \
 	tests/ad-p_01.test \
 	tests/ad-p_02.test \
 	tests/ad-s_01.test \
-	tests/ad-sxxx.test
+	tests/ad-sxxx.test \
+	tests/ad-v.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .test
