@@ -158,11 +158,13 @@ int main( int argc, char *argv[] ) {
       match_row( next->bytes, &next->match_bits, kmp_values, match_buf );
     bool const is_last_row = next->len < ROW_BUF_SIZE;
 
-    if ( (is_last_row && (!opt_only_matching || cur->match_bits)) || (
-         ( opt_verbose || !is_same_row || cur->match_bits) &&
-         (!opt_only_matching || cur->match_bits) &&
-         (!opt_only_printing ||
-            any_printable( (char*)cur->bytes, cur->len )) ) ) {
+    bool const any_matching = !opt_only_matching || cur->match_bits;
+    bool const any_printing = !opt_only_printing || cur->match_bits ||
+      any_printable( (char*)cur->bytes, cur->len );
+
+    if ( (is_last_row && any_matching && any_printing) ||
+         ((opt_verbose || !is_same_row || cur->match_bits) &&
+           any_matching && any_printing) ) {
 
       // print row separator (if necessary)
       if ( !opt_only_matching && !opt_only_printing ) {
