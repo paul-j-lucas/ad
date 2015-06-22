@@ -89,7 +89,24 @@ static inline uint64_t swap_64( uint64_t n ) {
 }
 #endif /* SIZEOF_UNSIGNED_LONG */
 
-///////////////////////////////////////////////////////////////////////////////
+////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Skips leading whitespace, if any.
+ *
+ * @param s The NULL-terminated string to skip whitespace for.
+ * @return Returns a pointer within \a s pointing to the first non-whitespace
+ * character or pointing to the NULL byte if either \a s was all whitespace or
+ * empty.
+ */
+static char const* skip_ws( char const *s ) {
+  assert( s );
+  while ( *s && isspace( *s ) )
+    ++s;
+  return s;
+}
+
+////////// extern funtions ////////////////////////////////////////////////////
 
 bool any_printable( char const *s, size_t s_len ) {
   assert( s );
@@ -143,17 +160,15 @@ void freelist_free( free_node_t *phead ) {
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
   char    buf[ 8192 ];
-  ssize_t bytes_read;
   size_t  bytes_to_read = sizeof( buf );
 
   while ( bytes_to_skip && !feof( file ) ) {
     if ( bytes_to_read > bytes_to_skip )
       bytes_to_read = bytes_to_skip;
-    bytes_read = fread( buf, 1, bytes_to_read, file );
+    ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( ferror( file ) )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": can not read: %s\n",
-        path_name, ERROR_STR
+        "\"%s\": can not read: %s\n", path_name, ERROR_STR
       );
     bytes_to_skip -= bytes_read;
   } // while
@@ -176,33 +191,16 @@ bool get_byte( uint8_t *pbyte, size_t max_bytes_to_read, FILE *file ) {
   return false;
 }
 
-/**
- * Skips leading whitespace, if any.
- *
- * @param s The NULL-terminated string to skip whitespace for.
- * @return Returns a pointer within \a s pointing to the first non-whitespace
- * character or pointing to the NULL byte if either \a was all whitespace or
- * empty.
- */
-char const* skip_ws( char const *s ) {
-  assert( s );
-  while ( *s && isspace( *s ) )
-    ++s;
-  return s;
-}
-
 FILE* open_file( char const *path_name, off_t offset ) {
   assert( path_name );
   FILE *const file = fopen( path_name, "r" );
   if ( !file )
     PMESSAGE_EXIT( READ_OPEN,
-      "\"%s\": can not open: %s\n",
-      path_name, ERROR_STR
+      "\"%s\": can not open: %s\n", path_name, ERROR_STR
     );
   if ( offset && fseek( file, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
-      "\"%s\": can not seek to offset %lld: %s\n",
-      path_name, (long long)offset, ERROR_STR
+      "\"%s\": can not seek to offset %lld: %s\n", path_name, offset, ERROR_STR
     );
   return file;
 }
