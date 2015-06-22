@@ -8,12 +8,12 @@
 **      it under the terms of the GNU General Public License as published by
 **      the Free Software Foundation; either version 2 of the Licence, or
 **      (at your option) any later version.
-** 
+**
 **      This program is distributed in the hope that it will be useful,
 **      but WITHOUT ANY WARRANTY; without even the implied warranty of
 **      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 **      GNU General Public License for more details.
-** 
+**
 **      You should have received a copy of the GNU General Public License
 **      along with this program; if not, write to the Free Software
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
@@ -102,6 +102,13 @@ static bool           parse_grep_colors( char const* );
 static bool           should_colorize( colorization_t );
 static void           usage( void );
 
+/**
+ * Adds the mempory pointed to by \a P to a to-free list of memory to be freed
+ * later (specifically, just before program exis).
+ *
+ * @param P A pointer to the memory to be freed later.
+ * \hideinitializer
+ */
 #define FREE_LATER(P) freelist_add( (P), &free_head )
 
 /////////// dumping ///////////////////////////////////////////////////////////
@@ -154,17 +161,26 @@ int main( int argc, char *argv[] ) {
     size_t  buf_pos;
     bool    prev_matches;
 
+    //
+    // We need to know whether the current row is the last row.  The current
+    // row is the last if its length < ROW_BUF_SIZE.  However, if the file's
+    // length is an exact multiple of ROW_BUF_SIZE, then we don't know the
+    // current row is the last.  We therefore have to read the next row: the
+    // current row is the last row if the length of the next row is zero.
+    //
     next->len = cur->len < ROW_BUF_SIZE ? 0 :
       match_row( next->bytes, &next->match_bits, kmp_values, match_buf );
-    bool const is_last_row = next->len < ROW_BUF_SIZE;
+    bool const is_last_row = next->len == 0;
 
-    bool const any_printing = !opt_only_printing ||
-      any_printable( (char*)cur->bytes, cur->len );
-
-    if ( cur->match_bits ||
-         (is_last_row && !opt_only_matching && any_printing) ||
-         ((opt_verbose || !is_same_row) &&
-          !opt_only_matching && any_printing) ) {
+    if ( cur->match_bits || (           // always dump matching rows
+        // Otherwise dump only if:
+        //  + for non-matching rows, if not -m
+        !opt_only_matching &&
+        //  + and if -v, not the same row, or is the last row
+        (opt_verbose || !is_same_row || is_last_row) &&
+        //  + and if not -p or any printable bytes
+        (!opt_only_printing || any_printable( (char*)cur->bytes, cur->len )))
+       ) {
 
       // print row separator (if necessary)
       if ( !opt_only_matching && !opt_only_printing ) {
@@ -213,7 +229,7 @@ int main( int argc, char *argv[] ) {
       } // for
       SGR_END_IF( prev_matches );
 
-      // print padding if necessary (last row only) 
+      // print padding if necessary (last row only)
       while ( buf_pos < ROW_BUF_SIZE ) {
         if ( buf_pos++ % COLUMN_WIDTH == 0 )
           PUTCHAR( ' ' );             // print space between hex columns
