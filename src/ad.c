@@ -55,7 +55,7 @@ enum colorization {
 };
 typedef enum colorization colorization_t;
 
-typedef size_t kmp_t;
+typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
 
 enum offset_fmt {
   OFMT_DEC,
@@ -127,9 +127,9 @@ static void           usage( void );
 
 int main( int argc, char *argv[] ) {
   struct row_buf {
-    uint8_t   bytes[ ROW_BUF_SIZE ];
-    size_t    len;
-    uint16_t  match_bits;
+    uint8_t   bytes[ ROW_BUF_SIZE ];    // bytes in buffer, left-to-right
+    size_t    len;                      // length of buffer
+    uint16_t  match_bits;               // which bytes match, right-to-left
   };
   typedef struct row_buf row_buf_t;
 
@@ -139,23 +139,23 @@ int main( int argc, char *argv[] ) {
     "%0" OFFSET_WIDTH_S "llo",          // octal
   };
 
-  bool        any_dumped = false;       // any data dumped yet?
-  bool        any_matches = false;      // if matching, any data matched yet?
-  row_buf_t   buf[2];
-  row_buf_t  *cur = buf, *next = buf + 1;
-  bool        is_same_row = false;
-  kmp_t      *kmp_values = NULL;        // used only by match_byte()
-  uint8_t    *match_buf = NULL;         // used only by match_byte()
+  init( argc, argv );
 
-  init( argc, argv );                   // sets offset
-  off_t dumped_offset = offset;
+  bool      any_dumped = false;         // any data dumped yet?
+  bool      any_matches = false;        // if matching, any data matched yet?
+  row_buf_t buf[2], *cur = buf, *next = buf + 1;
+  off_t     dumped_offset = offset;     // most recently dumped row offset
+  bool      is_same_row = false;        // current row same as previous?
+  kmp_t    *kmps = NULL;                // used only by match_byte()
+  uint8_t  *match_buf = NULL;           // used only by match_byte()
 
-  if ( search_len ) {                   // is user searching for anything?
-    kmp_values = FREE_LATER( kmp_init( search_buf, search_len ) );
+  if ( search_len ) {                   // searching for anything?
+    kmps = FREE_LATER( kmp_init( search_buf, search_len ) );
     match_buf = FREE_LATER( MALLOC( uint8_t, search_len ) );
   }
 
-  cur->len = match_row( cur->bytes, &cur->match_bits, kmp_values, match_buf );
+  // prime the pump by reading the first row
+  cur->len = match_row( cur->bytes, &cur->match_bits, kmps, match_buf );
 
   while ( cur->len ) {
     size_t  buf_pos;
@@ -169,7 +169,7 @@ int main( int argc, char *argv[] ) {
     // current row is the last row if the length of the next row is zero.
     //
     next->len = cur->len < ROW_BUF_SIZE ? 0 :
-      match_row( next->bytes, &next->match_bits, kmp_values, match_buf );
+      match_row( next->bytes, &next->match_bits, kmps, match_buf );
     bool const is_last_row = next->len == 0;
 
     if ( cur->match_bits || (           // always dump matching rows
@@ -260,10 +260,13 @@ int main( int argc, char *argv[] ) {
       dumped_offset = offset;
     }
 
-    is_same_row = !opt_verbose && !is_last_row &&
+    // Check whether the next row is the same as the current row, but only if:
+    is_same_row =
+      !(opt_verbose || is_last_row) &&  // + neither -v or is the last row
+      cur->len == next->len &&          // + the two row lengths are equal
       memcmp( cur->bytes, next->bytes, ROW_BUF_SIZE ) == 0;
 
-    row_buf_t *const temp = cur;        // swap to avoid memcpy()
+    row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
     cur = next, next = temp;
 
     offset += ROW_BUF_SIZE;
@@ -308,14 +311,14 @@ static kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
  *
  * @param pbyte A pointer to receive the byte.
  * @param matches A pointer to receive whether the byte matches.
- * @param kmp_values A pointer to the array of KMP values to use.
+ * @param kmps A pointer to the array of KMP values to use.
  * @param match_buf A pointer to a buffer to use while matching.
  * It must be at least as large as the search buffer.
  * @return Returns \c true if a byte was read successfully
  * and the number of bytes read does not exceed \a max_bytes_to_read.
  */
-static bool match_byte( uint8_t *pbyte, bool *matches,
-                        kmp_t const *kmp_values, uint8_t *match_buf ) {
+static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
+                        uint8_t *match_buf ) {
   enum state {
     S_READING,                          // just reading; not matching
     S_MATCHING,                         // matching search bytes
@@ -327,8 +330,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
   typedef enum state state_t;
 
   static size_t buf_pos;
-  static size_t buf_drain;
-  static size_t kmp;
+  static size_t buf_drain;              // bytes to "drain" buf after mismatch
+  static kmp_t kmp;
   static state_t state = S_READING;
 
   uint8_t byte;
@@ -377,7 +380,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
           continue;
         }
         unget_byte( byte, file );
-        kmp = kmp_values[ buf_pos ];
+        kmp = kmps[ buf_pos ];
         buf_drain = buf_pos - kmp;
         GOTO_STATE( S_NOT_MATCHED );
 
@@ -410,21 +413,21 @@ static bool match_byte( uint8_t *pbyte, bool *matches,
  * @param match_bits A pointer to receive which bytes matched.  Note that the
  * bytes in the buffer are numbered left-to-right where as their corresponding
  * bits are numbered right-to-left.
- * @param kmp_values A pointer to the array of KMP values to use.
+ * @param kmps A pointer to the array of KMP values to use.
  * @param match_buf A pointer to a buffer to use while matching.
  * @return Returns the number of bytes in \a row_buf.  It should always be
  * \c ROW_BUF_SIZE except on the last row in which case it will be less than
  * \c ROW_BUF_SIZE.
  */
 static size_t match_row( uint8_t *row_buf, uint16_t *match_bits,
-                         kmp_t const *kmp_values, uint8_t *match_buf ) {
+                         kmp_t const *kmps, uint8_t *match_buf ) {
   assert( match_bits );
   *match_bits = 0;
 
   size_t buf_len;
   for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
     bool matches;
-    if ( !match_byte( row_buf + buf_len, &matches, kmp_values, match_buf ) ) {
+    if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) ) {
       // pad remainder of line
       memset( row_buf + buf_len, 0, ROW_BUF_SIZE - buf_len );
       break;
@@ -482,7 +485,7 @@ static colorization_t parse_colorization( char const *when ) {
     { "auto",      COLOR_ISATTY   },    // grep compatibility
     { "isatty",    COLOR_ISATTY   },    // explicit synonym for auto
     { "never",     COLOR_NEVER    },
-    { "not_file",  COLOR_NOT_FILE },
+    { "not_file",  COLOR_NOT_FILE },    // !ISREG( stdout )
     { "not_isreg", COLOR_NOT_FILE },    // synonym for not_isfile
     { "tty",       COLOR_ISATTY   },    // synonym for isatty
     { NULL,        COLOR_NEVER    }
@@ -724,7 +727,6 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
     else if ( !parse_sgr( sgr_color ) )
       return false;
   }
-
   if ( cap->cap_var_to_set )
     *cap->cap_var_to_set = sgr_color;
   else
@@ -739,7 +741,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  *
  * @param sgr_color The SGR color to set or empty or NULL to unset.
  */
-static void cap_mt( char const *sgr_color ) {
+static void cap_MB( char const *sgr_color ) {
   if ( !*sgr_color )                    // empty string -> NULL = unset
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
@@ -747,6 +749,8 @@ static void cap_mt( char const *sgr_color ) {
 
 /**
  * Turns off using the EL (Erase in Line) sequence.
+ * (This function is needed for the color capabilities table to support the
+ * "ne" capability.)
  *
  * @param sgr_color Not used.
  */
@@ -765,8 +769,8 @@ static color_cap_t const color_caps[] = {
   { "EC", &sgr_elided,      NULL   },   // elided count
   { "MA", &sgr_ascii_match, NULL   },   // matched ASCII
   { "MH", &sgr_hex_match,   NULL   },   // matched hex
-  { "MB", NULL,             cap_mt },   // matched both
-  { "mt", NULL,             cap_mt },   // grep: matched text (both)
+  { "MB", NULL,             cap_MB },   // matched both
+  { "mt", NULL,             cap_MB },   // grep: matched text (both)
   { "se", &sgr_sep,         NULL   },   // grep: separator
   { "ne", NULL,             cap_ne },   // grep: no EL on SGR
   { NULL, NULL,             NULL   }
@@ -780,7 +784,7 @@ static color_cap_t const color_caps[] = {
  */
 static bool parse_grep_color( char const *sgr_color ) {
   if ( parse_sgr( sgr_color ) ) {
-    cap_mt( sgr_color );
+    cap_MB( sgr_color );
     return true;
   }
   return false;
@@ -840,6 +844,7 @@ static bool should_colorize( colorization_t c ) {
   if ( c == COLOR_ISATTY )              // emulate grep's --color=auto
     return isatty( STDOUT_FILENO );
 
+  assert( c == COLOR_NOT_FILE );
   //
   // Otherwise we want to do color only we're writing either to a TTY or to a
   // pipe (so the common case of piping to less(1) will still show color) but
@@ -875,9 +880,9 @@ static void init( int argc, char *argv[] ) {
   atexit( clean_up );
   parse_options( argc, argv );
 
-  if ( search_buf )
+  if ( search_buf )                     // searching for a string?
     search_len = strlen( search_buf );
-  else if ( search_endian ) {
+  else if ( search_endian ) {           // searching for a number?
     if ( !search_len )                  // default to smallest possible size
       search_len = ulong_len( search_number );
     ulong_rearrange_bytes( &search_number, search_len, search_endian );
