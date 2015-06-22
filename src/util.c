@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      util.c
 **
-**      Copyright (C) 1996-2015  Paul J. Lucas
+**      Copyright (C) 2015  Paul J. Lucas
 **
 **      This program is free software; you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -35,11 +35,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// extern global variables
-extern char const*  me;
-extern char const*  path_name;
+struct free_node {
+  void *ptr;
+  struct free_node *next;
+};
+typedef struct free_node free_node_t;
 
-static size_t       total_bytes_read;
+extern char const  *file_path;
+extern char const  *me;
+
+static free_node_t *free_head;          // linked list of stuff to free
 
 // local functions
 static char const*  skip_ws( char const *s );
@@ -140,22 +145,22 @@ char* check_strdup( char const *s ) {
   return dup;
 }
 
-void* freelist_add( void *p, free_node_t **pphead ) {
-  assert( pphead );
+void* freelist_add( void *p ) {
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
-  new_node->p = p;
-  new_node->next = *pphead ? *pphead : NULL;
-  *pphead = new_node;
+  new_node->ptr = p;
+  new_node->next = free_head ? free_head : NULL;
+  free_head = new_node;
   return p;
 }
 
-void freelist_free( free_node_t *phead ) {
-  while ( phead ) {
-    free_node_t *const next = phead->next;
-    free( phead->p );
-    free( phead );
-    phead = next;
+void freelist_free() {
+  for ( free_node_t *p = free_head; p; ) {
+    free_node_t *const next = p->next;
+    free( p->ptr );
+    free( p );
+    p = next;
   } // while
+  free_head = NULL;
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
@@ -168,39 +173,22 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( ferror( file ) )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": can not read: %s\n", path_name, ERROR_STR
+        "\"%s\": can not read: %s\n", file_path, ERROR_STR
       );
     bytes_to_skip -= bytes_read;
   } // while
 }
 
-bool get_byte( uint8_t *pbyte, size_t max_bytes_to_read, FILE *file ) {
-  if ( total_bytes_read < max_bytes_to_read ) {
-    int const c = getc( file );
-    if ( c != EOF ) {
-      ++total_bytes_read;
-      assert( pbyte );
-      *pbyte = (uint8_t)c;
-      return true;
-    }
-    if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read byte failed: %s", path_name, ERROR_STR
-      );
-  }
-  return false;
-}
-
-FILE* open_file( char const *path_name, off_t offset ) {
-  assert( path_name );
-  FILE *const file = fopen( path_name, "r" );
+FILE* open_file( char const *path, off_t offset ) {
+  assert( path );
+  FILE *const file = fopen( path, "r" );
   if ( !file )
     PMESSAGE_EXIT( READ_OPEN,
-      "\"%s\": can not open: %s\n", path_name, ERROR_STR
+      "\"%s\": can not open: %s\n", path, ERROR_STR
     );
   if ( offset && fseek( file, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
-      "\"%s\": can not seek to offset %lld: %s\n", path_name, offset, ERROR_STR
+      "\"%s\": can not seek to offset %lld: %s\n", path, offset, ERROR_STR
     );
   return file;
 }
@@ -339,14 +327,6 @@ void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian ) {
     default:
       assert( true );
   } // switch
-}
-
-void unget_byte( uint8_t byte, FILE *file ) {
-  if ( ungetc( byte, file ) == EOF )
-    PMESSAGE_EXIT( READ_ERROR,
-      "\"%s\": unget byte failed: %s", path_name, ERROR_STR
-    );
-  --total_bytes_read;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

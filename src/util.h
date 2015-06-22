@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      util.h
 **
-**      Copyright (C) 1996-2015  Paul J. Lucas
+**      Copyright (C) 2015  Paul J. Lucas
 **
 **      This program is free software; you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -28,10 +28,9 @@
 
 // system
 #include <errno.h>
-#include <stdint.h>                     /* for uint8_t, ... */
-#include <stdio.h>
-#include <string.h>                     /* for str...() */
-#include <sys/types.h>
+#include <stddef.h>                     /* for size_t */
+#include <stdio.h>                      /* for FILE */
+#include <string.h>                     /* for strerror() */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -77,12 +76,6 @@ typedef bool _Bool;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct free_node {
-  void *p;
-  struct free_node *next;
-};
-typedef struct free_node free_node_t;
-
 /**
  * Checks whethere there is at least one printable character in \a s.
  *
@@ -115,17 +108,14 @@ char* check_strdup( char const *s );
  * Adds a pointer to the head of the free-list.
  *
  * @param p The pointer to add.
- * @param pphead A pointer to the pointer to the head of the list.
  * @return Returns \a p.
  */
-void* freelist_add( void *p, free_node_t **pphead );
+void* freelist_add( void *p );
 
 /**
  * Frees all the memory pointed to by all the nodes in the free-list.
- *
- * @param phead A pointer to the head of the list.
  */
-void freelist_free( free_node_t *phead );
+void freelist_free( void );
 
 /**
  * Reads and discards \a bytes_to_skip bytes.
@@ -136,25 +126,14 @@ void freelist_free( free_node_t *phead );
 void fskip( size_t bytes_to_skip, FILE *file );
 
 /**
- * Gets a byte from the given file.
- *
- * @param pbyte A pointer to the byte to receive the newly read byte.
- * @param max_bytes_to_read The maximum number of bytes to read in total.
- * @param file The file to read from.
- * @return Returns \c true if a byte was read successfully
- * and the number of bytes read does not exceed \a max_bytes_to_read.
- */
-bool get_byte( uint8_t *pbyte, size_t max_bytes_to_read, FILE *file );
-
-/**
  * Opens the given file and seeks to the given offset
  * or prints an error message and exits if there was an error.
  *
- * @param path_name The full path of the file to open.
+ * @param path The full path of the file to open.
  * @param offset The number of bytes to skip, if any.
  * @return Returns the corresponding \c FILE.
  */
-FILE* open_file( char const *path_name, off_t offset );
+FILE* open_file( char const *path, off_t offset );
 
 /**
  * Parses a string into an offset.
@@ -226,14 +205,6 @@ size_t ulong_len( unsigned long n );
  * @param endian The endianness to use.
  */
 void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian );
-
-/**
- * Ungets the given byte to the given file.
- *
- * @param byte The byte to unget.
- * @param file The file to unget \a byte to.
- */
-void unget_byte( uint8_t byte, FILE *file );
 
 ///////////////////////////////////////////////////////////////////////////////
 

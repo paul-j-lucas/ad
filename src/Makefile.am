@@ -20,6 +20,6 @@
 
 bin_PROGRAMS = ad
 
-ad_SOURCES = ad.c util.c
+ad_SOURCES = color.c match.c options.c util.c ad.c
 
 # vim:set noet sw=8 ts=8:

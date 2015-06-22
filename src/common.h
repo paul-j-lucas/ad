@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      common.h
 **
-**      Copyright (C) 1996-2015  Paul J. Lucas
+**      Copyright (C) 2015  Paul J. Lucas
 **
 **      This program is free software; you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -24,17 +24,21 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// exit(3) status codes
-#define EXIT_OK             0
-#define EXIT_NO_MATCHES     1
-#define EXIT_USAGE          2
+#define EXIT_OK             0           /* no errors */
+#define EXIT_NO_MATCHES     1           /* no errors, but no matches either */
+#define EXIT_USAGE          2           /* command-line usage error */
 #define EXIT_OUT_OF_MEMORY  3
-#define EXIT_READ_OPEN      10
-#define EXIT_READ_ERROR     11
-#define EXIT_WRITE_ERROR    13
-#define EXIT_SEEK_ERROR     20
-#define EXIT_STAT_ERROR     21
+#define EXIT_READ_OPEN      10          /* error opening file for reading */
+#define EXIT_READ_ERROR     11          /* error reading */
+#define EXIT_WRITE_ERROR    13          /* error writing */
+#define EXIT_SEEK_ERROR     20          /* error seeking */
+#define EXIT_STAT_ERROR     21          /* error stat'ing */
 
+#define ROW_BUF_SIZE        16          /* bytes displayed in a row */
+
+/**
+ * The endian order for numeric searches.
+ */
 enum endian {
   ENDIAN_UNSPECIFIED,
   ENDIAN_BIG,
