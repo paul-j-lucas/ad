@@ -297,8 +297,15 @@ Instead,
 a separator of ``\f(CW-\f1'' characters is printed
 along with the number of bytes elided
 in both decimal and hexadecimal.
+.TP
+.B ""
 However,
-the last row of data is always dumped
+if neither the
+.B \-m
+nor
+.B \-p
+options are given,
+then the last row of data is dumped
 even if it matches the previous row
 to indicate the end of the file.
 .TP
