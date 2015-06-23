@@ -39,21 +39,10 @@
 #define OFFSET_WIDTH    16              /* number of offset digits */
 
 // local functions
+static void dump_row( uint8_t const*, size_t, uint16_t );
 static void init( int, char*[] );
 
 /////////// dumping ///////////////////////////////////////////////////////////
-
-#define SGR_START_IF(EXPR) \
-  BLOCK( if ( colorize && (EXPR) ) PRINTF( sgr_start, (EXPR) ); )
-
-#define SGR_END_IF(EXPR) \
-  BLOCK( if ( colorize && (EXPR) ) PRINTF( "%s", sgr_end ); )
-
-#define SGR_HEX_START_IF(EXPR) \
-  BLOCK( if ( EXPR ) SGR_START_IF( sgr_hex_match ); )
-
-#define SGR_ASCII_START_IF(EXPR) \
-  BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
 int main( int argc, char *argv[] ) {
   struct row_buf {
@@ -63,18 +52,10 @@ int main( int argc, char *argv[] ) {
   };
   typedef struct row_buf row_buf_t;
 
-  static char const *const offset_fmt_printf[] = {
-    "%0" STRINGIFY(OFFSET_WIDTH) "llu", // decimal
-    "%0" STRINGIFY(OFFSET_WIDTH) "llX", // hex
-    "%0" STRINGIFY(OFFSET_WIDTH) "llo"  // octal
-  };
-
   init( argc, argv );
 
-  bool      any_dumped = false;         // any data dumped yet?
   bool      any_matches = false;        // if matching, any data matched yet?
   row_buf_t buf[2], *cur = buf, *next = buf + 1;
-  off_t     dumped_offset = file_offset;// most recently dumped row offset
   bool      is_same_row = false;        // current row same as previous?
   kmp_t    *kmps = NULL;                // used only by match_byte()
   uint8_t  *match_buf = NULL;           // used only by match_byte()
@@ -88,9 +69,6 @@ int main( int argc, char *argv[] ) {
   cur->len = match_row( cur->bytes, &cur->match_bits, kmps, match_buf );
 
   while ( cur->len ) {
-    size_t  buf_pos;
-    bool    prev_matches;
-
     //
     // We need to know whether the current row is the last row.  The current
     // row is the last if its length < ROW_BUF_SIZE.  However, if the file's
@@ -109,85 +87,12 @@ int main( int argc, char *argv[] ) {
         //  + and if -v, not the same row, or is the last row
         (opt_verbose || !is_same_row || is_last_row) &&
         //  + and if not -p or any printable bytes
-        (!opt_only_printing || any_printable( (char*)cur->bytes, cur->len )))
-       ) {
+        (!opt_only_printing ||
+          any_printable( (char*)cur->bytes, cur->len )) ) ) {
 
-      // print row separator (if necessary)
-      if ( !opt_only_matching && !opt_only_printing ) {
-        off_t const offset_delta = file_offset - dumped_offset - ROW_BUF_SIZE;
-        if ( offset_delta && any_dumped ) {
-          SGR_START_IF( sgr_elided );
-          for ( size_t i = 0; i < OFFSET_WIDTH; ++i )
-            PUTCHAR( '-' );
-          SGR_END_IF( sgr_elided );
-          SGR_START_IF( sgr_sep );
-          PUTCHAR( ':' );
-          SGR_END_IF( sgr_sep );
-          PUTCHAR( ' ' );
-          SGR_START_IF( sgr_elided );
-          PRINTF( "(%lld | 0x%llX)", offset_delta, offset_delta );
-          SGR_END_IF( sgr_elided );
-          PUTCHAR( '\n' );
-        }
-      }
-
-      // print offset & column separator
-      SGR_START_IF( sgr_offset );
-      PRINTF( offset_fmt_printf[ opt_offset_fmt ], file_offset );
-      SGR_END_IF( sgr_offset );
-      SGR_START_IF( sgr_sep );
-      PUTCHAR( ':' );
-      SGR_END_IF( sgr_sep );
-
-      // dump hex part
-      prev_matches = false;
-      for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-        bool const matches = cur->match_bits & (1 << buf_pos);
-        bool const matches_changed = matches != prev_matches;
-
-        if ( buf_pos % COLUMN_WIDTH == 0 ) {
-          SGR_END_IF( prev_matches );
-          PUTCHAR( ' ' );               // print space between hex columns
-          SGR_HEX_START_IF( prev_matches );
-        }
-        if ( matches )
-          SGR_HEX_START_IF( matches_changed );
-        else
-          SGR_END_IF( matches_changed );
-        PRINTF( "%02X", (unsigned)cur->bytes[ buf_pos ] );
-        prev_matches = matches;
-      } // for
-      SGR_END_IF( prev_matches );
-
-      // print padding if necessary (last row only)
-      while ( buf_pos < ROW_BUF_SIZE ) {
-        if ( buf_pos++ % COLUMN_WIDTH == 0 )
-          PUTCHAR( ' ' );             // print space between hex columns
-        PRINTF( "  " );
-      } // while
-
-      // dump ASCII part
-      PRINTF( "  " );
-      prev_matches = false;
-      for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-        bool const matches = cur->match_bits & (1 << buf_pos);
-        bool const matches_changed = matches != prev_matches;
-        uint8_t const byte = cur->bytes[ buf_pos ];
-
-        if ( matches )
-          SGR_ASCII_START_IF( matches_changed );
-        else
-          SGR_END_IF( matches_changed );
-        PUTCHAR( isprint( byte ) ? byte : '.' );
-        prev_matches = matches;
-      } // for
-      SGR_END_IF( prev_matches );
-      PUTCHAR( '\n' );
-
-      any_dumped = true;
+      dump_row( cur->bytes, cur->len, cur->match_bits );
       if ( cur->match_bits )
         any_matches = true;
-      dumped_offset = file_offset;
     }
 
     // Check whether the next row is the same as the current row, but only if:
@@ -203,6 +108,111 @@ int main( int argc, char *argv[] ) {
   } // while
 
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
+}
+
+#define SGR_START_IF(EXPR) \
+  BLOCK( if ( colorize && (EXPR) ) PRINTF( sgr_start, (EXPR) ); )
+
+#define SGR_END_IF(EXPR) \
+  BLOCK( if ( colorize && (EXPR) ) PRINTF( "%s", sgr_end ); )
+
+#define SGR_HEX_START_IF(EXPR) \
+  BLOCK( if ( EXPR ) SGR_START_IF( sgr_hex_match ); )
+
+#define SGR_ASCII_START_IF(EXPR) \
+  BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
+
+static void dump_row( uint8_t const *buf, size_t buf_len,
+                      uint16_t match_bits ) {
+  static char const *const offset_fmt_printf[] = {
+    "%0" STRINGIFY(OFFSET_WIDTH) "llu", // decimal
+    "%0" STRINGIFY(OFFSET_WIDTH) "llX", // hex
+    "%0" STRINGIFY(OFFSET_WIDTH) "llo"  // octal
+  };
+
+  static bool   any_dumped = false;     // any data dumped yet?
+  static off_t  dumped_offset = -1;
+
+  if ( dumped_offset == -1 )
+    dumped_offset = file_offset;
+
+  size_t  buf_pos;
+  bool    prev_matches;
+
+  // print row separator (if necessary)
+  if ( !opt_only_matching && !opt_only_printing ) {
+    off_t const offset_delta = file_offset - dumped_offset - ROW_BUF_SIZE;
+    if ( offset_delta && any_dumped ) {
+      SGR_START_IF( sgr_elided );
+      for ( size_t i = 0; i < OFFSET_WIDTH; ++i )
+        PUTCHAR( '-' );
+      SGR_END_IF( sgr_elided );
+      SGR_START_IF( sgr_sep );
+      PUTCHAR( ':' );
+      SGR_END_IF( sgr_sep );
+      PUTCHAR( ' ' );
+      SGR_START_IF( sgr_elided );
+      PRINTF( "(%lld | 0x%llX)", offset_delta, offset_delta );
+      SGR_END_IF( sgr_elided );
+      PUTCHAR( '\n' );
+    }
+  }
+
+  // print offset & column separator
+  SGR_START_IF( sgr_offset );
+  PRINTF( offset_fmt_printf[ opt_offset_fmt ], file_offset );
+  SGR_END_IF( sgr_offset );
+  SGR_START_IF( sgr_sep );
+  PUTCHAR( ':' );
+  SGR_END_IF( sgr_sep );
+
+  // dump hex part
+  prev_matches = false;
+  for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
+    bool const matches = match_bits & (1 << buf_pos);
+    bool const matches_changed = matches != prev_matches;
+
+    if ( buf_pos % COLUMN_WIDTH == 0 ) {
+      SGR_END_IF( prev_matches );
+      PUTCHAR( ' ' );               // print space between hex columns
+      SGR_HEX_START_IF( prev_matches );
+    }
+    if ( matches )
+      SGR_HEX_START_IF( matches_changed );
+    else
+      SGR_END_IF( matches_changed );
+    PRINTF( "%02X", (unsigned)buf[ buf_pos ] );
+    prev_matches = matches;
+  } // for
+  SGR_END_IF( prev_matches );
+
+  // print padding if necessary (last row only)
+  while ( buf_pos < ROW_BUF_SIZE ) {
+    if ( buf_pos++ % COLUMN_WIDTH == 0 )
+      PUTCHAR( ' ' );             // print space between hex columns
+    PRINTF( "  " );
+  } // while
+
+  // dump ASCII part
+  PRINTF( "  " );
+  prev_matches = false;
+  for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
+    bool const matches = match_bits & (1 << buf_pos);
+    bool const matches_changed = matches != prev_matches;
+    uint8_t const byte = buf[ buf_pos ];
+
+    if ( matches )
+      SGR_ASCII_START_IF( matches_changed );
+    else
+      SGR_END_IF( matches_changed );
+    PUTCHAR( isprint( byte ) ? byte : '.' );
+    prev_matches = matches;
+  } // for
+  SGR_END_IF( prev_matches );
+  PUTCHAR( '\n' );
+
+  any_dumped = true;
+  dumped_offset = file_offset;
 }
 
 /////////// initialization & clean-up /////////////////////////////////////////
