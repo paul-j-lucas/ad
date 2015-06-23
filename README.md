@@ -7,6 +7,11 @@ to standard output.
 For those bytes that are not printable,
 prints '`.`' (dot) instead.
 
+**ad** is similar to **hextdump**(1), **od**(1), and **xxd**(1)
+except that **ad** can also search for
+and highlight matching strings or numbers
+similar to **grep**(1).
+
 ## Installation
 
 The git repository contains only the necessary source code.
