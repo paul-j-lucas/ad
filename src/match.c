@@ -122,27 +122,53 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           RETURN( byte );
         if ( MAYBE_NO_CASE( byte ) != (uint8_t)search_buf[0] )
           RETURN( byte );               // searching, but no match yet
-        match_buf[ 0 ] = byte;
+        //
+        // The read byte matches the first byte of the search buffer: start
+        // storing bytes in the match buffer and try to match the rest of the
+        // search buffer.  While matching, we can not return to the caller
+        // since we won't know whether the current sequence of bytes will fully
+        // match the search buffer until we reach its end.
+        //
+        match_buf[0] = byte;
         kmp = 0;
         GOTO_STATE( S_MATCHING );
 
       case S_MATCHING:
         if ( ++buf_pos == search_len ) {
-          *matches = true;
+          //
+          // We've reached the end of the serch buffer, hence the current
+          // sequence of bytes fully matches: we can now drain the match buffer
+          // and return the bytes individually to the caller denoting that all
+          // matched.
+          //
           buf_drain = buf_pos;
           GOTO_STATE( S_MATCHED );
         }
         // no break;
       case S_MATCHING_CONT:
         if ( !get_byte( &byte, file_input ) ) {
+          //
+          // We've reached EOF and there weren't enough bytes to match the
+          // search buffer: just drain the match buffer and return the bytes
+          // individually to the caller denoting that none matched.
+          //
           buf_drain = buf_pos;
           GOTO_STATE( S_NOT_MATCHED );
         }
         if ( MAYBE_NO_CASE( byte ) == (uint8_t)search_buf[ buf_pos ] ) {
+          //
+          // The next byte matched: keep storing bytes in the match buffer and
+          // keep matching.
+          //
           match_buf[ buf_pos ] = byte;
-          state = S_MATCHING;
+          state = S_MATCHING;           // in case we were S_MATCHING_CONT
           continue;
         }
+        //
+        // The read byte mismatches a byte in the search buffer: unget the
+        // mismatched byte and now drain the bytes that occur nowhere else in
+        // the search buffer (thanks to the KMP algorithm).
+        //
         unget_byte( byte, file_input );
         kmp = kmps[ buf_pos ];
         buf_drain = buf_pos - kmp;
@@ -150,7 +176,17 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 
       case S_MATCHED:
       case S_NOT_MATCHED:
+        //
+        // Drain the match buffer returning each byte to the caller along with
+        // whether it matched.
+        //
         if ( buf_pos == buf_drain ) {
+          //
+          // We've drained all the bytes: if kmp != 0, it means we already have
+          // a partial match further along in the read bytes so we don't have
+          // to re-read them and re-compare them since they will match; hence,
+          // go to S_MATCHING_CONT.
+          //
           buf_pos = kmp;
           state = buf_pos ? S_MATCHING_CONT : S_READING;
           continue;
