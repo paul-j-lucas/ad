@@ -58,6 +58,9 @@ typedef bool _Bool;
 #define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 #define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
 
+#define FSEEK(STREAM,OFFSET,WHENCE) \
+  BLOCK( if ( fseeko( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
+
 #define FSTAT(FD,STAT) \
   BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( STAT_ERROR ); )
 

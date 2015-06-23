@@ -232,10 +232,8 @@ FILE* open_file( char const *path, off_t offset ) {
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n", path, ERROR_STR
     );
-  if ( offset && fseeko( file, offset, SEEK_SET ) == -1 )
-    PMESSAGE_EXIT( SEEK_ERROR,
-      "\"%s\": can not seek to offset %lld: %s\n", path, offset, ERROR_STR
-    );
+  if ( offset )
+    FSEEK( file, offset, SEEK_SET );
   return file;
 }
 
