@@ -244,11 +244,8 @@ size_t match_row( uint8_t *row_buf, uint16_t *match_bits, kmp_t const *kmps,
   size_t buf_len;
   for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
     bool matches;
-    if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) ) {
-      // pad remainder of line
-      memset( row_buf + buf_len, 0, ROW_BUF_SIZE - buf_len );
+    if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) )
       break;
-    }
     if ( matches )
       *match_bits |= 1 << buf_len;
   } // for
