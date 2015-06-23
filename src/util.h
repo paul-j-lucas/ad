@@ -29,8 +29,10 @@
 // system
 #include <errno.h>
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
+#include <sys/types.h>                  /* for off_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -126,6 +128,34 @@ void freelist_free( void );
 void fskip( size_t bytes_to_skip, FILE *file );
 
 /**
+ * Gets the minimum number of bytes required to contain the given \c uint64_t
+ * value.
+ *
+ * @param n The number to get the number of bytes for.
+ * @return Returns the minimum number of bytes required to contain \a n.
+ */
+size_t int_len( uint64_t n );
+
+/**
+ * Rearranges the bytes in the given \c uint64_t such that:
+ *  + The value is down-cast into the requested number of bytes.
+ *  + The bytes have the requested endianness.
+ *  + The bytes are shifted to start at the lowest memory address.
+ *
+ * For example, the value 0x1122 on a big-endian machine with 8-byte longs is
+ * in memory as the bytes 00-00-00-00-00-00-11-22.
+ *
+ * If \a bytes were 4 and \a endian were:
+ *  + big, the result in memory would be 00-00-11-22-00-00-00-00.
+ *  + little, the result in memory would be 22-11-00-00-00-00-00-00.
+ *
+ * @param n A pointer to the \c uint64_t to rearrange.
+ * @param bytes The number of bytes to use; must be 1, 2, 4, or 8.
+ * @param endian The endianness to use.
+ */
+void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
+
+/**
  * Opens the given file and seeks to the given offset
  * or prints an error message and exits if there was an error.
  *
@@ -137,7 +167,7 @@ FILE* open_file( char const *path, off_t offset );
 
 /**
  * Parses a string into an offset.
- * Unlike \c strtoul(3):
+ * Unlike \c strtoull(3):
  *  + Insists that \a s is non-negative.
  *  + May be followed by one of \c b, \c k, or \c m
  *    for 512-byte blocks, kilobytes, and megabytes, respectively.
@@ -145,7 +175,7 @@ FILE* open_file( char const *path, off_t offset );
  * @param s The NULL-terminated string to parse.
  * @return Returns the parsed offset.
  */
-unsigned long parse_offset( char const *s );
+uint64_t parse_offset( char const *s );
 
 /**
  * Parses an SGR (Select Graphic Rendition) value that matches the regular
@@ -160,15 +190,15 @@ unsigned long parse_offset( char const *s );
 bool parse_sgr( char const *sgr_color );
 
 /**
- * Parses a string into an unsigned long.
- * Unlike \c strtoul(3), insists that \a s is entirely a non-negative number.
+ * Parses a string into a \c uint64_t.
+ * Unlike \c strtoull(3), insists that \a s is entirely a non-negative number.
  *
  * @param s The NULL-terminated string to parse.
  * @param n A pointer to receive the parsed number.
  * @return Returns the parsed number only if \a s is entirely a non-negative
  * number or prints an error message and exits if there was an error.
  */
-unsigned long parse_ul( char const *s );
+uint64_t parse_ull( char const *s );
 
 /**
  * Converts a string to lower-case in-place.
@@ -177,34 +207,6 @@ unsigned long parse_ul( char const *s );
  * @return Returns \a s.
  */
 char* tolower_s( char *s );
-
-/**
- * Gets the minimum number of bytes required to contain the given unsigned long
- * value.
- *
- * @param n The number to get the number of bytes for.
- * @return Returns the minimum number of bytes required to contain \a n.
- */
-size_t ulong_len( unsigned long n );
-
-/**
- * Rearranges the bytes in the given unsigned long such that:
- *  + The value is down-cast into the requested number of bytes.
- *  + The bytes have the requested endianness.
- *  + The bytes are shifted to start at the lowest memory address.
- *
- * For example, the value 0x1122 on a big-endian machine with 8-byte longs is
- * in memory as the bytes 00-00-00-00-00-00-11-22.
- *
- * If \a bytes were 4 and \a endian were:
- *  + big, the result in memory would be 00-00-11-22-00-00-00-00.
- *  + little, the result in memory would be 22-11-00-00-00-00-00-00.
- *
- * @param n A pointer to the unsigned long to rearrange.
- * @param bytes The number of bytes to use; must be 1, 2, 4, or 8.
- * @param endian The endianness to use.
- */
-void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian );
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -51,7 +51,7 @@ bool          opt_verbose;
 char         *search_buf;
 endian_t      search_endian;
 size_t        search_len;
-unsigned long search_number;
+uint64_t      search_number;
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -59,7 +59,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( USAGE,
-      "\"%zu\": value for -%c option is too small for \"%lu\""
+      "\"%zu\": value for -%c option is too small for \"%llu\""
       "; must be at least %zu\n",
       given_size, opt, search_number, actual_size
     );
@@ -146,13 +146,13 @@ void parse_options( int argc, char *argv[] ) {
 
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
     switch ( opt ) {
-      case 'b': size_in_bits = parse_ul( optarg );                    break;
-      case 'B': size_in_bytes = parse_ul( optarg );                   break;
+      case 'b': size_in_bits = parse_ull( optarg );                   break;
+      case 'B': size_in_bytes = parse_ull( optarg );                  break;
       case 'c': colorization = parse_colorization( optarg );          break;
       case 'd': opt_offset_fmt = OFMT_DEC;                            break;
-      case 'e': search_number = parse_ul( optarg );
+      case 'e': search_number = parse_ull( optarg );
                 search_endian = ENDIAN_LITTLE;                        break;
-      case 'E': search_number = parse_ul( optarg );
+      case 'E': search_number = parse_ull( optarg );
                 search_endian = ENDIAN_BIG;                           break;
       case 'h': opt_offset_fmt = OFMT_HEX;                            break;
       case 'S': search_buf = freelist_add( check_strdup( optarg ) );  
@@ -193,23 +193,18 @@ void parse_options( int argc, char *argv[] ) {
       case  8:
       case 16:
       case 32:
-#if SIZEOF_UNSIGNED_LONG == 8
       case 64:
-#endif /* SIZEOF_UNSIGNED_LONG */
         search_len = size_in_bits * 8;
         break;
       default:
         PMESSAGE_EXIT( USAGE,
-          "\"%zu\": invalid value for -%c option; must be one of: 8, 16, 32"
-#if SIZEOF_UNSIGNED_LONG == 8
-          ", 64"
-#endif /* SIZEOF_UNSIGNED_LONG */
+          "\"%zu\": invalid value for -%c option; must be one of: 8, 16, 32, 64"
           "\n", size_in_bits, 'b'
         );
     } // switch
     if ( !search_endian )
       option_required( "b", "eE" );
-    check_number_size( size_in_bits, ulong_len( search_number ) * 8, 'b' );
+    check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
   }
 
   if ( size_in_bytes ) {
@@ -217,23 +212,18 @@ void parse_options( int argc, char *argv[] ) {
       case 1:
       case 2:
       case 4:
-#if SIZEOF_UNSIGNED_LONG == 8
       case 8:
-#endif /* SIZEOF_UNSIGNED_LONG */
         search_len = size_in_bytes;
         break;
       default:
         PMESSAGE_EXIT( USAGE,
-          "\"%zu\": invalid value for -%c option; must be one of: 1, 2, 4"
-#if SIZEOF_UNSIGNED_LONG == 8
-          ", 8"
-#endif /* SIZEOF_UNSIGNED_LONG */
+          "\"%zu\": invalid value for -%c option; must be one of: 1, 2, 4, 8"
           "\n", size_in_bytes, 'B'
         );
     } // switch
     if ( !search_endian )
       option_required( "B", "eE" );
-    check_number_size( size_in_bytes, ulong_len( search_number ), 'B' );
+    check_number_size( size_in_bytes, int_len( search_number ), 'B' );
   }
 
   colorize = should_colorize( colorization );
@@ -287,16 +277,8 @@ void usage( void ) {
 "       %s [options] [file] [[+]offset]\n"
 "\n"
 "options:\n"
-"       -b bits    Specify number size in bits: 8, 16, 32"
-#if SIZEOF_UNSIGNED_LONG == 8
-                   ", 64"
-#endif /* SIZEOF_UNSIGNED_LONG */
-                   " [default: auto].\n"
-"       -B bytes   Specify number size in bytes: 1, 2, 4"
-#if SIZEOF_UNSIGNED_LONG == 8
-                   ", 8"
-#endif /* SIZEOF_UNSIGNED_LONG */
-                   " [default: auto].\n"
+"       -b bits    Set number size in bits: 8, 16, 32, 64 [default: auto].\n"
+"       -B bytes   Set number size in bytes: 1, 2, 4, 8 [default: auto].\n"
 "       -c when    Specify when to colorize output [default: not_file].\n"
 "       -d         Print offset in decimal.\n"
 "       -e number  Search for little-endian number.\n"

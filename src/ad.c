@@ -231,8 +231,8 @@ static void init( int argc, char *argv[] ) {
     search_len = strlen( search_buf );
   else if ( search_endian ) {           // searching for a number?
     if ( !search_len )                  // default to smallest possible size
-      search_len = ulong_len( search_number );
-    ulong_rearrange_bytes( &search_number, search_len, search_endian );
+      search_len = int_len( search_number );
+    int_rearrange_bytes( &search_number, search_len, search_endian );
     search_buf = (char*)&search_number;
   }
 

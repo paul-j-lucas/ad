@@ -29,7 +29,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>                     /* for exit(), strtoul(), ... */
+#include <stdlib.h>                     /* for exit(), strtoull(), ... */
 #include <string.h>                     /* for str...() */
 #include <sys/types.h>
 
@@ -75,7 +75,6 @@ static inline uint32_t swap_32( uint32_t n ) {
         | ( n                << 24);
 }
 
-#if SIZEOF_UNSIGNED_LONG == 8
 /**
  * Flips the endianness of the given 64-bit value.
  *
@@ -83,16 +82,15 @@ static inline uint32_t swap_32( uint32_t n ) {
  * @return Returns the value with the endianness flipped.
  */
 static inline uint64_t swap_64( uint64_t n ) {
-  return  ( n                         >> 56)
-        | ((n & 0x00FF000000000000ul) >> 40)
-        | ((n & 0x0000FF0000000000ul) >> 24)
-        | ((n & 0x000000FF00000000ul) >>  8)
-        | ((n & 0x00000000FF000000ul) <<  8)
-        | ((n & 0x0000000000FF0000ul) << 24)
-        | ((n & 0x000000000000FF00ul) << 40)
-        | ( n                         << 56);
+  return  ( n                          >> 56)
+        | ((n & 0x00FF000000000000ull) >> 40)
+        | ((n & 0x0000FF0000000000ull) >> 24)
+        | ((n & 0x000000FF00000000ull) >>  8)
+        | ((n & 0x00000000FF000000ull) <<  8)
+        | ((n & 0x0000000000FF0000ull) << 24)
+        | ((n & 0x000000000000FF00ull) << 40)
+        | ( n                          << 56);
 }
-#endif /* SIZEOF_UNSIGNED_LONG */
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -179,6 +177,54 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   } // while
 }
 
+size_t int_len( uint64_t n ) {
+  if ( n < 0x10000 )
+    return n < 0x100 ? 1 : 2;
+  return n < 0x100000000L ? 4 : 8;
+}
+
+void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
+  assert( bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8 );
+
+  switch ( endian ) {
+#ifdef WORDS_BIGENDIAN
+
+    case ENDIAN_LITTLE:
+      switch ( bytes ) {
+        case 1 : /* do nothing */     break;
+        case 2 : *n = swap_16( *n );  break;
+        case 4 : *n = swap_32( *n );  break;
+        case 8 : *n = swap_64( *n );  break;
+      } // switch
+      // no break;
+
+    case ENDIAN_BIG:
+      // move bytes to start of buffer
+      *n <<= (sizeof( uint64_t ) - bytes) * 8;
+      break;
+
+#else /* machine words are little endian */
+
+    case ENDIAN_BIG:
+      switch ( bytes ) {
+        case 1 : /* do nothing */     break;
+        case 2 : *n = swap_16( *n );  break;
+        case 4 : *n = swap_32( *n );  break;
+        case 8 : *n = swap_64( *n );  break;
+      } // switch
+      break;
+
+    case ENDIAN_LITTLE:
+      // do nothing
+      break;
+
+#endif /* WORDS_BIGENDIAN */
+
+    default:
+      assert( true );
+  } // switch
+}
+
 FILE* open_file( char const *path, off_t offset ) {
   assert( path );
   FILE *const file = fopen( path, "r" );
@@ -186,21 +232,21 @@ FILE* open_file( char const *path, off_t offset ) {
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n", path, ERROR_STR
     );
-  if ( offset && fseek( file, offset, SEEK_SET ) == -1 )
+  if ( offset && fseeko( file, offset, SEEK_SET ) == -1 )
     PMESSAGE_EXIT( SEEK_ERROR,
       "\"%s\": can not seek to offset %lld: %s\n", path, offset, ERROR_STR
     );
   return file;
 }
 
-unsigned long parse_offset( char const *s ) {
+uint64_t parse_offset( char const *s ) {
   s = skip_ws( s );
-  if ( !*s || *s == '-' )               // strtoul(3) wrongly allows '-'
+  if ( !*s || *s == '-' )               // strtoull(3) wrongly allows '-'
     return false;
 
   char *end = NULL;
   errno = 0;
-  unsigned long n = strtoul( s, &end, 0 );
+  uint64_t n = strtoull( s, &end, 0 );
   if ( errno || end == s )
     goto error;
   if ( end[0] ) {                       // possibly 'b', 'k', or 'm'
@@ -226,7 +272,7 @@ bool parse_sgr( char const *sgr_color ) {
       return false;
     char *end;
     errno = 0;
-    unsigned long const n = strtoul( sgr_color, &end, 10 );
+    uint64_t const n = strtoull( sgr_color, &end, 10 );
     if ( errno || n > 255 )
       return false;
     switch ( *end ) {
@@ -241,12 +287,12 @@ bool parse_sgr( char const *sgr_color ) {
   } // for
 }
 
-unsigned long parse_ul( char const *s ) {
+uint64_t parse_ull( char const *s ) {
   s = skip_ws( s );
-  if ( *s && *s != '-') {               // strtoul(3) wrongly allows '-'
+  if ( *s && *s != '-') {               // strtoull(3) wrongly allows '-'
     char *end = NULL;
     errno = 0;
-    unsigned long const n = strtoul( s, &end, 0 );
+    uint64_t const n = strtoull( s, &end, 0 );
     if ( !errno && !*end )
       return n;
   }
@@ -258,75 +304,6 @@ char* tolower_s( char *s ) {
   for ( char *t = s; *t; ++t )
     *t = tolower( *t );
   return s;
-}
-
-size_t ulong_len( unsigned long n ) {
-  if ( n < 0x10000 )
-    return n < 0x100 ? 1 : 2;
-#if SIZEOF_UNSIGNED_LONG == 8
-  return n < 0x100000000L ? 4 : 8;
-#else
-  return 4;
-#endif /* SIZEOF_UNSIGNED_LONG */
-}
-
-void ulong_rearrange_bytes( unsigned long *n, size_t bytes, endian_t endian ) {
-#ifndef NDEBUG
-  switch ( bytes ) {
-    case 1:
-    case 2:
-    case 4:
-#if SIZEOF_UNSIGNED_LONG == 8
-    case 8:
-#endif /* SIZEOF_UNSIGNED_LONG */
-      break;
-    default:
-      assert( true );
-  } /* switch */
-#endif /* NDEBUG */
-
-  switch ( endian ) {
-#ifdef WORDS_BIGENDIAN
-
-    case ENDIAN_BIG:
-      // move bytes to start of buffer
-      *n <<= (sizeof( unsigned long ) - bytes) * 8;
-      break;
-
-    case ENDIAN_LITTLE:
-      switch ( bytes ) {
-        case 1 : /* do nothing */     break;
-        case 2 : *n = swap_16( *n );  break;
-        case 4 : *n = swap_32( *n );  break;
-#if SIZEOF_UNSIGNED_LONG == 8
-        case 8 : *n = swap_64( *n );  break;
-#endif /* SIZEOF_UNSIGNED_LONG */
-      } // switch
-      // post-swap, bytes are at start of buffer
-      break;
-
-#else /* machine words are little endian */
-
-    case ENDIAN_BIG:
-      switch ( bytes ) {
-        case 1 : /* do nothing */     break;
-        case 2 : *n = swap_16( *n );  break;
-        case 4 : *n = swap_32( *n );  break;
-#if SIZEOF_UNSIGNED_LONG == 8
-        case 8 : *n = swap_64( *n );  break;
-#endif /* SIZEOF_UNSIGNED_LONG */
-      } // switch
-      break;
-
-    case ENDIAN_LITTLE:
-      // do nothing
-      break;
-
-#endif /* WORDS_BIGENDIAN */
-
-    default:
-      assert( true );
-  } // switch
 }
 
 ///////////////////////////////////////////////////////////////////////////////

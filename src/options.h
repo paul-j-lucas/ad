@@ -53,7 +53,7 @@ extern bool           opt_verbose;
 extern char          *search_buf;       // not NULL-terminated when numeric
 extern endian_t       search_endian;    // if searching for a number
 extern size_t         search_len;       // number of bytes in search_buf
-extern unsigned long  search_number;    // the number to search for
+extern uint64_t       search_number;    // the number to search for
 
 /**
  * Parses command-line options and sets global variables.
