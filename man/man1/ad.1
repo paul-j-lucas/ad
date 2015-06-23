@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "June 21, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "June 22, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -45,13 +45,14 @@ For those bytes that are not printable,
 prints `\f(CW.\f1' (dot) instead.
 .PP
 .B ad
-is similar to both
-.BR hextdump (1)
+is similar to
+.BR hextdump (1),
+.BR od (1),
 and
-.BR od (1)
+.BR xxd (1)
 except that
 .B ad
-can also highlight matching strings or numbers
+can also search for and highlight matching strings or numbers
 similar to
 .BR grep (1).
 .SH OPTIONS
