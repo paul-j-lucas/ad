@@ -131,7 +131,7 @@ static void dump_row( uint8_t const *buf, size_t buf_len,
   };
 
   static bool   any_dumped = false;     // any data dumped yet?
-  static off_t  dumped_offset = -1;
+  static off_t  dumped_offset = -1;     // offset of most recently dumped row
 
   if ( dumped_offset == -1 )
     dumped_offset = file_offset;
