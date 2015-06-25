@@ -339,26 +339,25 @@ expected_hex_digit:
 }
 
 static void reverse( void ) {
-  char   *buf = NULL;
-  size_t  buf_len = 0;
+  char   *row_buf = NULL;
+  size_t  row_len = 0;
   uint8_t bytes[ ROW_BUF_SIZE ];
   size_t  line = 0;
-  off_t   fout_offset = 0;
+  off_t   fout_offset = -ROW_BUF_SIZE;
 
   for ( ;; ) {
-    ssize_t const row_len = getline( &buf, &buf_len, fin );
+    ssize_t const row_len = getline( &row_buf, &row_len, fin );
     if ( row_len == -1 )
       break;
     off_t new_offset;
     size_t bytes_len;
-    switch ( parse_row( ++line, buf, buf_len, &new_offset,
+    switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
-        if ( new_offset < fout_offset + ROW_BUF_SIZE ) {
+        if ( new_offset < fout_offset + ROW_BUF_SIZE )
           PMESSAGE_EXIT( INVALID_FORMAT,
             "line %zu: \"%lld\": offset goes backwards\n", line, new_offset
           );
-        }
         if ( new_offset > fout_offset + ROW_BUF_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
         if ( fwrite( bytes, 1, bytes_len, fout ) < bytes_len )

@@ -71,10 +71,12 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-m-s_01.test \
 	tests/ad-m-v.test \
 	tests/ad-m.test \
+	tests/ad-no_options-out.test \
 	tests/ad-o.test \
 	tests/ad-p-v.test \
 	tests/ad-p_01.test \
 	tests/ad-p_02.test \
+	tests/ad-r_01.test \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
 	tests/ad-v.test

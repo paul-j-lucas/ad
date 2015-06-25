@@ -185,11 +185,11 @@ OUTPUT=/tmp/ad_test_output_$$_
 
 trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
-IFS='|' read COMMAND OPTIONS INPUT EXPECTED_EXIT < $TEST
+IFS='|' read COMMAND OPTIONS INPUT USE_OUTFILE EXPECTED_EXIT < $TEST
 COMMAND=`echo $COMMAND`                 # trims whitespace
 INPUT=$DATA_DIR/`echo $INPUT`           # trims whitespace
+USE_OUTFILE=`echo $USE_OUTFILE`         # trims whitespace
 EXPECTED_EXIT=`echo $EXPECTED_EXIT`     # trims whitespace
-EXPECTED_OUTPUT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
 
 ##
 # Must put BUILD_SRC first in PATH so we get the correct version of ad.
@@ -201,11 +201,26 @@ PATH=$BUILD_SRC:$PATH
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-#echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
-if $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
+if [ "$USE_OUTFILE" ]
 then
+  #echo $COMMAND "$OPTIONS" $INPUT $OUTPUT
+  $COMMAND $OPTIONS $INPUT $OUTPUT > $LOG_FILE 2>&1
+else
+  #echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
+  $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
+fi
+ACTUAL_EXIT=$?
+
+if [ $ACTUAL_EXIT -eq 0 ]
+then                                    # success: diff output file
   if [ 0 -eq $EXPECTED_EXIT ]
   then
+    EXPECTED_TXT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
+    EXPECTED_BIN="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/bin/'`"
+    if [ -f $EXPECTED_TXT ]
+    then EXPECTED_OUTPUT=$EXPECTED_TXT
+    else EXPECTED_OUTPUT=$EXPECTED_BIN
+    fi
     if diff $EXPECTED_OUTPUT $OUTPUT > $LOG_FILE
     then pass; mv $OUTPUT $LOG_FILE
     else fail
@@ -213,8 +228,7 @@ then
   else
     fail
   fi
-else
-  ACTUAL_EXIT=$?
+else                                    # failure: expected exit status?
   if [ $ACTUAL_EXIT -eq $EXPECTED_EXIT ]
   then pass
   else fail

@@ -1,1 +1,1 @@
-ad | -c always -B2 -E1 -m | endian.bin | 0
+ad | -c always -B2 -E1 -m | endian.bin | | 0
