@@ -339,18 +339,18 @@ expected_hex_digit:
 }
 
 static void reverse( void ) {
+  uint8_t bytes[ ROW_BUF_SIZE ];
+  size_t  bytes_len;
+  off_t   fout_offset = -ROW_BUF_SIZE;
+  size_t  line = 0;
+  off_t   new_offset;
   char   *row_buf = NULL;
   size_t  row_capacity = 0;
-  uint8_t bytes[ ROW_BUF_SIZE ];
-  size_t  line = 0;
-  off_t   fout_offset = -ROW_BUF_SIZE;
 
   for ( ;; ) {
     ssize_t const row_len = getline( &row_buf, &row_capacity, fin );
     if ( row_len == -1 )
       break;
-    off_t new_offset;
-    size_t bytes_len;
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
