@@ -21,6 +21,7 @@
 
 // local
 #include "color.h"
+#include "options.h"
 
 // system
 #include <assert.h>
@@ -46,16 +47,16 @@ struct color_cap {
 };
 typedef struct color_cap color_cap_t;
 
-extern char const  *me;
+/////////// extern variables //////////////////////////////////////////////////
 
-bool                colorize;
-char const         *sgr_start = SGR_START SGR_EL;
-char const         *sgr_end   = SGR_END SGR_EL;
-char const         *sgr_offset;
-char const         *sgr_sep;
-char const         *sgr_elided;
-char const         *sgr_hex_match;
-char const         *sgr_ascii_match;
+bool        colorize;
+char const *sgr_start = SGR_START SGR_EL;
+char const *sgr_end   = SGR_END SGR_EL;
+char const *sgr_offset;
+char const *sgr_sep;
+char const *sgr_elided;
+char const *sgr_hex_match;
+char const *sgr_ascii_match;
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -173,8 +174,9 @@ bool should_colorize( colorization_t c ) {
   if ( !term || !*term || strcmp( term, "dumb" ) == 0 )
     return false;
 
+  int const fd_out = fileno( fout );
   if ( c == COLOR_ISATTY )              // emulate grep's --color=auto
-    return isatty( STDOUT_FILENO );
+    return isatty( fd_out );
 
   assert( c == COLOR_NOT_FILE );
   //
@@ -194,9 +196,9 @@ bool should_colorize( colorization_t c ) {
   //
   // Hence, we want to do color _except_ when ISREG=T.
   //
-  struct stat stdout_stat;
-  FSTAT( STDOUT_FILENO, &stdout_stat );
-  return !S_ISREG( stdout_stat.st_mode );
+  struct stat fd_out_stat;
+  FSTAT( fd_out, &fd_out_stat );
+  return !S_ISREG( fd_out_stat.st_mode );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,7 @@
 #define EXIT_WRITE_ERROR    13          /* error writing */
 #define EXIT_SEEK_ERROR     20          /* error seeking */
 #define EXIT_STAT_ERROR     21          /* error stat'ing */
+#define EXIT_INVALID_FORMAT 30          /* TODO */
 
 #define ROW_BUF_SIZE        16          /* bytes displayed in a row */
 

@@ -27,6 +27,8 @@
 
 // system
 #include <assert.h>
+#include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
+#include <ctype.h>                      /* for islower(), toupper() */
 #include <libgen.h>                     /* for basename() */
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
@@ -34,11 +36,19 @@
 #include <sys/types.h>
 #include <unistd.h>                     /* for getopt() */
 
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 
-FILE         *file_input;
-off_t         file_offset;
-char const   *file_path = "<stdin>";
+#define GAVE_OPTION(OPT)  isalpha( OPTION_VALUE(OPT) )
+#define OPTION_VALUE(OPT) opts_given[ !islower(OPT) ][ toupper(OPT) - 'A' ]
+#define SET_OPTION(OPT)   BLOCK( OPTION_VALUE(OPT) = (OPT); )
+
+////////// extern variables ///////////////////////////////////////////////////
+
+FILE         *fin;
+off_t         fin_offset;
+char const   *fin_path = "<stdin>";
+char const   *fout_path = "<stdout>";
+FILE         *fout;
 char const   *me;
 
 bool          opt_case_insensitive;
@@ -46,6 +56,7 @@ size_t        opt_max_bytes_to_read = SIZE_MAX;
 offset_fmt_t  opt_offset_fmt = OFMT_HEX;
 bool          opt_only_matching;
 bool          opt_only_printing;
+bool          opt_reverse;
 bool          opt_verbose;
 
 char         *search_buf;
@@ -53,7 +64,31 @@ endian_t      search_endian;
 size_t        search_len;
 uint64_t      search_number;
 
+/////////// local variables ///////////////////////////////////////////////////
+
+static char   opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
+
 /////////// local functions ///////////////////////////////////////////////////
+
+static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
+  int gave_count = 0;
+  char const *opt = opts1;
+
+  for ( int i = 0; i < 2; ++i ) {
+    for ( ; *opt; ++opt ) {
+      if ( GAVE_OPTION( *opt ) ) {
+        if ( ++gave_count > 1 )
+          PMESSAGE_EXIT( USAGE,
+            "-%s and -%s options are mutually exclusive\n", opts1, opts2
+          );
+        break;
+      }
+    } // for
+    if ( !gave_count )
+      break;
+    opt = opts2;
+  } // for
+}
 
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -65,20 +100,17 @@ static void check_number_size( size_t given_size, size_t actual_size,
     );
 }
 
-static void options_mutually_exclusive( char const *opt1, char const *opt2 ) {
-  PMESSAGE_EXIT( USAGE,
-    "-%s and -%s options are mutually exclusive\n", opt1, opt2
-  );
-}
-
-static void option_required( char const *opt, char const *req ) {
-  bool const opt_multiple = strlen( opt ) > 1;
-  bool const req_multiple = strlen( req ) > 1;
-  PMESSAGE_EXIT( USAGE,
-    "-%s: option%s require%s -%s option%s to be given also\n",
-    opt, (opt_multiple ? "s" : ""), (opt_multiple ? "" : "s"),
-    req, (req_multiple ? "s" : "")
-  );
+static void check_required( char opt, char const *req_opts ) {
+  if ( GAVE_OPTION( opt ) ) {
+    for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
+      if ( GAVE_OPTION( *req_opt ) )
+        return;
+    bool const reqs_multiple = strlen( req_opts ) > 1;
+    PMESSAGE_EXIT( USAGE,
+      "-%c: option requires -%s option%s to be given also\n",
+      opt, req_opts, (reqs_multiple ? "s" : "")
+    );
+  }
 }
 
 /**
@@ -138,57 +170,64 @@ static colorization_t parse_colorization( char const *when ) {
 void parse_options( int argc, char *argv[] ) {
   colorization_t  colorization = COLOR_NOT_FILE;
   int             opt;                  // command-line option
-  char const      opts[] = "b:B:c:de:E:hij:mN:ops:S:vV";
+  char const      opts[] = "b:B:c:de:E:hij:mN:oprs:S:vV";
   size_t          size_in_bits = 0, size_in_bytes = 0;
+
+  // just so it's pretty-printable when debugging
+  memset( opts_given, '.', sizeof( opts_given ) );
+  opts_given[0][26] = opts_given[1][26] = '\0';
 
   me = basename( argv[0] );
   opterr = 1;
 
   while ( (opt = getopt( argc, argv, opts )) != EOF ) {
+    SET_OPTION( opt );
     switch ( opt ) {
-      case 'b': size_in_bits = parse_ull( optarg );                   break;
-      case 'B': size_in_bytes = parse_ull( optarg );                  break;
-      case 'c': colorization = parse_colorization( optarg );          break;
-      case 'd': opt_offset_fmt = OFMT_DEC;                            break;
-      case 'e': search_number = parse_ull( optarg );
-                search_endian = ENDIAN_LITTLE;                        break;
+      case 'b': size_in_bits = parse_ull( optarg );                     break;
+      case 'B': size_in_bytes = parse_ull( optarg );                    break;
+      case 'c': colorization = parse_colorization( optarg );            break;
+      case 'd': opt_offset_fmt = OFMT_DEC;                              break;
+      case 'e':
       case 'E': search_number = parse_ull( optarg );
-                search_endian = ENDIAN_BIG;                           break;
-      case 'h': opt_offset_fmt = OFMT_HEX;                            break;
-      case 'S': search_buf = freelist_add( check_strdup( optarg ) );  
-      case 'i': opt_case_insensitive = true;                          break;
-      case 'j': file_offset += parse_offset( optarg );                break;
-      case 'm': opt_only_matching = true;                             break;
-      case 'N': opt_max_bytes_to_read = parse_offset( optarg );       break;
-      case 'o': opt_offset_fmt = OFMT_OCT;                            break;
-      case 'p': opt_only_printing = true;                             break;
-      case 's': search_buf = freelist_add( check_strdup( optarg ) );  break;
-      case 'v': opt_verbose = true;                                   break;
-      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );        exit( EXIT_OK );
+                search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
+      case 'h': opt_offset_fmt = OFMT_HEX;                              break;
+      case 'S': search_buf = freelist_add( check_strdup( optarg ) );
+      case 'i': opt_case_insensitive = true;                            break;
+      case 'j': fin_offset += parse_offset( optarg );                   break;
+      case 'm': opt_only_matching = true;                               break;
+      case 'N': opt_max_bytes_to_read = parse_offset( optarg );         break;
+      case 'o': opt_offset_fmt = OFMT_OCT;                              break;
+      case 'p': opt_only_printing = true;                               break;
+      case 'r': opt_reverse = true;                                     break;
+      case 's': search_buf = freelist_add( check_strdup( optarg ) );    break;
+      case 'v': opt_verbose = true;                                     break;
+      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );          exit( EXIT_OK );
       default : usage();
     } // switch
   } // while
   argc -= optind, argv += optind - 1;
 
-  if ( size_in_bits && size_in_bytes )
-    options_mutually_exclusive( "b", "B" );
-  if ( search_endian && search_buf )
-    options_mutually_exclusive( "eE", "s" );
-  if ( opt_only_matching && opt_verbose )
-    options_mutually_exclusive( "m", "v" );
-  if ( opt_only_printing && opt_verbose )
-    options_mutually_exclusive( "p", "v" );
-
-  if ( opt_case_insensitive ) {
-    if ( !search_buf )
-      option_required( "i", "s" );
-    tolower_s( search_buf );
+  // handle special case of +offset option
+  if ( argc && *argv[1] == '+' ) {
+    fin_offset += parse_offset( argv[1] );
+    --argc, ++argv;
   }
 
-  if ( opt_only_matching && !(search_endian || search_buf) )
-    option_required( "m", "eEsS" );
+  // check for mutually exclusive options
+  check_mutually_exclusive( "b", "B" );
+  check_mutually_exclusive( "eE", "sS" );
+  check_mutually_exclusive( "m", "v" );
+  check_mutually_exclusive( "p", "v" );
+  check_mutually_exclusive( "r", "bBeEimNpsSv" );
+  check_mutually_exclusive( "V", "bBcdeEhijmNoprsSv" );
 
-  if ( size_in_bits ) {
+  // check for options that require other options
+  check_required( 'b', "eE" );
+  check_required( 'B', "eE" );
+  check_required( 'i', "s" );
+  check_required( 'm', "eEsS" );
+
+  if ( GAVE_OPTION( 'b' ) ) {
     switch ( size_in_bits ) {
       case  8:
       case 16:
@@ -202,12 +241,10 @@ void parse_options( int argc, char *argv[] ) {
           "\n", size_in_bits, 'b'
         );
     } // switch
-    if ( !search_endian )
-      option_required( "b", "eE" );
     check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
   }
 
-  if ( size_in_bytes ) {
+  if ( GAVE_OPTION( 'B' ) ) {
     switch ( size_in_bytes ) {
       case 1:
       case 2:
@@ -221,10 +258,35 @@ void parse_options( int argc, char *argv[] ) {
           "\n", size_in_bytes, 'B'
         );
     } // switch
-    if ( !search_endian )
-      option_required( "B", "eE" );
     check_number_size( size_in_bytes, int_len( search_number ), 'B' );
   }
+
+  if ( opt_case_insensitive )
+    tolower_s( search_buf );
+
+  switch ( argc ) {
+    case 0:
+      fin  = fdopen( STDIN_FILENO,  "r" );
+      fout = fdopen( STDOUT_FILENO, "w" );
+      fskip( fin_offset, fin );
+      break;
+
+    case 1:                             // infile only
+      fin_path = argv[1];
+      fin  = fdopen( open_file( fin_path, O_RDONLY, fin_offset ), "r" );
+      fout = fdopen( STDOUT_FILENO, "w" );
+      break;
+
+    case 2:                             // infile & outfile
+      fin_path  = argv[1];
+      fout_path = argv[2];
+      fin  = fdopen( open_file( fin_path, O_RDONLY, fin_offset ), "r" );
+      fout = fdopen( open_file( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
+      break;
+
+    default:
+      usage();
+  } // switch
 
   colorize = should_colorize( colorization );
   if ( colorize ) {
@@ -234,47 +296,13 @@ void parse_options( int argc, char *argv[] ) {
       parse_grep_colors( DEFAULT_COLORS );
     }
   }
-
-  switch ( argc ) {
-    case 0:                             // read from stdin with no offset
-      file_input = fdopen( STDIN_FILENO, "r" );
-      break;
-
-    case 1:                             // offset OR file
-      if ( *argv[1] == '+' ) {
-        file_offset += parse_offset( argv[1] );
-        file_input = fdopen( STDIN_FILENO, "r" );
-        fskip( file_offset, file_input );
-      } else {
-        file_path = argv[1];
-        file_input = open_file( file_path, file_offset );
-      }
-      break;
-
-    case 2:                             // offset & file OR file & offset
-      if ( *argv[1] == '+' ) {
-        if ( *argv[2] == '+' )
-          PMESSAGE_EXIT( USAGE,
-            "'%c': can not specify for more than one argument\n", '+'
-          );
-        file_offset += parse_offset( argv[1] );
-        file_path = argv[2];
-      } else {
-        file_path = argv[1];
-        file_offset += parse_offset( argv[2] );
-      }
-      file_input = open_file( file_path, file_offset );
-      break;
-
-    default:
-      usage();
-  } // switch
 }
 
 void usage( void ) {
   PRINT_ERR(
-"usage: %s [options] [+offset] [file]\n"
-"       %s [options] [file] [[+]offset]\n"
+"usage: %s [options] [+offset] [infile [outfile]]\n"
+"       %s -r [-dho] [infile [outfile]]\n"
+"       %s -V\n"
 "\n"
 "options:\n"
 "       -b bits    Set number size in bits: 8, 16, 32, 64 [default: auto].\n"
@@ -290,11 +318,12 @@ void usage( void ) {
 "       -N bytes   Dump max number of bytes [default: unlimited].\n"
 "       -o         Print offset in octal.\n"
 "       -p         Only dump rows having printable characters [default: no].\n"
+"       -r         Reverse from dump back to binary [default: no].\n"
 "       -s string  Search for string.\n"
 "       -S string  Search for case-insensitive string.\n"
-"       -v         Print version and exit.\n"
-"       -V         Dump all data, including repeated rows [default: no].\n"
-    , me, me
+"       -v         Dump all data, including repeated rows [default: no].\n"
+"       -V         Print version and exit.\n"
+    , me, me, me
   );
   exit( EXIT_USAGE );
 }

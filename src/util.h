@@ -64,20 +64,19 @@ typedef bool _Bool;
 #define FSTAT(FD,STAT) \
   BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( STAT_ERROR ); )
 
+#define LSEEK(FD,OFFSET,WHENCE) \
+  BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
+
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )
 
-#define PRINTF(...) \
-  BLOCK( if ( printf( __VA_ARGS__ ) < 0 ) PERROR_EXIT( WRITE_ERROR ); )
-
-#define PUTCHAR(C) \
-  BLOCK( if ( putchar( C ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
-
 #define STRINGIFY_HELPER(S) #S
 #define STRINGIFY(S)        STRINGIFY_HELPER(S)
+
+extern char const  *me;                 // executable name from argv[0]
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -124,6 +123,7 @@ void freelist_free( void );
 
 /**
  * Reads and discards \a bytes_to_skip bytes.
+ * If an error occurs, prints an error message and exits.
  *
  * @param bytes_to_skip The number of bytes to skip.
  * @param file The file to read from.
@@ -163,10 +163,11 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * or prints an error message and exits if there was an error.
  *
  * @param path The full path of the file to open.
+ * @param mode TODO
  * @param offset The number of bytes to skip, if any.
  * @return Returns the corresponding \c FILE.
  */
-FILE* open_file( char const *path, off_t offset );
+int open_file( char const *path, int mode, off_t offset );
 
 /**
  * Parses a string into an offset.

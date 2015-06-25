@@ -26,33 +26,35 @@
 
 // system
 #include <assert.h>
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
+#include <ctype.h>                      /* for isspace(), isprint() */
+#include <fcntl.h>                      /* for open() */
 #include <stdlib.h>                     /* for exit(), strtoull(), ... */
-#include <string.h>                     /* for str...() */
-#include <sys/types.h>
+#include <unistd.h>                     /* for lseek() */
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * A node for a singly linked list of pointers to memory to be freed via
+ * \c atexit().
+ */
 struct free_node {
   void *ptr;
   struct free_node *next;
 };
 typedef struct free_node free_node_t;
 
-extern char const  *file_path;
-extern char const  *me;
+////////// local variables ////////////////////////////////////////////////////
 
 static free_node_t *free_head;          // linked list of stuff to free
 
-// local functions
+/////////// local functions ///////////////////////////////////////////////////
+
 static char const*  skip_ws( char const *s );
 
 /////////// inline functions //////////////////////////////////////////////////
 
 /**
- * Flips the endianness of the given 16-bit value.
+ * Swaps the endianness of the given 16-bit value.
  *
  * @param n The 16-bit value to swap.
  * @return Returns the value with the endianness flipped.
@@ -63,7 +65,7 @@ static inline uint16_t swap_16( uint16_t n ) {
 }
 
 /**
- * Flips the endianness of the given 32-bit value.
+ * Swaps the endianness of the given 32-bit value.
  *
  * @param n The 32-bit value to swap.
  * @return Returns the value with the endianness flipped.
@@ -76,7 +78,7 @@ static inline uint32_t swap_32( uint32_t n ) {
 }
 
 /**
- * Flips the endianness of the given 64-bit value.
+ * Swaps the endianness of the given 64-bit value.
  *
  * @param n The 64-bit value to swap.
  * @return Returns the value with the endianness flipped.
@@ -170,9 +172,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": can not read: %s\n", file_path, ERROR_STR
-      );
+      PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", ERROR_STR );
     bytes_to_skip -= bytes_read;
   } // while
 }
@@ -225,16 +225,16 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
   } // switch
 }
 
-FILE* open_file( char const *path, off_t offset ) {
+int open_file( char const *path, int mode, off_t offset ) {
   assert( path );
-  FILE *const file = fopen( path, "r" );
-  if ( !file )
+  int const fd = mode & O_CREAT ? open( path, mode, 0644 ) : open( path, mode );
+  if ( fd == -1 )
     PMESSAGE_EXIT( READ_OPEN,
       "\"%s\": can not open: %s\n", path, ERROR_STR
     );
   if ( offset )
-    FSEEK( file, offset, SEEK_SET );
-  return file;
+    LSEEK( fd, offset, SEEK_SET );
+  return fd;
 }
 
 uint64_t parse_offset( char const *s ) {

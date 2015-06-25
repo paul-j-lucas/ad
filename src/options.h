@@ -23,8 +23,10 @@
 #include "util.h"                       /* for bool */
 
 // system
+#include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */
-#include <sys/types.h>                  /* for off_t, size_t */
+#include <sys/types.h>                  /* for off_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -32,15 +34,19 @@
  * Offset formats.
  */
 enum offset_fmt {
-  OFMT_DEC,
-  OFMT_HEX,
-  OFMT_OCT
+  OFMT_DEC = 10,
+  OFMT_HEX = 16,
+  OFMT_OCT =  8
 };
 typedef enum offset_fmt offset_fmt_t;
 
-extern FILE          *file_input;       // file to read from
-extern off_t          file_offset;      // curent offset into file
-extern char const    *file_path;        // path name of file
+////////// extern variables ///////////////////////////////////////////////////
+
+extern FILE          *fin;              // file to read from
+extern off_t          fin_offset;       // curent offset into file
+extern char const    *fin_path;         // path name of input file
+extern FILE          *fout;             // file to write to
+extern char const    *fout_path;        // path name of output file
 extern char const    *me;               // executable name from argv[0]
 
 extern bool           opt_case_insensitive;
@@ -48,12 +54,15 @@ extern size_t         opt_max_bytes_to_read;
 extern offset_fmt_t   opt_offset_fmt;
 extern bool           opt_only_matching;
 extern bool           opt_only_printing;
+extern bool           opt_reverse;
 extern bool           opt_verbose;
 
 extern char          *search_buf;       // not NULL-terminated when numeric
 extern endian_t       search_endian;    // if searching for a number
 extern size_t         search_len;       // number of bytes in search_buf
 extern uint64_t       search_number;    // the number to search for
+
+////////// extern functions ///////////////////////////////////////////////////
 
 /**
  * Parses command-line options and sets global variables.

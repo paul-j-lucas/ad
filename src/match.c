@@ -29,17 +29,21 @@
 #include <ctype.h>                      /* for tolower() */
 #include <stdlib.h>                     /* for exit() */
 
-///////////////////////////////////////////////////////////////////////////////
+////////// extern variables ///////////////////////////////////////////////////
 
-extern FILE        *file_input;
-extern char const  *file_path;
+extern FILE        *fin;
+extern char const  *fin_path;
 extern char const  *me;
 extern bool         opt_case_insensitive;
 extern size_t       opt_max_bytes_to_read;
 extern char        *search_buf;
 extern size_t       search_len;
 
+////////// local variables ////////////////////////////////////////////////////
+
 static size_t       total_bytes_read;
+
+////////// local functions ////////////////////////////////////////////////////
 
 static bool         get_byte( uint8_t*, FILE* );
 static bool         match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
@@ -65,7 +69,7 @@ static bool get_byte( uint8_t *pbyte, FILE *file ) {
     }
     if ( ferror( file ) )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read byte failed: %s", file_path, ERROR_STR
+        "\"%s\": read byte failed: %s", fin_path, ERROR_STR
       );
   }
   return false;
@@ -116,7 +120,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
   ( opt_case_insensitive ? (uint8_t)tolower( (char)(BYTE) ) : (BYTE) )
 
       case S_READING:
-        if ( !get_byte( &byte, file_input ) )
+        if ( !get_byte( &byte, fin ) )
           GOTO_STATE( S_DONE );
         if ( !search_len )              // user isn't searching for anything
           RETURN( byte );
@@ -146,7 +150,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
         }
         // no break;
       case S_MATCHING_CONT:
-        if ( !get_byte( &byte, file_input ) ) {
+        if ( !get_byte( &byte, fin ) ) {
           //
           // We've reached EOF and there weren't enough bytes to match the
           // search buffer: just drain the match buffer and return the bytes
@@ -169,7 +173,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
         // mismatched byte and now drain the bytes that occur nowhere else in
         // the search buffer (thanks to the KMP algorithm).
         //
-        unget_byte( byte, file_input );
+        unget_byte( byte, fin );
         kmp = kmps[ buf_pos ];
         buf_drain = buf_pos - kmp;
         GOTO_STATE( S_NOT_MATCHED );
@@ -214,7 +218,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 static void unget_byte( uint8_t byte, FILE *file ) {
   if ( ungetc( byte, file ) == EOF )
     PMESSAGE_EXIT( READ_ERROR,
-      "\"%s\": unget byte failed: %s", file_path, ERROR_STR
+      "\"%s\": unget byte failed: %s", fin_path, ERROR_STR
     );
   --total_bytes_read;
 }
