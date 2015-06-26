@@ -25,12 +25,17 @@ ad \- ASCII dump
 .B ad
 .RI [ options ]
 [\f3+\f2offset\f1]
-.RI [ file ]
+.RI [ infile
+.RI [ outfile ]]
 .br
 .B ad
-.RI [ options ]
-.RI [ file ]
-[[\f3+\f1]\f2offset\f1]
+.B -r
+.RI [ -dho ]
+.RI [ infile
+.RI [ outfile ]]
+.br
+.B ad
+.B -V
 .SH DESCRIPTION
 .B ad
 dumps a file
@@ -205,6 +210,9 @@ The default is
 .TP
 .B \-d
 Prints offsets in decimal.
+For
+.BR \-r ,
+parses offset in decimal.
 .TP
 .BI \-e " n"
 Hightlights all occurrences of the unsigned integer
@@ -240,6 +248,10 @@ but in big-endian byte order.
 .B \-h
 Prints offsets in hexadecimal
 (the default).
+For
+.BR \-r ,
+parses offset in hexadecimal
+(also the default).
 .TP
 .B \-i
 Performs a case-insensitive search
@@ -258,15 +270,35 @@ their values are added.)
 Only dumps rows having matches.
 .TP
 .BI \-N " n"
-Dumps at most
+Reads at most
 .I n
 bytes.
 .TP
 .B \-o
 Prints offsets in octal.
+For
+.BR \-r ,
+parses offset in octal.
 .TP
 .B \-p
 Only dumps rows having printable characters.
+.TP
+.B \-r
+Reverse dumps a previous dump from
+.B ad
+into a binary file.
+This allows a binary file to be dumped,
+edited using a text editor,
+and reverse dumped back into a binary file.
+Note that only the hexedecimal part of the dump is read;
+the ASCII part is ignored.
+.TP
+.B ""
+When an output file is used,
+it is not truncated.
+This allows a small dump file
+to patch an existing larger binary file.
+The bytes to be patched are given by the offsets.
 .TP
 .BI \-s " s"
 Searches for the string
@@ -311,7 +343,7 @@ to indicate the end of the file.
 .B \-V
 Prints the version number to
 .I stderr
-and exit.
+and exits.
 .SH EXIT STATUS
 .PD 0
 .IP 0
@@ -339,6 +371,10 @@ Seek error.
 .IP 21
 .B stat
 error.
+.IP 30
+Invalid reverse dump
+.RB ( -r )
+format.
 .PD
 .SH ENVIRONMENT
 .TP 4

@@ -77,12 +77,14 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-p_01.test \
 	tests/ad-p_02.test \
 	tests/ad-r_01.test \
+	tests/ad-r_02.sh \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
 	tests/ad-v.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
-TEST_EXTENSIONS = .test
+TEST_EXTENSIONS = .sh .test
+SH_LOG_DRIVER = $(srcdir)/run_test.sh
 TEST_LOG_DRIVER = $(srcdir)/run_test.sh
 
 EXTRA_DIST = run_test.sh tests data expected

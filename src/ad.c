@@ -71,6 +71,14 @@ int main( int argc, char *argv[] ) {
 
 /////////// dumping ///////////////////////////////////////////////////////////
 
+static char const* get_offset_fmt() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "llu";
+    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
+    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
+  } // switch
+}
+
 static void dump_file( void ) {
   struct row_buf {
     uint8_t   bytes[ ROW_BUF_SIZE ];    // bytes in buffer, left-to-right
@@ -263,13 +271,11 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   assert( pbytes_len );
 
   size_t col = 1;
-  char const *p = buf;
 
   // maybe parse row separator for elided lines
-  if ( strncmp( p, elided_separator, ROW_BUF_SIZE ) == 0 ) {
-    p += OFFSET_WIDTH;
+  if ( strncmp( buf, elided_separator, ROW_BUF_SIZE ) == 0 ) {
     col += OFFSET_WIDTH;
-    if ( sscanf( p, ": (%ld | 0x%*lX)", pbytes_len ) != 1 )
+    if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*lX)", pbytes_len ) != 1 )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(D | 0xH)"
       );
@@ -279,11 +285,11 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   // parse offset
   char *end = NULL;
   errno = 0;
-  *poffset = strtoull( p, &end, opt_offset_fmt );
-  if ( errno || end == p ) {
-    if ( end > p )
+  *poffset = strtoull( buf, &end, opt_offset_fmt );
+  if ( errno || end == buf ) {
+    if ( end == buf )
       *end = '\0';
-    INVALID_EXIT( "\"%s\": unexpected characters; expected file offset\n", p );
+    INVALID_EXIT( "\"%s\": unexpected characters; expected file offset\n", buf );
   }
   col += OFFSET_WIDTH;
   if ( *end != ':' )
@@ -291,7 +297,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
       "'%c': unexpected character; expected ':' after separator\n", *end
     );
 
-  p = end;
+  char const *p = end;
   end = buf + buf_len;
   *pbytes_len = 0;
   int consec_spaces = 0;
@@ -342,10 +348,12 @@ static void reverse( void ) {
   uint8_t bytes[ ROW_BUF_SIZE ];
   size_t  bytes_len;
   off_t   fout_offset = -ROW_BUF_SIZE;
-  size_t  line = 0;
+  size_t  line = 0, col = 1;
   off_t   new_offset;
   char   *row_buf = NULL;
   size_t  row_capacity = 0;
+
+  //char const *const off_fmt = get_offset_fmt();
 
   for ( ;; ) {
     ssize_t const row_len = getline( &row_buf, &row_capacity, fin );
@@ -355,9 +363,7 @@ static void reverse( void ) {
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
         if ( new_offset < fout_offset + ROW_BUF_SIZE )
-          PMESSAGE_EXIT( INVALID_FORMAT,
-            "line %zu: \"%lld\": offset goes backwards\n", line, new_offset
-          );
+          INVALID_EXIT( "%lld\": offset goes backwards\n", new_offset );
         if ( new_offset > fout_offset + ROW_BUF_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
         if ( fwrite( bytes, 1, bytes_len, fout ) < bytes_len )

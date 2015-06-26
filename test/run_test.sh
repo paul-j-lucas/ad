@@ -183,13 +183,54 @@ OUTPUT=/tmp/ad_test_output_$$_
 
 ########## Run test ###########################################################
 
-trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
+run_sh_file() {
+  if $TEST $OUTPUT > $LOG_FILE
+  then pass
+  else fail
+  fi
+}
 
-IFS='|' read COMMAND OPTIONS INPUT USE_OUTFILE EXPECTED_EXIT < $TEST
-COMMAND=`echo $COMMAND`                 # trims whitespace
-INPUT=$DATA_DIR/`echo $INPUT`           # trims whitespace
-USE_OUTFILE=`echo $USE_OUTFILE`         # trims whitespace
-EXPECTED_EXIT=`echo $EXPECTED_EXIT`     # trims whitespace
+run_test_file() {
+  IFS='|' read COMMAND OPTIONS INPUT USE_OUTFILE EXPECTED_EXIT < $TEST
+  COMMAND=`echo $COMMAND`               # trims whitespace
+  INPUT=$DATA_DIR/`echo $INPUT`         # trims whitespace
+  USE_OUTFILE=`echo $USE_OUTFILE`       # trims whitespace
+  EXPECTED_EXIT=`echo $EXPECTED_EXIT`   # trims whitespace
+
+  if [ "$USE_OUTFILE" ]
+  then
+    #echo $COMMAND "$OPTIONS" $INPUT $OUTPUT
+    $COMMAND $OPTIONS $INPUT $OUTPUT > $LOG_FILE 2>&1
+  else
+    #echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
+    $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
+  fi
+  ACTUAL_EXIT=$?
+
+  if [ $ACTUAL_EXIT -eq 0 ]
+  then                                  # success: diff output file
+    if [ 0 -eq $EXPECTED_EXIT ]
+    then
+      EXPECTED_TXT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
+      EXPECTED_BIN="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/bin/'`"
+      if [ -f $EXPECTED_TXT ]
+      then EXPECTED_OUTPUT=$EXPECTED_TXT
+      else EXPECTED_OUTPUT=$EXPECTED_BIN
+      fi
+      if diff $EXPECTED_OUTPUT $OUTPUT > $LOG_FILE
+      then pass; mv $OUTPUT $LOG_FILE
+      else fail
+      fi
+    else
+      fail
+    fi
+  else                                  # failure: expected exit status?
+    if [ $ACTUAL_EXIT -eq $EXPECTED_EXIT ]
+    then pass
+    else fail
+    fi
+  fi
+}
 
 ##
 # Must put BUILD_SRC first in PATH so we get the correct version of ad.
@@ -201,38 +242,11 @@ PATH=$BUILD_SRC:$PATH
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-if [ "$USE_OUTFILE" ]
-then
-  #echo $COMMAND "$OPTIONS" $INPUT $OUTPUT
-  $COMMAND $OPTIONS $INPUT $OUTPUT > $LOG_FILE 2>&1
-else
-  #echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
-  $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
-fi
-ACTUAL_EXIT=$?
+trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
-if [ $ACTUAL_EXIT -eq 0 ]
-then                                    # success: diff output file
-  if [ 0 -eq $EXPECTED_EXIT ]
-  then
-    EXPECTED_TXT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
-    EXPECTED_BIN="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/bin/'`"
-    if [ -f $EXPECTED_TXT ]
-    then EXPECTED_OUTPUT=$EXPECTED_TXT
-    else EXPECTED_OUTPUT=$EXPECTED_BIN
-    fi
-    if diff $EXPECTED_OUTPUT $OUTPUT > $LOG_FILE
-    then pass; mv $OUTPUT $LOG_FILE
-    else fail
-    fi
-  else
-    fail
-  fi
-else                                    # failure: expected exit status?
-  if [ $ACTUAL_EXIT -eq $EXPECTED_EXIT ]
-  then pass
-  else fail
-  fi
-fi
+case $TEST in
+  *.sh) run_sh_file ;;
+*.test) run_test_file ;;
+esac
 
 # vim:set et sw=2 ts=2:
