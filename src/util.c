@@ -121,6 +121,31 @@ bool any_printable( char const *s, size_t s_len ) {
   return false;
 }
 
+FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
+  assert( path );
+  FILE *const file = fopen( path, mode );
+  if ( !file )
+    PMESSAGE_EXIT( READ_OPEN,
+      "\"%s\": can not open: %s\n", path, ERROR_STR
+    );
+  if ( offset )
+    FSEEK( file, offset, SEEK_SET );
+  return file;
+}
+
+int check_open( char const *path, int oflag, off_t offset ) {
+  assert( path );
+  int const fd = oflag & O_CREAT ?
+    open( path, oflag, 0644 ) : open( path, oflag );
+  if ( fd == -1 )
+    PMESSAGE_EXIT( READ_OPEN,
+      "\"%s\": can not open: %s\n", path, ERROR_STR
+    );
+  if ( offset )
+    LSEEK( fd, offset, SEEK_SET );
+  return fd;
+}
+
 void* check_realloc( void *p, size_t size ) {
   //
   // Autoconf, 5.5.1:
@@ -223,18 +248,6 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
     default:
       assert( true );
   } // switch
-}
-
-int open_file( char const *path, int mode, off_t offset ) {
-  assert( path );
-  int const fd = mode & O_CREAT ? open( path, mode, 0644 ) : open( path, mode );
-  if ( fd == -1 )
-    PMESSAGE_EXIT( READ_OPEN,
-      "\"%s\": can not open: %s\n", path, ERROR_STR
-    );
-  if ( offset )
-    LSEEK( fd, offset, SEEK_SET );
-  return fd;
 }
 
 uint64_t parse_offset( char const *s ) {

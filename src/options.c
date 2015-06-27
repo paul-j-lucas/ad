@@ -266,22 +266,29 @@ void parse_options( int argc, char *argv[] ) {
 
   switch ( argc ) {
     case 0:
-      fin  = fdopen( STDIN_FILENO,  "r" );
-      fout = fdopen( STDOUT_FILENO, "w" );
+      fin  = stdin;
+      fout = stdout;
       fskip( fin_offset, fin );
       break;
 
     case 1:                             // infile only
       fin_path = argv[1];
-      fin  = fdopen( open_file( fin_path, O_RDONLY, fin_offset ), "r" );
-      fout = fdopen( STDOUT_FILENO, "w" );
+      fin  = check_fopen( fin_path, "r", fin_offset );
+      fout = stdout;
       break;
 
     case 2:                             // infile & outfile
       fin_path  = argv[1];
       fout_path = argv[2];
-      fin  = fdopen( open_file( fin_path, O_RDONLY, fin_offset ), "r" );
-      fout = fdopen( open_file( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
+      fin = check_fopen( fin_path, "r", fin_offset );
+      //
+      // We can't use fopen(3) because there's no mode that specifies opening a
+      // file for writing and NOT truncating it to zero length if it exists.
+      //
+      // Hence we have to use open(2) first so we can specify only O_WRONLY and
+      // O_CREAT but not O_TRUNC, then use fdopen(3) to wrap a FILE around it.
+      //
+      fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
       break;
 
     default:

@@ -90,6 +90,28 @@ extern char const  *me;                 // executable name from argv[0]
 bool any_printable( char const *s, size_t s_len );
 
 /**
+ * Opens the given file and seeks to the given offset
+ * or prints an error message and exits if there was an error.
+ *
+ * @param path The full path of the file to open.
+ * @param mode The mode to use.
+ * @param offset The number of bytes to skip, if any.
+ * @return Returns the corresponding \c FILE.
+ */
+FILE* check_fopen( char const *path, char const *mode, off_t offset );
+
+/**
+ * Opens the given file and seeks to the given offset
+ * or prints an error message and exits if there was an error.
+ *
+ * @param path The full path of the file to open.
+ * @param oflag The open flags to use.
+ * @param offset The number of bytes to skip, if any.
+ * @return Returns the corresponding file descriptor.
+ */
+int check_open( char const *path, int oflag, off_t offset );
+
+/**
  * Calls \c realloc(3) and checks for failure.
  * If reallocation fails, prints an error message and exits.
  *
@@ -157,17 +179,6 @@ size_t int_len( uint64_t n );
  * @param endian The endianness to use.
  */
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
-
-/**
- * Opens the given file and seeks to the given offset
- * or prints an error message and exits if there was an error.
- *
- * @param path The full path of the file to open.
- * @param mode TODO
- * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding \c FILE.
- */
-int open_file( char const *path, int mode, off_t offset );
 
 /**
  * Parses a string into an offset.
