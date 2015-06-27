@@ -125,7 +125,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   assert( path );
   FILE *const file = fopen( path, mode );
   if ( !file )
-    PMESSAGE_EXIT( READ_OPEN,
+    PMESSAGE_EXIT( OPEN_ERROR,
       "\"%s\": can not open: %s\n", path, ERROR_STR
     );
   if ( offset )
@@ -138,7 +138,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
   int const fd = oflag & O_CREAT ?
     open( path, oflag, 0644 ) : open( path, oflag );
   if ( fd == -1 )
-    PMESSAGE_EXIT( READ_OPEN,
+    PMESSAGE_EXIT( OPEN_ERROR,
       "\"%s\": can not open: %s\n", path, ERROR_STR
     );
   if ( offset )

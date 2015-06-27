@@ -28,12 +28,12 @@
 #define EXIT_NO_MATCHES     1           /* no errors, but no matches either */
 #define EXIT_USAGE          2           /* command-line usage error */
 #define EXIT_OUT_OF_MEMORY  3
-#define EXIT_READ_OPEN      10          /* error opening file for reading */
+#define EXIT_OPEN_ERROR     10          /* error opening file */
 #define EXIT_READ_ERROR     11          /* error reading */
 #define EXIT_WRITE_ERROR    13          /* error writing */
 #define EXIT_SEEK_ERROR     20          /* error seeking */
 #define EXIT_STAT_ERROR     21          /* error stat'ing */
-#define EXIT_INVALID_FORMAT 30          /* TODO */
+#define EXIT_INVALID_FORMAT 30          /* invalid dump format for -r option */
 
 #define ROW_BUF_SIZE        16          /* bytes displayed in a row */
 
