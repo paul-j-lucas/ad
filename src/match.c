@@ -228,18 +228,18 @@ static void unget_byte( uint8_t byte, FILE *file ) {
 kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   assert( pattern );
 
-  kmp_t *const kmps = MALLOC( kmp_t, pattern_len );
-  memset( kmps, 0, sizeof( kmp_t ) * pattern_len );
+  // allocating +1 eliminates "past the end" checking
+  kmp_t *const kmps = MALLOC( kmp_t, pattern_len + 1 );
+  memset( kmps, 0, sizeof( kmp_t ) * pattern_len + 1 );
 
   for ( size_t i = 1, j = 0; i < pattern_len; ) {
     assert( j < pattern_len );
-    if ( pattern[i] == pattern[j] ) {
-      if ( ++i < pattern_len )
-        kmps[i] = ++j;
-    } else if ( j > 0 )
+    if ( pattern[i] == pattern[j] )
+      kmps[++i] = ++j;
+    else if ( j > 0 )
       j = kmps[j-1];
-    else if ( ++i < pattern_len )
-      kmps[i] = 0;
+    else
+      kmps[++i] = 0;
   } // for
   return kmps;
 }
