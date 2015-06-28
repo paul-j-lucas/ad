@@ -78,6 +78,11 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-p_02.test \
 	tests/ad-r_01.test \
 	tests/ad-r_02.sh \
+	tests/ad-r_02.test \
+	tests/ad-r_03.test \
+	tests/ad-r_04.test \
+	tests/ad-r_05.test \
+	tests/ad-r_06.test \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
 	tests/ad-v.test

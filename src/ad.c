@@ -53,31 +53,25 @@ static char *elided_separator;          // separator used for elided rows
 
 ////////// local functions ////////////////////////////////////////////////////
 
-static void dump_file( void );
-static void dump_row( char const *off_fmt, uint8_t const*, size_t, uint16_t );
-static void init( int, char*[] );
-static void reverse( void );
+static void         dump_file( void );
+static void         dump_row( char const*, uint8_t const*, size_t, uint16_t );
+static char const*  get_offset_fmt_englisn();
+static char const*  get_offset_fmt_format();
+static void         init( int, char*[] );
+static void         reverse_dump_file( void );
 
 /////////// main //////////////////////////////////////////////////////////////
 
 int main( int argc, char *argv[] ) {
   init( argc, argv );
   if ( opt_reverse )
-    reverse(); 
+    reverse_dump_file(); 
   else
     dump_file();
   // neither of the above two functions returns
 }
 
 /////////// dumping ///////////////////////////////////////////////////////////
-
-static char const* get_offset_fmt() {
-  switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "llu";
-    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
-    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
-  } // switch
-}
 
 static void dump_file( void ) {
   struct row_buf {
@@ -255,12 +249,35 @@ enum row_kind {
 };
 typedef enum row_kind row_kind_t;
 
+#define INVALID_EXIT(FORMAT,...)                                    \
+  PMESSAGE_EXIT( INVALID_FORMAT,                                    \
+    "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
+  )
+
+/**
+ * Converts a single hexadecimal digit [0-9A-Fa-f] to its integer value.
+ *
+ * @param C The hexadecimal character.
+ * @return Returns \a C converted to an integer.
+ * @hideinitializer
+ */
 #define XTOI(C) (isdigit( C ) ? (C) - '0' : 0xA + toupper( C ) - 'A')
 
-#define INVALID_EXIT(FORMAT,...)                                          \
-  PMESSAGE_EXIT( INVALID_FORMAT,                                          \
-    "%s, line %zu, column %zu: " FORMAT, fin_path, line, col, __VA_ARGS__ \
-  )
+static char const* get_offset_fmt_englisn() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "decimal";
+    case OFMT_HEX: return "hexadecimal";
+    case OFMT_OCT: return "octal";
+  } // switch
+}
+
+static char const* get_offset_fmt_format() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
+    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
+    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
+  } // switch
+}
 
 static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
                              off_t *poffset, uint8_t *bytes,
@@ -277,7 +294,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
     col += OFFSET_WIDTH;
     if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*lX)", pbytes_len ) != 1 )
       INVALID_EXIT(
-        "expected '%c' followed by elided counts \"%s\"\n", ':', "(D | 0xH)"
+        "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
     return ROW_ELIDED;
   }
@@ -286,29 +303,21 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   char *end = NULL;
   errno = 0;
   *poffset = strtoull( buf, &end, opt_offset_fmt );
-  if ( errno || end == buf ) {
-    if ( end == buf )
-      *end = '\0';
-    INVALID_EXIT( "\"%s\": unexpected characters; expected file offset\n", buf );
-  }
-  col += OFFSET_WIDTH;
-  if ( *end != ':' )
+  if ( errno || *end != ':' )
     INVALID_EXIT(
-      "'%c': unexpected character; expected ':' after separator\n", *end
+      "\"%s\": unexpected character in %s file offset\n",
+      printable_char( *end ), get_offset_fmt_englisn()
     );
+  col += OFFSET_WIDTH;
 
   char const *p = end;
   end = buf + buf_len;
-  *pbytes_len = 0;
+  size_t bytes_len = 0;
   int consec_spaces = 0;
 
-  // parse hexedecimal bytes
-  while ( *pbytes_len < ROW_BUF_SIZE ) {
-    ++col;
-    if ( ++p == end )
-      INVALID_EXIT(
-        "unexpected end of line; expected %d hexedecimal bytes\n", ROW_BUF_SIZE
-      );
+  // parse hexadecimal bytes
+  while ( bytes_len < ROW_BUF_SIZE ) {
+    ++p, ++col;
 
     // handle whitespace
     if ( isspace( *p ) ) {
@@ -327,33 +336,35 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
     ++col;
     if ( ++p == end )
       INVALID_EXIT(
-        "unexpected end of data; expected %d hexedecimal bytes\n",
+        "unexpected end of data; expected %d hexadecimal bytes\n",
         ROW_BUF_SIZE
       );
     if ( !isxdigit( *p ) )
       goto expected_hex_digit;
     byte |= XTOI( *p );
 
-    bytes[ (*pbytes_len)++ ] = byte;
+    bytes[ bytes_len++ ] = byte;
   } // while
+  *pbytes_len = bytes_len;
   return ROW_BYTES;
 
 expected_hex_digit:
   INVALID_EXIT(
-    "'%c': unexpected character; expected hexedecimal digit\n", *p
+    "'%s': unexpected character; expected hexadecimal digit\n",
+    printable_char( *p )
   );
+
 }
 
-static void reverse( void ) {
+static void reverse_dump_file( void ) {
   uint8_t bytes[ ROW_BUF_SIZE ];
   size_t  bytes_len;
   off_t   fout_offset = -ROW_BUF_SIZE;
-  size_t  line = 0, col = 1;
+  size_t  line = 0;
+  char    msg_fmt[ 128 ];
   off_t   new_offset;
   char   *row_buf = NULL;
   size_t  row_capacity = 0;
-
-  //char const *const off_fmt = get_offset_fmt();
 
   for ( ;; ) {
     ssize_t const row_len = getline( &row_buf, &row_capacity, fin );
@@ -363,22 +374,32 @@ static void reverse( void ) {
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
         if ( new_offset < fout_offset + ROW_BUF_SIZE )
-          INVALID_EXIT( "%lld\": offset goes backwards\n", new_offset );
+          goto backwards_offset;
         if ( new_offset > fout_offset + ROW_BUF_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
         if ( fwrite( bytes, 1, bytes_len, fout ) < bytes_len )
           goto write_error;
         break;
+
       case ROW_ELIDED:
-        for ( ; bytes_len; bytes_len -= ROW_BUF_SIZE ) {
+        assert( bytes_len % ROW_BUF_SIZE == 0 );
+        for ( ; bytes_len; bytes_len -= ROW_BUF_SIZE )
           if ( fwrite( bytes, 1, ROW_BUF_SIZE, fout ) < ROW_BUF_SIZE )
             goto write_error;
-        } // for
         break;
     } // switch
+
     fout_offset = new_offset;
   } // for
   exit( EXIT_OK );
+
+backwards_offset:
+  snprintf( msg_fmt, sizeof( msg_fmt ),
+    "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
+    get_offset_fmt_format(), get_offset_fmt_englisn()
+  );
+  PRINT_ERR( msg_fmt, fin_path, line, new_offset );
+  exit( EXIT_INVALID_FORMAT );
 
 write_error:
   PMESSAGE_EXIT( WRITE_ERROR, "%s: write failed: %s\n", fout_path, ERROR_STR );

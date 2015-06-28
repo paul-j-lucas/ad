@@ -310,6 +310,26 @@ uint64_t parse_ull( char const *s ) {
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid integer\n", s );
 }
 
+char const* printable_char( char c ) {
+  switch( c ) {
+    case '\0': return "\\0";
+    case '\a': return "\\a";
+    case '\b': return "\\b";
+    case '\f': return "\\f";
+    case '\n': return "\\n";
+    case '\r': return "\\r";
+    case '\t': return "\\t";
+    case '\v': return "\\v";
+  } // switch
+
+  static char buf[5];                   // \xHH + NULL
+  if ( isprint( c ) )
+    buf[0] = c, buf[1] = '\0';
+  else
+    snprintf( buf, sizeof( buf ), "\\x%02X", (unsigned)c );
+  return buf;
+}
+
 char* tolower_s( char *s ) {
   assert( s );
   for ( char *t = s; *t; ++t )
