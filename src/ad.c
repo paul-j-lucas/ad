@@ -402,7 +402,7 @@ backwards_offset:
   exit( EXIT_INVALID_FORMAT );
 
 write_error:
-  PMESSAGE_EXIT( WRITE_ERROR, "%s: write failed: %s\n", fout_path, ERROR_STR );
+  PMESSAGE_EXIT( WRITE_ERROR, "%s: write failed: %s\n", fout_path, STRERROR );
 }
 
 /////////// initialization & clean-up /////////////////////////////////////////

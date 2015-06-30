@@ -54,9 +54,9 @@ typedef bool _Bool;
 #endif /* HAVE_STDBOOL_H */
 
 #define BLOCK(...)          do { __VA_ARGS__ } while (0)
-#define ERROR_STR           strerror( errno )
 #define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 #define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
+#define STRERROR            strerror( errno )
 
 #define FSEEK(STREAM,OFFSET,WHENCE) \
   BLOCK( if ( fseeko( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
@@ -67,8 +67,7 @@ typedef bool _Bool;
 #define LSEEK(FD,OFFSET,WHENCE) \
   BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
 
-#define MALLOC(TYPE,N) \
-  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+#define MALLOC(TYPE,N)      (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( EXIT_##STATUS ); )

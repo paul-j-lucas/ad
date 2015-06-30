@@ -126,7 +126,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   FILE *const file = fopen( path, mode );
   if ( !file )
     PMESSAGE_EXIT( OPEN_ERROR,
-      "\"%s\": can not open: %s\n", path, ERROR_STR
+      "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset )
     FSEEK( file, offset, SEEK_SET );
@@ -139,7 +139,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
     open( path, oflag, 0644 ) : open( path, oflag );
   if ( fd == -1 )
     PMESSAGE_EXIT( OPEN_ERROR,
-      "\"%s\": can not open: %s\n", path, ERROR_STR
+      "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset )
     LSEEK( fd, offset, SEEK_SET );
@@ -197,7 +197,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", ERROR_STR );
+      PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
   } // while
 }

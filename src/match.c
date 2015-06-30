@@ -69,7 +69,7 @@ static bool get_byte( uint8_t *pbyte, FILE *file ) {
     }
     if ( ferror( file ) )
       PMESSAGE_EXIT( READ_ERROR,
-        "\"%s\": read byte failed: %s", fin_path, ERROR_STR
+        "\"%s\": read byte failed: %s", fin_path, STRERROR
       );
   }
   return false;
@@ -218,7 +218,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 static void unget_byte( uint8_t byte, FILE *file ) {
   if ( ungetc( byte, file ) == EOF )
     PMESSAGE_EXIT( READ_ERROR,
-      "\"%s\": unget byte failed: %s", fin_path, ERROR_STR
+      "\"%s\": unget byte failed: %s", fin_path, STRERROR
     );
   --total_bytes_read;
 }
