@@ -55,7 +55,7 @@ static char *elided_separator;          // separator used for elided rows
 
 static void         dump_file( void );
 static void         dump_row( char const*, uint8_t const*, size_t, uint16_t );
-static char const*  get_offset_fmt_englisn();
+static char const*  get_offset_fmt_english();
 static char const*  get_offset_fmt_format();
 static void         init( int, char*[] );
 static void         reverse_dump_file( void );
@@ -284,7 +284,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   if ( errno || *end != ':' )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
-      printable_char( *end ), get_offset_fmt_englisn()
+      printable_char( *end ), get_offset_fmt_english()
     );
   col += OFFSET_WIDTH;
 
@@ -374,7 +374,7 @@ static void reverse_dump_file( void ) {
 backwards_offset:
   snprintf( msg_fmt, sizeof( msg_fmt ),
     "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
-    get_offset_fmt_format(), get_offset_fmt_englisn()
+    get_offset_fmt_format(), get_offset_fmt_english()
   );
   PRINT_ERR( msg_fmt, fin_path, line, new_offset );
   exit( EXIT_INVALID_FORMAT );
@@ -416,7 +416,7 @@ static void init( int argc, char *argv[] ) {
 
 ////////// misc. functions ////////////////////////////////////////////////////
 
-static char const* get_offset_fmt_englisn() {
+static char const* get_offset_fmt_english() {
   switch ( opt_offset_fmt ) {
     case OFMT_DEC: return "decimal";
     case OFMT_HEX: return "hexadecimal";
