@@ -47,6 +47,9 @@
 #define FPUTS(S) \
   BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
 
+#define FWRITE(PTR,SIZE,N,STREAM) \
+  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( WRITE_ERROR ); )
+
 ////////// local variables ////////////////////////////////////////////////////
 
 static char *elided_separator;          // separator used for elided rows
@@ -355,15 +358,13 @@ static void reverse_dump_file( void ) {
           goto backwards_offset;
         if ( new_offset > fout_offset + ROW_BUF_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
-        if ( fwrite( bytes, 1, bytes_len, fout ) < bytes_len )
-          goto write_error;
+        FWRITE( bytes, 1, bytes_len, fout );
         break;
 
       case ROW_ELIDED:
         assert( bytes_len % ROW_BUF_SIZE == 0 );
         for ( ; bytes_len; bytes_len -= ROW_BUF_SIZE )
-          if ( fwrite( bytes, 1, ROW_BUF_SIZE, fout ) < ROW_BUF_SIZE )
-            goto write_error;
+          FWRITE( bytes, 1, ROW_BUF_SIZE, fout );
         break;
     } // switch
 
@@ -378,9 +379,6 @@ backwards_offset:
   );
   PRINT_ERR( msg_fmt, fin_path, line, new_offset );
   exit( EXIT_INVALID_FORMAT );
-
-write_error:
-  PMESSAGE_EXIT( WRITE_ERROR, "%s: write failed: %s\n", fout_path, STRERROR );
 }
 
 /////////// initialization & clean-up /////////////////////////////////////////
