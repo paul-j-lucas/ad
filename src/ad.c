@@ -414,7 +414,7 @@ static void init( int argc, char *argv[] ) {
   elided_separator[ OFFSET_WIDTH ] = '\0';
 }
 
-////////// local functions ////////////////////////////////////////////////////
+////////// misc. functions ////////////////////////////////////////////////////
 
 static char const* get_offset_fmt_englisn() {
   switch ( opt_offset_fmt ) {
