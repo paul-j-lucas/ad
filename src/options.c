@@ -40,7 +40,7 @@
 
 #define GAVE_OPTION(OPT)  isalpha( OPTION_VALUE(OPT) )
 #define OPTION_VALUE(OPT) opts_given[ !islower(OPT) ][ toupper(OPT) - 'A' ]
-#define SET_OPTION(OPT)   BLOCK( OPTION_VALUE(OPT) = (OPT); )
+#define SET_OPTION(OPT)   OPTION_VALUE(OPT) = (OPT)
 
 ////////// extern variables ///////////////////////////////////////////////////
 
