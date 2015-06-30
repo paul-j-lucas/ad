@@ -81,23 +81,17 @@ static void dump_file( void ) {
   };
   typedef struct row_buf row_buf_t;
 
-  bool      any_matches = false;        // if matching, any data matched yet?
-  row_buf_t buf[2], *cur = buf, *next = buf + 1;
-  bool      is_same_row = false;        // current row same as previous?
-  kmp_t    *kmps = NULL;                // used only by match_byte()
-  uint8_t  *match_buf = NULL;           // used only by match_byte()
+  bool        any_matches = false;      // if matching, any data matched yet?
+  row_buf_t   buf[2], *cur = buf, *next = buf + 1;
+  bool        is_same_row = false;      // current row same as previous?
+  kmp_t      *kmps = NULL;              // used only by match_byte()
+  uint8_t    *match_buf = NULL;         // used only by match_byte()
+  char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len ) {                   // searching for anything?
     kmps = freelist_add( kmp_init( search_buf, search_len ) );
     match_buf = freelist_add( MALLOC( uint8_t, search_len ) );
   }
-
-  char const *off_fmt;
-  switch ( opt_offset_fmt ) {
-    case OFMT_DEC: off_fmt = "%0" STRINGIFY(OFFSET_WIDTH) "llu"; break;
-    case OFMT_HEX: off_fmt = "%0" STRINGIFY(OFFSET_WIDTH) "llX"; break;
-    case OFMT_OCT: off_fmt = "%0" STRINGIFY(OFFSET_WIDTH) "llo"; break;
-  } // switch
 
   // prime the pump by reading the first row
   cur->len = match_row( cur->bytes, &cur->match_bits, kmps, match_buf );
