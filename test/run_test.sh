@@ -184,7 +184,7 @@ OUTPUT=/tmp/ad_test_output_$$_
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST $OUTPUT > $LOG_FILE
+  if $TEST $OUTPUT > $LOG_FILE 2>&1
   then pass
   else fail
   fi
@@ -245,7 +245,7 @@ unset AD_COLORS GREP_COLOR GREP_COLORS
 trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
 case $TEST in
-  *.sh) run_sh_file ;;
+*.sh)   run_sh_file ;;
 *.test) run_test_file ;;
 esac
 
