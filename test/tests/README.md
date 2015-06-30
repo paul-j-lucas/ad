@@ -9,7 +9,7 @@ that is four fields separated by the pipe (`|`) character
 (with optional whitespace)
 where:
 
-+ *command* = command to execute
++ *command* = command to execute (`ad`)
 + *options* = command-line options or blank for none
 + *input*   = name of file to dump
 + *exit*    = expected exit status code
@@ -27,7 +27,7 @@ For example, tests such as these:
     ad-B2-E1-m.test
 
 that are the same test but differ only in 'e' vs. 'E' will work fine
-on typical Linux filesystems but cause a collision on Mac OS X.
+on every other Unix filesystem but cause a collision on HFS+.
 
 One solution (the one used here) is to append a distinct number:
 
