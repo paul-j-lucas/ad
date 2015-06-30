@@ -257,22 +257,6 @@ typedef enum row_kind row_kind_t;
  */
 #define XTOI(C) (isdigit( C ) ? (C) - '0' : 0xA + toupper( C ) - 'A')
 
-static char const* get_offset_fmt_englisn() {
-  switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "decimal";
-    case OFMT_HEX: return "hexadecimal";
-    case OFMT_OCT: return "octal";
-  } // switch
-}
-
-static char const* get_offset_fmt_format() {
-  switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
-    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
-    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
-  } // switch
-}
-
 static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
                              off_t *poffset, uint8_t *bytes,
                              size_t *pbytes_len ) {
@@ -428,6 +412,24 @@ static void init( int argc, char *argv[] ) {
   elided_separator = freelist_add( MALLOC( char, OFFSET_WIDTH + 1 ) );
   memset( elided_separator, '-', OFFSET_WIDTH );
   elided_separator[ OFFSET_WIDTH ] = '\0';
+}
+
+////////// local functions ////////////////////////////////////////////////////
+
+static char const* get_offset_fmt_englisn() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "decimal";
+    case OFMT_HEX: return "hexadecimal";
+    case OFMT_OCT: return "octal";
+  } // switch
+}
+
+static char const* get_offset_fmt_format() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
+    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
+    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
+  } // switch
 }
 
 ///////////////////////////////////////////////////////////////////////////////
