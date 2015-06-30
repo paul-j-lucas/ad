@@ -83,6 +83,7 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-r_04.test \
 	tests/ad-r_05.test \
 	tests/ad-r_06.test \
+	tests/ad-r_07.test \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
 	tests/ad-v.test
