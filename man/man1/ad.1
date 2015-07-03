@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "June 26, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 3, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -294,11 +294,23 @@ Note that only the hexedecimal part of the dump is read;
 the ASCII part is ignored.
 .TP
 .B ""
-When an output file is used,
+When an existing output file is used,
 it is not truncated.
 This allows a small dump file
-to patch an existing larger binary file.
+to patch a subset of bytes in an existing larger binary file.
 The bytes to be patched are given by the offsets.
+.TP
+.B ""
+Elided bytes,
+given by the separator of ``-'' characters
+when none of the
+.BR \-m ,
+.BR \-p ,
+or
+.B \-v
+options are used,
+are expanded by copying the preceding row
+as many times as necessary.
 .TP
 .BI \-s " s"
 Searches for the string
