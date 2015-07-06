@@ -334,7 +334,6 @@ expected_hex_digit:
     "'%s': unexpected character; expected hexadecimal digit\n",
     printable_char( *p )
   );
-
 }
 
 static void reverse_dump_file( void ) {
@@ -344,11 +343,10 @@ static void reverse_dump_file( void ) {
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
-  char   *row_buf;
-  size_t  row_len;
 
   for ( ;; ) {
-    row_buf = fgetln( fin, &row_len );
+    size_t row_len;
+    char *const row_buf = fgetln( fin, &row_len );
     if ( !row_buf ) {
       if ( ferror( fin ) )
         PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", STRERROR );
