@@ -273,7 +273,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   // maybe parse row separator for elided lines
   if ( strncmp( buf, elided_separator, ROW_BUF_SIZE ) == 0 ) {
     col += OFFSET_WIDTH;
-    if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*lX)", pbytes_len ) != 1 )
+    if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*X)", pbytes_len ) != 1 )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
@@ -344,13 +344,16 @@ static void reverse_dump_file( void ) {
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
-  char   *row_buf = NULL;
-  size_t  row_capacity = 0;
+  char   *row_buf;
+  size_t  row_len;
 
   for ( ;; ) {
-    ssize_t const row_len = getline( &row_buf, &row_capacity, fin );
-    if ( row_len == -1 )
+    row_buf = fgetln( fin, &row_len );
+    if ( !row_buf ) {
+      if ( ferror( fin ) )
+        PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", STRERROR );
       break;
+    }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
@@ -359,16 +362,17 @@ static void reverse_dump_file( void ) {
         if ( new_offset > fout_offset + ROW_BUF_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
         FWRITE( bytes, 1, bytes_len, fout );
+        fout_offset = new_offset;
         break;
 
       case ROW_ELIDED:
         assert( bytes_len % ROW_BUF_SIZE == 0 );
+        fout_offset += bytes_len / ROW_BUF_SIZE;
         for ( ; bytes_len; bytes_len -= ROW_BUF_SIZE )
           FWRITE( bytes, 1, ROW_BUF_SIZE, fout );
         break;
     } // switch
 
-    fout_offset = new_offset;
   } // for
   exit( EXIT_OK );
 
@@ -420,6 +424,7 @@ static char const* get_offset_fmt_english() {
     case OFMT_HEX: return "hexadecimal";
     case OFMT_OCT: return "octal";
   } // switch
+  assert( false );
 }
 
 static char const* get_offset_fmt_format() {
@@ -428,6 +433,7 @@ static char const* get_offset_fmt_format() {
     case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
     case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
   } // switch
+  assert( false );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
