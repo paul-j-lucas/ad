@@ -165,7 +165,7 @@ bool should_colorize( colorization_t c ) {
     case COLOR_ALWAYS: return true;
     case COLOR_NEVER : return false;
     default          : break;
-  }
+  } // switch
 
   //
   // If TERM is unset, empty, or "dumb", color probably won't work.
