@@ -230,7 +230,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 
   // allocating +1 eliminates "past the end" checking
   kmp_t *const kmps = MALLOC( kmp_t, pattern_len + 1 );
-  memset( kmps, 0, sizeof( kmp_t ) * pattern_len + 1 );
+  memset( kmps, 0, sizeof( kmp_t ) * (pattern_len + 1) );
 
   for ( size_t i = 1, j = 0; i < pattern_len; ) {
     assert( j < pattern_len );
