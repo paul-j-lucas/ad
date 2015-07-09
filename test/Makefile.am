@@ -31,6 +31,19 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-B4-E8-m-p.test \
 	tests/ad-B4-e1-m_01.test \
 	tests/ad-B4-e4294967296.test \
+	tests/ad-Cc.test \
+	tests/ad-Cci.test \
+	tests/ad-Ci.test \
+	tests/ad-Cilu.test \
+	tests/ad-Cis.test \
+	tests/ad-Cit.test \
+	tests/ad-Ciu.test \
+	tests/ad-Cl.test \
+	tests/ad-Clt.test \
+	tests/ad-Ct.test \
+	tests/ad-Ctu.test \
+	tests/ad-Cu.test \
+	tests/ad-Cx.test \
 	tests/ad-E0x0102-m_02.test \
 	tests/ad-E0x01020304-m_02.test \
 	tests/ad-E0x0102030405060708-m_02.test \
