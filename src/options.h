@@ -43,6 +43,16 @@ enum c_fmt {
 };
 
 /**
+ * Checks whether the given \c c_fmt specifies a type.
+ *
+ * @param FMT The \c c_fmt to check.
+ * @return Returns \c true only if \a FMT specifies a type.
+ * @hideinitializer
+ */
+#define CFMT_HAS_TYPE(FMT) \
+  ((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T))
+
+/**
  * Offset formats.
  */
 enum offset_fmt {

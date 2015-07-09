@@ -102,7 +102,8 @@ static void dump_file( void ) {
   }
 
   // prime the pump by reading the first row
-  cur->len = match_row( cur->bytes, ROW_SIZE, &cur->match_bits, kmps, match_buf );
+  cur->len =
+    match_row( cur->bytes, ROW_SIZE, &cur->match_bits, kmps, match_buf );
 
   while ( cur->len ) {
     //
@@ -174,18 +175,21 @@ static void dump_file_c( void ) {
     array_len += row_len;
   } while ( row_len == ROW_SIZE_C );
 
-  FPRINTF(
-    "};\n%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-    (opt_c_fmt & CFMT_STATIC   ? "static "   : ""),
-    (opt_c_fmt & CFMT_UNSIGNED ? "unsigned " : ""),
-    (opt_c_fmt & CFMT_LONG     ? "long "     : ""),
-    (opt_c_fmt & CFMT_INT      ? "int "      : ""),
-    (opt_c_fmt & CFMT_SIZE_T   ? "size_t "   : ""),
-    (opt_c_fmt & CFMT_CONST    ? "const "    : ""),
-    array_name, array_len,
-    (opt_c_fmt & CFMT_UNSIGNED ? "u" : ""),
-    (opt_c_fmt & CFMT_LONG     ? "L" : "")
-  );
+  FPRINTF( "};\n" );
+
+  if ( CFMT_HAS_TYPE( opt_c_fmt ) )
+    FPRINTF(
+      "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
+      (opt_c_fmt & CFMT_STATIC   ? "static "   : ""),
+      (opt_c_fmt & CFMT_UNSIGNED ? "unsigned " : ""),
+      (opt_c_fmt & CFMT_LONG     ? "long "     : ""),
+      (opt_c_fmt & CFMT_INT      ? "int "      : ""),
+      (opt_c_fmt & CFMT_SIZE_T   ? "size_t "   : ""),
+      (opt_c_fmt & CFMT_CONST    ? "const "    : ""),
+      array_name, array_len,
+      (opt_c_fmt & CFMT_UNSIGNED ? "u" : ""),
+      (opt_c_fmt & CFMT_LONG     ? "L" : "")
+    );
 
   exit( EXIT_OK );
 }

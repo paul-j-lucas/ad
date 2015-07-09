@@ -142,8 +142,6 @@ static unsigned parse_c_fmt( char const *s ) {
       s
     );
   }
-  if ( !(c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED | CFMT_SIZE_T)) )
-    c_fmt |= CFMT_INT;
   return c_fmt;
 }
 
