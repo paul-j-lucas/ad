@@ -51,7 +51,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * buffer.
  *
  * @param row_buf A pointer to the row buffer.
- * @param row_size TODO
+ * @param row_size The size of the row to match.
  * @param match_bits A pointer to receive which bytes matched.  Note that the
  * bytes in the buffer are numbered left-to-right where as their corresponding
  * bits are numbered right-to-left.
