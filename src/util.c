@@ -29,6 +29,7 @@
 #include <ctype.h>                      /* for isspace(), isprint() */
 #include <fcntl.h>                      /* for open() */
 #include <stdlib.h>                     /* for exit(), strtoull(), ... */
+#include <sys/stat.h>                   /* for fstat() */
 #include <unistd.h>                     /* for lseek() */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,10 +203,37 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   } // while
 }
 
+char* identify( char const *s ) {
+  assert( s );
+  assert( *s );
+
+  size_t const s_len = strlen( s );
+  char *const ident = MALLOC( char, s_len + 1 /* NULL */ + 1 /* leading _ */ );
+  char *p = ident;
+
+  // first char is a special case: must be alpha or _
+  bool substitute_ = !(isalpha( *s ) || *s == '_');
+  *p++ = substitute_ ? '_' : *s++;
+
+  // remaining chars must be alphanum or _
+  for ( ; *s; ++s ) {
+    if ( isalnum( *s ) || *s == '_' ) {
+      *p++ = *s;
+      substitute_ = false;
+    } else if ( !substitute_ ) {        // don't create __ (double underscore)
+      *p++ = '_';
+      substitute_ = true;
+    }
+  } // for
+
+  *p = '\0';
+  return ident;
+}
+
 size_t int_len( uint64_t n ) {
-  if ( n < 0x10000 )
-    return n < 0x100 ? 1 : 2;
-  return n < 0x100000000L ? 4 : 8;
+  if ( n < 0x10000u )
+    return n < 0x100u ? 1 : 2;
+  return n < 0x100000000ul ? 4 : 8;
 }
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
@@ -248,6 +276,12 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
     default:
       assert( true );
   } // switch
+}
+
+bool is_file( int fd ) {
+  struct stat fd_stat;
+  FSTAT( fd, &fd_stat );
+  return S_ISREG( fd_stat.st_mode );
 }
 
 uint64_t parse_offset( char const *s ) {

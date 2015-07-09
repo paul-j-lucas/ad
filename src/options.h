@@ -31,6 +31,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
+ * C dump formats.
+ */
+enum c_fmt {
+  CFMT_CONST    = 1 << 0,               // declare variables as "const"
+  CFMT_STATIC   = 1 << 1,               // declare variables as "static"
+  CFMT_UNSIGNED = 1 << 2,               // declare len type as "unsigned"
+  CFMT_INT      = 1 << 3,               // declare len type as "int"
+  CFMT_LONG     = 1 << 4,               // declare len type as "long"
+  CFMT_SIZE_T   = 1 << 5                // declare len type as "size_t"
+};
+
+/**
  * Offset formats.
  */
 enum offset_fmt {
@@ -50,6 +62,7 @@ extern char const    *fout_path;        // path name of output file
 extern char const    *me;               // executable name from argv[0]
 
 extern bool           opt_case_insensitive;
+extern unsigned       opt_c_fmt;
 extern size_t         opt_max_bytes_to_read;
 extern offset_fmt_t   opt_offset_fmt;
 extern bool           opt_only_matching;

@@ -152,6 +152,19 @@ void freelist_free( void );
 void fskip( size_t bytes_to_skip, FILE *file );
 
 /**
+ * Converts a string into one that is a valid identifier in C such that:
+ *  + Non-valid identifier characters [^A-Za-z_0-9] are replaced with '_'.
+ *  + Multiple consecutive '_' are coalesced into a single '_'
+ *    (except multiple consecutive '_' that are in \a s to begin with).
+ *  + If \a s begins with a digit, then '_' is prepended.
+ *
+ * @param s The string to create an identifier from.
+ * @return Returns \a s converted to a valid identifier in C.
+ * The caller is responsible for freeing the string.
+ */
+char* identify( char const *s );
+
+/**
  * Gets the minimum number of bytes required to contain the given \c uint64_t
  * value.
  *
@@ -190,6 +203,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * @return Returns the parsed offset.
  */
 uint64_t parse_offset( char const *s );
+
+/**
+ * Checks whether the given file descriptor refers to a regular file.
+ *
+ * @param fd The file descriptor to check.
+ * @return Returns \c true only if \a fd refers to a regular file.
+ */
+bool is_file( int fd );
 
 /**
  * Parses an SGR (Select Graphic Rendition) value that matches the regular

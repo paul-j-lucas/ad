@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "July 3, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 8, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -207,6 +207,35 @@ A shorthand synonym for
 .B ""
 The default is
 .BR not_file .
+.TP
+.BI \-C " f"
+Dumps bytes as C array and length variable definitions.
+The variable names are derived from the input file name, if any,
+or "\f(CWstdin\f1" otherwise.
+The format
+.I f
+is one or more of the following letters
+that specify the format of the declarations:
+.RS
+.TP 3
+.B c
+Declares both the array and length as \f(CWconst\f1.
+.TP
+.B i
+Declares the length as \f(CWint\f1.
+.TP
+.B l
+Declares the length as \f(CWlong\f1.
+.TP
+.B s
+Declares both the array and length as \f(CWstatic\f1.
+.TP
+.B t
+Declares the length as \f(CWsize_t\f1.
+.TP
+.B u
+Declares the length as \f(CWunsigned\f1.
+.RE
 .TP
 .B \-d
 Prints offsets in decimal.

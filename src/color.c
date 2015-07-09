@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
-#include <sys/stat.h>                   /* for fstat() */
 #include <unistd.h>                     /* for isatty() */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -196,9 +195,7 @@ bool should_colorize( colorization_t c ) {
   //
   // Hence, we want to do color _except_ when ISREG=T.
   //
-  struct stat fd_out_stat;
-  FSTAT( fd_out, &fd_out_stat );
-  return !S_ISREG( fd_out_stat.st_mode );
+  return !is_file( fd_out );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

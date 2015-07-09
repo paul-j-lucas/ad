@@ -52,6 +52,7 @@ FILE         *fout;
 char const   *me;
 
 bool          opt_case_insensitive;
+unsigned      opt_c_fmt;
 size_t        opt_max_bytes_to_read = SIZE_MAX;
 offset_fmt_t  opt_offset_fmt = OFMT_HEX;
 bool          opt_only_matching;
@@ -113,6 +114,37 @@ static void check_required( char opt, char const *req_opts ) {
   }
 }
 
+static unsigned parse_c_fmt( char const *s ) {
+  assert( s );
+  char const *p = s;
+  unsigned c_fmt = 0;
+  for ( ; *p; ++p ) {
+    switch ( *p ) {
+      case 'c': c_fmt |= CFMT_CONST;    break;
+      case 'i': c_fmt |= CFMT_INT;      break;
+      case 'l': c_fmt |= CFMT_LONG;     break;
+      case 's': c_fmt |= CFMT_STATIC;   break;
+      case 't': c_fmt |= CFMT_SIZE_T;   break;
+      case 'u': c_fmt |= CFMT_UNSIGNED; break;
+      default :
+        PMESSAGE_EXIT( USAGE,
+          "'%c': invalid C format specifier for -C option;"
+          " must be one of: [cilstu]\n",
+          *p
+        );
+    } // switch
+  } // for
+  if ( (c_fmt & CFMT_SIZE_T) &&
+       (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
+    PMESSAGE_EXIT( USAGE,
+      "\"%s\": invalid C format for -C option:"
+      " 't' and [ilu] are mutually exclusive\n",
+      s
+    );
+  }
+  return c_fmt;
+}
+
 /**
  * Parses a colorization "when" value.
  *
@@ -170,7 +202,7 @@ static colorization_t parse_colorization( char const *when ) {
 void parse_options( int argc, char *argv[] ) {
   colorization_t  colorization = COLOR_NOT_FILE;
   int             opt;                  // command-line option
-  char const      opts[] = "b:B:c:de:E:hij:mN:oprs:S:vV";
+  char const      opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:vV";
   size_t          size_in_bits = 0, size_in_bytes = 0;
 
   // just so it's pretty-printable when debugging
@@ -186,6 +218,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'b': size_in_bits = parse_ull( optarg );                     break;
       case 'B': size_in_bytes = parse_ull( optarg );                    break;
       case 'c': colorization = parse_colorization( optarg );            break;
+      case 'C': opt_c_fmt = parse_c_fmt( optarg );                      break;
       case 'd': opt_offset_fmt = OFMT_DEC;                              break;
       case 'e':
       case 'E': search_number = parse_ull( optarg );
@@ -215,11 +248,12 @@ void parse_options( int argc, char *argv[] ) {
 
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
+  check_mutually_exclusive( "C", "ceEimpsSv" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "m", "v" );
   check_mutually_exclusive( "p", "v" );
   check_mutually_exclusive( "r", "bBeEimNpsSv" );
-  check_mutually_exclusive( "V", "bBcdeEhijmNoprsSv" );
+  check_mutually_exclusive( "V", "bBcCdeEhijmNoprsSv" );
 
   // check for options that require other options
   check_required( 'b', "eE" );

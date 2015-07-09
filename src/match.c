@@ -244,13 +244,13 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   return kmps;
 }
 
-size_t match_row( uint8_t *row_buf, uint16_t *match_bits, kmp_t const *kmps,
-                  uint8_t *match_buf ) {
+size_t match_row( uint8_t *row_buf, size_t row_size, uint16_t *match_bits,
+                  kmp_t const *kmps, uint8_t *match_buf ) {
   assert( match_bits );
   *match_bits = 0;
 
   size_t buf_len;
-  for ( buf_len = 0; buf_len < ROW_BUF_SIZE; ++buf_len ) {
+  for ( buf_len = 0; buf_len < row_size; ++buf_len ) {
     bool matches;
     if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) )
       break;

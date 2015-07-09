@@ -47,21 +47,22 @@ typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
 kmp_t* kmp_init( char const *pattern, size_t pattern_len );
 
 /**
- * Gets a row of bytes (of \c ROW_BUF_SIZE) and whether each byte matches bytes
- * in the search buffer.
+ * Gets a row of bytes and whether each byte matches bytes in the search
+ * buffer.
  *
  * @param row_buf A pointer to the row buffer.
+ * @param row_size TODO
  * @param match_bits A pointer to receive which bytes matched.  Note that the
  * bytes in the buffer are numbered left-to-right where as their corresponding
  * bits are numbered right-to-left.
  * @param kmps A pointer to the array of KMP values to use.
  * @param match_buf A pointer to a buffer to use while matching.
  * @return Returns the number of bytes in \a row_buf.  It should always be
- * \c ROW_BUF_SIZE except on the last row in which case it will be less than
- * \c ROW_BUF_SIZE.
+ * \a row_size except on the last row in which case it will be less than
+ * \a row_size.
  */
-size_t match_row( uint8_t *row_buf, uint16_t *match_bits, kmp_t const *kmps,
-                  uint8_t *match_buf );
+size_t match_row( uint8_t *row_buf, size_t row_size, uint16_t *match_bits,
+                  kmp_t const *kmps, uint8_t *match_buf );
 
 ///////////////////////////////////////////////////////////////////////////////
 

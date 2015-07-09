@@ -29,6 +29,7 @@
 // system
 #include <assert.h>
 #include <ctype.h>                      /* for isprint() */
+#include <libgen.h>                     /* for basename() */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
@@ -57,7 +58,9 @@ static char *elided_separator;          // separator used for elided rows
 ////////// local functions ////////////////////////////////////////////////////
 
 static void         dump_file( void );
+static void         dump_file_c( void );
 static void         dump_row( char const*, uint8_t const*, size_t, uint16_t );
+static void         dump_row_c( char const*, uint8_t const*, size_t );
 static char const*  get_offset_fmt_english();
 static char const*  get_offset_fmt_format();
 static void         init( int, char*[] );
@@ -69,16 +72,18 @@ int main( int argc, char *argv[] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
+  if ( opt_c_fmt )
+    dump_file_c();
   else
     dump_file();
-  // neither of the above two functions returns
+  // none of the above functions returns
 }
 
 /////////// dumping ///////////////////////////////////////////////////////////
 
 static void dump_file( void ) {
   struct row_buf {
-    uint8_t   bytes[ ROW_BUF_SIZE ];    // bytes in buffer, left-to-right
+    uint8_t   bytes[ ROW_SIZE ];        // bytes in buffer, left-to-right
     size_t    len;                      // length of buffer
     uint16_t  match_bits;               // which bytes match, right-to-left
   };
@@ -97,18 +102,18 @@ static void dump_file( void ) {
   }
 
   // prime the pump by reading the first row
-  cur->len = match_row( cur->bytes, &cur->match_bits, kmps, match_buf );
+  cur->len = match_row( cur->bytes, ROW_SIZE, &cur->match_bits, kmps, match_buf );
 
   while ( cur->len ) {
     //
     // We need to know whether the current row is the last row.  The current
-    // row is the last if its length < ROW_BUF_SIZE.  However, if the file's
-    // length is an exact multiple of ROW_BUF_SIZE, then we don't know the
-    // current row is the last.  We therefore have to read the next row: the
-    // current row is the last row if the length of the next row is zero.
+    // row is the last if its length < ROW_SIZE.  However, if the file's length
+    // is an exact multiple of ROW_SIZE, then we don't know the current row is
+    // the last.  We therefore have to read the next row: the current row is
+    // the last row if the length of the next row is zero.
     //
-    next->len = cur->len < ROW_BUF_SIZE ? 0 :
-      match_row( next->bytes, &next->match_bits, kmps, match_buf );
+    next->len = cur->len < ROW_SIZE ? 0 :
+      match_row( next->bytes, ROW_SIZE, &next->match_bits, kmps, match_buf );
     bool const is_last_row = next->len == 0;
 
     if ( cur->match_bits || (           // always dump matching rows
@@ -130,14 +135,59 @@ static void dump_file( void ) {
     is_same_row =
       !(opt_verbose || is_last_row) &&  // + neither -v or is the last row
       cur->len == next->len &&          // + the two row lengths are equal
-      memcmp( cur->bytes, next->bytes, ROW_BUF_SIZE ) == 0;
+      memcmp( cur->bytes, next->bytes, ROW_SIZE ) == 0;
 
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
     cur = next, next = temp;
 
-    fin_offset += ROW_BUF_SIZE;
+    fin_offset += ROW_SIZE;
   } // while
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
+}
+
+
+static void dump_file_c( void ) {
+  size_t      array_len = 0;
+  char const *array_name = NULL;
+  char const *off_fmt = get_offset_fmt_format();
+  size_t      row_len;
+
+  if ( fin == stdin ) {
+    array_name = "stdin";
+  } else {
+    char *const temp = freelist_add( check_strdup( fin_path ) );
+    array_name = freelist_add( identify( basename( temp ) ) );
+  }
+  FPRINTF(
+    "%sunsigned char %s%s[] = {\n",
+    (opt_c_fmt & CFMT_STATIC ? "static " : ""),
+    (opt_c_fmt & CFMT_CONST  ? "const "  : ""),
+    array_name
+  );
+
+  do {
+    uint8_t  bytes[ ROW_SIZE_C ];       // bytes in buffer
+    uint16_t match_bits;
+    row_len = match_row( bytes, ROW_SIZE_C, &match_bits, NULL, NULL );
+    dump_row_c( off_fmt, bytes, row_len );
+    fin_offset += row_len;
+    array_len += row_len;
+  } while ( row_len == ROW_SIZE_C );
+
+  FPRINTF(
+    "};\n%s%s%s%s%s%s%s_len = %zu%s%s;\n",
+    (opt_c_fmt & CFMT_STATIC   ? "static "   : ""),
+    (opt_c_fmt & CFMT_UNSIGNED ? "unsigned " : ""),
+    (opt_c_fmt & CFMT_LONG     ? "long "     : ""),
+    (opt_c_fmt & CFMT_INT      ? "int "      : ""),
+    (opt_c_fmt & CFMT_SIZE_T   ? "size_t "   : ""),
+    (opt_c_fmt & CFMT_CONST    ? "const "    : ""),
+    array_name, array_len,
+    (opt_c_fmt & CFMT_UNSIGNED ? "u" : ""),
+    (opt_c_fmt & CFMT_LONG     ? "L" : "")
+  );
+
+  exit( EXIT_OK );
 }
 
 #define SGR_START_IF(EXPR) \
@@ -165,7 +215,7 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    off_t const offset_delta = fin_offset - dumped_offset - ROW_BUF_SIZE;
+    off_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
     if ( offset_delta && any_dumped ) {
       SGR_START_IF( sgr_elided );
       FPUTS( elided_separator );
@@ -210,7 +260,7 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
   SGR_END_IF( prev_matches );
 
   // print padding if necessary (last row only)
-  while ( buf_pos < ROW_BUF_SIZE ) {
+  while ( buf_pos < ROW_SIZE ) {
     if ( buf_pos++ % HEX_COLUMN_WIDTH == 0 )
       FPUTC( ' ' );                     // print space between hex columns
     FPRINTF( "  " );
@@ -236,6 +286,20 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
 
   any_dumped = true;
   dumped_offset = fin_offset;
+}
+
+static void dump_row_c( char const *off_fmt, uint8_t const *buf,
+                        size_t buf_len ) {
+  // print offset
+  FPUTS( "  /* " );
+  FPRINTF( off_fmt, fin_offset );
+  FPUTS( " */" );
+
+  // dump hex part
+  uint8_t const *const end = buf + buf_len;
+  while ( buf < end )
+    FPRINTF( " 0x%02X,", (unsigned)*buf++ );
+  FPUTC( '\n' );
 }
 
 ////////// reverse ////////////////////////////////////////////////////////////
@@ -271,7 +335,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   size_t col = 1;
 
   // maybe parse row separator for elided lines
-  if ( strncmp( buf, elided_separator, ROW_BUF_SIZE ) == 0 ) {
+  if ( strncmp( buf, elided_separator, ROW_SIZE ) == 0 ) {
     col += OFFSET_WIDTH;
     if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*X)", pbytes_len ) != 1 )
       INVALID_EXIT(
@@ -297,7 +361,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   int consec_spaces = 0;
 
   // parse hexadecimal bytes
-  while ( bytes_len < ROW_BUF_SIZE ) {
+  while ( bytes_len < ROW_SIZE ) {
     ++p, ++col;
 
     // handle whitespace
@@ -318,7 +382,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
     if ( ++p == end )
       INVALID_EXIT(
         "unexpected end of data; expected %d hexadecimal bytes\n",
-        ROW_BUF_SIZE
+        ROW_SIZE
       );
     if ( !isxdigit( *p ) )
       goto expected_hex_digit;
@@ -337,9 +401,9 @@ expected_hex_digit:
 }
 
 static void reverse_dump_file( void ) {
-  uint8_t bytes[ ROW_BUF_SIZE ];
+  uint8_t bytes[ ROW_SIZE ];
   size_t  bytes_len;
-  off_t   fout_offset = -ROW_BUF_SIZE;
+  off_t   fout_offset = -ROW_SIZE;
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
@@ -355,19 +419,19 @@ static void reverse_dump_file( void ) {
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
-        if ( new_offset < fout_offset + ROW_BUF_SIZE )
+        if ( new_offset < fout_offset + ROW_SIZE )
           goto backwards_offset;
-        if ( new_offset > fout_offset + ROW_BUF_SIZE )
+        if ( new_offset > fout_offset + ROW_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );
         FWRITE( bytes, 1, bytes_len, fout );
         fout_offset = new_offset;
         break;
 
       case ROW_ELIDED:
-        assert( bytes_len % ROW_BUF_SIZE == 0 );
-        fout_offset += bytes_len / ROW_BUF_SIZE;
-        for ( ; bytes_len; bytes_len -= ROW_BUF_SIZE )
-          FWRITE( bytes, 1, ROW_BUF_SIZE, fout );
+        assert( bytes_len % ROW_SIZE == 0 );
+        fout_offset += bytes_len / ROW_SIZE;
+        for ( ; bytes_len; bytes_len -= ROW_SIZE )
+          FWRITE( bytes, 1, ROW_SIZE, fout );
         break;
     } // switch
 

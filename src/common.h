@@ -35,7 +35,8 @@
 #define EXIT_STAT_ERROR     21          /* error stat'ing */
 #define EXIT_INVALID_FORMAT 30          /* invalid dump format for -r option */
 
-#define ROW_BUF_SIZE        16          /* bytes displayed in a row */
+#define ROW_SIZE            16          /* bytes dumped on a row */
+#define ROW_SIZE_C          8           /* bytes dumped on a row in C */
 
 /**
  * The endian order for numeric searches.
