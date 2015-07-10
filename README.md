@@ -11,6 +11,8 @@ prints '`.`' (dot) instead.
 except that **ad** can also search for
 and highlight matching strings or numbers
 similar to **grep**(1).
+Like **xxd**(1),
+**ad** can also patch binary files.
 
 ## Installation
 
