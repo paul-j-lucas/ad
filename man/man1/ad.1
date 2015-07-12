@@ -101,7 +101,7 @@ and
 .I n
 is interpreted accordingly.
 .TP
-.BI \-\-big-endian " n" "\f1 | \fP" "" \-E " n"
+.BI \-\-big-endian \f1=\fPn "\f1 | \fP" "" \-E " n"
 Hightlights all occurrences of the unsigned integer
 .I n
 in big-endian byte order.
@@ -128,7 +128,7 @@ or
 .B \-B
 options.
 .TP
-.BI \-\-bits " n" "\f1 | \fP" "" \-b " n"
+.BI \-\-bits \f1=\fPn "\f1 | \fP" "" \-b " n"
 Sets the search number size to
 .I n
 bits
@@ -145,7 +145,7 @@ or
 .B \-E
 options.
 .TP
-.BI \-\-bytes " n" "\f1 | \fP" "" \-B " n"
+.BI \-\-bytes \f1=\fPn "\f1 | \fP" "" \-B " n"
 Same as the
 .B \-\-bits
 or
@@ -156,7 +156,7 @@ but in
 bytes.
 Must be one of 1, 2, 4, or 8.
 .TP
-.BI \-\-c-array " f" "\f1 | \fP" "" \-C " f"
+.BI \-\-c-array \f1=\fPf "\f1 | \fP" "" \-C " f"
 Dumps bytes as C array and length variable definitions.
 The variable names are derived from the input file name, if any,
 or "\f(CWstdin\f1" otherwise.
@@ -195,7 +195,7 @@ or
 is specified,
 then the array length is not dumped.
 .TP
-.BI \-\-color " w" "\f1 | \fP" "" \-c " w"
+.BI \-\-color \f1=\fPw "\f1 | \fP" "" \-c " w"
 Sets when to colorize output to
 .I w
 (which is case-insensitive).
@@ -316,7 +316,7 @@ or
 .B \-s
 options.
 .TP
-.BI \-\-little-endian " n" "\f1 | \fP" "" \-e " n"
+.BI \-\-little-endian \f1=\fPn "\f1 | \fP" "" \-e " n"
 Same as the
 .B \-\-big-endian
 or
@@ -327,7 +327,7 @@ but in little-endian byte order.
 .BR \-\-matching-only " | " \-m
 Only dumps rows having matches.
 .TP
-.BI \-\-max-read " n" "\f1 | \fP" "" \-N " n"
+.BI \-\-max-read \f1=\fPn "\f1 | \fP" "" \-N " n"
 Reads at most
 .I n
 bytes.
@@ -380,19 +380,19 @@ options are used,
 are expanded by copying the preceding row
 as many times as necessary.
 .TP
-\f3\-\-skip\f1 \f2n\f1[\f2u\f1] | \f3\-j\f1 \f2n\f1[\f2u\f1]
+\f3\-\-skip\f1=\f2n\f1[\f2u\f1] | \f3\-j\f1 \f2n\f1[\f2u\f1]
 Same as the
 .B +
 option.
 (If both options are specified,
 their values are added.)
 .TP
-.BI \-\-string " s " "\f1 | \fP" "" \-s " s"
+.BI \-\-string \f1=\fPs "\f1 | \fP" "" \-s " s"
 Searches for the string
 .I s
 and highlights matches.
 .TP
-.BI \-\-string-ignore-case " s" "\f1 | \fP" "" \-S " s"
+.BI \-\-string-ignore-case \f1=\fPs "\f1 | \fP" "" \-S " s"
 Searches for the string
 .I s
 in a case-insensitive manner
