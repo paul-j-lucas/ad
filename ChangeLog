@@ -1,3 +1,7 @@
+2015-07-12  Paul J. Lucas  <paul@lucasmail.org>
+
+   * Added long option support.
+
 2015-07-08  Paul J. Lucas  <paul@lucasmail.org>
 
    * Added -C option.

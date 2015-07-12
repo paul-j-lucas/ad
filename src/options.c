@@ -29,12 +29,12 @@
 #include <assert.h>
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <ctype.h>                      /* for islower(), toupper() */
+#include <getopt.h>
 #include <libgen.h>                     /* for basename() */
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
-#include <unistd.h>                     /* for getopt() */
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -47,12 +47,12 @@
 FILE         *fin;
 off_t         fin_offset;
 char const   *fin_path = "<stdin>";
-char const   *fout_path = "<stdout>";
 FILE         *fout;
+char const   *fout_path = "<stdout>";
 char const   *me;
 
 bool          opt_case_insensitive;
-unsigned      opt_c_fmt;
+c_fmt_t       opt_c_fmt;
 size_t        opt_max_bytes_to_read = SIZE_MAX;
 offset_fmt_t  opt_offset_fmt = OFMT_HEX;
 bool          opt_only_matching;
@@ -67,9 +67,41 @@ uint64_t      search_number;
 
 /////////// local variables ///////////////////////////////////////////////////
 
-static char   opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
+static struct option const long_opts[] = {
+  { "bits",               required_argument,  NULL, 'b' },
+  { "bytes",              required_argument,  NULL, 'B' },
+  { "color",              required_argument,  NULL, 'c' },
+  { "c-array",            optional_argument,  NULL, 'C' },
+  { "decimal",            no_argument,        NULL, 'd' },
+  { "little-endian",      required_argument,  NULL, 'e' },
+  { "big-endian",         required_argument,  NULL, 'E' },
+  { "hexadecimal",        no_argument,        NULL, 'h' },
+  { "ignore-case",        no_argument,        NULL, 'i' },
+  { "skip",               required_argument,  NULL, 'j' },
+  { "matching-only",      no_argument,        NULL, 'm' },
+  { "max-read",           required_argument,  NULL, 'N' },
+  { "octal",              no_argument,        NULL, 'o' },
+  { "printable-only",     no_argument,        NULL, 'p' },
+  { "reverse",            no_argument,        NULL, 'r' },
+  { "revert",             no_argument,        NULL, 'r' },
+  { "string",             required_argument,  NULL, 's' },
+  { "string-ignore-case", required_argument,  NULL, 'S' },
+  { "verbose",            no_argument,        NULL, 'v' },
+  { "version",            no_argument,        NULL, 'V' },
+  { NULL,                 0,                  NULL, 0   }
+};
+static char const short_opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:vV";
+
+static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
 
 /////////// local functions ///////////////////////////////////////////////////
+
+static char const* get_long_opt( char short_opt ) {
+  for ( struct option const *p = long_opts; p->name; ++p )
+    if ( p->val == short_opt )
+      return p->name;
+  assert( false );
+}
 
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   int gave_count = 0;
@@ -95,9 +127,9 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( USAGE,
-      "\"%zu\": value for -%c option is too small for \"%llu\""
+      "\"%zu\": value for --%s/-%c option is too small for \"%llu\""
       "; must be at least %zu\n",
-      given_size, opt, search_number, actual_size
+      given_size, get_long_opt( opt ), opt, search_number, actual_size
     );
 }
 
@@ -108,39 +140,40 @@ static void check_required( char opt, char const *req_opts ) {
         return;
     bool const reqs_multiple = strlen( req_opts ) > 1;
     PMESSAGE_EXIT( USAGE,
-      "-%c: option requires -%s option%s to be given also\n",
-      opt, req_opts, (reqs_multiple ? "s" : "")
+      "--%s/-%c: option requires one of -%s option%s to be given also\n",
+      get_long_opt( opt ), opt, req_opts, (reqs_multiple ? "s" : "")
     );
   }
 }
 
-static unsigned parse_c_fmt( char const *s ) {
-  assert( s );
-  char const *p = s;
-  unsigned c_fmt = 0;
-  for ( ; *p; ++p ) {
-    switch ( *p ) {
-      case 'c': c_fmt |= CFMT_CONST;    break;
-      case 'i': c_fmt |= CFMT_INT;      break;
-      case 'l': c_fmt |= CFMT_LONG;     break;
-      case 's': c_fmt |= CFMT_STATIC;   break;
-      case 't': c_fmt |= CFMT_SIZE_T;   break;
-      case 'u': c_fmt |= CFMT_UNSIGNED; break;
-      default :
-        PMESSAGE_EXIT( USAGE,
-          "'%c': invalid C format specifier for -C option;"
-          " must be one of: [cilstu]\n",
-          *p
-        );
-    } // switch
-  } // for
-  if ( (c_fmt & CFMT_SIZE_T) &&
-       (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
-    PMESSAGE_EXIT( USAGE,
-      "\"%s\": invalid C format for -C option:"
-      " 't' and [ilu] are mutually exclusive\n",
-      s
-    );
+static c_fmt_t parse_c_fmt( char const *s ) {
+  c_fmt_t c_fmt = CFMT_DEFAULT;
+  if ( s && *s ) {
+    char const *p = s;
+    for ( ; *p; ++p ) {
+      switch ( *p ) {
+        case 'c': c_fmt |= CFMT_CONST;    break;
+        case 'i': c_fmt |= CFMT_INT;      break;
+        case 'l': c_fmt |= CFMT_LONG;     break;
+        case 's': c_fmt |= CFMT_STATIC;   break;
+        case 't': c_fmt |= CFMT_SIZE_T;   break;
+        case 'u': c_fmt |= CFMT_UNSIGNED; break;
+        default :
+          PMESSAGE_EXIT( USAGE,
+            "'%c': invalid C format for --%s/-%c option;"
+            " must be one of: [cilstu]\n",
+            *p, get_long_opt( 'C' ), 'C'
+          );
+      } // switch
+    } // for
+    if ( (c_fmt & CFMT_SIZE_T) &&
+        (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
+      PMESSAGE_EXIT( USAGE,
+        "\"%s\": invalid C format for --%s/-%c option:"
+        " 't' and [ilu] are mutually exclusive\n",
+        s, get_long_opt( 'C' ), 'C'
+      );
+    }
   }
   return c_fmt;
 }
@@ -192,8 +225,8 @@ static colorization_t parse_colorization( char const *when ) {
     pnames += strlen( m->map_when );
   } // for
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid value for -c option; must be one of:\n\t%s\n",
-    when, names_buf
+    "\"%s\": invalid value for --%s/-%c option; must be one of:\n\t%s\n",
+    when, get_long_opt( 'c' ), 'c', names_buf
   );
 }
 
@@ -201,8 +234,6 @@ static colorization_t parse_colorization( char const *when ) {
 
 void parse_options( int argc, char *argv[] ) {
   colorization_t  colorization = COLOR_NOT_FILE;
-  int             opt;                  // command-line option
-  char const      opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:vV";
   size_t          size_in_bits = 0, size_in_bytes = 0;
 
   // just so it's pretty-printable when debugging
@@ -212,7 +243,10 @@ void parse_options( int argc, char *argv[] ) {
   me = basename( argv[0] );
   opterr = 1;
 
-  while ( (opt = getopt( argc, argv, opts )) != EOF ) {
+  for ( ;; ) {
+    int const opt = getopt_long( argc, argv, short_opts, long_opts, NULL );
+    if ( opt == -1 )
+      break;
     SET_OPTION( opt );
     switch ( opt ) {
       case 'b': size_in_bits = parse_ull( optarg );                     break;
@@ -237,7 +271,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );          exit( EXIT_OK );
       default : usage();
     } // switch
-  } // while
+  } // for
   argc -= optind, argv += optind - 1;
 
   // handle special case of +offset option

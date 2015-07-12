@@ -20,6 +20,9 @@
 
 bin_PROGRAMS = ad
 
+AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib -L$(top_srcdir)/lib
+
 ad_SOURCES = color.c match.c options.c util.c ad.c
+ad_LDADD = $(top_builddir)/lib/libgnu.a
 
 # vim:set noet sw=8 ts=8:

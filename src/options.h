@@ -34,13 +34,15 @@
  * C dump formats.
  */
 enum c_fmt {
-  CFMT_CONST    = 1 << 0,               // declare variables as "const"
-  CFMT_STATIC   = 1 << 1,               // declare variables as "static"
-  CFMT_UNSIGNED = 1 << 2,               // declare len type as "unsigned"
-  CFMT_INT      = 1 << 3,               // declare len type as "int"
-  CFMT_LONG     = 1 << 4,               // declare len type as "long"
-  CFMT_SIZE_T   = 1 << 5                // declare len type as "size_t"
+  CFMT_DEFAULT  = 1 << 0,
+  CFMT_CONST    = 1 << 1,               // declare variables as "const"
+  CFMT_STATIC   = 1 << 2,               // declare variables as "static"
+  CFMT_UNSIGNED = 1 << 3,               // declare len type as "unsigned"
+  CFMT_INT      = 1 << 4,               // declare len type as "int"
+  CFMT_LONG     = 1 << 5,               // declare len type as "long"
+  CFMT_SIZE_T   = 1 << 6                // declare len type as "size_t"
 };
+typedef unsigned c_fmt_t;               // for the bitwise-or of c_fmt options
 
 /**
  * Checks whether the given \c c_fmt specifies a type.

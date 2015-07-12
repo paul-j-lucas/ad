@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "July 10, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 12, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -29,13 +29,13 @@ ad \- ASCII dump
 .RI [ outfile ]]
 .br
 .B ad
-.B -r
+.B \-\-reverse
 .RI [ -dho ]
 .RI [ infile
 .RI [ outfile ]]
 .br
 .B ad
-.B -V
+.B \-\-version
 .SH DESCRIPTION
 .B ad
 dumps a file
@@ -101,7 +101,34 @@ and
 .I n
 is interpreted accordingly.
 .TP
-.BI \-b " n"
+.BI \-\-big-endian " n" "\f1 | \fP" "" \-E " n"
+Hightlights all occurrences of the unsigned integer
+.I n
+in big-endian byte order.
+.TP
+.B ""
+The number of bytes to search for is automatically calculated
+as the minimum number of bytes needed to represent
+.IR n .
+For example,
+if
+.I n
+were in the range 0\-255,
+the number of bytes would be 1;
+if
+.I n
+were in the range 256\-65535,
+the number of bytes would be 2;
+and so on.
+This can be overridden by either the
+.BR \-\-bits ,
+.BR \-b ,
+.BR \-\-bytes ,
+or
+.B \-B
+options.
+.TP
+.BI \-\-bits " n" "\f1 | \fP" "" \-b " n"
 Sets the search number size to
 .I n
 bits
@@ -110,22 +137,65 @@ bits
 divided by 8).
 Must be one of 8, 16, 32, or 64.
 The default is automatically calculated
-based on the argument to either the
-.B \-e
+based on the argument to one of the
+.BR \-\-little-endian ,
+.BR \-e ,
+.BR \-\-big-endian ,
 or
 .B \-E
-option.
+options.
 .TP
-.BI \-B " n"
+.BI \-\-bytes " n" "\f1 | \fP" "" \-B " n"
 Same as the
+.B \-\-bits
+or
 .B \-b
-option
+options
 but in
 .I n
 bytes.
 Must be one of 1, 2, 4, or 8.
 .TP
-.BI \-c " w"
+.BI \-\-c-array " f" "\f1 | \fP" "" \-C " f"
+Dumps bytes as C array and length variable definitions.
+The variable names are derived from the input file name, if any,
+or "\f(CWstdin\f1" otherwise.
+The format
+.I f
+is zero or more of the following letters
+that specify the format of the declarations:
+.RS
+.TP 3
+.B c
+Declares both the array and length as \f(CWconst\f1.
+.TP
+.B i
+Declares the length as \f(CWint\f1.
+.TP
+.B l
+Declares the length as \f(CWlong\f1.
+.TP
+.B s
+Declares both the array and length as \f(CWstatic\f1.
+.TP
+.B t
+Declares the length as \f(CWsize_t\f1.
+.TP
+.B u
+Declares the length as \f(CWunsigned\f1.
+.RE
+.TP
+.B ""
+If none of
+.BR i ,
+.BR l ,
+.BR t ,
+or
+.B u
+is specified,
+then the array length is not dumped.
+.TP
+.BI \-\-color " w" "\f1 | \fP" "" \-c " w"
 Sets when to colorize output to
 .I w
 (which is case-insensitive).
@@ -161,16 +231,22 @@ but explicit about what ``auto'' means.)
 .B never
 Never colorize.
 Note that this greatly diminishes the usefulness of the
+.BR \-\-little-endian ,
 .BR \-e ,
+.BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-string ,
 .BR \-s ,
+.BR \-\-string-ignore-case ,
 and
 .B \-S
 options since matches won't be highlighted.
 (However,
 the
+.B \-\-matching-only
+or
 .B \-m
-option
+options
 can be used to dump only rows having matches.)
 .TP
 .B not_file
@@ -212,127 +288,73 @@ A shorthand synonym for
 The default is
 .BR not_file .
 .TP
-.BI \-C " f"
-Dumps bytes as C array and length variable definitions.
-The variable names are derived from the input file name, if any,
-or "\f(CWstdin\f1" otherwise.
-The format
-.I f
-is one or more of the following letters
-that specify the format of the declarations:
-.RS
-.TP 3
-.B c
-Declares both the array and length as \f(CWconst\f1.
-.TP
-.B i
-Declares the length as \f(CWint\f1.
-.TP
-.B l
-Declares the length as \f(CWlong\f1.
-.TP
-.B s
-Declares both the array and length as \f(CWstatic\f1.
-.TP
-.B t
-Declares the length as \f(CWsize_t\f1.
-.TP
-.B u
-Declares the length as \f(CWunsigned\f1.
-.RE
-.TP
-.B ""
-If none of
-.BR i ,
-.BR l ,
-.BR t ,
-or
-.B u
-is specified,
-then the array length is not dumped.
-.TP
-.B \-d
+.BR \-\-decimal " | " \-d
 Prints offsets in decimal.
 For
+.BR \-\-reverse ,
+.BR \-\-revert ,
+or
 .BR \-r ,
 parses offset in decimal.
 .TP
-.BI \-e " n"
-Hightlights all occurrences of the unsigned integer
-.I n
-in little-endian byte order.
-.TP
-.B ""
-The number of bytes to search for is automatically calculated
-as the minimum number of bytes needed to represent
-.IR n .
-For example,
-if
-.I n
-were in the range 0\-255,
-the number of bytes would be 1;
-if
-.I n
-were in the range 256\-65535,
-the number of bytes would be 2;
-and so on.
-This can be overridden by either the
-.B \-b
-or
-.B \-B
-options.
-.TP
-.BI \-E " n"
-Same as the
-.B \-e
-option
-but in big-endian byte order.
-.TP
-.B \-h
+.BR \-\-hexadecimal " | " \-h
 Prints offsets in hexadecimal
 (the default).
 For
+.BR \-\-reverse ,
+.BR \-\-revert ,
+or
 .BR \-r ,
 parses offset in hexadecimal
 (also the default).
 .TP
-.B \-i
+.BR \-\-ignore-case " | " \-i
 Performs a case-insensitive search
 of the string specified by the
+.B \-\-string
+or
 .B \-s
-option.
+options.
 .TP
-\f3\-j\f1 \f2n\f1[\f2u\f1]
+.BI \-\-little-endian " n" "\f1 | \fP" "" \-e " n"
 Same as the
-.B +
-option.
-(If both options are specified,
-their values are added.)
+.B \-\-big-endian
+or
+.B \-E
+options
+but in little-endian byte order.
 .TP
-.B \-m
+.BR \-\-matching-only " | " \-m
 Only dumps rows having matches.
 .TP
-.BI \-N " n"
+.BI \-\-max-read " n" "\f1 | \fP" "" \-N " n"
 Reads at most
 .I n
 bytes.
 .TP
-.B \-o
+.BR \-\-octal " | " \-o
 Prints offsets in octal.
 For
+.BR \-\-reverse ,
+.BR \-\-revert ,
+or
 .BR \-r ,
 parses offset in octal.
 .TP
-.B \-p
+.BR \-\-printing-only " | " \-p
 Only dumps rows having printable characters.
 .TP
-.B \-r
+.BR \-\-reverse " | " \-\-revert " | " \-r
 Reverse dumps a previous dump from
 .B ad
 into a binary file.
 This allows a binary file to be dumped,
 edited using a text editor,
 and reverse dumped back into a binary file.
+(The
+.B \-\-revert
+spelling is for compatibility with
+.BR xxd (1).)
 Note that only the hexedecimal part of the dump is read;
 the ASCII part is ignored.
 .TP
@@ -347,31 +369,45 @@ The bytes to be patched are given by the offsets.
 Elided bytes,
 given by the separator of ``-'' characters
 when none of the
+.BR \-\-matching-only ,
 .BR \-m ,
+.BR \-\-printing-only ,
 .BR \-p ,
+.BR \-\-verbose ,
 or
 .B \-v
 options are used,
 are expanded by copying the preceding row
 as many times as necessary.
 .TP
-.BI \-s " s"
+\f3\-\-skip\f1 \f2n\f1[\f2u\f1] | \f3\-j\f1 \f2n\f1[\f2u\f1]
+Same as the
+.B +
+option.
+(If both options are specified,
+their values are added.)
+.TP
+.BI \-\-string " s " "\f1 | \fP" "" \-s " s"
 Searches for the string
 .I s
 and highlights matches.
 .TP
-.BI \-S " s"
+.BI \-\-string-ignore-case " s" "\f1 | \fP" "" \-S " s"
 Searches for the string
 .I s
 in a case-insensitive manner
 and highlights matches.
 (This option is the same as specifying both the
+.B \-\-string
+or
 .B \-s
 and
+.B \-\-ignore-case
+or
 .B \-i
 options.)
 .TP
-.B \-v
+.BR \-\-verbose " | " \-v
 Be verbose by dumping all bytes of data.
 Ordinarily,
 rows of bytes that match
@@ -386,8 +422,10 @@ in both decimal and hexadecimal.
 .TP
 .B ""
 However,
-if neither the
-.B \-m
+if none of the
+.BR \-\-matching-only ,
+.BR \-m ,
+.BR \-\-printing-only ,
 nor
 .B \-p
 options are given,
@@ -395,7 +433,7 @@ then the last row of data is dumped
 even if it matches the previous row
 to indicate the end of the file.
 .TP
-.B \-V
+.BR \-\-version " | " \-V
 Prints the version number to
 .I stderr
 and exits.
@@ -405,8 +443,11 @@ and exits.
 Success.
 .IP 1
 No matches if one of
+.BR \-\-little-endian ,
 .BR \-e ,
+.BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-string ,
 .BR \-s ,
 or
 .B \-S
@@ -428,8 +469,11 @@ Seek error.
 error.
 .IP 30
 Invalid dump format for
+.BR \-\-reverse ,
+.BR \-\-revert ,
+or
 .B \-r
-option.
+options.
 .PD
 .SH ENVIRONMENT
 .TP 4
