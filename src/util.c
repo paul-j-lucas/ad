@@ -185,7 +185,7 @@ void freelist_free() {
     free( p->ptr );
     free( p );
     p = next;
-  } // while
+  } // for
   free_head = NULL;
 }
 
@@ -244,10 +244,10 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 
     case ENDIAN_LITTLE:
       switch ( bytes ) {
-        case 1 : /* do nothing */     break;
-        case 2 : *n = swap_16( *n );  break;
-        case 4 : *n = swap_32( *n );  break;
-        case 8 : *n = swap_64( *n );  break;
+        case 1: /* do nothing */    break;
+        case 2: *n = swap_16( *n ); break;
+        case 4: *n = swap_32( *n ); break;
+        case 8: *n = swap_64( *n ); break;
       } // switch
       // no break;
 
@@ -260,10 +260,10 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 
     case ENDIAN_BIG:
       switch ( bytes ) {
-        case 1 : /* do nothing */     break;
-        case 2 : *n = swap_16( *n );  break;
-        case 4 : *n = swap_32( *n );  break;
-        case 8 : *n = swap_64( *n );  break;
+        case 1: /* do nothing */    break;
+        case 2: *n = swap_16( *n ); break;
+        case 4: *n = swap_32( *n ); break;
+        case 8: *n = swap_64( *n ); break;
       } // switch
       break;
 
