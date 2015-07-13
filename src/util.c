@@ -287,7 +287,7 @@ bool is_file( int fd ) {
 uint64_t parse_offset( char const *s ) {
   s = skip_ws( s );
   if ( !*s || *s == '-' )               // strtoull(3) wrongly allows '-'
-    return false;
+    goto error;
 
   char *end = NULL;
   errno = 0;

@@ -200,7 +200,8 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  *    for 512-byte blocks, kilobytes, and megabytes, respectively.
  *
  * @param s The NULL-terminated string to parse.
- * @return Returns the parsed offset.
+ * @return Returns the parsed offset only if \a s is a non-negative number or
+ * prints an error message and exits if there was an error.
  */
 uint64_t parse_offset( char const *s );
 
