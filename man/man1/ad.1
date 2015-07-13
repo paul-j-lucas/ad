@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "July 12, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 13, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -327,7 +327,7 @@ but in little-endian byte order.
 .BR \-\-matching-only " | " \-m
 Only dumps rows having matches.
 .TP
-.BI \-\-max-read \f1=\fPn "\f1 | \fP" "" \-N " n"
+.BI \-\-max-bytes \f1=\fPn "\f1 | \fP" "" \-N " n"
 Reads at most
 .I n
 bytes.
@@ -380,7 +380,7 @@ options are used,
 are expanded by copying the preceding row
 as many times as necessary.
 .TP
-\f3\-\-skip\f1=\f2n\f1[\f2u\f1] | \f3\-j\f1 \f2n\f1[\f2u\f1]
+\f3\-\-skip-bytes\f1=\f2n\f1[\f2u\f1] | \f3\-j\f1 \f2n\f1[\f2u\f1]
 Same as the
 .B +
 option.
