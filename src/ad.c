@@ -143,7 +143,7 @@ static void dump_file( void ) {
 
     fin_offset += ROW_SIZE;
   } // while
-  exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_OK );
+  exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_SUCCESS );
 }
 
 
@@ -191,7 +191,7 @@ static void dump_file_c( void ) {
       (opt_c_fmt & CFMT_LONG     ? "L" : "")
     );
 
-  exit( EXIT_OK );
+  exit( EXIT_SUCCESS );
 }
 
 #define SGR_START_IF(EXPR) \
@@ -440,7 +440,7 @@ static void reverse_dump_file( void ) {
     } // switch
 
   } // for
-  exit( EXIT_OK );
+  exit( EXIT_SUCCESS );
 
 backwards_offset:
   snprintf( msg_fmt, sizeof( msg_fmt ),
@@ -475,7 +475,7 @@ static void init( int argc, char *argv[] ) {
   }
 
   if ( !opt_max_bytes_to_read )
-    exit( search_len ? EXIT_NO_MATCHES : EXIT_OK );
+    exit( search_len ? EXIT_NO_MATCHES : EXIT_SUCCESS );
 
   elided_separator = freelist_add( MALLOC( char, OFFSET_WIDTH + 1 ) );
   memset( elided_separator, '-', OFFSET_WIDTH );

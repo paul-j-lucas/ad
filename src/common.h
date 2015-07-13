@@ -22,9 +22,11 @@
 #ifndef ad_common_H
 #define ad_common_H
 
+// standard
+#include <stdlib.h>                     /* for EXIT_SUCCESS */
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#define EXIT_OK             0           /* no errors */
 #define EXIT_NO_MATCHES     1           /* no errors, but no matches either */
 #define EXIT_USAGE          2           /* command-line usage error */
 #define EXIT_OUT_OF_MEMORY  3

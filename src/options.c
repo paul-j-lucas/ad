@@ -268,7 +268,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = freelist_add( check_strdup( optarg ) );    break;
       case 'v': opt_verbose = true;                                     break;
-      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );          exit( EXIT_OK );
+      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );     exit( EXIT_SUCCESS );
       default : usage();
     } // switch
   } // for
