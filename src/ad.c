@@ -146,7 +146,6 @@ static void dump_file( void ) {
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_SUCCESS );
 }
 
-
 static void dump_file_c( void ) {
   size_t      array_len = 0;
   char const *array_name = NULL;
