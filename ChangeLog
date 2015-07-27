@@ -1,3 +1,7 @@
+2015-07-27  Paul J. Lucas  <paul@lucasmail.org>
+
+   * src/match.c: Added missing \n to error messages.
+
 2015-07-12  Paul J. Lucas  <paul@lucasmail.org>
 
    * Added long option support.
