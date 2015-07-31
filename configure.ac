@@ -54,7 +54,7 @@ AC_TYPE_UINT64_T
 
 # Checks for library functions.
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([basename getopt strerror])
+AC_CHECK_FUNCS([basename strerror])
 
 # Miscellaneous.
 AC_LANG(C)
