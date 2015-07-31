@@ -53,13 +53,19 @@ typedef bool _Bool;
 # define __bool_true_false_are_defined 1
 #endif /* HAVE_STDBOOL_H */
 
+#ifdef HAVE_FSEEKO
+# define FSEEK_FN fseeko
+#else
+# define FSEEK_FN fseek
+#endif /* HAVE_FSEEKO */
+
 #define BLOCK(...)          do { __VA_ARGS__ } while (0)
 #define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EXIT_##STATUS ); )
 #define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
 #define STRERROR            strerror( errno )
 
 #define FSEEK(STREAM,OFFSET,WHENCE) \
-  BLOCK( if ( fseeko( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
+  BLOCK( if ( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( SEEK_ERROR ); )
 
 #define FSTAT(FD,STAT) \
   BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( STAT_ERROR ); )
@@ -87,6 +93,19 @@ extern char const  *me;                 // executable name from argv[0]
  * @return Returns \c true only if there is at least one printable character.
  */
 bool any_printable( char const *s, size_t s_len );
+
+/**
+ * Checks whether the given character is an ASCII printable character.
+ * (This function is needed because setlocale(3) affects what isprint(3)
+ * considers printable.)
+ *
+ * @param c The characther to check.
+ * @return Returns \c true only if \c is an ASCII printable character.
+ */
+inline bool ascii_is_print( char c ) {
+  unsigned char const u = c;
+  return u >= ' ' && u <= '~';
+}
 
 /**
  * Opens the given file and seeks to the given offset

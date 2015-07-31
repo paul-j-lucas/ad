@@ -24,6 +24,7 @@
 #include "common.h"
 #include "config.h"
 #include "options.h"
+#include "utf8.h"
 
 // system
 #include <assert.h>
@@ -58,6 +59,8 @@ offset_fmt_t  opt_offset_fmt = OFMT_HEX;
 bool          opt_only_matching;
 bool          opt_only_printing;
 bool          opt_reverse;
+bool          opt_utf8;
+char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
 bool          opt_verbose;
 
 char         *search_buf;
@@ -86,11 +89,13 @@ static struct option const long_opts[] = {
   { "revert",             no_argument,        NULL, 'r' },
   { "string",             required_argument,  NULL, 's' },
   { "string-ignore-case", required_argument,  NULL, 'S' },
+  { "utf8",               required_argument,  NULL, 'u' },
+  { "utf8-padding",       required_argument,  NULL, 'U' },
   { "verbose",            no_argument,        NULL, 'v' },
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const short_opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:vV";
+static char const short_opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:u:U:vV";
 
 static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
 
@@ -179,16 +184,47 @@ static c_fmt_t parse_c_fmt( char const *s ) {
 }
 
 /**
- * Parses a colorization "when" value.
+ * Parses a Unicode code-point value.
  *
- * @param when The NULL-terminated "when" string to parse.
- * @return Returns the associated \c colorization_t.
+ * @param s The NULL-terminated string to parse.  Allows for strings of the
+ * form:
+ *  + X: a single character.
+ *  + NN: two-or-more decimal digits.
+ *  + 0xN, u+N, or U+N: one-or-more hexadecimal digits.
+ * @return Returns the Unicode code-point value
  * or prints an error message and exits.
  */
-static colorization_t parse_colorization( char const *when ) {
+static uint32_t parse_codepoint( char const *s ) {
+  assert( s );
+  if ( s[0] && !s[1] )                  // assume single-char ASCII
+    return (uint32_t)s[0];
+  char const *const s0 = s;
+  if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
+    // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it
+    char *const t = freelist_add( check_strdup( s ) );
+    t[0] = '0', t[1] = 'x';
+    s = t;
+  }
+  uint64_t const codepoint = parse_ull( s );
+  if ( codepoint_is_valid( codepoint ) )
+    return (uint32_t)codepoint;
+  PMESSAGE_EXIT( USAGE,
+    "\"%s\": invalid Unicode code-point for --%s/-%c option\n",
+    s0, get_long_opt( 'U' ), 'U'
+  );
+}
+
+/**
+ * Parses a color "when" value.
+ *
+ * @param when The NULL-terminated "when" string to parse.
+ * @return Returns the associated \c color_when_t
+ * or prints an error message and exits.
+ */
+static color_when_t parse_color_when( char const *when ) {
   struct colorize_map {
     char const *map_when;
-    colorization_t map_colorization;
+    color_when_t map_colorization;
   };
   typedef struct colorize_map colorize_map_t;
 
@@ -203,6 +239,7 @@ static colorization_t parse_colorization( char const *when ) {
     { NULL,        COLOR_NEVER    }
   };
 
+  assert( when );
   char const *const when_lc = tolower_s( freelist_add( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
@@ -230,11 +267,63 @@ static colorization_t parse_colorization( char const *when ) {
   );
 }
 
+/**
+ * Parses a UTF-8 "when" value.
+ *
+ * @param when The NULL-terminated "when" string to parse.
+ * @return Returns the associated \c utf8_when_t
+ * or prints an error message and exits.
+ */
+static utf8_when_t parse_utf8_when( char const *when ) {
+  struct utf8_map {
+    char const *map_when;
+    utf8_when_t map_utf8;
+  };
+  typedef struct utf8_map utf8_map_t;
+
+  static utf8_map_t const utf8_map[] = {
+    { "always",   UTF8_ALWAYS   },
+    { "auto",     UTF8_ENCODING },
+    { "encoding", UTF8_ENCODING },      // explicit synonym for auto
+    { "never",    UTF8_NEVER    },
+    { NULL,       UTF8_NEVER    }
+  };
+
+  assert( when );
+  char const *const when_lc = tolower_s( freelist_add( check_strdup( when ) ) );
+  size_t names_buf_size = 1;            // for trailing NULL
+
+  for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
+    if ( strcmp( when_lc, m->map_when ) == 0 )
+      return m->map_utf8;
+    // sum sizes of names in case we need to construct an error message
+    names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
+  } // for
+
+  // name not found: construct valid name list for an error message
+  char *const names_buf = freelist_add( MALLOC( char, names_buf_size ) );
+  char *pnames = names_buf;
+  for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
+    if ( pnames > names_buf ) {
+      strcpy( pnames, ", " );
+      pnames += 2;
+    }
+    strcpy( pnames, m->map_when );
+    pnames += strlen( m->map_when );
+  } // for
+  PMESSAGE_EXIT( USAGE,
+    "\"%s\": invalid value for --%s/-%c option; must be one of:\n\t%s\n",
+    when, get_long_opt( 'u' ), 'u', names_buf
+  );
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 void parse_options( int argc, char *argv[] ) {
-  colorization_t  colorization = COLOR_NOT_FILE;
-  size_t          size_in_bits = 0, size_in_bytes = 0;
+  color_when_t  color_when = COLOR_NOT_FILE;
+  size_t        size_in_bits = 0, size_in_bytes = 0;
+  uint32_t      utf8_pad = 0;
+  utf8_when_t   utf8_when = UTF8_NEVER;
 
   // just so it's pretty-printable when debugging
   memset( opts_given, '.', sizeof( opts_given ) );
@@ -251,7 +340,7 @@ void parse_options( int argc, char *argv[] ) {
     switch ( opt ) {
       case 'b': size_in_bits = parse_ull( optarg );                     break;
       case 'B': size_in_bytes = parse_ull( optarg );                    break;
-      case 'c': colorization = parse_colorization( optarg );            break;
+      case 'c': color_when = parse_color_when( optarg );                break;
       case 'C': opt_c_fmt = parse_c_fmt( optarg );                      break;
       case 'd': opt_offset_fmt = OFMT_DEC;                              break;
       case 'e':
@@ -267,6 +356,8 @@ void parse_options( int argc, char *argv[] ) {
       case 'p': opt_only_printing = true;                               break;
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = freelist_add( check_strdup( optarg ) );    break;
+      case 'u': utf8_when = parse_utf8_when( optarg );                  break;
+      case 'U': utf8_pad = parse_codepoint( optarg );                   break;
       case 'v': opt_verbose = true;                                     break;
       case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );     exit( EXIT_SUCCESS );
       default : usage();
@@ -363,13 +454,20 @@ void parse_options( int argc, char *argv[] ) {
       usage();
   } // switch
 
-  colorize = should_colorize( colorization );
+  colorize = should_colorize( color_when );
   if ( colorize ) {
     if ( !(parse_grep_colors( getenv( "AD_COLORS"   ) )
         || parse_grep_colors( getenv( "GREP_COLORS" ) )
         || parse_grep_color ( getenv( "GREP_COLOR"  ) )) ) {
       parse_grep_colors( DEFAULT_COLORS );
     }
+  }
+
+  opt_utf8 = should_utf8( utf8_when );
+  if ( utf8_pad ) {
+    static char utf8_pad_buf[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+    utf8_encode( utf8_pad, utf8_pad_buf );
+    opt_utf8_pad = utf8_pad_buf;
   }
 }
 

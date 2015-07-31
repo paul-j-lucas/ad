@@ -114,7 +114,8 @@ static char const* skip_ws( char const *s ) {
 
 ////////// extern inline funtions /////////////////////////////////////////////
 
-extern size_t int_len( uint64_t n );
+extern inline bool    ascii_is_print( char c );
+extern inline size_t  int_len( uint64_t n );
 
 ////////// extern funtions ////////////////////////////////////////////////////
 
@@ -303,6 +304,7 @@ uint64_t parse_offset( char const *s ) {
     } // switch
   }
   return n;
+
 error:
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid offset\n", s );
 }
@@ -355,7 +357,7 @@ char const* printable_char( char c ) {
   } // switch
 
   static char buf[5];                   // \xHH + NULL
-  if ( isprint( c ) )
+  if ( ascii_is_print( c ) )
     buf[0] = c, buf[1] = '\0';
   else
     snprintf( buf, sizeof( buf ), "\\x%02X", (unsigned)c );

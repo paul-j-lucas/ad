@@ -24,11 +24,12 @@
 #include "config.h"
 #include "match.h"
 #include "options.h"
+#include "utf8.h"
 #include "util.h"
 
 // system
 #include <assert.h>
-#include <ctype.h>                      /* for isprint() */
+#include <ctype.h>
 #include <libgen.h>                     /* for basename() */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
@@ -51,6 +52,15 @@
 #define FWRITE(PTR,SIZE,N,STREAM) \
   BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( WRITE_ERROR ); )
 
+////////// local data structures //////////////////////////////////////////////
+
+struct row_buf {
+  uint8_t   bytes[ ROW_SIZE ];          // bytes in buffer, left-to-right
+  size_t    len;                        // length of buffer
+  uint16_t  match_bits;                 // which bytes match, right-to-left
+};
+typedef struct row_buf row_buf_t;
+
 ////////// local variables ////////////////////////////////////////////////////
 
 static char *elided_separator;          // separator used for elided rows
@@ -59,7 +69,7 @@ static char *elided_separator;          // separator used for elided rows
 
 static void         dump_file( void );
 static void         dump_file_c( void );
-static void         dump_row( char const*, uint8_t const*, size_t, uint16_t );
+static void         dump_row( char const*, row_buf_t const*, row_buf_t const* );
 static void         dump_row_c( char const*, uint8_t const*, size_t );
 static char const*  get_offset_fmt_english();
 static char const*  get_offset_fmt_format();
@@ -82,13 +92,6 @@ int main( int argc, char *argv[] ) {
 /////////// dumping ///////////////////////////////////////////////////////////
 
 static void dump_file( void ) {
-  struct row_buf {
-    uint8_t   bytes[ ROW_SIZE ];        // bytes in buffer, left-to-right
-    size_t    len;                      // length of buffer
-    uint16_t  match_bits;               // which bytes match, right-to-left
-  };
-  typedef struct row_buf row_buf_t;
-
   bool        any_matches = false;      // if matching, any data matched yet?
   row_buf_t   buf[2], *cur = buf, *next = buf + 1;
   bool        is_same_row = false;      // current row same as previous?
@@ -127,7 +130,7 @@ static void dump_file( void ) {
         (!opt_only_printing ||
           any_printable( (char*)cur->bytes, cur->len )) ) ) {
 
-      dump_row( off_fmt, cur->bytes, cur->len, cur->match_bits );
+      dump_row( off_fmt, cur, next );
       if ( cur->match_bits )
         any_matches = true;
     }
@@ -205,8 +208,34 @@ static void dump_file_c( void ) {
 #define SGR_ASCII_START_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
-static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
-                      uint16_t match_bits ) {
+static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
+                            row_buf_t const *next, uint8_t *utf8_char ) {
+  size_t const len = utf8_len( cur->bytes[ buf_pos ] );
+  if ( len > 1 ) {
+    row_buf_t const *row = cur;
+    *utf8_char++ = row->bytes[ buf_pos++ ];
+
+    for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
+      if ( buf_pos == cur->len ) {
+        if ( !next->len )
+          return 0;
+        buf_pos = 0;
+        row = next;
+      }
+
+      uint8_t const byte = row->bytes[ buf_pos ];
+      if ( !utf8_is_cont( (char)byte ) )
+        return 0;
+      *utf8_char++ = byte;
+    } // for
+
+    *utf8_char = '\0';
+  }
+  return len;
+}
+
+static void dump_row( char const *off_fmt, row_buf_t const *cur,
+                      row_buf_t const *next ) {
   static bool   any_dumped = false;     // any data dumped yet?
   static off_t  dumped_offset = -1;     // offset of most recently dumped row
 
@@ -244,8 +273,8 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
 
   // dump hex part
   prev_matches = false;
-  for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
-    bool const matches = match_bits & (1 << buf_pos);
+  for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
+    bool const matches = cur->match_bits & (1 << buf_pos);
     bool const matches_changed = matches != prev_matches;
 
     if ( buf_pos % HEX_COLUMN_WIDTH == 0 ) {
@@ -257,7 +286,7 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
       SGR_HEX_START_IF( matches_changed );
     else
       SGR_END_IF( matches_changed );
-    FPRINTF( "%02X", (unsigned)buf[ buf_pos ] );
+    FPRINTF( "%02X", (unsigned)cur->bytes[ buf_pos ] );
     prev_matches = matches;
   } // for
   SGR_END_IF( prev_matches );
@@ -272,16 +301,29 @@ static void dump_row( char const *off_fmt, uint8_t const *buf, size_t buf_len,
   // dump ASCII part
   FPRINTF( "  " );
   prev_matches = false;
-  for ( buf_pos = 0; buf_pos < buf_len; ++buf_pos ) {
-    bool const matches = match_bits & (1 << buf_pos);
+  for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
+    bool const matches = cur->match_bits & (1 << buf_pos);
     bool const matches_changed = matches != prev_matches;
-    uint8_t const byte = buf[ buf_pos ];
+    uint8_t const byte = cur->bytes[ buf_pos ];
 
     if ( matches )
       SGR_ASCII_START_IF( matches_changed );
     else
       SGR_END_IF( matches_changed );
-    FPUTC( isprint( byte ) ? byte : '.' );
+
+    static size_t utf8_count;
+    if ( utf8_count > 1 ) {
+      FPUTS( opt_utf8_pad );
+      --utf8_count;
+    } else {
+      uint8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+      utf8_count = opt_utf8 ? utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
+      if ( utf8_count > 1 )
+        FPUTS( (char*)utf8_char );
+      else
+        FPUTC( ascii_is_print( byte ) ? byte : '.' );
+    }
+
     prev_matches = matches;
   } // for
   SGR_END_IF( prev_matches );

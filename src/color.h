@@ -32,13 +32,13 @@
 /**
  * When to colorize output.
  */
-enum colorization {
+enum color_when {
   COLOR_NEVER,                          // never colorize
   COLOR_ISATTY,                         // colorize only if isatty(3)
   COLOR_NOT_FILE,                       // colorize only if !ISREG stdout
   COLOR_ALWAYS                          // always colorize
 };
-typedef enum colorization colorization_t;
+typedef enum color_when color_when_t;
 
 extern bool         colorize;           // dump in color?
 
@@ -73,10 +73,10 @@ bool parse_grep_colors( char const *capabilities );
 /**
  * Determines whether we should emit escape sequences for color.
  *
- * @param c The colorization value.
+ * @param c The color_when value.
  * @return Returns \c true only if we should do color.
  */
-bool should_colorize( colorization_t c );
+bool should_colorize( color_when_t c );
 
 ///////////////////////////////////////////////////////////////////////////////
 

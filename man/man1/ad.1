@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "July 13, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 31, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -407,6 +407,59 @@ or
 .B \-i
 options.)
 .TP
+.BI \-\-utf8 \f1=\fPw "\f1 | \fP" "" \-u " w"
+Sets when to dump in UTF-8 rather than ASCII to
+.I w
+(which is case-insensitive).
+The choices for
+.I w
+are:
+.RS
+.TP 8
+.B always
+Always dump in UTF-8.
+.TP
+.B auto
+Dumps in UTF-8 only if the terminal's encoding is UTF-8.
+.TP
+.B never
+Never dump in UTF-8.
+.RE
+.TP
+.B ""
+The default is
+.BR never .
+(Either
+.B always
+or
+.B auto
+should be used
+only if UTF-8 encoded text is expected.)
+.TP
+.B ""
+Because mutli-byte UTF-8 encoded characters
+are displayed as a single character,
+one to five padding characters
+(given by either the
+.B \-\-utf8-padding
+or
+.B \-U
+options)
+are printed to make up the difference.
+.TP
+.BR \-\-utf-padding \f1=\fPn "\f1 | \fP" "" \-U " n"
+Sets the UTF-8 padding character to
+.I n
+where
+.I n
+is its Unicode code-point.
+As additional special cases,
+the code-point can also be specified
+as either a single character
+or either a \f(CWU+\fP or \f(CWu+\fP
+followed by a hexedecimal integer.
+The default is the ``white square'' U+25A1.
+.TP
 .BR \-\-verbose " | " \-v
 Be verbose by dumping all bytes of data.
 Ordinarily,
@@ -589,7 +642,7 @@ The term ``color'' is used loosely.
 In addition to colors,
 other character attributes
 such as bold, underlined, reverse video, etc.,
-may be possible depending on the capabilities of your terminal.
+may be possible depending on the capabilities of the terminal.
 .TP
 .B GREP_COLOR
 This variable is used for compatibility with older versions of

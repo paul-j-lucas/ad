@@ -34,7 +34,9 @@ AC_PROG_INSTALL
 # Checks for header files.
 AC_CHECK_HEADERS([ctype.h])
 AC_CHECK_HEADERS([errno.h])
+AC_CHECK_HEADERS([langinfo.h])
 AC_CHECK_HEADERS([libgen.h])
+AC_CHECK_HEADERS([locale.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([unistd.h])
 AC_HEADER_ASSERT
@@ -53,8 +55,9 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 
 # Checks for library functions.
+AC_FUNC_FSEEKO
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([basename strerror])
+AC_CHECK_FUNCS([basename nl_langinfo setlocale strerror])
 
 # Miscellaneous.
 AC_LANG(C)

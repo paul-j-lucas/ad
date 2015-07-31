@@ -159,8 +159,8 @@ bool parse_grep_colors( char const *capabilities ) {
   return set_something;
 }
 
-bool should_colorize( colorization_t c ) {
-  switch ( c ) {                        // handle easy cases
+bool should_colorize( color_when_t when ) {
+  switch ( when ) {                     // handle easy cases
     case COLOR_ALWAYS: return true;
     case COLOR_NEVER : return false;
     default          : break;
@@ -174,10 +174,10 @@ bool should_colorize( colorization_t c ) {
     return false;
 
   int const fd_out = fileno( fout );
-  if ( c == COLOR_ISATTY )              // emulate grep's --color=auto
+  if ( when == COLOR_ISATTY )           // emulate grep's --color=auto
     return isatty( fd_out );
 
-  assert( c == COLOR_NOT_FILE );
+  assert( when == COLOR_NOT_FILE );
   //
   // Otherwise we want to do color only we're writing either to a TTY or to a
   // pipe (so the common case of piping to less(1) will still show color) but

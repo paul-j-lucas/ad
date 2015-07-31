@@ -80,6 +80,8 @@ extern offset_fmt_t   opt_offset_fmt;
 extern bool           opt_only_matching;
 extern bool           opt_only_printing;
 extern bool           opt_reverse;
+extern bool           opt_utf8;
+extern char const    *opt_utf8_pad;
 extern bool           opt_verbose;
 
 extern char          *search_buf;       // not NULL-terminated when numeric
