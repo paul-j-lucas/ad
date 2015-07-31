@@ -45,7 +45,11 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-Cu.test \
 	tests/ad-Cx.test \
 	tests/ad-E0x0102-m_02.test \
+	tests/ad-E0x010203-m_02.test \
 	tests/ad-E0x01020304-m_02.test \
+	tests/ad-E0x0102030405-m_02.test \
+	tests/ad-E0x010203040506-m_02.test \
+	tests/ad-E0x01020304050607-m_02.test \
 	tests/ad-E0x0102030405060708-m_02.test \
 	tests/ad-E1-sx_02.test \
 	tests/ad-N0.test \
@@ -69,7 +73,11 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-c_01.test \
 	tests/ad-d.test \
 	tests/ad-e0x0102-m_01.test \
+	tests/ad-e0x010203-m_01.test \
 	tests/ad-e0x01020304-m_01.test \
+	tests/ad-e0x0102030405-m_01.test \
+	tests/ad-e0x010203040506-m_01.test \
+	tests/ad-e0x01020304050607-m_01.test \
 	tests/ad-e0x0102030405060708-m_01.test \
 	tests/ad-e1-sx_01.test \
 	tests/ad-h.test \

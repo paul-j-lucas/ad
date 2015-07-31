@@ -135,7 +135,7 @@ bits
 (and therefore the number of bytes is set to
 .I n
 divided by 8).
-Must be one of 8, 16, 32, or 64.
+Must be one of 8, 16, 24, 32, 40, 48, 56, or 64.
 The default is automatically calculated
 based on the argument to one of the
 .BR \-\-little-endian ,
@@ -154,7 +154,7 @@ options
 but in
 .I n
 bytes.
-Must be one of 1, 2, 4, or 8.
+Must be in 1\-8.
 .TP
 .BI \-\-c-array \f1=\fPf "\f1 | \fP" "" \-C " f"
 Dumps bytes as C array and length variable definitions.
