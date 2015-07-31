@@ -171,7 +171,9 @@ char* identify( char const *s );
  * @param n The number to get the number of bytes for.
  * @return Returns the minimum number of bytes required to contain \a n.
  */
-size_t int_len( uint64_t n );
+inline size_t int_len( uint64_t n ) {
+  return n < 0x10000u ? (n < 0x100u ? 1 : 2) : (n < 0x100000000ul ? 4 : 8);
+}
 
 /**
  * Rearranges the bytes in the given \c uint64_t such that:

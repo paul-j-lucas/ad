@@ -112,6 +112,10 @@ static char const* skip_ws( char const *s ) {
   return s;
 }
 
+////////// extern inline funtions /////////////////////////////////////////////
+
+extern size_t int_len( uint64_t n );
+
 ////////// extern funtions ////////////////////////////////////////////////////
 
 bool any_printable( char const *s, size_t s_len ) {
@@ -228,12 +232,6 @@ char* identify( char const *s ) {
 
   *p = '\0';
   return ident;
-}
-
-size_t int_len( uint64_t n ) {
-  if ( n < 0x10000u )
-    return n < 0x100u ? 1 : 2;
-  return n < 0x100000000ul ? 4 : 8;
 }
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
