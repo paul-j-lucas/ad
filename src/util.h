@@ -188,11 +188,10 @@ char* identify( char const *s );
  * value.
  *
  * @param n The number to get the number of bytes for.
- * @return Returns the minimum number of bytes required to contain \a n.
+ * @return Returns the minimum number of bytes required to contain \a n
+ * in the range [1,8].
  */
-inline size_t int_len( uint64_t n ) {
-  return n < 0x10000u ? (n < 0x100u ? 1 : 2) : (n < 0x100000000ul ? 4 : 8);
-}
+size_t int_len( uint64_t n );
 
 /**
  * Rearranges the bytes in the given \c uint64_t such that:
@@ -208,7 +207,7 @@ inline size_t int_len( uint64_t n ) {
  *  + little, the result in memory would be 22-11-00-00-00-00-00-00.
  *
  * @param n A pointer to the \c uint64_t to rearrange.
- * @param bytes The number of bytes to use; must be 1, 2, 4, or 8.
+ * @param bytes The number of bytes to use; must be 1-8.
  * @param endian The endianness to use.
  */
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );

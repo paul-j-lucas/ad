@@ -114,8 +114,7 @@ static char const* skip_ws( char const *s ) {
 
 ////////// extern inline funtions /////////////////////////////////////////////
 
-extern inline bool    ascii_is_print( char c );
-extern inline size_t  int_len( uint64_t n );
+extern inline bool ascii_is_print( char c );
 
 ////////// extern funtions ////////////////////////////////////////////////////
 
@@ -235,8 +234,15 @@ char* identify( char const *s ) {
   return ident;
 }
 
+size_t int_len( uint64_t n ) {
+  if ( n <= 0xFFFFFFFFu )
+    return n <= 0xFFFFu ? (n <= 0xFFu ? 1 : 2) : (n <= 0xFFFFFFu ? 3 : 4);
+  return n <= 0xFFFFFFFFFFFFul ?
+    (n <= 0xFFFFFFFFFFul ? 5 : 6) : (n <= 0xFFFFFFFFFFFFFFul ? 7 : 8);
+}
+
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
-  assert( bytes == 1 || bytes == 2 || bytes == 4 || bytes == 8 );
+  assert( bytes <= 8 );
 
   switch ( endian ) {
 #ifdef WORDS_BIGENDIAN
@@ -245,7 +251,11 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
       switch ( bytes ) {
         case 1: /* do nothing */    break;
         case 2: *n = swap_16( *n ); break;
+        case 3: *n <<= 8;     // no break;
         case 4: *n = swap_32( *n ); break;
+        case 5: *n <<= 8;     // no break;
+        case 6: *n <<= 8;     // no break;
+        case 7: *n <<= 8;     // no break;
         case 8: *n = swap_64( *n ); break;
       } // switch
       // no break;
@@ -259,10 +269,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 
     case ENDIAN_BIG:
       switch ( bytes ) {
-        case 1: /* do nothing */    break;
-        case 2: *n = swap_16( *n ); break;
-        case 4: *n = swap_32( *n ); break;
-        case 8: *n = swap_64( *n ); break;
+        case 1: /* do nothing */               break;
+        case 2: *n = swap_16( *n );            break;
+        case 3: *n = swap_32( *n ); *n >>=  8; break;
+        case 4: *n = swap_32( *n );            break;
+        case 5: *n = swap_64( *n ); *n >>= 24; break;
+        case 6: *n = swap_64( *n ); *n >>= 16; break;
+        case 7: *n = swap_64( *n ); *n >>=  8; break;
+        case 8: *n = swap_64( *n );            break;
       } // switch
       break;
 

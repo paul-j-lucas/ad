@@ -387,36 +387,23 @@ void parse_options( int argc, char *argv[] ) {
   check_required( 'm', "eEsS" );
 
   if ( GAVE_OPTION( 'b' ) ) {
-    switch ( size_in_bits ) {
-      case  8:
-      case 16:
-      case 32:
-      case 64:
-        search_len = size_in_bits * 8;
-        break;
-      default:
-        PMESSAGE_EXIT( USAGE,
-          "\"%zu\": invalid value for -%c option; must be one of: 8, 16, 32, 64"
-          "\n", size_in_bits, 'b'
-        );
-    } // switch
+    if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
+      PMESSAGE_EXIT( USAGE,
+        "\"%zu\": invalid value for --%s/-%c option;"
+        " must be a multiple of 8 in 8-64\n",
+        size_in_bits, get_long_opt( 'b' ), 'b'
+      );
+    search_len = size_in_bits * 8;
     check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
   }
 
   if ( GAVE_OPTION( 'B' ) ) {
-    switch ( size_in_bytes ) {
-      case 1:
-      case 2:
-      case 4:
-      case 8:
-        search_len = size_in_bytes;
-        break;
-      default:
-        PMESSAGE_EXIT( USAGE,
-          "\"%zu\": invalid value for -%c option; must be one of: 1, 2, 4, 8"
-          "\n", size_in_bytes, 'B'
-        );
-    } // switch
+    if ( size_in_bytes > 8 )
+      PMESSAGE_EXIT( USAGE,
+        "\"%zu\": invalid value for --%s/-%c option; must be in 1-7\n",
+        size_in_bytes, get_long_opt( 'B' ), 'B'
+      );
+    search_len = size_in_bytes;
     check_number_size( size_in_bytes, int_len( search_number ), 'B' );
   }
 
@@ -478,8 +465,8 @@ void usage( void ) {
 "       %s -V\n"
 "\n"
 "options:\n"
-"       -b bits    Set number size in bits: 8, 16, 32, 64 [default: auto].\n"
-"       -B bytes   Set number size in bytes: 1, 2, 4, 8 [default: auto].\n"
+"       -b bits    Set number size in bits: 8-64 [default: auto].\n"
+"       -B bytes   Set number size in bytes: 1-8 [default: auto].\n"
 "       -c when    Specify when to colorize output [default: not_file].\n"
 "       -d         Print offset in decimal.\n"
 "       -e number  Search for little-endian number.\n"
