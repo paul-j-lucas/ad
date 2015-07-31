@@ -1,7 +1,7 @@
 # ad
 
 **ad** dumps the bytes of a file in hexadecimal
-and also prints their correcponding ASCII characters
+and also prints their correcponding ASCII or UTF-8 characters
 (for those bytes for which **isprint**(3) returns true)
 to standard output.
 For those bytes that are not printable,
