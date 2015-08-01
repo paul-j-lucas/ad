@@ -75,6 +75,8 @@ static char const*  get_offset_fmt_english();
 static char const*  get_offset_fmt_format();
 static void         init( int, char*[] );
 static void         reverse_dump_file( void );
+static size_t       utf8_collect( row_buf_t const*, size_t, row_buf_t const*,
+                                  uint8_t* );
 
 /////////// main //////////////////////////////////////////////////////////////
 
@@ -208,32 +210,6 @@ static void dump_file_c( void ) {
 #define SGR_ASCII_START_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
-static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
-                            row_buf_t const *next, uint8_t *utf8_char ) {
-  size_t const len = utf8_len( cur->bytes[ buf_pos ] );
-  if ( len > 1 ) {
-    row_buf_t const *row = cur;
-    *utf8_char++ = row->bytes[ buf_pos++ ];
-
-    for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
-      if ( buf_pos == cur->len ) {
-        if ( !next->len )
-          return 0;
-        buf_pos = 0;
-        row = next;
-      }
-
-      uint8_t const byte = row->bytes[ buf_pos ];
-      if ( !utf8_is_cont( (char)byte ) )
-        return 0;
-      *utf8_char++ = byte;
-    } // for
-
-    *utf8_char = '\0';
-  }
-  return len;
-}
-
 static void dump_row( char const *off_fmt, row_buf_t const *cur,
                       row_buf_t const *next ) {
   static bool   any_dumped = false;     // any data dumped yet?
@@ -345,6 +321,42 @@ static void dump_row_c( char const *off_fmt, uint8_t const *buf,
   while ( buf < end )
     FPRINTF( " 0x%02X,", (unsigned)*buf++ );
   FPUTC( '\n' );
+}
+
+/**
+ * Collects the bytes starting at \a buf_pos into a UTF-8 character.
+ *
+ * @param cur A pointer to the current row.
+ * @param buf_pos The position within the row.
+ * @param next A pointer to the next row.
+ * @param utf8_char A pointer to the buffer to receive the UTF-8 character.
+ * @return Returns the number of bytes comprising the UTF-8 character
+ * or 0 if the bytes do not comprise a valid UTF-8 character.
+ */
+static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
+                            row_buf_t const *next, uint8_t *utf8_char ) {
+  size_t const len = utf8_len( cur->bytes[ buf_pos ] );
+  if ( len > 1 ) {
+    row_buf_t const *row = cur;
+    *utf8_char++ = row->bytes[ buf_pos++ ];
+
+    for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
+      if ( buf_pos == row->len ) {      // ran off the end of the row
+        if ( row == next || !next->len )
+          return 0;                     // incomplete UTF-8 character
+        row = next;                     // continue on the next row
+        buf_pos = 0;
+      }
+
+      uint8_t const byte = row->bytes[ buf_pos ];
+      if ( !utf8_is_cont( (char)byte ) )
+        return 0;
+      *utf8_char++ = byte;
+    } // for
+
+    *utf8_char = '\0';
+  }
+  return len;
 }
 
 ////////// reverse ////////////////////////////////////////////////////////////
