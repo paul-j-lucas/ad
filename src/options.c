@@ -482,6 +482,8 @@ void usage( void ) {
 "       -r         Reverse from dump back to binary [default: no].\n"
 "       -s string  Search for string.\n"
 "       -S string  Search for case-insensitive string.\n"
+"       -u when    Specify when to dump in UTF-8 [default: never].\n"
+"       -U number  Set UTF-8 padding character [default: U+2581].\n"
 "       -v         Dump all data, including repeated rows [default: no].\n"
 "       -V         Print version and exit.\n"
     , me, me, me
