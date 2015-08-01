@@ -20,8 +20,9 @@
 */
 
 // local
-#include "common.h"
 #include "config.h"
+#define AD_UTIL_INLINE _GL_EXTERN_INLINE
+#include "common.h"
 #include "util.h"
 
 // system
@@ -111,10 +112,6 @@ static char const* skip_ws( char const *s ) {
     ++s;
   return s;
 }
-
-////////// extern inline funtions /////////////////////////////////////////////
-
-extern inline bool ascii_is_print( char c );
 
 ////////// extern funtions ////////////////////////////////////////////////////
 

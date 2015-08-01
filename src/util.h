@@ -34,6 +34,10 @@
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
 
+#ifndef AD_UTIL_INLINE
+# define AD_UTIL_INLINE _GL_INLINE
+#endif /* AD_UTIL_INLINE */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // define a "bool" type
@@ -102,7 +106,7 @@ bool any_printable( char const *s, size_t s_len );
  * @param c The characther to check.
  * @return Returns \c true only if \c is an ASCII printable character.
  */
-inline bool ascii_is_print( char c ) {
+AD_UTIL_INLINE bool ascii_is_print( char c ) {
   unsigned char const u = c;
   return u >= ' ' && u <= '~';
 }

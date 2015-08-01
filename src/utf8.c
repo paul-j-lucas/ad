@@ -21,6 +21,7 @@
 
 // local
 #include "config.h"
+#define AD_UTF8_INLINE _GL_EXTERN_INLINE
 #include "utf8.h"
 
 // standard
@@ -53,13 +54,6 @@ char const utf8_len_table[] = {
   /* E */ 3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
   /* F */ 4,4,4,4,4,4,4,4,5,5,5,5,6,6,0,0
 };
-
-////////// extern inline funtions /////////////////////////////////////////////
-
-extern inline bool   codepoint_is_valid( uint64_t codepoint );
-extern inline bool   utf8_is_start( char c );
-extern inline bool   utf8_is_cont( char c );
-extern inline size_t utf8_len( char start );
 
 ////////// extern functions ///////////////////////////////////////////////////
 

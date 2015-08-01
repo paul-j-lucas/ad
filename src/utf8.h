@@ -28,6 +28,10 @@
 // system
 #include <stdint.h>                     /* for uint32_t */
 
+#ifndef AD_UTF8_INLINE
+# define AD_UTF8_INLINE _GL_INLINE
+#endif /* AD_UTF8_INLINE */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -58,7 +62,7 @@ typedef enum utf8_when utf8_when_t;
  * @param codepoint The Unicode code-point to check.
  * @return Returns \c true only if \a codepoint is valid.
  */
-inline bool codepoint_is_valid( uint64_t codepoint ) {
+AD_UTF8_INLINE bool codepoint_is_valid( uint64_t codepoint ) {
   return                            codepoint <= 0x00D7FF
       ||  (codepoint >= 0x00E000 && codepoint <= 0x00FFFD)
       ||  (codepoint >= 0x010000 && codepoint <= 0x10FFFF);
@@ -92,7 +96,7 @@ size_t utf8_encode( uint32_t codepoint, char *utf8_buf );
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-inline bool utf8_is_start( char c ) {
+AD_UTF8_INLINE bool utf8_is_start( char c ) {
   unsigned char const u = c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
 }
@@ -106,7 +110,7 @@ inline bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-inline bool utf8_is_cont( char c ) {
+AD_UTF8_INLINE bool utf8_is_cont( char c ) {
   unsigned char const u = c;
   return u >= 0x80 && u < 0xC0;
 }
@@ -118,7 +122,7 @@ inline bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-inline size_t utf8_len( char start ) {
+AD_UTF8_INLINE size_t utf8_len( char start ) {
   extern char const utf8_len_table[];
   return (size_t)utf8_len_table[ (unsigned char)start ];
 }
