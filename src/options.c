@@ -385,6 +385,7 @@ void parse_options( int argc, char *argv[] ) {
   check_required( 'B', "eE" );
   check_required( 'i', "s" );
   check_required( 'm', "eEsS" );
+  check_required( 'U', "u" );
 
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
@@ -400,7 +401,7 @@ void parse_options( int argc, char *argv[] ) {
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
       PMESSAGE_EXIT( USAGE,
-        "\"%zu\": invalid value for --%s/-%c option; must be in 1-7\n",
+        "\"%zu\": invalid value for --%s/-%c option; must be in 1-8\n",
         size_in_bytes, get_long_opt( 'B' ), 'B'
       );
     search_len = size_in_bytes;
