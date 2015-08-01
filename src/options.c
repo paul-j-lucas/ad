@@ -145,8 +145,10 @@ static void check_required( char opt, char const *req_opts ) {
         return;
     bool const reqs_multiple = strlen( req_opts ) > 1;
     PMESSAGE_EXIT( USAGE,
-      "--%s/-%c: option requires one of -%s option%s to be given also\n",
-      get_long_opt( opt ), opt, req_opts, (reqs_multiple ? "s" : "")
+      "--%s/-%c: option requires %sthe -%s option%s to be given also\n",
+      get_long_opt( opt ), opt,
+      (reqs_multiple ? "one of " : ""),
+      req_opts, (reqs_multiple ? "s" : "")
     );
   }
 }
