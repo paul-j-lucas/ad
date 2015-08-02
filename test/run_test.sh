@@ -184,7 +184,7 @@ OUTPUT=/tmp/ad_test_output_$$_
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST $OUTPUT > $LOG_FILE 2>&1
+  if $TEST $OUTPUT $LOG_FILE
   then pass
   else fail
   fi
