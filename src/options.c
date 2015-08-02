@@ -489,6 +489,7 @@ void usage( void ) {
 "       -b bits    Set number size in bits: 8-64 [default: auto].\n"
 "       -B bytes   Set number size in bytes: 1-8 [default: auto].\n"
 "       -c when    Specify when to colorize output [default: not_file].\n"
+"       -C format  Dump bytes as a C array [default: no].\n"
 "       -d         Print offset in decimal.\n"
 "       -e number  Search for little-endian number.\n"
 "       -E number  Search for big-endian number.\n"
