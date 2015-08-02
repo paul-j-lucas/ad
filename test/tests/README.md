@@ -1,7 +1,7 @@
 Test File Format
 ================
 
-Test files must be a single line in the following format:
+Test files (ending in `.test`) must be a single line in the following format:
 
 *command* `|` *options* `|` *input* `|` *exit*
 
@@ -13,6 +13,14 @@ where:
 + *options* = command-line options or blank for none
 + *input*   = name of file to dump
 + *exit*    = expected exit status code
+
+Test scripts (ending in `.sh`) can alternatively be used
+when additional commands need to be executed as part of the test.
+Scripts are called with a single command-line argument
+that is the full path of the test output file.
+
+Test scripts must follow the normal Unix convention
+of exiting with zero on success and non-zero on failure.
 
 Note on Test Names
 ------------------
