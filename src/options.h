@@ -91,6 +91,10 @@ extern uint64_t       search_number;    // the number to search for
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+char const* get_offset_fmt_english();
+
+char const* get_offset_fmt_format();
+
 /**
  * Parses command-line options and sets global variables.
  *

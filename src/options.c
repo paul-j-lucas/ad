@@ -321,6 +321,24 @@ static utf8_when_t parse_utf8_when( char const *when ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+char const* get_offset_fmt_english() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "decimal";
+    case OFMT_HEX: return "hexadecimal";
+    case OFMT_OCT: return "octal";
+  } // switch
+  assert( false );
+}
+
+char const* get_offset_fmt_format() {
+  switch ( opt_offset_fmt ) {
+    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
+    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
+    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
+  } // switch
+  assert( false );
+}
+
 void parse_options( int argc, char *argv[] ) {
   color_when_t  color_when = COLOR_NOT_FILE;
   size_t        size_in_bits = 0, size_in_bytes = 0;
