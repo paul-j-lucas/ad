@@ -9,16 +9,18 @@ that is five fields separated by the pipe (`|`) character
 (with optional whitespace)
 where:
 
-+ *command* = command to execute (`ad`)
-+ *options* = command-line options or blank for none
-+ *input*   = name of file to dump
-+ *outfile* = `outfile` if an output file should be used; otherwise blank
-+ *exit*    = expected exit status code
+1. *command* = command to execute (`ad`)
+2. *options* = command-line options or blank for none
+3. *input*   = name of file to dump
+4. *outfile* = `outfile` if an output file should be used; otherwise blank
+5. *exit*    = expected exit status code
 
 Test scripts (ending in `.sh`) can alternatively be used
 when additional commands need to be executed as part of the test.
-Scripts are called with a single command-line argument
-that is the full path of the test output file.
+Scripts are called with two command-line arguments:
+
+1. The full path of the test output file.
+2. The full path of the log file.
 
 Test scripts must follow the normal Unix convention
 of exiting with zero on success and non-zero on failure.
