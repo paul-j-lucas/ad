@@ -28,15 +28,15 @@
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
 
-////////// local variables ////////////////////////////////////////////////////
-
-char *elided_separator;                 // separator used for elided rows
-
 ////////// extern functions ///////////////////////////////////////////////////
 
 extern void dump_file( void );
 extern void dump_file_c( void );
 extern void reverse_dump_file( void );
+
+////////// extern variables ///////////////////////////////////////////////////
+
+char *elided_separator;                 // separator used for elided rows
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -69,7 +69,7 @@ static void init( int argc, char *argv[] ) {
   elided_separator[ OFFSET_WIDTH ] = '\0';
 }
 
-/////////// extern functions //////////////////////////////////////////////////
+/////////// main //////////////////////////////////////////////////////////////
 
 int main( int argc, char *argv[] ) {
   init( argc, argv );

@@ -41,16 +41,7 @@
 #define FWRITE(PTR,SIZE,N,STREAM) \
   BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( WRITE_ERROR ); )
 
-/**
- * Converts a single hexadecimal digit [0-9A-Fa-f] to its integer value.
- *
- * @param C The hexadecimal character.
- * @return Returns \a C converted to an integer.
- * @hideinitializer
- */
-#define XTOI(C) (isdigit( C ) ? (C) - '0' : 0xA + toupper( C ) - 'A')
-
-////////// local data structures //////////////////////////////////////////////
+////////// local types ////////////////////////////////////////////////////////
 
 enum row_kind {
   ROW_BYTES,
@@ -58,9 +49,21 @@ enum row_kind {
 };
 typedef enum row_kind row_kind_t;
 
-////////// local variables ////////////////////////////////////////////////////
+////////// extern variables ///////////////////////////////////////////////////
 
 extern char *elided_separator;
+
+////////// inline functions ///////////////////////////////////////////////////
+
+/**
+ * Converts a single hexadecimal digit [0-9A-Fa-f] to its integer value.
+ *
+ * @param c The hexadecimal character.
+ * @return Returns \a c converted to an integer.
+ */
+static inline unsigned xtoi( char c ) {
+  return isdigit( c ) ? c - '0' : 0xA + toupper( c ) - 'A';
+}
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -115,7 +118,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
     // parse first nybble
     if ( !isxdigit( *p ) )
       goto expected_hex_digit;
-    uint8_t byte = XTOI( *p ) << 4;
+    uint8_t byte = xtoi( *p ) << 4;
 
     // parse second nybble
     ++col;
@@ -126,10 +129,11 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
       );
     if ( !isxdigit( *p ) )
       goto expected_hex_digit;
-    byte |= XTOI( *p );
+    byte |= xtoi( *p );
 
     bytes[ bytes_len++ ] = byte;
   } // while
+
   *pbytes_len = bytes_len;
   return ROW_BYTES;
 

@@ -305,7 +305,7 @@ void dump_file_c( void ) {
 
   do {
     uint8_t  bytes[ ROW_SIZE_C ];       // bytes in buffer
-    uint16_t match_bits;
+    uint16_t match_bits;                // not used when dumping in C
     row_len = match_row( bytes, ROW_SIZE_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
     fin_offset += row_len;
