@@ -3,15 +3,16 @@ Test File Format
 
 Test files (ending in `.test`) must be a single line in the following format:
 
-*command* `|` *options* `|` *input* `|` *exit*
+*command* `|` *options* `|` *input* `|` *outfile* `|` *exit*
 
-that is four fields separated by the pipe (`|`) character
+that is five fields separated by the pipe (`|`) character
 (with optional whitespace)
 where:
 
 + *command* = command to execute (`ad`)
 + *options* = command-line options or blank for none
 + *input*   = name of file to dump
++ *outfile* = `outfile` if an output file should be used; otherwise blank
 + *exit*    = expected exit status code
 
 Test scripts (ending in `.sh`) can alternatively be used

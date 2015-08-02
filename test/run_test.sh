@@ -191,20 +191,17 @@ run_sh_file() {
 }
 
 run_test_file() {
-  IFS='|' read COMMAND OPTIONS INPUT USE_OUTFILE EXPECTED_EXIT < $TEST
+  IFS='|' read COMMAND OPTIONS INPUT OUTFILE EXPECTED_EXIT < $TEST
   COMMAND=`echo $COMMAND`               # trims whitespace
   INPUT=$DATA_DIR/`echo $INPUT`         # trims whitespace
-  USE_OUTFILE=`echo $USE_OUTFILE`       # trims whitespace
+  OUTFILE=`echo $OUTFILE`               # trims whitespace
   EXPECTED_EXIT=`echo $EXPECTED_EXIT`   # trims whitespace
 
-  if [ "$USE_OUTFILE" ]
-  then
-    #echo $COMMAND "$OPTIONS" $INPUT $OUTPUT
-    $COMMAND $OPTIONS $INPUT $OUTPUT > $LOG_FILE 2>&1
-  else
-    #echo $COMMAND "$OPTIONS" $INPUT \> $OUTPUT
-    $COMMAND $OPTIONS $INPUT > $OUTPUT 2> $LOG_FILE
-  fi
+  > $LOG_FILE
+  case "$OUTFILE" in
+  outfile) $COMMAND $OPTIONS $INPUT $OUTPUT >> $LOG_FILE 2>&1 ;;
+        *) $COMMAND $OPTIONS $INPUT > $OUTPUT 2>> $LOG_FILE ;;
+  esac
   ACTUAL_EXIT=$?
 
   if [ $ACTUAL_EXIT -eq 0 ]
@@ -217,7 +214,7 @@ run_test_file() {
       then EXPECTED_OUTPUT=$EXPECTED_TXT
       else EXPECTED_OUTPUT=$EXPECTED_BIN
       fi
-      if diff $EXPECTED_OUTPUT $OUTPUT > $LOG_FILE
+      if diff $EXPECTED_OUTPUT $OUTPUT >> $LOG_FILE
       then pass; mv $OUTPUT $LOG_FILE
       else fail
       fi
