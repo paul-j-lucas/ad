@@ -393,11 +393,11 @@ void parse_options( int argc, char *argv[] ) {
 
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
-  check_mutually_exclusive( "C", "ceEimpsSv" );
+  check_mutually_exclusive( "C", "ceEimpsSuUv" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "m", "v" );
   check_mutually_exclusive( "p", "v" );
-  check_mutually_exclusive( "r", "bBeEimNpsSuUv" );
+  check_mutually_exclusive( "r", "bBcCeEimNpsSuUv" );
   check_mutually_exclusive( "V", "bBcCdeEhijmNoprsSuUv" );
 
   // check for options that require other options
