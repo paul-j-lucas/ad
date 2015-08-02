@@ -39,6 +39,8 @@ extern size_t       opt_max_bytes_to_read;
 extern char        *search_buf;
 extern size_t       search_len;
 
+unsigned long       total_matches;
+
 ////////// local variables ////////////////////////////////////////////////////
 
 static size_t       total_bytes_read;
@@ -144,6 +146,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           // and return the bytes individually to the caller denoting that all
           // matched.
           //
+          ++total_matches;
           buf_drain = buf_pos;
           GOTO_STATE( S_MATCHED );
         }

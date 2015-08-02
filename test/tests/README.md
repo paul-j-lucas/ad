@@ -12,7 +12,10 @@ where:
 1. *command* = command to execute (`ad`)
 2. *options* = command-line options or blank for none
 3. *input*   = name of file to dump
-4. *outfile* = `outfile` if an output file should be used; otherwise blank
+4. *outfile* = specifies how output should be handled; one of:
+    + *blank*: write to standard output
+    + `outfile`: write to an output file
+    + `stderr`: redirect standard error to standard output
 5. *exit*    = expected exit status code
 
 Test scripts (ending in `.sh`) can alternatively be used

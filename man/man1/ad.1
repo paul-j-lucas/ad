@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "July 31, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "August 1, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -297,6 +297,11 @@ or
 .BR \-r ,
 parses offset in decimal.
 .TP
+.B \-\-help
+Prints a help message
+to standard error
+and exits.
+.TP
 .BR \-\-hexadecimal " | " \-h
 Prints offsets in hexadecimal
 (the default).
@@ -407,6 +412,14 @@ or
 .B \-i
 options.)
 .TP
+.BR \-\-total-matches " | " \-t
+Additionally prints the total number of matches
+to standard error.
+.TP
+.BR \-\-total-matches-only " | " \-T
+Only prints the total number of matches
+to standard error.
+.TP
 .BI \-\-utf8 \f1=\fPw "\f1 | \fP" "" \-u " w"
 Sets when to dump in UTF-8 rather than ASCII to
 .I w
@@ -420,7 +433,7 @@ are:
 Always dump in UTF-8.
 .TP
 .B auto
-Dumps in UTF-8 only if the terminal's encoding is UTF-8.
+Dump in UTF-8 only if the terminal's encoding is UTF-8.
 .TP
 .B never
 Never dump in UTF-8.

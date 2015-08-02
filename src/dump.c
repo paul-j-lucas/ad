@@ -39,6 +39,9 @@
 
 #define HEX_COLUMN_WIDTH  2             /* bytes per hex column */
 
+#define FFLUSH(F) \
+  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+
 #define FPRINTF(...) \
   BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( WRITE_ERROR ); )
 
@@ -253,34 +256,44 @@ void dump_file( void ) {
     //
     next->len = cur->len < ROW_SIZE ? 0 :
       match_row( next->bytes, ROW_SIZE, &next->match_bits, kmps, match_buf );
-    bool const is_last_row = next->len == 0;
 
-    if ( cur->match_bits || (           // always dump matching rows
-        // Otherwise dump only if:
-        //  + for non-matching rows, if not -m
-        !opt_only_matching &&
-        //  + and if -v, not the same row, or is the last row
-        (opt_verbose || !is_same_row || is_last_row) &&
-        //  + and if not -p or any printable bytes
-        (!opt_only_printing ||
-          any_printable( (char*)cur->bytes, cur->len )) ) ) {
+    if ( opt_matches != MATCHES_ONLY ) {
+      bool const is_last_row = next->len == 0;
 
-      dump_row( off_fmt, cur, next );
-      if ( cur->match_bits )
-        any_matches = true;
+      if ( cur->match_bits || (         // always dump matching rows
+          // Otherwise dump only if:
+          //  + for non-matching rows, if not -m
+          !opt_only_matching &&
+          //  + and if -v, not the same row, or is the last row
+          (opt_verbose || !is_same_row || is_last_row) &&
+          //  + and if not -p or any printable bytes
+          (!opt_only_printing ||
+            any_printable( (char*)cur->bytes, cur->len )) ) ) {
+
+        dump_row( off_fmt, cur, next );
+      }
+
+      // Check if the next row is the same as the current row, but only if:
+      is_same_row =
+        !(opt_verbose || is_last_row) &&// + neither -v or is the last row
+        cur->len == next->len &&        // + the two row lengths are equal
+        memcmp( cur->bytes, next->bytes, ROW_SIZE ) == 0;
     }
 
-    // Check whether the next row is the same as the current row, but only if:
-    is_same_row =
-      !(opt_verbose || is_last_row) &&  // + neither -v or is the last row
-      cur->len == next->len &&          // + the two row lengths are equal
-      memcmp( cur->bytes, next->bytes, ROW_SIZE ) == 0;
+    if ( cur->match_bits )
+      any_matches = true;
 
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
     cur = next, next = temp;
 
     fin_offset += ROW_SIZE;
   } // while
+
+  if ( opt_matches ) {
+    FFLUSH( fout );
+    PRINT_ERR( "%lu\n", total_matches );
+  }
+
   exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_SUCCESS );
 }
 

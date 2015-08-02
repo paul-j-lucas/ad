@@ -55,6 +55,7 @@ char const   *me;
 bool          opt_case_insensitive;
 c_fmt_t       opt_c_fmt;
 size_t        opt_max_bytes_to_read = SIZE_MAX;
+matches_t     opt_matches;
 offset_fmt_t  opt_offset_fmt = OFMT_HEX;
 bool          opt_only_matching;
 bool          opt_only_printing;
@@ -78,6 +79,7 @@ static struct option const long_opts[] = {
   { "decimal",            no_argument,        NULL, 'd' },
   { "little-endian",      required_argument,  NULL, 'e' },
   { "big-endian",         required_argument,  NULL, 'E' },
+  { "help",               no_argument,        NULL, 'H' },
   { "hexadecimal",        no_argument,        NULL, 'h' },
   { "ignore-case",        no_argument,        NULL, 'i' },
   { "skip-bytes",         required_argument,  NULL, 'j' },
@@ -89,13 +91,15 @@ static struct option const long_opts[] = {
   { "revert",             no_argument,        NULL, 'r' },
   { "string",             required_argument,  NULL, 's' },
   { "string-ignore-case", required_argument,  NULL, 'S' },
+  { "total-matches",      no_argument,        NULL, 't' },
+  { "total-matches-only", no_argument,        NULL, 'T' },
   { "utf8",               required_argument,  NULL, 'u' },
   { "utf8-padding",       required_argument,  NULL, 'U' },
   { "verbose",            no_argument,        NULL, 'v' },
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const short_opts[] = "b:B:c:C:de:E:hij:mN:oprs:S:u:U:vV";
+static char const short_opts[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
 
 static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
 
@@ -117,7 +121,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
       if ( GAVE_OPTION( *opt ) ) {
         if ( ++gave_count > 1 )
           PMESSAGE_EXIT( USAGE,
-            "-%s and -%s options are mutually exclusive\n", opts1, opts2
+            "-%s and -%s are mutually exclusive\n", opts1, opts2
           );
         break;
       }
@@ -132,7 +136,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( USAGE,
-      "\"%zu\": value for --%s/-%c option is too small for \"%llu\""
+      "\"%zu\": value for --%s/-%c is too small for \"%llu\""
       "; must be at least %zu\n",
       given_size, get_long_opt( opt ), opt, search_number, actual_size
     );
@@ -145,7 +149,7 @@ static void check_required( char opt, char const *req_opts ) {
         return;
     bool const reqs_multiple = strlen( req_opts ) > 1;
     PMESSAGE_EXIT( USAGE,
-      "--%s/-%c: option requires %sthe -%s option%s to be given also\n",
+      "--%s/-%c requires %sthe -%s option%s to be given also\n",
       get_long_opt( opt ), opt,
       (reqs_multiple ? "one of " : ""),
       req_opts, (reqs_multiple ? "s" : "")
@@ -167,7 +171,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 'u': c_fmt |= CFMT_UNSIGNED; break;
         default :
           PMESSAGE_EXIT( USAGE,
-            "'%c': invalid C format for --%s/-%c option;"
+            "'%c': invalid C format for --%s/-%c;"
             " must be one of: [cilstu]\n",
             *p, get_long_opt( 'C' ), 'C'
           );
@@ -176,7 +180,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
     if ( (c_fmt & CFMT_SIZE_T) &&
         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
       PMESSAGE_EXIT( USAGE,
-        "\"%s\": invalid C format for --%s/-%c option:"
+        "\"%s\": invalid C format for --%s/-%c:"
         " 't' and [ilu] are mutually exclusive\n",
         s, get_long_opt( 'C' ), 'C'
       );
@@ -211,7 +215,7 @@ static uint32_t parse_codepoint( char const *s ) {
   if ( codepoint_is_valid( codepoint ) )
     return (uint32_t)codepoint;
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid Unicode code-point for --%s/-%c option\n",
+    "\"%s\": invalid Unicode code-point for --%s/-%c\n",
     s0, get_long_opt( 'U' ), 'U'
   );
 }
@@ -264,7 +268,7 @@ static color_when_t parse_color_when( char const *when ) {
     pnames += strlen( m->map_when );
   } // for
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid value for --%s/-%c option; must be one of:\n\t%s\n",
+    "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
     when, get_long_opt( 'c' ), 'c', names_buf
   );
 }
@@ -314,7 +318,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     pnames += strlen( m->map_when );
   } // for
   PMESSAGE_EXIT( USAGE,
-    "\"%s\": invalid value for --%s/-%c option; must be one of:\n\t%s\n",
+    "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
     when, get_long_opt( 'u' ), 'u', names_buf
   );
 }
@@ -376,6 +380,8 @@ void parse_options( int argc, char *argv[] ) {
       case 'p': opt_only_printing = true;                               break;
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = freelist_add( check_strdup( optarg ) );    break;
+      case 't': opt_matches = MATCHES_PRINT;                            break;
+      case 'T': opt_matches = MATCHES_ONLY;                             break;
       case 'u': utf8_when = parse_utf8_when( optarg );                  break;
       case 'U': utf8_pad = parse_codepoint( optarg );                   break;
       case 'v': opt_verbose = true;                                     break;
@@ -393,18 +399,21 @@ void parse_options( int argc, char *argv[] ) {
 
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
-  check_mutually_exclusive( "C", "ceEimpsSuUv" );
+  check_mutually_exclusive( "C", "ceEimpsStTuUv" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "m", "v" );
   check_mutually_exclusive( "p", "v" );
-  check_mutually_exclusive( "r", "bBcCeEimNpsSuUv" );
-  check_mutually_exclusive( "V", "bBcCdeEhijmNoprsSuUv" );
+  check_mutually_exclusive( "r", "bBcCeEimNpsStTuUv" );
+  check_mutually_exclusive( "t", "T" );
+  check_mutually_exclusive( "V", "bBcCdeEhijmNoprsStTuUv" );
 
   // check for options that require other options
   check_required( 'b', "eE" );
   check_required( 'B', "eE" );
   check_required( 'i', "s" );
   check_required( 'm', "eEsS" );
+  check_required( 't', "eEsS" );
+  check_required( 'T', "eEsS" );
   check_required( 'U', "u" );
 
   if ( GAVE_OPTION( 'b' ) ) {
@@ -484,6 +493,7 @@ void usage( void ) {
 "usage: %s [options] [+offset] [infile [outfile]]\n"
 "       %s -r [-dho] [infile [outfile]]\n"
 "       %s -V\n"
+"       %s --help\n"
 "\n"
 "options:\n"
 "       -b bits    Set number size in bits: 8-64 [default: auto].\n"
@@ -503,11 +513,13 @@ void usage( void ) {
 "       -r         Reverse from dump back to binary [default: no].\n"
 "       -s string  Search for string.\n"
 "       -S string  Search for case-insensitive string.\n"
+"       -t         Additionally print total number of matches [default: no].\n"
+"       -T         Only print total number of matches [default: no].\n"
 "       -u when    Specify when to dump in UTF-8 [default: never].\n"
 "       -U number  Set UTF-8 padding character [default: U+2581].\n"
 "       -v         Dump all data, including repeated rows [default: no].\n"
 "       -V         Print version and exit.\n"
-    , me, me, me
+    , me, me, me, me
   );
   exit( EXIT_USAGE );
 }

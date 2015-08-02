@@ -30,6 +30,8 @@
 
 typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
 
+extern unsigned long total_matches;
+
 /**
  * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
  * string searching algorithm.

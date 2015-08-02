@@ -55,6 +55,16 @@ typedef unsigned c_fmt_t;               // for the bitwise-or of c_fmt options
   ((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T))
 
 /**
+ * Whether to print the total number of matches.
+ */
+enum matches {
+  MATCHES_NONE,                         // don't print
+  MATCHES_PRINT,                        // additionally print
+  MATCHES_ONLY                          // only print
+};
+typedef enum matches matches_t;
+
+/**
  * Offset formats.
  */
 enum offset_fmt {
@@ -76,6 +86,7 @@ extern char const    *me;               // executable name from argv[0]
 extern bool           opt_case_insensitive;
 extern unsigned       opt_c_fmt;
 extern size_t         opt_max_bytes_to_read;
+extern matches_t      opt_matches;
 extern offset_fmt_t   opt_offset_fmt;
 extern bool           opt_only_matching;
 extern bool           opt_only_printing;

@@ -200,6 +200,7 @@ run_test_file() {
   > $LOG_FILE
   case "$OUTFILE" in
   outfile) $COMMAND $OPTIONS $INPUT $OUTPUT >> $LOG_FILE 2>&1 ;;
+   stderr) $COMMAND $OPTIONS $INPUT > $OUTPUT 2>&1 ;;
         *) $COMMAND $OPTIONS $INPUT > $OUTPUT 2>> $LOG_FILE ;;
   esac
   ACTUAL_EXIT=$?

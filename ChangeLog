@@ -1,3 +1,9 @@
+2015-08-02  Paul J. Lucas  <paul@lucasmail.org>
+
+   * ad.1, ad-t_01.test, ad-t_01.txt, ad-T_02.test, ad-T_02.txt, dump.c,
+     Makefile.am, match.c, match.h, options.c, options.h, README.md,
+     run_test.sh: Added -t and -T options.
+
 2015-07-31  Paul J. Lucas  <paul@lucasmail.org>
 
    * ad.1, ad.c, ad-u.test, ad-u.txt, ad-u-U0x2192.test, ad-u-U0x2192.txt,

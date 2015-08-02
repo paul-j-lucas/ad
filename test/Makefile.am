@@ -108,6 +108,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-r_08.test \
 	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
+	tests/ad-t_01.test \
+	tests/ad-T_02.test \
 	tests/ad-u-U0x2192.test \
 	tests/ad-u-U8594.test \
 	tests/ad-u-UU+2192.test \
