@@ -28,6 +28,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC_C99
 gl_EARLY
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 
 # Checks for libraries.
 
