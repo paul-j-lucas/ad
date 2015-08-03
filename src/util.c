@@ -25,7 +25,7 @@
 #include "common.h"
 #include "util.h"
 
-// system
+// standard
 #include <assert.h>
 #include <ctype.h>                      /* for isspace(), isprint() */
 #include <fcntl.h>                      /* for open() */

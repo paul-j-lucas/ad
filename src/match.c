@@ -24,7 +24,7 @@
 #include "match.h"
 #include "util.h"
 
-// system
+// standard
 #include <assert.h>
 #include <ctype.h>                      /* for tolower() */
 #include <stdlib.h>                     /* for exit() */

@@ -26,7 +26,7 @@
 #include "options.h"
 #include "utf8.h"
 
-// system
+// standard
 #include <assert.h>
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <ctype.h>                      /* for islower(), toupper() */

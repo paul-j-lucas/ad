@@ -25,7 +25,7 @@
 // local
 #include "util.h"                       /* for bool */
 
-// system
+// standard
 #include <stdint.h>                     /* for uint32_t */
 
 #ifndef AD_UTF8_INLINE

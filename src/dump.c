@@ -27,7 +27,7 @@
 #include "utf8.h"
 #include "util.h"
 
-// system
+// standard
 #include <assert.h>
 #include <ctype.h>
 #include <libgen.h>                     /* for basename() */

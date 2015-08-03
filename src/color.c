@@ -23,7 +23,7 @@
 #include "color.h"
 #include "options.h"
 
-// system
+// standard
 #include <assert.h>
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */

@@ -24,7 +24,7 @@
 #include "options.h"
 #include "util.h"
 
-// system
+// standard
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
 

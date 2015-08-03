@@ -22,7 +22,7 @@
 // local
 #include "util.h"                       /* for bool */
 
-// system
+// standard
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */

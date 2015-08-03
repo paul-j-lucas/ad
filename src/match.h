@@ -22,7 +22,7 @@
 #ifndef ad_match_H
 #define ad_match_H
 
-// system
+// standard
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint8_t, uint16_t */
 

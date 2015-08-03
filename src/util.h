@@ -26,7 +26,7 @@
 #include "common.h"
 #include "config.h"
 
-// system
+// standard
 #include <errno.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
