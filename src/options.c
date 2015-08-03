@@ -208,8 +208,7 @@ static uint32_t parse_codepoint( char const *s ) {
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
     // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it
     char *const t = freelist_add( check_strdup( s ) );
-    t[0] = '0', t[1] = 'x';
-    s = t;
+    s = memcpy( t, "0x", 2 );
   }
   uint64_t const codepoint = parse_ull( s );
   if ( codepoint_is_valid( codepoint ) )
@@ -371,6 +370,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'E': search_number = parse_ull( optarg );
                 search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
+   // case 'H': usage();                // default case handles this
       case 'S': search_buf = freelist_add( check_strdup( optarg ) );
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += parse_offset( optarg );                   break;
@@ -492,8 +492,8 @@ void usage( void ) {
   PRINT_ERR(
 "usage: %s [options] [+offset] [infile [outfile]]\n"
 "       %s -r [-dho] [infile [outfile]]\n"
+"       %s -H\n"
 "       %s -V\n"
-"       %s --help\n"
 "\n"
 "options:\n"
 "       -b bits    Set number size in bits: 8-64 [default: auto].\n"
@@ -504,6 +504,7 @@ void usage( void ) {
 "       -e number  Search for little-endian number.\n"
 "       -E number  Search for big-endian number.\n"
 "       -h         Print offset in hexadecimal [default].\n"
+"       -H         Print this help and exit [default: no].\n"
 "       -i         Search for case-insensitive string [default: no].\n"
 "       -j offset  Jump to offset before dumping [default: 0].\n"
 "       -m         Only dump rows having matches [default: no].\n"
@@ -517,7 +518,7 @@ void usage( void ) {
 "       -T         Only print total number of matches [default: no].\n"
 "       -u when    Specify when to dump in UTF-8 [default: never].\n"
 "       -U number  Set UTF-8 padding character [default: U+2581].\n"
-"       -v         Dump all data, including repeated rows [default: no].\n"
+"       -v         Dump all data including repeated rows [default: no].\n"
 "       -V         Print version and exit.\n"
     , me, me, me, me
   );

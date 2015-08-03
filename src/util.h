@@ -90,13 +90,13 @@ extern char const  *me;                 // executable name from argv[0]
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Checks whethere there is at least one printable character in \a s.
+ * Checks whethere there is at least one printable ASCII character in \a s.
  *
  * @param s The string to check.
  * @param s_len The number of characters to check.
  * @return Returns \c true only if there is at least one printable character.
  */
-bool any_printable( char const *s, size_t s_len );
+bool ascii_any_printable( char const *s, size_t s_len );
 
 /**
  * Checks whether the given character is an ASCII printable character.

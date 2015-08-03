@@ -268,7 +268,7 @@ void dump_file( void ) {
           (opt_verbose || !is_same_row || is_last_row) &&
           //  + and if not -p or any printable bytes
           (!opt_only_printing ||
-            any_printable( (char*)cur->bytes, cur->len )) ) ) {
+            ascii_any_printable( (char*)cur->bytes, cur->len )) ) ) {
 
         dump_row( off_fmt, cur, next );
       }

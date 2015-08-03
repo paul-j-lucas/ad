@@ -115,10 +115,10 @@ static char const* skip_ws( char const *s ) {
 
 ////////// extern funtions ////////////////////////////////////////////////////
 
-bool any_printable( char const *s, size_t s_len ) {
+bool ascii_any_printable( char const *s, size_t s_len ) {
   assert( s );
   for ( ; s_len; --s_len, ++s )
-    if ( isprint( *s ) )
+    if ( ascii_is_print( *s ) )
       return true;
   return false;
 }

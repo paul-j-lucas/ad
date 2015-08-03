@@ -1,3 +1,9 @@
+2015-08-03  Paul J. Lucas  <paul@lucasmail.org>
+
+   * ad.1, options.c: Added -H explicitly.
+
+   * dump.c, util.h, util.c: -p now checks for ASCII printable characters.
+
 2015-08-02  Paul J. Lucas  <paul@lucasmail.org>
 
    * ad.1, ad-t_01.test, ad-t_01.txt, ad-T_02.test, ad-T_02.txt, dump.c,
