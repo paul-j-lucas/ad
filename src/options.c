@@ -106,23 +106,29 @@ static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
 /////////// local functions ///////////////////////////////////////////////////
 
 static char const* get_long_opt( char short_opt ) {
-  for ( struct option const *p = long_opts; p->name; ++p )
-    if ( p->val == short_opt )
-      return p->name;
+  for ( struct option const *long_opt = long_opts; long_opt->name; ++long_opt )
+    if ( long_opt->val == short_opt )
+      return long_opt->name;
   assert( false );
 }
 
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   int gave_count = 0;
   char const *opt = opts1;
+  char gave_opt1;
 
   for ( int i = 0; i < 2; ++i ) {
     for ( ; *opt; ++opt ) {
       if ( GAVE_OPTION( *opt ) ) {
-        if ( ++gave_count > 1 )
+        if ( ++gave_count > 1 ) {
+          char const gave_opt2 = *opt;
           PMESSAGE_EXIT( USAGE,
-            "-%s and -%s are mutually exclusive\n", opts1, opts2
+            "--%s/-%c and --%s/-%c are mutually exclusive\n",
+            get_long_opt( gave_opt1 ), gave_opt1,
+            get_long_opt( gave_opt2 ), gave_opt2
           );
+        }
+        gave_opt1 = *opt;
         break;
       }
     } // for
