@@ -324,7 +324,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-char const* get_offset_fmt_english() {
+char const* get_offset_fmt_english( void ) {
   switch ( opt_offset_fmt ) {
     case OFMT_DEC: return "decimal";
     case OFMT_HEX: return "hexadecimal";
@@ -333,7 +333,7 @@ char const* get_offset_fmt_english() {
   assert( false );
 }
 
-char const* get_offset_fmt_format() {
+char const* get_offset_fmt_format( void ) {
   switch ( opt_offset_fmt ) {
     case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
     case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";

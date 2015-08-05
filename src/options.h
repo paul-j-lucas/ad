@@ -102,9 +102,19 @@ extern uint64_t       search_number;    // the number to search for
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-char const* get_offset_fmt_english();
+/**
+ * Gets the English word for the current offset format.
+ *
+ * @return Returns said word.
+ */
+char const* get_offset_fmt_english( void );
 
-char const* get_offset_fmt_format();
+/**
+ * Gets the printf(3) format for the current offset format.
+ *
+ * @return Returns said printf(3) format.
+ */
+char const* get_offset_fmt_format( void );
 
 /**
  * Parses command-line options and sets global variables.
