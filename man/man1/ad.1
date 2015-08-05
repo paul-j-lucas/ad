@@ -51,7 +51,7 @@ prints `\f(CW.\f1' (dot) instead.
 .PP
 .B ad
 is similar to
-.BR hextdump (1),
+.BR hexdump (1),
 .BR od (1),
 and
 .BR xxd (1)
@@ -500,8 +500,7 @@ even if it matches the previous row
 to indicate the end of the file.
 .TP
 .BR \-\-version " | " \-V
-Prints the version number to
-.I stderr
+Prints the version number to standard error
 and exits.
 .SH EXIT STATUS
 .PD 0
@@ -591,6 +590,7 @@ The default is \f(CW36\f1
 SGR for elided rows and byte counts.
 The default is \f(CW35\f1
 (magenta foreground over current terminal background).
+.TP
 .BI MA= SGR
 SGR for matched ASCII characters.
 The default is \f(CW41;1\f1
