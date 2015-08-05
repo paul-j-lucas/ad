@@ -28,8 +28,8 @@
 
 // standard
 #include <assert.h>
-#include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <ctype.h>                      /* for islower(), toupper() */
+#include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <libgen.h>                     /* for basename() */
 #include <stdlib.h>                     /* for exit() */
