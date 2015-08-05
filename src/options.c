@@ -411,7 +411,6 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "p", "v" );
   check_mutually_exclusive( "r", "bBcCeEimNpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "bBcCdeEhijmNoprsStTuUv" );
 
   // check for options that require other options
   check_required( 'b', "eE" );
