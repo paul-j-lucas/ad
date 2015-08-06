@@ -21,65 +21,59 @@
 AUTOMAKE_OPTIONS = 1.12			# needed for TEST_LOG_DRIVER
 
 TESTS =	tests/ad-no_options.test \
+	tests/ad-b1-e1.test \
 	tests/ad-B1-e257.test \
+	tests/ad-b16-B2.test \
 	tests/ad-B16-e1.test \
-	tests/ad-B2-E1-m_02.test \
+	tests/ad-b16-e65536.test \
+	tests/ad-b16.test \
 	tests/ad-B2-e1-m_01.test \
+	tests/ad-B2-E1-m_02.test \
 	tests/ad-B2-e65536.test \
 	tests/ad-B2.test \
-	tests/ad-B4-E1-m_02.test \
-	tests/ad-B4-E8-m-p.test \
+	tests/ad-b32-e4294967296.test \
 	tests/ad-B4-e1-m_01.test \
+	tests/ad-B4-E1-m_02.test \
 	tests/ad-B4-e4294967296.test \
+	tests/ad-B4-E8-m-p.test \
+	tests/ad-b8-e257.test \
 	tests/ad-Cc.test \
+	tests/ad-Ccc.test \
 	tests/ad-Cci.test \
 	tests/ad-Ci.test \
+	tests/ad-Cii.test \
 	tests/ad-Cilu.test \
 	tests/ad-Cis.test \
 	tests/ad-Cit.test \
 	tests/ad-Ciu.test \
 	tests/ad-Cl.test \
+	tests/ad-Cll.test \
 	tests/ad-Clt.test \
+	tests/ad-Css.test \
 	tests/ad-Ct.test \
+	tests/ad-Ctt.test \
 	tests/ad-Ctu.test \
 	tests/ad-Cu.test \
+	tests/ad-Cuu.test \
 	tests/ad-Cx.test \
-	tests/ad-E0x0102-m_02.test \
-	tests/ad-E0x010203-m_02.test \
-	tests/ad-E0x01020304-m_02.test \
-	tests/ad-E0x0102030405-m_02.test \
-	tests/ad-E0x010203040506-m_02.test \
-	tests/ad-E0x01020304050607-m_02.test \
-	tests/ad-E0x0102030405060708-m_02.test \
-	tests/ad-E1-sx_02.test \
-	tests/ad-N0.test \
-	tests/ad-N0x0.test \
-	tests/ad-N0x1.test \
-	tests/ad-N0xf.test \
-	tests/ad-N1.test \
-	tests/ad-N15.test \
-	tests/ad-N16.test \
-	tests/ad-N17.test \
-	tests/ad-N2.test \
-	tests/ad-N3.test \
-	tests/ad-N4.test \
-	tests/ad-S_02.test \
-	tests/ad-b1-e1.test \
-	tests/ad-b16-B2.test \
-	tests/ad-b16-e65536.test \
-	tests/ad-b16.test \
-	tests/ad-b32-e4294967296.test \
-	tests/ad-b8-e257.test \
 	tests/ad-c_01.test \
 	tests/ad-d.test \
 	tests/ad-e0x0102-m_01.test \
+	tests/ad-E0x0102-m_02.test \
 	tests/ad-e0x010203-m_01.test \
+	tests/ad-E0x010203-m_02.test \
 	tests/ad-e0x01020304-m_01.test \
+	tests/ad-E0x01020304-m_02.test \
 	tests/ad-e0x0102030405-m_01.test \
+	tests/ad-E0x0102030405-m_02.test \
 	tests/ad-e0x010203040506-m_01.test \
+	tests/ad-E0x010203040506-m_02.test \
 	tests/ad-e0x01020304050607-m_01.test \
+	tests/ad-E0x01020304050607-m_02.test \
 	tests/ad-e0x0102030405060708-m_01.test \
+	tests/ad-E0x0102030405060708-m_02.test \
 	tests/ad-e1-sx_01.test \
+	tests/ad-E1-sx_02.test \
 	tests/ad-h.test \
 	tests/ad-i-s_01.test \
 	tests/ad-i.test \
@@ -92,6 +86,17 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-m-s_01.test \
 	tests/ad-m-v.test \
 	tests/ad-m.test \
+	tests/ad-N0.test \
+	tests/ad-N0x0.test \
+	tests/ad-N0x1.test \
+	tests/ad-N0xf.test \
+	tests/ad-N1.test \
+	tests/ad-N15.test \
+	tests/ad-N16.test \
+	tests/ad-N17.test \
+	tests/ad-N2.test \
+	tests/ad-N3.test \
+	tests/ad-N4.test \
 	tests/ad-no_options-out.test \
 	tests/ad-o.test \
 	tests/ad-p-v.test \
@@ -106,8 +111,9 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-r_06.test \
 	tests/ad-r_07.test \
 	tests/ad-r_08.test \
-	tests/ad-s_01.test \
 	tests/ad-sxxx.test \
+	tests/ad-s_01.test \
+	tests/ad-S_02.test \
 	tests/ad-t_01.test \
 	tests/ad-T_02.test \
 	tests/ad-u-U0x2192.test \

@@ -1,3 +1,9 @@
+2015-08-06  Paul J. Lucas  <paul@lucasmail.org>
+
+   * options.c, Makefile.am, ad-Ccc.test, ad-Cii.test, ad-Cll.test,
+     ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for duplicate
+     -C format.
+
 2015-08-03  Paul J. Lucas  <paul@lucasmail.org>
 
    * ad.1, options.c: Added -H explicitly.

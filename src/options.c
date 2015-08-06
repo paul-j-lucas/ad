@@ -163,23 +163,27 @@ static void check_required( char opt, char const *req_opts ) {
   }
 }
 
+#define ADD_CFMT(F) \
+  BLOCK( if ( c_fmt & CFMT_##F ) goto dup_format; c_fmt |= CFMT_##F; )
+
 static c_fmt_t parse_c_fmt( char const *s ) {
   c_fmt_t c_fmt = CFMT_DEFAULT;
+  char const *fmt;
+
   if ( s && *s ) {
-    char const *p = s;
-    for ( ; *p; ++p ) {
-      switch ( *p ) {
-        case 'c': c_fmt |= CFMT_CONST;    break;
-        case 'i': c_fmt |= CFMT_INT;      break;
-        case 'l': c_fmt |= CFMT_LONG;     break;
-        case 's': c_fmt |= CFMT_STATIC;   break;
-        case 't': c_fmt |= CFMT_SIZE_T;   break;
-        case 'u': c_fmt |= CFMT_UNSIGNED; break;
+    for ( fmt = s; *fmt; ++fmt ) {
+      switch ( *fmt ) {
+        case 'c': ADD_CFMT( CONST );    break;
+        case 'i': ADD_CFMT( INT );      break;
+        case 'l': ADD_CFMT( LONG );     break;
+        case 's': ADD_CFMT( STATIC );   break;
+        case 't': ADD_CFMT( SIZE_T );   break;
+        case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
           PMESSAGE_EXIT( USAGE,
-            "'%c': invalid C format for --%s/-%c;"
+            "'%c': invalid C format for --%s/-%c:"
             " must be one of: [cilstu]\n",
-            *p, get_long_opt( 'C' ), 'C'
+            *fmt, get_long_opt( 'C' ), 'C'
           );
       } // switch
     } // for
@@ -193,7 +197,16 @@ static c_fmt_t parse_c_fmt( char const *s ) {
     }
   }
   return c_fmt;
+
+dup_format:
+  PMESSAGE_EXIT( USAGE,
+    "\"%s\": invalid C format for --%s/-%c:"
+    " '%c' specified more than once\n",
+    s, get_long_opt( 'C' ), 'C', *fmt
+  );
 }
+
+#undef ADD_CFMT
 
 /**
  * Parses a Unicode code-point value.
@@ -424,7 +437,7 @@ void parse_options( int argc, char *argv[] ) {
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
       PMESSAGE_EXIT( USAGE,
-        "\"%zu\": invalid value for --%s/-%c option;"
+        "\"%zu\": invalid value for --%s/-%c option:"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, get_long_opt( 'b' ), 'b'
       );
