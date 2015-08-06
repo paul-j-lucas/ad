@@ -80,7 +80,7 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   // maybe parse row separator for elided lines
   if ( strncmp( buf, elided_separator, ROW_SIZE ) == 0 ) {
     col += OFFSET_WIDTH;
-    if ( sscanf( buf + OFFSET_WIDTH, ": (%ld | 0x%*X)", pbytes_len ) != 1 )
+    if ( sscanf( buf + OFFSET_WIDTH, ": (%lu | 0x%*X)", pbytes_len ) != 1 )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
