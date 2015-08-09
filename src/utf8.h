@@ -40,7 +40,7 @@
 #define UTF8_LEN_MAX            6
 
 /**
- * The UTF-8 padding character ("white square": U+25A1).
+ * The default UTF-8 padding character ("white square": U+25A1).
  */
 #define UTF8_PAD_CHAR_DEFAULT   "\xE2\x96\xA1"
 
@@ -53,6 +53,8 @@ enum utf8_when {
   UTF8_ALWAYS                           // always dump in UTF-8
 };
 typedef enum utf8_when utf8_when_t;
+
+#define UTF8_WHEN_DEFAULT       UTF8_NEVER
 
 ///////////////////////////////////////////////////////////////////////////////
 

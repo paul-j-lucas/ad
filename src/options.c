@@ -142,8 +142,8 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( USAGE,
-      "\"%zu\": value for --%s/-%c is too small for \"%llu\""
-      "; must be at least %zu\n",
+      "\"%zu\": value for --%s/-%c is too small for \"%llu\";"
+      " must be at least %zu\n",
       given_size, get_long_opt( opt ), opt, search_number, actual_size
     );
 }
@@ -181,7 +181,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
           PMESSAGE_EXIT( USAGE,
-            "'%c': invalid C format for --%s/-%c:"
+            "'%c': invalid C format for --%s/-%c;"
             " must be one of: [cilstu]\n",
             *fmt, get_long_opt( 'C' ), 'C'
           );
@@ -362,10 +362,10 @@ char const* get_offset_fmt_format( void ) {
 }
 
 void parse_options( int argc, char *argv[] ) {
-  color_when_t  color_when = COLOR_NOT_FILE;
+  color_when_t  color_when = COLOR_WHEN_DEFAULT;
   size_t        size_in_bits = 0, size_in_bytes = 0;
   uint32_t      utf8_pad = 0;
-  utf8_when_t   utf8_when = UTF8_NEVER;
+  utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
   // just so it's pretty-printable when debugging
   memset( opts_given, '.', sizeof( opts_given ) );
@@ -437,7 +437,7 @@ void parse_options( int argc, char *argv[] ) {
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
       PMESSAGE_EXIT( USAGE,
-        "\"%zu\": invalid value for --%s/-%c option:"
+        "\"%zu\": invalid value for --%s/-%c;"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, get_long_opt( 'b' ), 'b'
       );
@@ -448,7 +448,7 @@ void parse_options( int argc, char *argv[] ) {
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
       PMESSAGE_EXIT( USAGE,
-        "\"%zu\": invalid value for --%s/-%c option; must be in 1-8\n",
+        "\"%zu\": invalid value for --%s/-%c; must be in 1-8\n",
         size_in_bytes, get_long_opt( 'B' ), 'B'
       );
     search_len = size_in_bytes;
@@ -494,7 +494,7 @@ void parse_options( int argc, char *argv[] ) {
     if ( !(parse_grep_colors( getenv( "AD_COLORS"   ) )
         || parse_grep_colors( getenv( "GREP_COLORS" ) )
         || parse_grep_color ( getenv( "GREP_COLOR"  ) )) ) {
-      parse_grep_colors( DEFAULT_COLORS );
+      parse_grep_colors( COLORS_DEFAULT );
     }
   }
 

@@ -27,8 +27,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define DEFAULT_COLORS  "bn=32:EC=35:MB=41;1:se=36"
-
 /**
  * When to colorize output.
  */
@@ -50,6 +48,9 @@ extern char const  *sgr_sep;            // separator color
 extern char const  *sgr_elided;         // elided byte count color
 extern char const  *sgr_hex_match;      // hex match color
 extern char const  *sgr_ascii_match;    // ASCII match color
+
+#define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
+#define COLORS_DEFAULT      "bn=32:EC=35:MB=41;1:se=36"
 
 ///////////////////////////////////////////////////////////////////////////////
 
