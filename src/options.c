@@ -101,10 +101,16 @@ static struct option const long_opts[] = {
 };
 static char const short_opts[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
 
-static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /* NULL */ ];
+static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /*NULL*/ ];
 
 /////////// local functions ///////////////////////////////////////////////////
 
+/**
+ * Gets the corresponding name of the long option for the given short option.
+ *
+ * @param short_opt The short option to get the corresponding long option for.
+ * @return Returns the said option.
+ */
 static char const* get_long_opt( char short_opt ) {
   for ( struct option const *long_opt = long_opts; long_opt->name; ++long_opt )
     if ( long_opt->val == short_opt )
@@ -112,6 +118,14 @@ static char const* get_long_opt( char short_opt ) {
   assert( false );
 }
 
+/**
+ * Checks that no options were given that are among the two given mutually
+ * exclusive sets of short options.
+ * Prints an error message and exits if any such options are found.
+ *
+ * @param opts1 The first set of short options.
+ * @param opts2 The second set of short options.
+ */
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   int gave_count = 0;
   char const *opt = opts1;
@@ -138,6 +152,14 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   } // for
 }
 
+/**
+ * Checks that the number of bits or bytes given for \c search_number are
+ * sufficient to contain it.
+ * Prints an error message and exits if \a given_size &lt; \a actual_size.
+ *
+ * @param given_size The given size in bits or bytes.
+ * @param actual_size The actual size of \c search_number in bits or bytes.
+ */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
@@ -148,6 +170,14 @@ static void check_number_size( size_t given_size, size_t actual_size,
     );
 }
 
+/**
+ * Checks that if \a opt was given, that at least one \a req_opts was also
+ * given.
+ * If not, prints an error message and exits.
+ *
+ * @param opt The short option.
+ * @param req_opts The set of required options for \a opt.
+ */
 static void check_required( char opt, char const *req_opts ) {
   if ( GAVE_OPTION( opt ) ) {
     for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
@@ -166,6 +196,14 @@ static void check_required( char opt, char const *req_opts ) {
 #define ADD_CFMT(F) \
   BLOCK( if ( c_fmt & CFMT_##F ) goto dup_format; c_fmt |= CFMT_##F; )
 
+/**
+ * Parses a C array format value.
+ *
+ * @param s The NULL-terminated string to parse.  It may contain exactly zero
+ * or one of each of the letters \c cilstu in any order.
+ * @return Returns the corresponding \c c_fmt_t
+ * or prints an error message and exits if \a s is invalid.
+ */
 static c_fmt_t parse_c_fmt( char const *s ) {
   c_fmt_t c_fmt = CFMT_DEFAULT;
   char const *fmt;
@@ -217,7 +255,7 @@ dup_format:
  *  + NN: two-or-more decimal digits.
  *  + 0xN, u+N, or U+N: one-or-more hexadecimal digits.
  * @return Returns the Unicode code-point value
- * or prints an error message and exits.
+ * or prints an error message and exits if \a s is invalid.
  */
 static uint32_t parse_codepoint( char const *s ) {
   assert( s );
@@ -243,7 +281,7 @@ static uint32_t parse_codepoint( char const *s ) {
  *
  * @param when The NULL-terminated "when" string to parse.
  * @return Returns the associated \c color_when_t
- * or prints an error message and exits.
+ * or prints an error message and exits if \a when is invalid.
  */
 static color_when_t parse_color_when( char const *when ) {
   struct colorize_map {
@@ -296,7 +334,7 @@ static color_when_t parse_color_when( char const *when ) {
  *
  * @param when The NULL-terminated "when" string to parse.
  * @return Returns the associated \c utf8_when_t
- * or prints an error message and exits.
+ * or prints an error message and exits if \a when is invalid.
  */
 static utf8_when_t parse_utf8_when( char const *when ) {
   struct utf8_map {

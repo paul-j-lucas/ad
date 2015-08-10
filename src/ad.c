@@ -25,6 +25,7 @@
 #include "util.h"
 
 // standard
+#include <assert.h>
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
 
@@ -40,6 +41,12 @@ char *elided_separator;                 // separator used for elided rows
 
 /////////// local functions ///////////////////////////////////////////////////
 
+/**
+ * Cleans up by doing:
+ *  + Freeing dynamicaly allocated memory.
+ *  + Closing files.
+ * This function is called via \c atexit().
+ */
 static void clean_up( void ) {
   freelist_free();
   if ( fin )
@@ -48,6 +55,12 @@ static void clean_up( void ) {
     fclose( fout );
 }
 
+/**
+ * Performs initialization by doing:
+ *  + Parsing command-line options.
+ *  + Initializing search variables.
+ *  + Initializing the elided separator.
+ */
 static void init( int argc, char *argv[] ) {
   atexit( clean_up );
   parse_options( argc, argv );
@@ -61,10 +74,10 @@ static void init( int argc, char *argv[] ) {
     search_buf = (char*)&search_number;
   }
 
-  if ( !opt_max_bytes_to_read )
+  if ( !opt_max_bytes_to_read )         // degenerate case
     exit( search_len ? EXIT_NO_MATCHES : EXIT_SUCCESS );
 
-  elided_separator = freelist_add( MALLOC( char, OFFSET_WIDTH + 1 ) );
+  elided_separator = freelist_add( MALLOC( char, OFFSET_WIDTH + 1 /*NULL*/ ) );
   memset( elided_separator, '-', OFFSET_WIDTH );
   elided_separator[ OFFSET_WIDTH ] = '\0';
 }
@@ -75,11 +88,12 @@ int main( int argc, char *argv[] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
-  if ( opt_c_fmt )
+  else if ( opt_c_fmt )
     dump_file_c();
   else
     dump_file();
-  // none of the above functions returns
+  assert( false );                      // none of the above functions returns
+  return 0;                             // suppress warning
 }
 
 ///////////////////////////////////////////////////////////////////////////////

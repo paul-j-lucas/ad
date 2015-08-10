@@ -67,7 +67,18 @@ static inline unsigned xtoi( char c ) {
 
 ////////// local functions ////////////////////////////////////////////////////
 
-static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
+/**
+ * Parses a row of dump data.
+ *
+ * @param line The line number within the file being parsed.
+ * @param buf A pointer to the buffer to parse.
+ * @param buf_len The number of characters pointer to by \a buf.
+ * @param poffset The parsed offset.
+ * @param bytes The parsed bytes.
+ * @param pbytes_len The length of \a bytes.
+ * @return Returns the kind of row that was parsed.
+ */
+static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
                              off_t *poffset, uint8_t *bytes,
                              size_t *pbytes_len ) {
   assert( buf );
@@ -88,9 +99,9 @@ static row_kind_t parse_row( size_t line, char *buf, size_t buf_len,
   }
 
   // parse offset
-  char *end = NULL;
+  char const *end = NULL;
   errno = 0;
-  *poffset = strtoull( buf, &end, opt_offset_fmt );
+  *poffset = strtoull( buf, (char**)&end, opt_offset_fmt );
   if ( errno || *end != ':' )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",

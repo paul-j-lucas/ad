@@ -209,7 +209,7 @@ char* identify( char const *s ) {
   assert( *s );
 
   size_t const s_len = strlen( s );
-  char *const ident = MALLOC( char, s_len + 1 /* NULL */ + 1 /* leading _ */ );
+  char *const ident = MALLOC( char, s_len + 1 /*NULL*/ + 1 /* leading _ */ );
   char *p = ident;
 
   // first char is a special case: must be alpha or _

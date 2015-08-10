@@ -114,6 +114,13 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
   return len;
 }
 
+/**
+ * Dumps a single row of bytes containing the offset and hex and ASCII parts.
+ *
+ * @param off_fmt The \c printf() format for the offset.
+ * @param cur A pointer to the current \a row_buf.
+ * @param next A pointer to the next \a row_buf.
+ */
 static void dump_row( char const *off_fmt, row_buf_t const *cur,
                       row_buf_t const *next ) {
   static bool   any_dumped = false;     // any data dumped yet?
@@ -213,6 +220,13 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   dumped_offset = fin_offset;
 }
 
+/**
+ * Dumps a single row of bytes as C array data.
+ *
+ * @param off_fmt The \c printf() format for the offset.
+ * @param buf A pointer to the current set of bytes to dump.
+ * @param buf_len The number of bytes pointed to by \a buf.
+ */
 static void dump_row_c( char const *off_fmt, uint8_t const *buf,
                         size_t buf_len ) {
   // print offset
