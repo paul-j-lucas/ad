@@ -108,7 +108,7 @@ static inline uint64_t swap_64( uint64_t n ) {
  */
 static char const* skip_ws( char const *s ) {
   assert( s );
-  while ( *s && isspace( *s ) )
+  while ( isspace( *s ) )
     ++s;
   return s;
 }
