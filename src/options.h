@@ -124,10 +124,5 @@ char const* get_offset_fmt_format( void );
  */
 void parse_options( int argc, char *argv[] );
 
-/**
- * Prints the usage message to standard error and exits.
- */
-void usage( void );
-
 ///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */

@@ -129,7 +129,7 @@ static char const* get_long_opt( char short_opt ) {
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   int gave_count = 0;
   char const *opt = opts1;
-  char gave_opt1;
+  char gave_opt1 = '\0';
 
   for ( int i = 0; i < 2; ++i ) {
     for ( ; *opt; ++opt ) {
@@ -379,6 +379,43 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   );
 }
 
+static void usage( void ) {
+  PRINT_ERR(
+"usage: %s [options] [+offset] [infile [outfile]]\n"
+"       %s -r [-dho] [infile [outfile]]\n"
+"       %s -H\n"
+"       %s -V\n"
+"\n"
+"options:\n"
+"       -b bits    Set number size in bits: 8-64 [default: auto].\n"
+"       -B bytes   Set number size in bytes: 1-8 [default: auto].\n"
+"       -c when    Specify when to colorize output [default: not_file].\n"
+"       -C format  Dump bytes as a C array [default: no].\n"
+"       -d         Print offsets in decimal.\n"
+"       -e number  Search for little-endian number.\n"
+"       -E number  Search for big-endian number.\n"
+"       -h         Print offsets in hexadecimal [default].\n"
+"       -H         Print this help and exit [default: no].\n"
+"       -i         Search for case-insensitive string [default: no].\n"
+"       -j offset  Jump to offset before dumping [default: 0].\n"
+"       -m         Only dump rows having matches [default: no].\n"
+"       -N bytes   Dump max number of bytes [default: unlimited].\n"
+"       -o         Print offsets in octal.\n"
+"       -p         Only dump rows having printable characters [default: no].\n"
+"       -r         Reverse from dump back to binary [default: no].\n"
+"       -s string  Search for string.\n"
+"       -S string  Search for case-insensitive string.\n"
+"       -t         Additionally print total number of matches [default: no].\n"
+"       -T         Only print total number of matches [default: no].\n"
+"       -u when    Specify when to dump in UTF-8 [default: never].\n"
+"       -U number  Set UTF-8 padding character [default: U+2581].\n"
+"       -v         Dump all data including repeated rows [default: no].\n"
+"       -V         Print version and exit.\n"
+    , me, me, me, me
+  );
+  exit( EXIT_USAGE );
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 char const* get_offset_fmt_english( void ) {
@@ -542,43 +579,6 @@ void parse_options( int argc, char *argv[] ) {
     utf8_encode( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }
-}
-
-void usage( void ) {
-  PRINT_ERR(
-"usage: %s [options] [+offset] [infile [outfile]]\n"
-"       %s -r [-dho] [infile [outfile]]\n"
-"       %s -H\n"
-"       %s -V\n"
-"\n"
-"options:\n"
-"       -b bits    Set number size in bits: 8-64 [default: auto].\n"
-"       -B bytes   Set number size in bytes: 1-8 [default: auto].\n"
-"       -c when    Specify when to colorize output [default: not_file].\n"
-"       -C format  Dump bytes as a C array [default: no].\n"
-"       -d         Print offsets in decimal.\n"
-"       -e number  Search for little-endian number.\n"
-"       -E number  Search for big-endian number.\n"
-"       -h         Print offsets in hexadecimal [default].\n"
-"       -H         Print this help and exit [default: no].\n"
-"       -i         Search for case-insensitive string [default: no].\n"
-"       -j offset  Jump to offset before dumping [default: 0].\n"
-"       -m         Only dump rows having matches [default: no].\n"
-"       -N bytes   Dump max number of bytes [default: unlimited].\n"
-"       -o         Print offsets in octal.\n"
-"       -p         Only dump rows having printable characters [default: no].\n"
-"       -r         Reverse from dump back to binary [default: no].\n"
-"       -s string  Search for string.\n"
-"       -S string  Search for case-insensitive string.\n"
-"       -t         Additionally print total number of matches [default: no].\n"
-"       -T         Only print total number of matches [default: no].\n"
-"       -u when    Specify when to dump in UTF-8 [default: never].\n"
-"       -U number  Set UTF-8 padding character [default: U+2581].\n"
-"       -v         Dump all data including repeated rows [default: no].\n"
-"       -V         Print version and exit.\n"
-    , me, me, me, me
-  );
-  exit( EXIT_USAGE );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
