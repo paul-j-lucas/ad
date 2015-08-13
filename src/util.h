@@ -85,8 +85,6 @@ typedef bool _Bool;
 #define STRINGIFY_HELPER(S) #S
 #define STRINGIFY(S)        STRINGIFY_HELPER(S)
 
-extern char const  *me;                 // executable name from argv[0]
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
