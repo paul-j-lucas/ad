@@ -19,6 +19,9 @@
 **      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#ifndef ad_options_H
+#define ad_options_H
+
 // local
 #include "util.h"                       /* for bool */
 
@@ -125,4 +128,6 @@ char const* get_offset_fmt_format( void );
 void parse_options( int argc, char *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#endif /* ad_options_H */
 /* vim:set et sw=2 ts=2: */
