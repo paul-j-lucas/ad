@@ -379,6 +379,9 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   );
 }
 
+/**
+ * Prints the usage message to standard error and exits.
+ */
 static void usage( void ) {
   PRINT_ERR(
 "usage: %s [options] [+offset] [infile [outfile]]\n"
