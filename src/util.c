@@ -129,6 +129,8 @@ bool ascii_any_printable( char const *s, size_t s_len ) {
 
 FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   assert( path );
+  assert( mode );
+
   FILE *const file = fopen( path, mode );
   if ( !file )
     PMESSAGE_EXIT( OPEN_ERROR,
@@ -177,6 +179,7 @@ char* check_strdup( char const *s ) {
 }
 
 void* freelist_add( void *p ) {
+  assert( p );
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
   new_node->ptr = p;
   new_node->next = free_head ? free_head : NULL;
@@ -195,6 +198,8 @@ void freelist_free() {
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
+  assert( file );
+
   char    buf[ 8192 ];
   size_t  bytes_to_read = sizeof( buf );
 
@@ -243,6 +248,7 @@ size_t int_len( uint64_t n ) {
 }
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
+  assert( n );
   assert( bytes <= 8 );
 
   switch ( endian ) {

@@ -127,6 +127,9 @@ static char const* get_long_opt( char short_opt ) {
  * @param opts2 The second set of short options.
  */
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
+  assert( opts1 );
+  assert( opts2 );
+
   int gave_count = 0;
   char const *opt = opts1;
   char gave_opt1 = '\0';
@@ -179,6 +182,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
  * @param req_opts The set of required options for \a opt.
  */
 static void check_required( char opt, char const *req_opts ) {
+  assert( req_opts );
   if ( GAVE_OPTION( opt ) ) {
     for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
       if ( GAVE_OPTION( *req_opt ) )
@@ -205,6 +209,8 @@ static void check_required( char opt, char const *req_opts ) {
  * or prints an error message and exits if \a s is invalid.
  */
 static c_fmt_t parse_c_fmt( char const *s ) {
+  assert( s );
+
   c_fmt_t c_fmt = CFMT_DEFAULT;
   char const *fmt;
 
@@ -259,8 +265,10 @@ dup_format:
  */
 static uint32_t parse_codepoint( char const *s ) {
   assert( s );
+
   if ( s[0] && !s[1] )                  // assume single-char ASCII
     return (uint32_t)s[0];
+
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
     // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it

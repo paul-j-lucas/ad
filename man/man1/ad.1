@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "August 3, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "August 16, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -30,7 +30,7 @@ ad \- ASCII dump
 .br
 .B ad
 .B \-\-reverse
-.RI [ -dho ]
+.RI [ \-dho ]
 .RI [ infile
 .RI [ outfile ]]
 .br
@@ -68,7 +68,7 @@ can also patch binary files.
 An option argument
 .I n
 means
-.IR "unsigned integer"
+.I "unsigned integer"
 and
 .I s
 means
@@ -460,7 +460,7 @@ or
 options)
 are printed to make up the difference.
 .TP
-.BR \-\-utf-padding \f1=\fPn "\f1 | \fP" "" \-U " n"
+.BR \-\-utf8-padding \f1=\fPn "\f1 | \fP" "" \-U " n"
 Sets the UTF-8 padding character to
 .I n
 where
@@ -522,7 +522,7 @@ Error in command-line.
 .IP 3
 Out of memory.
 .IP 10
-Error opening file.
+Open file error.
 .IP 11
 Read error.
 .IP 13

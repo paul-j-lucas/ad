@@ -25,6 +25,7 @@
 #include "utf8.h"
 
 // standard
+#include <assert.h>
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif /* HAVE_LANGINFO_H */
@@ -76,6 +77,8 @@ bool should_utf8( utf8_when_t when ) {
 }
 
 size_t utf8_encode( uint32_t codepoint, char *p ) {
+  assert( p );
+
   static unsigned const Mask1 = 0x80;
   static unsigned const Mask2 = 0xC0;
   static unsigned const Mask3 = 0xE0;

@@ -90,6 +90,10 @@ typedef struct row_buf row_buf_t;
  */
 static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
                             row_buf_t const *next, uint8_t *utf8_char ) {
+  assert( cur );
+  assert( next );
+  assert( utf8_char );
+
   size_t const len = utf8_len( cur->bytes[ buf_pos ] );
   if ( len > 1 ) {
     row_buf_t const *row = cur;
@@ -123,6 +127,10 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
  */
 static void dump_row( char const *off_fmt, row_buf_t const *cur,
                       row_buf_t const *next ) {
+  assert( off_fmt );
+  assert( cur );
+  assert( next );
+
   static bool   any_dumped = false;     // any data dumped yet?
   static off_t  dumped_offset = -1;     // offset of most recently dumped row
 
@@ -229,6 +237,9 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
  */
 static void dump_row_c( char const *off_fmt, uint8_t const *buf,
                         size_t buf_len ) {
+  assert( off_fmt );
+  assert( buf );
+
   // print offset
   FPUTS( "  /* " );
   FPRINTF( off_fmt, fin_offset );

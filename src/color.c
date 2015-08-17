@@ -91,6 +91,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  * @param sgr_color The SGR color to set or empty or NULL to unset.
  */
 static void cap_MB( char const *sgr_color ) {
+  assert( sgr_color );
   if ( !*sgr_color )                    // empty string -> NULL = unset
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
