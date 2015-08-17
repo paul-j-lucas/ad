@@ -1,76 +1,77 @@
-2015-08-06  Paul J. Lucas  <paul@lucasmail.org>
+2015-08-06  Paul J. Lucas <paul@lucasmail.org>
 
-   * options.c, Makefile.am, ad-Ccc.test, ad-Cii.test, ad-Cll.test,
-     ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for duplicate
-     -C format.
+    * options.c, Makefile.am, ad-Ccc.test, ad-Cii.test, ad-Cll.test,
+      ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for duplicate -C
+      format.
 
-2015-08-03  Paul J. Lucas  <paul@lucasmail.org>
+2015-08-03  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.1, options.c: Added -H explicitly.
+    * ad.1, options.c: Added -H explicitly.
 
-   * dump.c, util.h, util.c: -p now checks for ASCII printable characters.
+    * dump.c, util.h, util.c: -p now checks for ASCII printable characters.
 
-2015-08-02  Paul J. Lucas  <paul@lucasmail.org>
+2015-08-02  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.1, ad-t_01.test, ad-t_01.txt, ad-T_02.test, ad-T_02.txt, dump.c,
-     Makefile.am, match.c, match.h, options.c, options.h, README.md,
-     run_test.sh: Added -t and -T options.
+    * ad.1, ad-t_01.test, ad-t_01.txt, ad-T_02.test, ad-T_02.txt, dump.c,
+      Makefile.am, match.c, match.h, options.c, options.h, README.md,
+      run_test.sh: Added -t and -T options.
 
-2015-07-31  Paul J. Lucas  <paul@lucasmail.org>
+2015-07-31  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.1, ad.c, ad-u.test, ad-u.txt, ad-u-U0x2192.test, ad-u-U0x2192.txt,
-     ad-u-U8594.test, ad-u-U8594.txt, ad-u-UU+2192.test, ad-u-UU+2192.txt,
-     color.c, color.h, configure.ac, Makefile.am, options.c, options.h,
-     utf8.bin, utf8.c, utf8.h, util.c, util.h: 1. Added support for UTF-8.
-     2. Now allow -B option to have any value in 1-8.
+    * ad.1, ad.c, ad-u.test, ad-u.txt, ad-u-U0x2192.test, ad-u-U0x2192.txt,
+      ad-u-U8594.test, ad-u-U8594.txt, ad-u-UU+2192.test, ad-u-UU+2192.txt,
+      color.c, color.h, configure.ac, Makefile.am, options.c, options.h,
+      utf8.bin, utf8.c, utf8.h, util.c, util.h:
+      1. Added support for UTF-8.
+      2. Now allow -B option to have any value in 1-8.
 
-2015-07-27  Paul J. Lucas  <paul@lucasmail.org>
+2015-07-27  Paul J. Lucas <paul@lucasmail.org>
 
-   * src/match.c: Added missing \n to error messages.
+    * src/match.c: Added missing \n to error messages.
 
-2015-07-12  Paul J. Lucas  <paul@lucasmail.org>
+2015-07-12  Paul J. Lucas <paul@lucasmail.org>
 
-   * Added long option support.
+    * Added long option support.
 
-2015-07-08  Paul J. Lucas  <paul@lucasmail.org>
+2015-07-08  Paul J. Lucas <paul@lucasmail.org>
 
-   * Added -C option.
+    * Added -C option.
 
-2015-07-03  Paul J. Lucas  <paul@lucasmail.org>
+2015-07-03  Paul J. Lucas <paul@lucasmail.org>
 
-   * Added more tests.
+    * Added more tests.
 
-   * ad.1: Added description of -r option.
+    * ad.1: Added description of -r option.
 
-2015-06-25  Paul J. Lucas  <paul@lucasmail.org>
+2015-06-25  Paul J. Lucas <paul@lucasmail.org>
 
-   * Added -r option.
+    * Added -r option.
 
-2015-05-30  Paul J. Lucas  <paul@lucasmail.org>
+2015-05-30  Paul J. Lucas <paul@lucasmail.org>
 
-   * Added tests.
-   * Offsets can now be specified in hexadecimal.
-   * Offsets can optionally have a unit suffix.
-   * Major clean-up.
+    * Added tests.
+    * Offsets can now be specified in hexadecimal.
+    * Offsets can optionally have a unit suffix.
+    * Major clean-up.
 
-2015-05-25  Paul J. Lucas  <paul@lucasmail.org>
+2015-05-25  Paul J. Lucas <paul@lucasmail.org>
 
-   * Initial version in git; now using configure.
+    * Initial version in git; now using configure.
 
-2010-11-07  Paul J. Lucas  <paul@lucasmail.org>
+2010-11-07  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Removed K&R C-isms.
+    * ad.c: Removed K&R C-isms.
 
-2006-07-07  Paul J. Lucas  <paul@lucasmail.org>
+2006-07-07  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Updated version to 1.1.1.
+    * ad.c: Updated version to 1.1.1.
 
-   * ad.c: 1. Changed tabs to spaces. 2. Fixed little endian bug.
+    * ad.c: 1. Changed tabs to spaces. 2. Fixed little endian bug.
 
-   * ad.1: Updated e-mail address.
+    * ad.1: Updated e-mail address.
 
-   * Makefile: Added "distclean" target.
+    * Makefile: Added "distclean" target.
 
-2001-03-27  Paul J. Lucas  <paul@lucasmail.org>
+2001-03-27  Paul J. Lucas <paul@lucasmail.org>
 
-   * Initial versions in CVS.
+    * Initial versions in CVS.
