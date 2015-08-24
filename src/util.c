@@ -53,10 +53,6 @@ extern char const *me;
 
 static free_node_t *free_head;          // linked list of stuff to free
 
-/////////// local functions ///////////////////////////////////////////////////
-
-static char const*  skip_ws( char const *s );
-
 /////////// inline functions //////////////////////////////////////////////////
 
 /**
