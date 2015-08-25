@@ -1,77 +1,478 @@
+2015-08-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, test/Makefile.am, ad-v_01.txt, ad-V_02.test, ad-v_01.test: Now
+     ensuring exclusivity of -V option.
+
+2015-08-17  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: Removed unnecessary skip_ws() forward declaration.
+
+2015-08-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * ChangeLog: Cleaned-up formatting.
+   * ad.1: Rewrote open file error.
+   * ad.1: Fixed "unsigned integer" formatting.
+   * ad.1: Added \ before -dho.
+
+2015-08-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c, dump.c, match.c, options.c, utf8.c, util.c: Added more assert()
+     calls.
+
+2015-08-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Fixed --utf8-padding spelling.
+
+2015-08-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Added comment.
+   * options.h: Added missing #include guard.
+   * util.c, util.h: Fixed redundant declaraion of "me".
+   * configure.ac: Fixed extra compiler flags.
+   * gnulib-comp.m4, snippet/arg-nonnull.h, snippet/c++defs.h,
+     snippet/warn-on-use.h: Fixed build.
+   * gnulib-comp.m4: Put gnulib-comp.m4 back.
+
+2015-08-09  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, options.h: Made usage() static; fixed gave_opt1 warning.
+   * reverse.c: Fixed comment.
+   * dump.c: Fixed copyright years.
+   * util.c: Simplified skip_ws().
+   * ad.c, dump.c, options.c, reverse.c, util.c: Added comments; clean-up.
+
 2015-08-06  Paul J. Lucas <paul@lucasmail.org>
 
-    * options.c, Makefile.am, ad-Ccc.test, ad-Cii.test, ad-Cll.test,
-      ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for duplicate -C
-      format.
+   * color.h, options.c, utf8.h: Now consitent about "; must"; added
+     COLOR_WHEN_DEFAULT and UTF8_WHEN_DEFAULT.
+   * ChangeLog, options.c, test/Makefile.am, ad-Ccc.test, ad-Cii.test,
+     ad-Cll.test, ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for
+     duplicate flags to -C option.
+   * reverse.c: s/ld/lu/
+
+2015-08-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * COPYING: s/Copying/COPYING/
+   * options.c: Sorted #include.
+   * options.c: Removed unnecessary mutually exclusive check for 'V'.
+   * options.c: Improved mutually exclusive error message.
+   * options.c, options.h: Added missing "void".
+   * src/.gitignore: s/ad.dSYM/*.dSYM/
+
+2015-08-04  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: s/offset/offsets/
 
 2015-08-03  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.1, options.c: Added -H explicitly.
-
-    * dump.c, util.h, util.c: -p now checks for ASCII printable characters.
+   * ad.1: Fixed errors.
+   * ad.1: Fixed "offsets."
 
 2015-08-02  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.1, ad-t_01.test, ad-t_01.txt, ad-T_02.test, ad-T_02.txt, dump.c,
-      Makefile.am, match.c, match.h, options.c, options.h, README.md,
-      run_test.sh: Added -t and -T options.
+   * ChangeLog, ad.1, dump.c, options.c, util.c, util.h: Added -H explicitly;
+     -p now checks for ASCII printable characters.
+   * ad.c, color.c, dump.c, match.c, match.h, options.c, options.h, reverse.c,
+     utf8.h, util.c, util.h: Comment change.
+   * ad-T_02.test, ad-t_01.test: Removed -x.
+   * ChangeLog, ad.1, dump.c, match.c, match.h, options.c, options.h,
+     test/Makefile.am, ad-T_02.txt, ad-t_01.txt, run_test.sh,
+     test/tests/README.md, ad-T_02.test, ad-t_01.test: Added -t and -T options.
+   * test/tests/README.md: Changed doc. to rwo command-line arguments.
+   * run_test.sh, test/tests/README.md, ad-no_options-out.test: Changed the way
+     the outfile test option works.
+   * run_test.sh, ad-r_02.sh: Shell tests now take LOG_FILE as 2nd argument.
+   * options.c: Added more mutually-exclusive option checking.
+   * options.c: Added missing -C option to help.
+   * ad.c, dump.c, reverse.c: Clean-up.
+
+2015-08-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * test/tests/README.md: Added info about test scripts.
+   * src/Makefile.am, ad.c, common.h, dump.c, options.c, options.h, reverse.c:
+     Split out dump() and reverse_dump() functions.
+   * configure.ac: Added AC_PROG_RANLIB.
+   * options.c: Fixed English in error "requires" error message.
+   * test/Makefile.am, ad-U_01.test: New test.
+   * options.c: Added missing description of -u and -U to help.
+   * options.c: Added mutually exclusive check for -[uU] and some others.
+   * options.c: Added missing check for -u when -U; fixed 1-8 in error message.
 
 2015-07-31  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.1, ad.c, ad-u.test, ad-u.txt, ad-u-U0x2192.test, ad-u-U0x2192.txt,
-      ad-u-U8594.test, ad-u-U8594.txt, ad-u-UU+2192.test, ad-u-UU+2192.txt,
-      color.c, color.h, configure.ac, Makefile.am, options.c, options.h,
-      utf8.bin, utf8.c, utf8.h, util.c, util.h:
-      1. Added support for UTF-8.
-      2. Now allow -B option to have any value in 1-8.
+   * ad.c: Fixed potential infinite loop with an incomplete UTF-8 character at
+     the end of a file.
+   * utf8.c, utf8.h, util.c, util.h: Fixed "inline" on older compilers.
+   * ChangeLog, ad.1, test/Makefile.am, ad-E0x010203-m_02.txt,
+     ad-E0x0102030405-m_02.txt, ad-E0x010203040506-m_02.txt,
+     ad-E0x01020304050607-m_02.txt, ad-e0x010203-m_01.txt,
+     ad-e0x0102030405-m_01.txt, ad-e0x010203040506-m_01.txt,
+     ad-e0x01020304050607-m_01.txt, ad-E0x010203-m_02.test,
+     ad-E0x0102030405-m_02.test, ad-E0x010203040506-m_02.test,
+     ad-E0x01020304050607-m_02.test, ad-e0x010203-m_01.test,
+     ad-e0x0102030405-m_01.test, ad-e0x010203040506-m_01.test,
+     ad-e0x01020304050607-m_01.test: Now allowing -B option to be any value in
+     1-8.
+   * options.c, util.c, util.h: Now allowing -B option to be any value in 1-8.
+   * README.md, ad.1: Added "or UTF-8."
+
+2015-07-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * ChangeLog, configure.ac, ad.1, src/Makefile.am, ad.c, color.c, color.h,
+     options.c, options.h, utf8.c, utf8.h, util.c, util.h, test/Makefile.am,
+     utf8.bin, ad-u-U0x2192.txt, ad-u-U8594.txt, ad-u-UU+2192.txt, ad-u.txt,
+     ad-u-U0x2192.test, ad-u-U8594.test, ad-u-UU+2192.test, ad-u.test: Added
+     UTF-8 support.
+   * util.c, util.h: Moved int_len() inline.
 
 2015-07-27  Paul J. Lucas <paul@lucasmail.org>
 
-    * src/match.c: Added missing \n to error messages.
+   * configure.ac: No longer need getopt here.
+
+2015-07-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * ChangeLog, match.c: Added missing \n to error messages.
+
+2015-07-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Cosmetic change.
+   * lib/.gitignore: Removed getopt.h, stddef.h, and unistd.h from source
+     control.
+   * lib/Makefile.am, getopt.c, getopt.in.h, getopt1.c, getopt_int.h,
+     gettext.h, stddef.in.h, sys_types.in.h, unistd.c, unistd.in.h,
+     m4/.gitignore, 00gnulib.m4, absolute-header.m4, extensions.m4,
+     extern-inline.m4, getopt.m4, gnulib-cache.m4, gnulib-common.m4,
+     gnulib-tool.m4, include_next.m4, nocrash.m4, off_t.m4, onceonly.m4,
+     ssize_t.m4, stddef_h.m4, sys_types_h.m4, unistd_h.m4, warn-on-use.m4,
+     wchar_t.m4: Updated to getopt-gnu.
+   * ad.c, common.h, options.c: Now using EXIT_SUCCESS.
+   * ad.1, options.c: s/skip/skip-bytes/; s/max-read/max-bytes/
+   * match.c, match.h: get_byte() and unget_byte() no longer take FILE*.
+   * util.c: Cosmetic change.
 
 2015-07-12  Paul J. Lucas <paul@lucasmail.org>
 
-    * Added long option support.
+   * util.c, util.h: Fixed parse_offset() return value.
+   * ad.1: Put '=' into long options.
+
+2015-07-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * .gitignore, ChangeLog, Makefile.am, configure.ac, lib/.gitignore,
+     arg-nonnull.h, c++defs.h, getopt.h, stddef.h, sys/types.h, unistd.h,
+     warn-on-use.h, m4/.gitignore, gnulib-cache.m4, ad.1, snippet/.gitignore,
+     src/.gitignore, src/Makefile.am, options.c, options.h: Added long option
+     support.
+
+2015-07-09  Paul J. Lucas <paul@lucasmail.org>
+
+   * README.md, ad.1: Added mention of patching binary files.
 
 2015-07-08  Paul J. Lucas <paul@lucasmail.org>
 
-    * Added -C option.
+   * ad.1, ad.c, options.c, options.h, ad-Cc.txt: Now no dumping array length
+     unless requested.
+   * ad.1, options.c, test/Makefile.am, ad-Cc.txt, ad-Cci.txt, ad-Ci.txt,
+     ad-Cilu.txt, ad-Cis.txt, ad-Ciu.txt, ad-Cl.txt, ad-Ct.txt, ad-Cu.txt,
+     ad-Cc.test, ad-Cci.test, ad-Ci.test, ad-Cilu.test, ad-Cis.test,
+     ad-Cit.test, ad-Ciu.test, ad-Cl.test, ad-Clt.test, ad-Ct.test,
+     ad-Ctu.test, ad-Cu.test, ad-Cx.test: Added -C tests; added default array
+     type.
+   * match.c: Added assert().
+   * match.h: Replaced TODO.
+   * ChangeLog, ad.1, ad.c, color.c, common.h, match.c, match.h, options.c,
+     options.h, util.c, util.h: Initial -C option.
+   * color.c: Added comment.
+
+2015-07-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: Fixed memset() size.
+   * ad.c: Moved variable declarations.
 
 2015-07-03  Paul J. Lucas <paul@lucasmail.org>
 
-    * Added more tests.
+   * ad.c: 1. Removed 'l' in sscanf() to suppress warning. 2. Now using
+     fgetln() since some systems don't have getline(). 3. Now incrementing
+     fout_offset in ROW_ELIDED case. 3. Added assert( false ) to suppress
+     warnings.
+   * src/.gitignore: Added ad.dSYM.
+   * ChangeLog, ad.1: Finished -r documentation.
 
-    * ad.1: Added description of -r option.
+2015-06-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * test/Makefile.am, separator.bin, ad-r_08.txt, ad-r_08.test: Added
+     separator test.
+   * ad.c: Added FWRITE().
+   * ad.c: Fixed typo.
+   * ad.c: Cosmetic change.
+   * ad.c: Moved get_offset_fmt_*() functions.
+   * ad.c: Now using get_offset_fmt_format() in dump_file().
+   * ad.c, match.c, util.c, util.h: s/ERROR_STR/STRERROR/g
+   * options.c: Clean-up.
+   * test/tests/README.md: Cosmetic change.
+   * run_test.sh: Now redirecting .sh test stderr to log file.
+
+2015-06-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * test/Makefile.am, gap_patch-1.txt, ad-r_07.bin, ad-r_07.test: New test.
+   * ad.c, util.c, util.h, test/Makefile.am, bad_patch-1.txt, bad_patch-2.txt,
+     bad_patch-3.txt, bad_patch-4.txt, bad_patch-5.txt, ad-r_02.test,
+     ad-r_03.test, ad-r_04.test, ad-r_05.test, ad-r_06.test: More -r tests.
+
+2015-06-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * README.md, bad_patch-1.txt: Fixed typo.
+   * ad.1, common.h, util.c: s/READ_OPEN/OPEN_ERROR/
+   * ad.dSYM/Contents/Info.plist, match.c: Now allocating kmps +1 to eliminate
+     special case handling.
+   * match.c: Fixed kmp_init() array overflow bug.
+   * options.c, util.c, util.h: Split open_file() into check_open() and
+     check_fopen().
 
 2015-06-25  Paul J. Lucas <paul@lucasmail.org>
 
-    * Added -r option.
+   * ad.1, ad.c, test/Makefile.am, patch-1.txt, patch-2.txt, ad-r_02.bin,
+     run_test.sh, ad-r_02.sh: Intermediate check-in.
+   * ad.c: Clean-up.
+   * ad.c: Fixed overuse of row_len.
+   * ad.c, test/.gitattributes, test/Makefile.am, endian.txt,
+     ad-no_options-out.txt, ad-r_01.bin, run_test.sh, ad-B1-e257.test,
+     ad-B16-e1.test, ad-B2-E1-m_02.test, ad-B2-e1-m_01.test, ad-B2-e65536.test,
+     ad-B2.test, ad-B4-E1-m_02.test, ad-B4-E8-m-p.test, ad-B4-e1-m_01.test,
+     ad-B4-e4294967296.test, ad-E0x0102-m_02.test, ad-E0x01020304-m_02.test,
+     ad-E0x0102030405060708-m_02.test, ad-E1-sx_02.test, ad-N0.test,
+     ad-N0x0.test, ad-N0x1.test, ad-N0xf.test, ad-N1.test, ad-N15.test,
+     ad-N16.test, ad-N17.test, ad-N2.test, ad-N3.test, ad-N4.test,
+     ad-S_02.test, ad-b1-e1.test, ad-b16-B2.test, ad-b16-e65536.test,
+     ad-b16.test, ad-b32-e4294967296.test, ad-b8-B1.test, ad-b8-e257.test,
+     ad-c_01.test, ad-d.test, ad-e0x0102-m_01.test, ad-e0x01020304-m_01.test,
+     ad-e0x0102030405060708-m_01.test, ad-e1-sx_01.test, ad-h.test,
+     ad-i-s_01.test, ad-i.test, ad-j1k-N16.test, ad-j1x.test, ad-j2-N14.test,
+     ad-j2-N17.test, ad-last_row_01.test, ad-last_row_02.test, ad-m-s_01.test,
+     ad-m-v.test, ad-m.test, ad-no_options-out.test, ad-no_options.test,
+     ad-o.test, ad-p-v.test, ad-p_01.test, ad-p_02.test, ad-r_01.test,
+     ad-s_01.test, ad-sxxx.test, ad-v.test: Reworked test suite to allow for
+     output files and binary expected results.
+
+2015-06-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, common.h, match.c, options.c, options.h, util.c, util.h,
+     test/Makefile.am: Preliminary working -r.
+   * util.c, util.h: Added FSEEK().
+   * ad.c: Added comment.
+
+2015-06-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: No need for memset() for padding.
+   * configure.ac, ad.1, ad.c, options.c, options.h, util.c, util.h: Fixed on
+     big-endian machines.
+   * README.md: Updated.
+   * ad.1: Added mention of xxd(1).
+   * ad.c: Moved dumping code into separate function.
+   * match.c: Clean-up + comments.
+   * src/Makefile.am, ad.c, color.c, color.h, common.h, match.c, match.h,
+     options.c, options.h, util.c, util.h: Split ad.c into more .c files.
+   * ad.1: Added explanation of last row dumping.
+
+2015-06-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Clean-up.
+   * util.c, util.h: Clean-up.
+   * ad.c: Dumping condition simplification; more comments.
+   * common.h, util.c, util.h: Trailing whitespace removal.
+
+2015-06-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, ad.c, test/Makefile.am, ad-v.txt, ad+16+X.test, ad-b8-B1.test,
+     ad-c_01.test, ad-j1x.test, ad-m-v.test, ad-m.test, ad-p-v.test,
+     ad-sxxx.test, ad-v.test: Added checks, tests, and doc for -v option.
+   * ad.c: Fixed -p option.
+   * test/Makefile.am, last_row-2.txt, last_row-3.txt, ad-last_row_01.txt,
+     ad-last_row_02.txt, ad-last_row_01.test, ad-last_row_02.test: Added last
+     row tests.
+   * test/Makefile.am, ad-B4-E8-m-p.txt, ad-p_01.txt, ad-p_02.txt,
+     ad-B4-E8-m-p.test, ad-p_01.test, ad-p_02.test: More -p tests.
+   * ad.c, util.c, util.h: Now using MALLOC macro.
+   * ad.c, util.c, util.h: Went back to using /* */ comments on preprocessor
+     lines.
+   * .gitignore: Added *~
+   * configure.ac: Added AC_FUNC_REALLOC.
+   * configure.ac, ad.c, common.h, util.c, util.h: More C99 conversion.
+   * configure.ac, ad.c, util.c: Added verbose option; converted to C99;
+     clean-up.
+   * ad.c, util.c, test/Makefile.am, ad-B2-E1-m_02.txt, ad-B2-e1-m_01.txt,
+     ad-B4-E1-m_02.txt, ad-B4-e1-m_01.txt, ad-E0x0102-m_02.txt,
+     ad-E0x01020304-m_02.txt, ad-d.txt, ad-e0x0102-m_01.txt,
+     ad-e0x01020304-m_01.txt, ad-h.txt, ad-m-s_01.txt, ad-no_options.txt,
+     ad-o.txt, ad-p.txt: Added verbose option; converted to C99; clean-up.
+
+2015-06-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * .gitignore: Added ".*.swp".
+   * ad.c: s/line/row/
+   * test/tests/README.md: Added note on test names.
+   * test/Makefile.am, ad-B2-e1-m_01.txt, ad-B4-e1-m_01.txt,
+     ad-B2-e1-m_01.test, ad-B4-e1-m_01.test: More endian tests.
+   * test/Makefile.am, ad-B2-E1-m_02.txt, ad-B4-E1-m_02.txt,
+     ad-B2-E1-m_02.test, ad-B4-E1-m_02.test, ad-E1-sx_02.test,
+     ad-e1-sx_01.test: Renamed tests.
+   * test/Makefile.am, ad-B2-E1-m.txt, ad-B4-E1-m.txt, ad-B2-E1-m.test,
+     ad-B4-E1-m.test: More endian tests.
+   * ad.c: Clean-up.
+   * ad.c: Fixed kmp_values[0].
+   * ad.c, util.h: Added PRINT_ERROR().
+   * test/Makefile.am, ad-E0x0102-m_02.txt, ad-E0x01020304-m_02.txt,
+     ad-e0x0102-m_01.txt, ad-e0x01020304-m_01.txt, ad-E0x0102-m_02.test,
+     ad-E0x01020304-m_02.test, ad-e0x0102-m_01.test, ad-e0x01020304-m_01.test:
+     More endian tests.
+   * test/Makefile.am, test/data/.gitattributes, endian.bin,
+     ad-E0x0102030405060708-m_02.txt, ad-e0x0102030405060708-m_01.txt,
+     ad-E0x0102030405060708-m_02.test, ad-e0x0102030405060708-m_01.test: More
+     tests.
+
+2015-06-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * test/Makefile.am, ad-N0.txt, ad-N0x0.txt, ad-N0x1.txt, ad-N0xf.txt,
+     ad-N1.txt, ad-N2.txt, ad-N3.txt, ad-N4.txt, ad-S_02.txt, ad-i-s_01.txt,
+     ad-j2-N14.txt, ad-j2-N17.txt, ad-m-s_01.txt, ad-m-s_02.txt, ad-p.txt,
+     ad-s_01.txt, ad-N0.test, ad-N0x0.test, ad-N0x1.test, ad-N0xf.test,
+     ad-N1.test, ad-N2.test, ad-N3.test, ad-N4.test, ad-S_02.test,
+     ad-c_01.test, ad-i-s_01.test, ad-j2-N14.test, ad-j2-N17.test,
+     ad-m-s_01.test, ad-m-s_02.test, ad-p.test, ad-s_01.test: Test renaming.
+   * ad.1, ad.c, util.c, util.h, test/Makefile.am, ad-p-01.txt, ad-p-01.test:
+     Added -p option.
+   * ad.1: Added reference to xxd(1).
+   * ad.c, test/Makefile.am, row_separator.txt, ad-m-s01.txt,
+     ad-row_sep-01.txt, ad-row_sep-01.test: Fixed row separator printing.
+   * test/Makefile.am, ad-E0xD8FF-m.txt, ad-E0xFFD8-m.txt, ad-E0xD8FF-m.test,
+     ad-E0xFFD8-m.test: Added -E tests.
+   * ad.1, ad.c, common.h, test/Makefile.am, ad+16+X.test, ad-B1-e257.test,
+     ad-B16-e1.test, ad-B2-e65536.test, ad-B2.test, ad-B4-e4294967296.test,
+     ad-E1-sx-1.test, ad-b1-e1.test, ad-b16-B2.test, ad-b16-e65536.test,
+     ad-b16.test, ad-b32-e4294967296.test, ad-b8-e257.test, ad-c01.test,
+     ad-e1-sx-2.test, ad-i.test, ad-j1x.test, ad-m.test, ad-sxxx.test: Exit
+     code 1 now means "no matches".
+   * ad.c: Fixed numeric matching.
+   * ad.1: Changed default to not_file.
+
+2015-06-17  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, ad.c: Added color synonyms.
+   * test/Makefile.am, ad-m.test: Another test.
+   * ad.c: Fixed parsing of default colors.
+   * run_test.sh: s/PROG/COMMAND/
+   * Makefile.am, test/tests/README.md: s/wrap/ad/
+   * run_test.sh: s/wrap/ad/; now unsetting env vars.
+   * test/Makefile.am, Waldo.txt, ad-S02.txt, ad-i-s01.txt, ad-m-s01.txt,
+     ad-s01.txt, ad-S02.test, ad-c01.test, ad-i-s01.test, ad-m-s01.test,
+     ad-s01.test: New tests.
+   * ad.c: Fixed last_starting_offset.
+   * ad.1, ad.c, util.h: Added -m option.
+
+2015-06-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Added match_line(), reworked main loop.
+   * ad.c: Cosmetic change.
+   * ad.c: Set default colors.
+   * ad.1, ad.c, util.h: Added support for "ne" capability.
+   * ad.1: Corresponding change for -c option.
+   * ad.c: Added argument to -c option; removed -C option.
+   * util.c: Fixed stupid bugs.
+
+2015-06-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c, util.h: Added check_strdup().
+
+2015-06-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, ad.c, common.h, util.h: Added auto-color, -c, and -C options.
+   * ad.c: Added -S option.
+   * ad.c, util.c, util.h: More color support.
+   * common.h: Cosmetic change.
+   * test/Makefile.am, ad-B1-e257.test, ad-B16-e1.test, ad-B2-e65536.test,
+     ad-B2.test, ad-B4-e4294967296.test, ad-E1-sx-1.test, ad-b1-e1.test,
+     ad-b16-B2.test, ad-b16-e65536.test, ad-b16.test, ad-b32-e4294967296.test,
+     ad-b8-e257.test, ad-e1-sx-2.test, ad-i.test: New command-line tests.
+
+2015-06-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Put quotes around invalid values.
+   * src/Makefile.am, ad.c, common.h, sgr_color.h, util.c, util.h: Intermediate
+     check-in.
+
+2015-06-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, ad.c, sgr_color.h: Working (?) version.
+   * ad.c: Cosmetic change.
+   * ad.c: Fixed assert() placement.
+
+2015-06-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Clean-up.
+   * ad.c: More clean-up.
+
+2015-06-02  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Now always setting path_name.
+
+2015-06-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c: Now using SEEK_SET.
+   * devclean: Better version.
+   * configure.ac, ad.c: Now using libgen.h basename().
 
 2015-05-30  Paul J. Lucas <paul@lucasmail.org>
 
-    * Added tests.
-    * Offsets can now be specified in hexadecimal.
-    * Offsets can optionally have a unit suffix.
-    * Major clean-up.
+   * devclean: Rewrote to use .gitignore.
+   * ad.1: Added mention of hexdump(1).
+   * test/Makefile.am, ad-N0x00.txt, ad-N0x01.txt, ad-N0x0f.txt,
+     ad-j02-N14.txt, ad-j02-N17.txt, ad-j1k-N16.txt, ad+16+X.test,
+     ad-N0x00.test, ad-N0x01.test, ad-N0x0f.test, ad-j02-N14.test,
+     ad-j02-N17.test, ad-j1k-N16.test, ad-j1x.test: New tests.
+   * test/tests/README.md: s/five/four/
+   * devclean: Better removal.
+   * configure.ac: Added headers; removed AC_C_INLINE; added AC_TYPE_SSIZE_T
+     and AC_TYPE_UINT16_T
+   * ad.c: Added [b
+   * README.md: Updated.
+   * ChangeLog: Updated Changelog.
+
+2015-05-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, src/Makefile.am, ad.c: Major clean-up.
+   * ad.c, util.c, util.h: Clean-up.
+   * test/Makefile.am, ad-N14+02.txt, ad-N17+02.txt, ad-N14+02.test,
+     ad-N17+02.test: Offset tests.
+   * test/Makefile.am, ad-N00.txt, ad-N01.txt, ad-N02.txt, ad-N03.txt,
+     ad-N04.txt, ad-N15.txt, ad-N16.txt, ad-N17.txt, ad-N00.test, ad-N01.test,
+     ad-N02.test, ad-N03.test, ad-N04.test, ad-N15.test, ad-N16.test,
+     ad-N17.test: Added tests for -N option.
+   * ad.c: Added -N option; clean-up.
+   * util.c, util.h: Added asserts; now allowing leading +.
 
 2015-05-25  Paul J. Lucas <paul@lucasmail.org>
 
-    * Initial version in git; now using configure.
+   * configure.ac: Added check for strerror.
+   * ChangeLog: Added ChangeLog.
 
 2010-11-07  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.c: Removed K&R C-isms.
+   * .gitignore, AUTHORS, INSTALL, Makefile.am, README.md, configure.ac,
+     devclean, ax_append_flag.m4, ax_cflags_warn_all.m4,
+     ax_check_compile_flag.m4, man/Makefile.am, man/man1/Makefile.am, ad.1,
+     src/.gitignore, src/Makefile.am, ad.c, util.c, util.h, test/.gitignore,
+     test/Makefile.am, pjl-conductor-200.jpg, ad-d.txt, ad-h.txt,
+     ad-no_options.txt, ad-o.txt, run_test.sh, test/tests/.gitignore,
+     test/tests/README.md, ad-d.test, ad-h.test, ad-no_options.test, ad-o.test:
+     Initial version in git; now using configure.
 
 2006-07-07  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.c: Updated version to 1.1.1.
+   * ad.c: Removed K&R C-isms.
+   * ad.c: Updated version to 1.1.1.
+   * ad.c: 1. Changed tabs to spaces. 2. Fixed little endian bug.
+   * README: Updated e-mail address.
+   * .cvsignore: Initial version in CVS.
 
-    * ad.c: 1. Changed tabs to spaces. 2. Fixed little endian bug.
+2001-03-28  Paul J. Lucas <paul@lucasmail.org>
 
-    * ad.1: Updated e-mail address.
-
-    * Makefile: Added "distclean" target.
-
-2001-03-27  Paul J. Lucas <paul@lucasmail.org>
-
-    * Initial versions in CVS.
+   * Makefile: Added "distclean" target.
