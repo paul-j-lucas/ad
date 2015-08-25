@@ -449,6 +449,7 @@ char const* get_offset_fmt_format( void ) {
 
 void parse_options( int argc, char *argv[] ) {
   color_when_t  color_when = COLOR_WHEN_DEFAULT;
+  bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
   uint32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
@@ -490,7 +491,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'u': utf8_when = parse_utf8_when( optarg );                  break;
       case 'U': utf8_pad = parse_codepoint( optarg );                   break;
       case 'v': opt_verbose = true;                                     break;
-      case 'V': PRINT_ERR( "%s\n", PACKAGE_STRING );     exit( EXIT_SUCCESS );
+      case 'V': print_version = true;                                   break;
       default : usage();
     } // switch
   } // for
@@ -510,6 +511,7 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "p", "v" );
   check_mutually_exclusive( "r", "bBcCeEimNpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
+  check_mutually_exclusive( "V", "bBcCdeEhHijmNoprsStTuUv" );
 
   // check for options that require other options
   check_required( 'b', "eE" );
@@ -519,6 +521,11 @@ void parse_options( int argc, char *argv[] ) {
   check_required( 't', "eEsS" );
   check_required( 'T', "eEsS" );
   check_required( 'U', "u" );
+
+  if ( print_version ) {
+    PRINT_ERR( "%s\n", PACKAGE_STRING );
+    exit( EXIT_SUCCESS );
+  }
 
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )

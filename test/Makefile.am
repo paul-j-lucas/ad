@@ -121,7 +121,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-u-UU+2192.test \
 	tests/ad-u.test \
 	tests/ad-U_01.test \
-	tests/ad-v.test
+	tests/ad-v_01.test \
+	tests/ad-V_02.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .sh .test
