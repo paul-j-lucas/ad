@@ -174,27 +174,30 @@ static void check_number_size( size_t given_size, size_t actual_size,
 }
 
 /**
- * Checks that if \a opt was given, that at least one \a req_opts was also
- * given.
+ * For each option in \a opts that was given, checks that at least one of
+ * \a req_opts was also given.
  * If not, prints an error message and exits.
  *
- * @param opt The short option.
- * @param req_opts The set of required options for \a opt.
+ * @param opts The set of short options.
+ * @param req_opts The set of required options for \a opts.
  */
-static void check_required( char opt, char const *req_opts ) {
+static void check_required( char const *opts, char const *req_opts ) {
+  assert( opts );
   assert( req_opts );
-  if ( GAVE_OPTION( opt ) ) {
-    for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
-      if ( GAVE_OPTION( *req_opt ) )
-        return;
-    bool const reqs_multiple = strlen( req_opts ) > 1;
-    PMESSAGE_EXIT( USAGE,
-      "--%s/-%c requires %sthe -%s option%s to be given also\n",
-      get_long_opt( opt ), opt,
-      (reqs_multiple ? "one of " : ""),
-      req_opts, (reqs_multiple ? "s" : "")
-    );
-  }
+  for ( ; *opts; ++opts ) {
+    if ( GAVE_OPTION( *opts ) ) {
+      for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
+        if ( GAVE_OPTION( *req_opt ) )
+          return;
+      bool const reqs_multiple = strlen( req_opts ) > 1;
+      PMESSAGE_EXIT( USAGE,
+        "--%s/-%c requires %sthe -%s option%s to be given also\n",
+        get_long_opt( *opts ), *opts,
+        (reqs_multiple ? "one of " : ""),
+        req_opts, (reqs_multiple ? "s" : "")
+      );
+    }
+  } // for
 }
 
 #define ADD_CFMT(F) \
@@ -507,20 +510,16 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEimpsStTuUv" );
   check_mutually_exclusive( "eE", "sS" );
-  check_mutually_exclusive( "m", "v" );
-  check_mutually_exclusive( "p", "v" );
+  check_mutually_exclusive( "mp", "v" );
   check_mutually_exclusive( "r", "bBcCeEimNpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
   check_mutually_exclusive( "V", "bBcCdeEhHijmNoprsStTuUv" );
 
   // check for options that require other options
-  check_required( 'b', "eE" );
-  check_required( 'B', "eE" );
-  check_required( 'i', "s" );
-  check_required( 'm', "eEsS" );
-  check_required( 't', "eEsS" );
-  check_required( 'T', "eEsS" );
-  check_required( 'U', "u" );
+  check_required( "bB", "eE" );
+  check_required( "i", "s" );
+  check_required( "mtT", "eEsS" );
+  check_required( "U", "u" );
 
   if ( print_version ) {
     PRINT_ERR( "%s\n", PACKAGE_STRING );
