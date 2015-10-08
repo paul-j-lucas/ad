@@ -215,6 +215,14 @@ size_t int_len( uint64_t n );
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
 
 /**
+ * Checks whether the given file descriptor refers to a regular file.
+ *
+ * @param fd The file descriptor to check.
+ * @return Returns \c true only if \a fd refers to a regular file.
+ */
+bool is_file( int fd );
+
+/**
  * Parses a string into an offset.
  * Unlike \c strtoull(3):
  *  + Insists that \a s is non-negative.
@@ -226,14 +234,6 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * prints an error message and exits if there was an error.
  */
 uint64_t parse_offset( char const *s );
-
-/**
- * Checks whether the given file descriptor refers to a regular file.
- *
- * @param fd The file descriptor to check.
- * @return Returns \c true only if \a fd refers to a regular file.
- */
-bool is_file( int fd );
 
 /**
  * Parses an SGR (Select Graphic Rendition) value that matches the regular
