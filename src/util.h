@@ -150,6 +150,19 @@ void* check_realloc( void *p, size_t size );
  */
 char* check_strdup( char const *s );
 
+#ifndef HAVE_FGETLN
+/**
+ * Gets a line from a stream.
+ *
+ * @param f The FILE to get the line from.
+ * @param len A pointer to receive the length of the line,
+ * including the newline.
+ * @return Returns a pointer to the line that is \e not NULL-terminated;
+ * or NULL upon EOF or error.
+ */
+char* fgetln( FILE *f, size_t *len );
+#endif /* HAVE_FGETLN */
+
 /**
  * Adds a pointer to the head of the free-list.
  *

@@ -58,7 +58,7 @@ AC_TYPE_UINT64_T
 # Checks for library functions.
 AC_FUNC_FSEEKO
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([basename nl_langinfo setlocale strerror])
+AC_CHECK_FUNCS([basename fgetln nl_langinfo setlocale strerror])
 
 # Miscellaneous.
 AC_LANG(C)

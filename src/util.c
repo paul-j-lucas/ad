@@ -174,6 +174,18 @@ char* check_strdup( char const *s ) {
   return dup;
 }
 
+#ifndef HAVE_FGETLN
+char* fgetln( FILE *f, size_t *len ) {
+    static char *buf;
+    static size_t cap;
+    ssize_t const temp_len = getline( &buf, &cap, f );
+    if ( temp_len == -1 )
+      return NULL;
+    *len = (size_t)temp_len;
+    return buf;
+}
+#endif /* HAVE_FGETLN */
+
 void* freelist_add( void *p ) {
   assert( p );
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
@@ -305,22 +317,24 @@ uint64_t parse_offset( char const *s ) {
   if ( !*s || *s == '-' )               // strtoull(3) wrongly allows '-'
     goto error;
 
-  char *end = NULL;
-  errno = 0;
-  uint64_t n = strtoull( s, &end, 0 );
-  if ( errno || end == s )
-    goto error;
-  if ( end[0] ) {                       // possibly 'b', 'k', or 'm'
-    if ( end[1] )                       // not a single char
+  { // local scope
+    char *end = NULL;
+    errno = 0;
+    uint64_t n = strtoull( s, &end, 0 );
+    if ( errno || end == s )
       goto error;
-    switch ( end[0] ) {
-      case 'b': n *=         512; break;
-      case 'k': n *=        1024; break;
-      case 'm': n *= 1024 * 1024; break;
-      default : goto error;
-    } // switch
-  }
-  return n;
+    if ( end[0] ) {                     // possibly 'b', 'k', or 'm'
+      if ( end[1] )                     // not a single char
+        goto error;
+      switch ( end[0] ) {
+        case 'b': n *=         512; break;
+        case 'k': n *=        1024; break;
+        case 'm': n *= 1024 * 1024; break;
+        default : goto error;
+      } // switch
+    }
+    return n;
+  } // local scope
 
 error:
   PMESSAGE_EXIT( USAGE, "\"%s\": invalid offset\n", s );

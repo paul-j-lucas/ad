@@ -275,8 +275,8 @@ static uint32_t parse_codepoint( char const *s ) {
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
     // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it
-    char *const t = freelist_add( check_strdup( s ) );
-    s = memcpy( t, "0x", 2 );
+    char *const t = (char*)freelist_add( check_strdup( s ) );
+    s = (char*)memcpy( t, "0x", 2 );
   }
   uint64_t const codepoint = parse_ull( s );
   if ( codepoint_is_valid( codepoint ) )
@@ -313,7 +313,8 @@ static color_when_t parse_color_when( char const *when ) {
   };
 
   assert( when );
-  char const *const when_lc = tolower_s( freelist_add( check_strdup( when ) ) );
+  char const *const when_lc =
+    tolower_s( (char*)freelist_add( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
@@ -324,7 +325,7 @@ static color_when_t parse_color_when( char const *when ) {
   } // for
 
   // name not found: construct valid name list for an error message
-  char *const names_buf = freelist_add( MALLOC( char, names_buf_size ) );
+  char *const names_buf = (char*)freelist_add( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
   for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
@@ -363,7 +364,8 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   };
 
   assert( when );
-  char const *const when_lc = tolower_s( freelist_add( check_strdup( when ) ) );
+  char const *const when_lc =
+    tolower_s( (char*)freelist_add( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
@@ -374,7 +376,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   } // for
 
   // name not found: construct valid name list for an error message
-  char *const names_buf = freelist_add( MALLOC( char, names_buf_size ) );
+  char *const names_buf = (char*)freelist_add( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
   for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
@@ -480,7 +482,7 @@ void parse_options( int argc, char *argv[] ) {
                 search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this
-      case 'S': search_buf = freelist_add( check_strdup( optarg ) );
+      case 'S': search_buf = (char*)freelist_add( check_strdup( optarg ) );
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += parse_offset( optarg );                   break;
       case 'm': opt_only_matching = true;                               break;
@@ -488,7 +490,8 @@ void parse_options( int argc, char *argv[] ) {
       case 'o': opt_offset_fmt = OFMT_OCT;                              break;
       case 'p': opt_only_printing = true;                               break;
       case 'r': opt_reverse = true;                                     break;
-      case 's': search_buf = freelist_add( check_strdup( optarg ) );    break;
+      case 's': search_buf = (char*)freelist_add( check_strdup( optarg ) );
+                                                                        break;
       case 't': opt_matches = MATCHES_PRINT;                            break;
       case 'T': opt_matches = MATCHES_ONLY;                             break;
       case 'u': utf8_when = parse_utf8_when( optarg );                  break;

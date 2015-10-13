@@ -142,7 +142,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    off_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
+    unsigned long const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
     if ( offset_delta && any_dumped ) {
       SGR_START_IF( sgr_elided );
       FPUTS( elided_separator );
@@ -152,7 +152,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       SGR_END_IF( sgr_sep );
       FPUTC( ' ' );
       SGR_START_IF( sgr_elided );
-      FPRINTF( "(%lld | 0x%llX)", offset_delta, offset_delta );
+      FPRINTF( "(%lu | 0x%lX)", offset_delta, offset_delta );
       SGR_END_IF( sgr_elided );
       FPUTC( '\n' );
     }
@@ -263,8 +263,8 @@ void dump_file( void ) {
   char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len ) {                   // searching for anything?
-    kmps = freelist_add( kmp_init( search_buf, search_len ) );
-    match_buf = freelist_add( MALLOC( uint8_t, search_len ) );
+    kmps = (kmp_t*)freelist_add( kmp_init( search_buf, search_len ) );
+    match_buf = (uint8_t*)freelist_add( MALLOC( uint8_t, search_len ) );
   }
 
   // prime the pump by reading the first row
@@ -331,8 +331,8 @@ void dump_file_c( void ) {
   if ( fin == stdin ) {
     array_name = "stdin";
   } else {
-    char *const temp = freelist_add( check_strdup( fin_path ) );
-    array_name = freelist_add( identify( basename( temp ) ) );
+    char *const temp = (char*)freelist_add( check_strdup( fin_path ) );
+    array_name = (char*)freelist_add( identify( basename( temp ) ) );
   }
   FPRINTF(
     "%sunsigned char %s%s[] = {\n",
