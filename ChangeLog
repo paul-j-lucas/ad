@@ -1,3 +1,21 @@
+2015-10-08  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, ad.c, color.c, dump.c, options.c, utf8.c, util.c, util.h:
+     Fixed warnings and missing fgetln() on some systems.
+
+2015-09-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.h: Fixed alphabetical order of is_file().
+
+2015-08-28  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Fixed typo: s/Hightlights/Highlights/
+   * options.c: Made check_required() for symmetical.
+
+2015-08-25  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: check_required() now take multiple options for first argument.
+
 2015-08-24  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, test/Makefile.am, ad-v_01.txt, ad-V_02.test, ad-v_01.test: Now
