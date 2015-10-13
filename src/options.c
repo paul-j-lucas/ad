@@ -32,6 +32,7 @@
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <libgen.h>                     /* for basename() */
+#include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */

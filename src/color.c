@@ -25,6 +25,7 @@
 
 // standard
 #include <assert.h>
+#include <stdio.h>                      /* for fileno() */
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
 #include <unistd.h>                     /* for isatty() */
