@@ -1,3 +1,8 @@
+2015-10-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, options.c, reverse.c: Now using PRIX64, etc, macros.
+   * color.c, options.c: Added missing #include.
+
 2015-10-08  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac, ad.c, color.c, dump.c, options.c, utf8.c, util.c, util.h:
