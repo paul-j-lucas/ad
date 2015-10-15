@@ -27,6 +27,7 @@
 // standard
 #include <assert.h>
 #include <ctype.h>
+#include <inttypes.h>                   /* for PRIu64 */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
@@ -91,10 +92,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   // maybe parse row separator for elided lines
   if ( strncmp( buf, elided_separator, ROW_SIZE ) == 0 ) {
     col += OFFSET_WIDTH;
-    if ( sscanf( buf + OFFSET_WIDTH, ": (%lu | 0x%*X)", pbytes_len ) != 1 )
+    uint64_t delta;
+    if ( sscanf( buf + OFFSET_WIDTH, ": (%" PRIu64 " | 0x%*X)", &delta ) != 1 )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
+    *pbytes_len = (size_t)delta;
     return ROW_ELIDED;
   }
 

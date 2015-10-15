@@ -31,6 +31,7 @@
 #include <ctype.h>                      /* for islower(), toupper() */
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
+#include <inttypes.h>                   /* for PRIu64, etc. */
 #include <libgen.h>                     /* for basename() */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
@@ -446,9 +447,9 @@ char const* get_offset_fmt_english( void ) {
 
 char const* get_offset_fmt_format( void ) {
   switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) "lld";
-    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) "llX";
-    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) "llo";
+    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) PRIu64;
+    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) PRIX64;
+    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) PRIo64;
   } // switch
   assert( false );
 }

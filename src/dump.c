@@ -30,7 +30,9 @@
 // standard
 #include <assert.h>
 #include <ctype.h>
+#include <inttypes.h>                   /* for PRIu64, etc. */
 #include <libgen.h>                     /* for basename() */
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
@@ -142,7 +144,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    unsigned long const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
+    uint64_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
     if ( offset_delta && any_dumped ) {
       SGR_START_IF( sgr_elided );
       FPUTS( elided_separator );
@@ -152,7 +154,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       SGR_END_IF( sgr_sep );
       FPUTC( ' ' );
       SGR_START_IF( sgr_elided );
-      FPRINTF( "(%lu | 0x%lX)", offset_delta, offset_delta );
+      FPRINTF( "(%" PRIu64 " | 0x%" PRIX64 ")", offset_delta, offset_delta );
       SGR_END_IF( sgr_elided );
       FPUTC( '\n' );
     }
@@ -160,7 +162,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print offset & column separator
   SGR_START_IF( sgr_offset );
-  FPRINTF( off_fmt, fin_offset );
+  FPRINTF( off_fmt, (uint64_t)fin_offset );
   SGR_END_IF( sgr_offset );
   SGR_START_IF( sgr_sep );
   FPUTC( ':' );
