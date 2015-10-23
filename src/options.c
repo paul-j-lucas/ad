@@ -431,7 +431,7 @@ static void usage( void ) {
 "       -V         Print version and exit.\n"
     , me, me, me, me
   );
-  exit( EXIT_USAGE );
+  exit( EX_USAGE );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -528,7 +528,7 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( print_version ) {
     PRINT_ERR( "%s\n", PACKAGE_STRING );
-    exit( EXIT_SUCCESS );
+    exit( EX_OK );
   }
 
   if ( GAVE_OPTION( 'b' ) ) {

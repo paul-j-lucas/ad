@@ -75,7 +75,7 @@ static void init( int argc, char *argv[] ) {
   }
 
   if ( !opt_max_bytes_to_read )         // degenerate case
-    exit( search_len ? EXIT_NO_MATCHES : EXIT_SUCCESS );
+    exit( search_len ? EX_NO_MATCHES : EX_OK );
 
   elided_separator =
     (char*)freelist_add( MALLOC( char, OFFSET_WIDTH + 1 /*NULL*/ ) );

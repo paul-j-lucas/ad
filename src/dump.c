@@ -42,16 +42,16 @@
 #define HEX_COLUMN_WIDTH  2             /* bytes per hex column */
 
 #define FFLUSH(F) \
-  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( IOERR ); )
 
 #define FPRINTF(...) \
-  BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( WRITE_ERROR ); )
+  BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( IOERR ); )
 
 #define FPUTC(C) \
-  BLOCK( if ( fputc( (C), fout ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+  BLOCK( if ( fputc( (C), fout ) == EOF ) PERROR_EXIT( IOERR ); )
 
 #define FPUTS(S) \
-  BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( WRITE_ERROR ); )
+  BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( IOERR ); )
 
 #define SGR_START_IF(EXPR) \
   BLOCK( if ( colorize && (EXPR) ) FPRINTF( sgr_start, (EXPR) ); )
@@ -321,7 +321,7 @@ void dump_file( void ) {
     PRINT_ERR( "%lu\n", total_matches );
   }
 
-  exit( search_len && !any_matches ? EXIT_NO_MATCHES : EXIT_SUCCESS );
+  exit( search_len && !any_matches ? EX_NO_MATCHES : EX_OK );
 }
 
 void dump_file_c( void ) {
@@ -368,7 +368,7 @@ void dump_file_c( void ) {
       (opt_c_fmt & CFMT_LONG     ? "L" : "")
     );
 
-  exit( EXIT_SUCCESS );
+  exit( EX_OK );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

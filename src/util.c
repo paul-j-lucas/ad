@@ -129,7 +129,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
 
   FILE *const file = fopen( path, mode );
   if ( !file )
-    PMESSAGE_EXIT( OPEN_ERROR,
+    PMESSAGE_EXIT( NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset )
@@ -142,7 +142,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
   int const fd = oflag & O_CREAT ?
     open( path, oflag, 0644 ) : open( path, oflag );
   if ( fd == -1 )
-    PMESSAGE_EXIT( OPEN_ERROR,
+    PMESSAGE_EXIT( NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset )
@@ -162,7 +162,7 @@ void* check_realloc( void *p, size_t size ) {
     size = 1;
   void *const r = p ? realloc( p, size ) : malloc( size );
   if ( !r )
-    PERROR_EXIT( OUT_OF_MEMORY );
+    PERROR_EXIT( OSERR );
   return r;
 }
 
@@ -170,7 +170,7 @@ char* check_strdup( char const *s ) {
   assert( s );
   char *const dup = strdup( s );
   if ( !dup )
-    PERROR_EXIT( OUT_OF_MEMORY );
+    PERROR_EXIT( OSERR );
   return dup;
 }
 
@@ -216,7 +216,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( ferror( file ) )
-      PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", STRERROR );
+      PMESSAGE_EXIT( IOERR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
   } // while
 }

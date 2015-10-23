@@ -38,6 +38,7 @@ AC_CHECK_HEADERS([errno.h])
 AC_CHECK_HEADERS([langinfo.h])
 AC_CHECK_HEADERS([libgen.h])
 AC_CHECK_HEADERS([locale.h])
+AC_CHECK_HEADERS([sysexits.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([unistd.h])
 AC_HEADER_ASSERT

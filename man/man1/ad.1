@@ -18,7 +18,7 @@
 .\"	along with this program; if not, write to the Free Software
 .\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH \f3ad\f1 1 "September 29, 2015" "PJL TOOLS"
+.TH \f3ad\f1 1 "October 15, 2015" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -517,28 +517,21 @@ No matches if one of
 or
 .B \-S
 was specified.
-.IP 2
-Error in command-line.
-.IP 3
-Out of memory.
-.IP 10
-Open file error.
-.IP 11
-Read error.
-.IP 13
-Write error.
-.IP 20
-Seek error.
-.IP 21
-.B stat
-error.
-.IP 30
+.IP 64
+Command-line usage error.
+.IP 65
 Invalid dump format for
 .BR \-\-reverse ,
 .BR \-\-revert ,
 or
 .B \-r
 options.
+.IP 66
+Open file error.
+.IP 71
+System error.
+.IP 74
+I/O error.
 .PD
 .SH ENVIRONMENT
 .TP 4

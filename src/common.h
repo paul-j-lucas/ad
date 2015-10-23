@@ -22,20 +22,25 @@
 #ifndef ad_common_H
 #define ad_common_H
 
+// local
+#include "config.h"
+
 // standard
-#include <stdlib.h>                     /* for EXIT_SUCCESS */
+#ifdef HAVE_SYSEXITS_H
+# include <sysexits.h>
+#endif /* HAVE_SYSEXITS_H */
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define EXIT_NO_MATCHES     1           /* no errors, but no matches either */
-#define EXIT_USAGE          2           /* command-line usage error */
-#define EXIT_OUT_OF_MEMORY  3
-#define EXIT_OPEN_ERROR     10          /* error opening file */
-#define EXIT_READ_ERROR     11          /* error reading */
-#define EXIT_WRITE_ERROR    13          /* error writing */
-#define EXIT_SEEK_ERROR     20          /* error seeking */
-#define EXIT_STAT_ERROR     21          /* error stat'ing */
-#define EXIT_INVALID_FORMAT 30          /* invalid dump format for -r option */
+#define EX_NO_MATCHES       1           /* no errors, but no matches either */
+#ifndef HAVE_SYSEXITS_H
+# define EX_OK              0           /* success */
+# define EX_USAGE           64          /* command-line usage error */
+# define EX_DATAERR         65          /* invalid dump format for -r option */
+# define EX_NOINPUT         66          /* error opening file */
+# define EX_OSERR           71          /* system error (e.g., can't fork) */
+# define EX_IOERR           74          /* input/output error */
+#endif /* HAVE_SYSEXITS_H */
 
 #define OFFSET_WIDTH        16          /* number of offset digits */
 #define ROW_SIZE            16          /* bytes dumped on a row */

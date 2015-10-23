@@ -35,12 +35,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define INVALID_EXIT(FORMAT,...)                                    \
-  PMESSAGE_EXIT( INVALID_FORMAT,                                    \
+  PMESSAGE_EXIT( DATAERR,                                           \
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
 #define FWRITE(PTR,SIZE,N,STREAM) \
-  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( WRITE_ERROR ); )
+  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( IOERR ); )
 
 ////////// local types ////////////////////////////////////////////////////////
 
@@ -173,7 +173,7 @@ void reverse_dump_file( void ) {
     char *const row_buf = fgetln( fin, &row_len );
     if ( !row_buf ) {
       if ( ferror( fin ) )
-        PMESSAGE_EXIT( READ_ERROR, "can not read: %s\n", STRERROR );
+        PMESSAGE_EXIT( IOERR, "can not read: %s\n", STRERROR );
       break;
     }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
@@ -196,7 +196,7 @@ void reverse_dump_file( void ) {
     } // switch
 
   } // for
-  exit( EXIT_SUCCESS );
+  exit( EX_OK );
 
 backwards_offset:
   snprintf( msg_fmt, sizeof( msg_fmt ),
@@ -204,7 +204,7 @@ backwards_offset:
     get_offset_fmt_format(), get_offset_fmt_english()
   );
   PRINT_ERR( msg_fmt, fin_path, line, new_offset );
-  exit( EXIT_INVALID_FORMAT );
+  exit( EX_DATAERR );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
