@@ -1,3 +1,8 @@
+2015-10-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, ad.1, ad.c, common.h, dump.c, match.c, options.c, reverse.c,
+     util.c, util.h: Now using sysexits error codes.
+
 2015-10-13  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c, options.c, reverse.c: Now using PRIX64, etc, macros.
