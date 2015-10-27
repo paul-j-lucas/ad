@@ -6,7 +6,15 @@
 2015-10-23  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac, ad.1, ad.c, common.h, dump.c, match.c, options.c, reverse.c,
-     util.c, util.h: Now using sysexits error codes.
+     util.c, util.h, ad-B1-e257.test, ad-B16-e1.test, ad-B2-e65536.test,
+     ad-B2.test, ad-B4-e4294967296.test, ad-Ccc.test, ad-Cii.test, ad-Cit.test,
+     ad-Cll.test, ad-Clt.test, ad-Css.test, ad-Ctt.test, ad-Ctu.test,
+     ad-Cuu.test, ad-Cx.test, ad-E1-sx_02.test, ad-U_01.test, ad-V_02.test,
+     ad-b1-e1.test, ad-b16-B2.test, ad-b16-e65536.test, ad-b16.test,
+     ad-b32-e4294967296.test, ad-b8-B1.test, ad-b8-e257.test, ad-c_01.test,
+     ad-e1-sx_01.test, ad-i.test, ad-j1x.test, ad-m-v.test, ad-m.test,
+     ad-p-v.test, ad-r_02.test, ad-r_03.test, ad-r_04.test, ad-r_05.test,
+     ad-r_06.test: Now using sysexits(3) exit codes.
 
 2015-10-13  Paul J. Lucas <paul@lucasmail.org>
 
