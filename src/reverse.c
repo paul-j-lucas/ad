@@ -35,12 +35,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define INVALID_EXIT(FORMAT,...)                                    \
-  PMESSAGE_EXIT( DATAERR,                                           \
+  PMESSAGE_EXIT( EX_DATAERR,                                        \
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
 #define FWRITE(PTR,SIZE,N,STREAM) \
-  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( EX_IOERR ); )
 
 ////////// local types ////////////////////////////////////////////////////////
 
@@ -173,7 +173,7 @@ void reverse_dump_file( void ) {
     char *const row_buf = fgetln( fin, &row_len );
     if ( !row_buf ) {
       if ( ferror( fin ) )
-        PMESSAGE_EXIT( IOERR, "can not read: %s\n", STRERROR );
+        PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
       break;
     }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,

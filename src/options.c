@@ -141,7 +141,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
       if ( GAVE_OPTION( *opt ) ) {
         if ( ++gave_count > 1 ) {
           char const gave_opt2 = *opt;
-          PMESSAGE_EXIT( USAGE,
+          PMESSAGE_EXIT( EX_USAGE,
             "--%s/-%c and --%s/-%c are mutually exclusive\n",
             get_long_opt( gave_opt1 ), gave_opt1,
             get_long_opt( gave_opt2 ), gave_opt2
@@ -168,7 +168,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
-    PMESSAGE_EXIT( USAGE,
+    PMESSAGE_EXIT( EX_USAGE,
       "\"%zu\": value for --%s/-%c is too small for \"%llu\";"
       " must be at least %zu\n",
       given_size, get_long_opt( opt ), opt, search_number, actual_size
@@ -192,7 +192,7 @@ static void check_required( char const *opts, char const *req_opts ) {
         if ( GAVE_OPTION( *req_opt ) )
           return;
       bool const reqs_multiple = strlen( req_opts ) > 1;
-      PMESSAGE_EXIT( USAGE,
+      PMESSAGE_EXIT( EX_USAGE,
         "--%s/-%c requires %sthe -%s option%s to be given also\n",
         get_long_opt( *opt ), *opt,
         (reqs_multiple ? "one of " : ""),
@@ -229,7 +229,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 't': ADD_CFMT( SIZE_T );   break;
         case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
-          PMESSAGE_EXIT( USAGE,
+          PMESSAGE_EXIT( EX_USAGE,
             "'%c': invalid C format for --%s/-%c;"
             " must be one of: [cilstu]\n",
             *fmt, get_long_opt( 'C' ), 'C'
@@ -238,7 +238,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
     } // for
     if ( (c_fmt & CFMT_SIZE_T) &&
         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
-      PMESSAGE_EXIT( USAGE,
+      PMESSAGE_EXIT( EX_USAGE,
         "\"%s\": invalid C format for --%s/-%c:"
         " 't' and [ilu] are mutually exclusive\n",
         s, get_long_opt( 'C' ), 'C'
@@ -248,7 +248,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   return c_fmt;
 
 dup_format:
-  PMESSAGE_EXIT( USAGE,
+  PMESSAGE_EXIT( EX_USAGE,
     "\"%s\": invalid C format for --%s/-%c:"
     " '%c' specified more than once\n",
     s, get_long_opt( 'C' ), 'C', *fmt
@@ -283,7 +283,7 @@ static uint32_t parse_codepoint( char const *s ) {
   uint64_t const codepoint = parse_ull( s );
   if ( codepoint_is_valid( codepoint ) )
     return (uint32_t)codepoint;
-  PMESSAGE_EXIT( USAGE,
+  PMESSAGE_EXIT( EX_USAGE,
     "\"%s\": invalid Unicode code-point for --%s/-%c\n",
     s0, get_long_opt( 'U' ), 'U'
   );
@@ -337,7 +337,7 @@ static color_when_t parse_color_when( char const *when ) {
     strcpy( pnames, m->map_when );
     pnames += strlen( m->map_when );
   } // for
-  PMESSAGE_EXIT( USAGE,
+  PMESSAGE_EXIT( EX_USAGE,
     "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
     when, get_long_opt( 'c' ), 'c', names_buf
   );
@@ -388,7 +388,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     strcpy( pnames, m->map_when );
     pnames += strlen( m->map_when );
   } // for
-  PMESSAGE_EXIT( USAGE,
+  PMESSAGE_EXIT( EX_USAGE,
     "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
     when, get_long_opt( 'u' ), 'u', names_buf
   );
@@ -533,7 +533,7 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
-      PMESSAGE_EXIT( USAGE,
+      PMESSAGE_EXIT( EX_USAGE,
         "\"%zu\": invalid value for --%s/-%c;"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, get_long_opt( 'b' ), 'b'
@@ -544,7 +544,7 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
-      PMESSAGE_EXIT( USAGE,
+      PMESSAGE_EXIT( EX_USAGE,
         "\"%zu\": invalid value for --%s/-%c; must be in 1-8\n",
         size_in_bytes, get_long_opt( 'B' ), 'B'
       );

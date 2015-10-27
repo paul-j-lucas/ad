@@ -64,23 +64,23 @@ typedef bool _Bool;
 #endif /* HAVE_FSEEKO */
 
 #define BLOCK(...)          do { __VA_ARGS__ } while (0)
-#define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( EX_##STATUS ); )
+#define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( STATUS ); )
 #define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
 #define STRERROR            strerror( errno )
 
 #define FSEEK(STREAM,OFFSET,WHENCE) \
-  BLOCK( if ( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
 
 #define FSTAT(FD,STAT) \
-  BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( EX_IOERR ); )
 
 #define LSEEK(FD,OFFSET,WHENCE) \
-  BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
 
 #define MALLOC(TYPE,N)      (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( EX_##STATUS ); )
+  BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
 
 #define STRINGIFY_HELPER(S) #S
 #define STRINGIFY(S)        STRINGIFY_HELPER(S)

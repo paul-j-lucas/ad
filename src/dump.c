@@ -42,16 +42,16 @@
 #define HEX_COLUMN_WIDTH  2             /* bytes per hex column */
 
 #define FFLUSH(F) \
-  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( EX_IOERR ); )
 
 #define FPRINTF(...) \
-  BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( EX_IOERR ); )
 
 #define FPUTC(C) \
-  BLOCK( if ( fputc( (C), fout ) == EOF ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fputc( (C), fout ) == EOF ) PERROR_EXIT( EX_IOERR ); )
 
 #define FPUTS(S) \
-  BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( IOERR ); )
+  BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( EX_IOERR ); )
 
 #define SGR_START_IF(EXPR) \
   BLOCK( if ( colorize && (EXPR) ) FPRINTF( sgr_start, (EXPR) ); )
