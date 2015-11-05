@@ -169,7 +169,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size )
     PMESSAGE_EXIT( EX_USAGE,
-      "\"%zu\": value for --%s/-%c is too small for \"%llu\";"
+      "\"%zu\": value for --%s/-%c is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, get_long_opt( opt ), opt, search_number, actual_size
     );
