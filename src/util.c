@@ -179,13 +179,13 @@ char* check_strdup( char const *s ) {
 
 #ifndef HAVE_FGETLN
 char* fgetln( FILE *f, size_t *len ) {
-    static char *buf;
-    static size_t cap;
-    ssize_t const temp_len = getline( &buf, &cap, f );
-    if ( temp_len == -1 )
-      return NULL;
-    *len = (size_t)temp_len;
-    return buf;
+  static char *buf;
+  static size_t cap;
+  ssize_t const temp_len = getline( &buf, &cap, f );
+  if ( temp_len == -1 )
+    return NULL;
+  *len = (size_t)temp_len;
+  return buf;
 }
 #endif /* HAVE_FGETLN */
 
