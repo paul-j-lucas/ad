@@ -1,6 +1,9 @@
-.deps
-.*.swp
+*.a
+*.in
+*.o
 *~
+.*.swp
+.deps
 aclocal.m4
 autom4te.cache
 compile
@@ -13,6 +16,3 @@ depcomp
 install-sh
 Makefile
 missing
-*.a
-*.in
-*.o
