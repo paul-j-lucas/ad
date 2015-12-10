@@ -193,7 +193,7 @@ void* freelist_add( void *p ) {
   assert( p );
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
   new_node->ptr = p;
-  new_node->next = free_head ? free_head : NULL;
+  new_node->next = free_head;
   free_head = new_node;
   return p;
 }
