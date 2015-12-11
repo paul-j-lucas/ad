@@ -69,9 +69,6 @@
 
    * util.c: Removed unnecessary skip_ws() forward declaration.
 
-2015-08-17  Paul J. Lucas <paul@lucasmail.org>
-
-
 2015-08-16  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.1: Rewrote open file error.
@@ -517,6 +514,3 @@
    * README: Updated e-mail address.
    * .cvsignore: Initial version in CVS.
    * Makefile: Added "distclean" target.
-
-2001-03-28  Paul J. Lucas <paul@lucasmail.org>
-
