@@ -43,20 +43,27 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
   # Code from module absolute-header:
+  # Code from module errno:
   # Code from module extensions:
   # Code from module extern-inline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
   # Code from module include_next:
+  # Code from module intprops:
   # Code from module nocrash:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
   # Code from module stddef:
+  # Code from module strdup:
+  # Code from module strerror:
+  # Code from module strerror-override:
+  # Code from module string:
   # Code from module sys_types:
   # Code from module unistd:
+  # Code from module verify:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -75,6 +82,7 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='lib'
+  gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
   gl_FUNC_GETOPT_GNU
   if test $REPLACE_GETOPT = 1; then
@@ -99,6 +107,25 @@ AC_DEFUN([gl_INIT],
   AC_SUBST([LTLIBINTL])
   gt_TYPE_SSIZE_T
   gl_STDDEF_H
+  gl_FUNC_STRDUP
+  if test $ac_cv_func_strdup = no; then
+    AC_LIBOBJ([strdup])
+    gl_PREREQ_STRDUP
+  fi
+  gl_STRING_MODULE_INDICATOR([strdup])
+  gl_FUNC_STRERROR
+  if test $REPLACE_STRERROR = 1; then
+    AC_LIBOBJ([strerror])
+  fi
+  gl_MODULE_INDICATOR([strerror])
+  gl_STRING_MODULE_INDICATOR([strerror])
+  AC_REQUIRE([gl_HEADER_ERRNO_H])
+  AC_REQUIRE([gl_FUNC_STRERROR_0])
+  if test -n "$ERRNO_H" || test $REPLACE_STRERROR_0 = 1; then
+    AC_LIBOBJ([strerror-override])
+    gl_PREREQ_SYS_H_WINSOCK2
+  fi
+  gl_HEADER_STRING_H
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_UNISTD_H
@@ -245,17 +272,26 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
+  lib/errno.in.h
   lib/getopt.c
   lib/getopt.in.h
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/intprops.h
   lib/stddef.in.h
+  lib/strdup.c
+  lib/strerror-override.c
+  lib/strerror-override.h
+  lib/strerror.c
+  lib/string.in.h
   lib/sys_types.in.h
   lib/unistd.c
   lib/unistd.in.h
+  lib/verify.h
   m4/00gnulib.m4
   m4/absolute-header.m4
+  m4/errno_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
   m4/getopt.m4
@@ -266,6 +302,10 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/onceonly.m4
   m4/ssize_t.m4
   m4/stddef_h.m4
+  m4/strdup.m4
+  m4/strerror.m4
+  m4/string_h.m4
+  m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/unistd_h.m4
   m4/warn-on-use.m4
