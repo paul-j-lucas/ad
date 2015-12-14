@@ -27,12 +27,13 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --lib=libgnu --source-base=lib --m4-base=m4 --doc-base=doc --tests-base=tests --aux-dir=. --no-conditional-dependencies --no-libtool --macro-prefix=gl getopt-gnu strdup strerror
+#   gnulib-tool --import --lib=libgnu --source-base=lib --m4-base=m4 --doc-base=doc --tests-base=tests --aux-dir=. --no-conditional-dependencies --no-libtool --macro-prefix=gl getopt-gnu stdbool strdup strerror
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
 gl_MODULES([
   getopt-gnu
+  stdbool
   strdup
   strerror
 ])

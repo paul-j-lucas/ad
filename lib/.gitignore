@@ -1,5 +1,6 @@
 errno.h
 getopt.h
+stdbool.h
 stddef.h
 string.h
 unistd.h

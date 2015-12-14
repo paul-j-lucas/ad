@@ -56,6 +56,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
+  # Code from module stdbool:
   # Code from module stddef:
   # Code from module strdup:
   # Code from module strerror:
@@ -106,6 +107,7 @@ AC_DEFUN([gl_INIT],
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
   gt_TYPE_SSIZE_T
+  AM_STDBOOL_H
   gl_STDDEF_H
   gl_FUNC_STRDUP
   if test $ac_cv_func_strdup = no; then
@@ -279,6 +281,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/getopt_int.h
   lib/gettext.h
   lib/intprops.h
+  lib/stdbool.in.h
   lib/stddef.in.h
   lib/strdup.c
   lib/strerror-override.c
@@ -301,6 +304,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/off_t.m4
   m4/onceonly.m4
   m4/ssize_t.m4
+  m4/stdbool.m4
   m4/stddef_h.m4
   m4/strdup.m4
   m4/strerror.m4
