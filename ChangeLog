@@ -1,3 +1,26 @@
+2015-12-17  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, stdlib.in.h, sysexits.in.h, gnulib-cache.m4,
+     gnulib-comp.m4, stdlib_h.m4, sysexits.m4, snippet/_Noreturn.h, common.h:
+     Now using gnulib sysexits.
+
+2015-12-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, stdbool.in.h, gnulib-cache.m4, gnulib-comp.m4,
+     stdbool.m4, util.h: Now using GNUlib stdbool.
+
+2015-12-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, errno.in.h, intprops.h, strdup.c, strerror-override.c,
+     strerror-override.h, strerror.c, string.in.h, verify.h, errno_h.m4,
+     gnulib-cache.m4, gnulib-comp.m4, strdup.m4, strerror.m4, string_h.m4,
+     sys_socket_h.m4: Added strdup and strerror in gnulib.
+
+2015-12-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, unistd.c, gnulib-cache.m4, gnulib-common.m4,
+     gnulib-comp.m4: Updated Gnulib.
+
 2015-12-10  Paul J. Lucas <paul@lucasmail.org>
 
    * util.c: Removed pointless use of ?:
