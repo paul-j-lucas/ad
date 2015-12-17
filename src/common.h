@@ -26,23 +26,11 @@
 #include "config.h"
 
 // standard
-#ifdef HAVE_SYSEXITS_H
-# include <sysexits.h>
-#endif /* HAVE_SYSEXITS_H */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
 #define EX_NO_MATCHES       1           /* no errors, but no matches either */
-#ifndef HAVE_SYSEXITS_H
-# define EX_OK              0           /* success */
-# define EX_USAGE           64          /* command-line usage error */
-# define EX_DATAERR         65          /* invalid dump format for -r option */
-# define EX_NOINPUT         66          /* opening file error */
-# define EX_OSERR           71          /* system error (e.g., can't fork) */
-# define EX_CANTCREAT       73          /* creating file error */
-# define EX_IOERR           74          /* input/output error */
-#endif /* HAVE_SYSEXITS_H */
-
 #define OFFSET_WIDTH        16          /* number of offset digits */
 #define ROW_SIZE            16          /* bytes dumped on a row */
 #define ROW_SIZE_C          8           /* bytes dumped on a row in C */

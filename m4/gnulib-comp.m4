@@ -52,17 +52,20 @@ AC_DEFUN([gl_EARLY],
   # Code from module include_next:
   # Code from module intprops:
   # Code from module nocrash:
+  # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
   # Code from module stdbool:
   # Code from module stddef:
+  # Code from module stdlib:
   # Code from module strdup:
   # Code from module strerror:
   # Code from module strerror-override:
   # Code from module string:
   # Code from module sys_types:
+  # Code from module sysexits:
   # Code from module unistd:
   # Code from module verify:
 ])
@@ -109,6 +112,7 @@ AC_DEFUN([gl_INIT],
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
   gl_STDDEF_H
+  gl_STDLIB_H
   gl_FUNC_STRDUP
   if test $ac_cv_func_strdup = no; then
     AC_LIBOBJ([strdup])
@@ -130,6 +134,7 @@ AC_DEFUN([gl_INIT],
   gl_HEADER_STRING_H
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
+  gl_SYSEXITS
   gl_UNISTD_H
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
@@ -271,6 +276,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/snippet/_Noreturn.h
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
@@ -283,12 +289,14 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/intprops.h
   lib/stdbool.in.h
   lib/stddef.in.h
+  lib/stdlib.in.h
   lib/strdup.c
   lib/strerror-override.c
   lib/strerror-override.h
   lib/strerror.c
   lib/string.in.h
   lib/sys_types.in.h
+  lib/sysexits.in.h
   lib/unistd.c
   lib/unistd.in.h
   lib/verify.h
@@ -306,11 +314,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/ssize_t.m4
   m4/stdbool.m4
   m4/stddef_h.m4
+  m4/stdlib_h.m4
   m4/strdup.m4
   m4/strerror.m4
   m4/string_h.m4
   m4/sys_socket_h.m4
   m4/sys_types_h.m4
+  m4/sysexits.m4
   m4/unistd_h.m4
   m4/warn-on-use.m4
   m4/wchar_t.m4
