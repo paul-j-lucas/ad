@@ -42,7 +42,7 @@
 #define HEX_COLUMN_WIDTH  2             /* bytes per hex column */
 
 #define FFLUSH(F) \
-  BLOCK( if ( fflush( (F) ) == EOF ) PERROR_EXIT( EX_IOERR ); )
+  BLOCK( if ( fflush( F ) == EOF ) PERROR_EXIT( EX_IOERR ); )
 
 #define FPRINTF(...) \
   BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( EX_IOERR ); )
