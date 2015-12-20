@@ -1,4 +1,4 @@
-*.dSYM
-ad
-config.h
-stamp-h1
+/*.dSYM
+/ad
+/config.h
+/stamp-h1
