@@ -368,7 +368,7 @@ bool parse_sgr( char const *sgr_color ) {
 
 uint64_t parse_ull( char const *s ) {
   s = skip_ws( s );
-  if ( *s && *s != '-') {               // strtoull(3) wrongly allows '-'
+  if ( *s && *s != '-' ) {              // strtoull(3) wrongly allows '-'
     char *end = NULL;
     errno = 0;
     uint64_t const n = strtoull( s, &end, 0 );
