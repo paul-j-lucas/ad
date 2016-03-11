@@ -272,10 +272,9 @@
 
    Example usage, assuming A and B are long int:
 
-     if (INT_MULTIPLY_OVERFLOW (a, b))
-       printf ("result would overflow\n");
-     else
-       printf ("result is %ld (no overflow)\n", a * b);
+     long int result = INT_MULTIPLY_WRAPV (a, b);
+     printf ("result is %ld (%s)\n", result,
+             INT_MULTIPLY_OVERFLOW (a, b) ? "after overflow" : "no overflow");
 
    Example usage with WRAPV flavor:
 
