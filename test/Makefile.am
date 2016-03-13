@@ -37,6 +37,7 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-B4-e4294967296.test \
 	tests/ad-B4-E8-m-p.test \
 	tests/ad-b8-e257.test \
+	tests/ad--c-array.test \
 	tests/ad-Cc.test \
 	tests/ad-Ccc.test \
 	tests/ad-Cci.test \

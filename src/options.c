@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      options.c
 **
-**      Copyright (C) 2015  Paul J. Lucas
+**      Copyright (C) 2015-2016  Paul J. Lucas
 **
 **      This program is free software; you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -208,14 +208,12 @@ static void check_required( char const *opts, char const *req_opts ) {
 /**
  * Parses a C array format value.
  *
- * @param s The NULL-terminated string to parse.  It may contain exactly zero
- * or one of each of the letters \c cilstu in any order.
+ * @param s The NULL-terminated string to parse that may contain exactly zero
+ * or one of each of the letters \c cilstu in any order; or NULL for none.
  * @return Returns the corresponding \c c_fmt_t
  * or prints an error message and exits if \a s is invalid.
  */
 static c_fmt_t parse_c_fmt( char const *s ) {
-  assert( s );
-
   c_fmt_t c_fmt = CFMT_DEFAULT;
   char const *fmt;
 
