@@ -29,8 +29,9 @@
 #include <ctype.h>                      /* for tolower() */
 #include <stdlib.h>                     /* for exit() */
 
-////////// extern variables ///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
+// extern variable declarations
 extern FILE        *fin;
 extern char const  *fin_path;
 extern char const  *me;
@@ -39,14 +40,13 @@ extern size_t       opt_max_bytes_to_read;
 extern char        *search_buf;
 extern size_t       search_len;
 
+// extern variable definitions
 unsigned long       total_matches;
 
-////////// local variables ////////////////////////////////////////////////////
-
+// local variable definitions
 static size_t       total_bytes_read;
 
-////////// local functions ////////////////////////////////////////////////////
-
+// local functions
 static bool         get_byte( uint8_t* );
 static bool         match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
 static void         unget_byte( uint8_t );

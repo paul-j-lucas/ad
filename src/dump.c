@@ -39,8 +39,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define HEX_COLUMN_WIDTH  2             /* bytes per hex column */
-
 #define FFLUSH(F) \
   BLOCK( if ( fflush( F ) == EOF ) PERROR_EXIT( EX_IOERR ); )
 
@@ -65,18 +63,18 @@
 #define SGR_ASCII_START_IF(EXPR) \
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
-////////// extern variables ///////////////////////////////////////////////////
-
-extern char *elided_separator;          // separator used for elided rows
-
-////////// local data structures //////////////////////////////////////////////
-
 struct row_buf {
   uint8_t   bytes[ ROW_SIZE ];          // bytes in buffer, left-to-right
   size_t    len;                        // length of buffer
   uint16_t  match_bits;                 // which bytes match, right-to-left
 };
 typedef struct row_buf row_buf_t;
+
+// local constant definitions
+static size_t const HEX_COLUMN_WIDTH = 2; // bytes per hex column
+
+// extern variable declarations
+extern char        *elided_separator;   // separator used for elided rows
 
 ////////// local functions ////////////////////////////////////////////////////
 

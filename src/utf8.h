@@ -125,8 +125,8 @@ AD_UTF8_INLINE bool utf8_is_cont( char c ) {
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
 AD_UTF8_INLINE size_t utf8_len( char start ) {
-  extern char const utf8_len_table[];
-  return (size_t)utf8_len_table[ (unsigned char)start ];
+  extern char const UTF8_LEN_TABLE[];
+  return (size_t)UTF8_LEN_TABLE[ (unsigned char)start ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

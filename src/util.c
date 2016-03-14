@@ -46,12 +46,10 @@ struct free_node {
 };
 typedef struct free_node free_node_t;
 
-////////// extern variables ///////////////////////////////////////////////////
+// extern variable declarations
+extern char const  *me;
 
-extern char const *me;
-
-////////// local variables ////////////////////////////////////////////////////
-
+// local variable definitions
 static free_node_t *free_head;          // linked list of stuff to free
 
 /////////// inline functions //////////////////////////////////////////////////

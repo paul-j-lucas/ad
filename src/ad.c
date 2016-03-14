@@ -29,14 +29,14 @@
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
 
-////////// extern functions ///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
+// extern function declarations
 extern void dump_file( void );
 extern void dump_file_c( void );
 extern void reverse_dump_file( void );
 
-////////// extern variables ///////////////////////////////////////////////////
-
+// extern variable definitions
 char *elided_separator;                 // separator used for elided rows
 
 /////////// local functions ///////////////////////////////////////////////////

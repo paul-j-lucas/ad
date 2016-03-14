@@ -42,16 +42,13 @@
 #define FWRITE(PTR,SIZE,N,STREAM) \
   BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( EX_IOERR ); )
 
-////////// local types ////////////////////////////////////////////////////////
-
 enum row_kind {
   ROW_BYTES,
   ROW_ELIDED
 };
 typedef enum row_kind row_kind_t;
 
-////////// extern variables ///////////////////////////////////////////////////
-
+// extern variable declarations
 extern char *elided_separator;
 
 ////////// inline functions ///////////////////////////////////////////////////
@@ -115,7 +112,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   char const *p = end;
   end = buf + buf_len;
   size_t bytes_len = 0;
-  int consec_spaces = 0;
+  unsigned consec_spaces = 0;
 
   // parse hexadecimal bytes
   while ( bytes_len < ROW_SIZE ) {

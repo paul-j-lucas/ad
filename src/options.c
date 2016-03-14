@@ -39,41 +39,39 @@
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
 
-/////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 #define GAVE_OPTION(OPT)  isalpha( OPTION_VALUE(OPT) )
 #define OPTION_VALUE(OPT) opts_given[ !islower(OPT) ][ toupper(OPT) - 'A' ]
 #define SET_OPTION(OPT)   OPTION_VALUE(OPT) = (OPT)
 
-////////// extern variables ///////////////////////////////////////////////////
+// option extern variable definitions
+bool              opt_case_insensitive;
+c_fmt_t           opt_c_fmt;
+size_t            opt_max_bytes_to_read = SIZE_MAX;
+matches_t         opt_matches;
+offset_fmt_t      opt_offset_fmt = OFMT_HEX;
+bool              opt_only_matching;
+bool              opt_only_printing;
+bool              opt_reverse;
+bool              opt_utf8;
+char const       *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
+bool              opt_verbose;
 
-FILE         *fin;
-off_t         fin_offset;
-char const   *fin_path = "<stdin>";
-FILE         *fout;
-char const   *fout_path = "<stdout>";
-char const   *me;
+// other extern variable definitions
+FILE             *fin;
+off_t             fin_offset;
+char const       *fin_path = "<stdin>";
+FILE             *fout;
+char const       *fout_path = "<stdout>";
+char const       *me;
+char             *search_buf;
+endian_t          search_endian;
+size_t            search_len;
+uint64_t          search_number;
 
-bool          opt_case_insensitive;
-c_fmt_t       opt_c_fmt;
-size_t        opt_max_bytes_to_read = SIZE_MAX;
-matches_t     opt_matches;
-offset_fmt_t  opt_offset_fmt = OFMT_HEX;
-bool          opt_only_matching;
-bool          opt_only_printing;
-bool          opt_reverse;
-bool          opt_utf8;
-char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
-bool          opt_verbose;
-
-char         *search_buf;
-endian_t      search_endian;
-size_t        search_len;
-uint64_t      search_number;
-
-/////////// local variables ///////////////////////////////////////////////////
-
-static struct option const long_opts[] = {
+// local constant definitions
+static struct option const LONG_OPTS[] = {
   { "bits",               required_argument,  NULL, 'b' },
   { "bytes",              required_argument,  NULL, 'B' },
   { "color",              required_argument,  NULL, 'c' },
@@ -101,8 +99,9 @@ static struct option const long_opts[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const short_opts[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
+static char const SHORT_OPTS[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
 
+// local variable definitions
 static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /*NULL*/ ];
 
 /////////// local functions ///////////////////////////////////////////////////
@@ -114,7 +113,7 @@ static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /*NULL*/ ];
  * @return Returns the said option.
  */
 static char const* get_long_opt( char short_opt ) {
-  for ( struct option const *long_opt = long_opts; long_opt->name; ++long_opt )
+  for ( struct option const *long_opt = LONG_OPTS; long_opt->name; ++long_opt )
     if ( long_opt->val == short_opt )
       return long_opt->name;
   assert( false );
@@ -467,7 +466,7 @@ void parse_options( int argc, char *argv[] ) {
   opterr = 1;
 
   for ( ;; ) {
-    int const opt = getopt_long( argc, argv, short_opts, long_opts, NULL );
+    int const opt = getopt_long( argc, argv, SHORT_OPTS, LONG_OPTS, NULL );
     if ( opt == -1 )
       break;
     SET_OPTION( opt );
