@@ -94,7 +94,6 @@ int main( int argc, char *argv[] ) {
   else
     dump_file();
   assert( false );                      // none of the above functions returns
-  return 0;                             // suppress warning
 }
 
 ///////////////////////////////////////////////////////////////////////////////
