@@ -263,8 +263,8 @@ void dump_file( void ) {
   char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len ) {                   // searching for anything?
-    kmps = (kmp_t*)freelist_add( kmp_init( search_buf, search_len ) );
-    match_buf = (uint8_t*)freelist_add( MALLOC( uint8_t, search_len ) );
+    kmps = (kmp_t*)free_later( kmp_init( search_buf, search_len ) );
+    match_buf = (uint8_t*)free_later( MALLOC( uint8_t, search_len ) );
   }
 
   // prime the pump by reading the first row
@@ -331,8 +331,8 @@ void dump_file_c( void ) {
   if ( fin == stdin ) {
     array_name = "stdin";
   } else {
-    char *const temp = (char*)freelist_add( check_strdup( fin_path ) );
-    array_name = (char*)freelist_add( identify( basename( temp ) ) );
+    char *const temp = (char*)free_later( check_strdup( fin_path ) );
+    array_name = (char*)free_later( identify( basename( temp ) ) );
   }
   FPRINTF(
     "%sunsigned char %s%s[] = {\n",

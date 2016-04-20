@@ -143,7 +143,7 @@ bool parse_grep_colors( char const *capabilities ) {
   if ( capabilities ) {
     // free this later since the sgr_* variables point to substrings
     char *const capabilities_dup =
-      (char*)freelist_add( check_strdup( capabilities ) );
+      (char*)free_later( check_strdup( capabilities ) );
     char *next_cap = capabilities_dup;
     char *cap_name_val;
 

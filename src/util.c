@@ -187,7 +187,7 @@ char* fgetln( FILE *f, size_t *len ) {
 }
 #endif /* HAVE_FGETLN */
 
-void* freelist_add( void *p ) {
+void* free_later( void *p ) {
   assert( p );
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
   new_node->ptr = p;
@@ -196,7 +196,7 @@ void* freelist_add( void *p ) {
   return p;
 }
 
-void freelist_free() {
+void free_now() {
   for ( free_node_t *p = free_head; p; ) {
     free_node_t *const next = p->next;
     free( p->ptr );

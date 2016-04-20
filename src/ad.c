@@ -48,7 +48,7 @@ char *elided_separator;                 // separator used for elided rows
  * This function is called via \c atexit().
  */
 static void clean_up( void ) {
-  freelist_free();
+  free_now();
   if ( fin )
     fclose( fin );
   if ( fout )
@@ -78,7 +78,7 @@ static void init( int argc, char *argv[] ) {
     exit( search_len ? EX_NO_MATCHES : EX_OK );
 
   elided_separator =
-    (char*)freelist_add( MALLOC( char, OFFSET_WIDTH + 1 /*NULL*/ ) );
+    (char*)free_later( MALLOC( char, OFFSET_WIDTH + 1 /*NULL*/ ) );
   memset( elided_separator, '-', OFFSET_WIDTH );
   elided_separator[ OFFSET_WIDTH ] = '\0';
 }

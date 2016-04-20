@@ -148,17 +148,17 @@ char* fgetln( FILE *f, size_t *len );
 #endif /* HAVE_FGETLN */
 
 /**
- * Adds a pointer to the head of the free-list.
+ * Adds a pointer to the head of the free-later-list.
  *
  * @param p The pointer to add.
  * @return Returns \a p.
  */
-void* freelist_add( void *p );
+void* free_later( void *p );
 
 /**
- * Frees all the memory pointed to by all the nodes in the free-list.
+ * Frees all the memory pointed to by all the nodes in the free-later-list.
  */
-void freelist_free( void );
+void free_now( void );
 
 /**
  * Reads and discards \a bytes_to_skip bytes.
