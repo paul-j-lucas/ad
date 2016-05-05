@@ -35,6 +35,7 @@
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
 
+_GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTIL_INLINE
 # define AD_UTIL_INLINE _GL_INLINE
 #endif /* AD_UTIL_INLINE */
@@ -283,6 +284,8 @@ char const* printable_char( char c );
 char* tolower_s( char *s );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+_GL_INLINE_HEADER_END
 
 #endif /* ad_util_H */
 /* vim:set et sw=2 ts=2: */

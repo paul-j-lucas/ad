@@ -28,6 +28,7 @@
 // standard
 #include <stdint.h>                     /* for uint32_t */
 
+_GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTF8_INLINE
 # define AD_UTF8_INLINE _GL_INLINE
 #endif /* AD_UTF8_INLINE */
