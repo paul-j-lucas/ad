@@ -131,5 +131,7 @@ AD_UTF8_INLINE size_t utf8_len( char start ) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+_GL_INLINE_HEADER_END
+
 #endif /* ad_utf8_H */
 /* vim:set et sw=2 ts=2: */
