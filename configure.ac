@@ -64,7 +64,6 @@ AC_CHECK_FUNCS([basename fgetln nl_langinfo setlocale strdup strerror])
 # Miscellaneous.
 AC_LANG(C)
 AX_CFLAGS_WARN_ALL
-AX_CFLAGS_GCC_OPTION([-Wc++-compat])
 AX_CFLAGS_GCC_OPTION([-Wcast-align])
 AX_CFLAGS_GCC_OPTION([-Wextra])
 AX_CFLAGS_GCC_OPTION([-Wredundant-decls])
