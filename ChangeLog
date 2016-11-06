@@ -1,3 +1,83 @@
+2016-11-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, errno.in.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, stdbool.in.h, stddef.in.h,
+     stdlib.in.h, strdup.c, strerror-override.c, strerror-override.h,
+     strerror.c, string.in.h, sys_types.in.h, sysexits.in.h, unistd.in.h,
+     verify.h, 00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getopt.m4, gnulib-cache.m4, gnulib-common.m4,
+     gnulib-comp.m4, gnulib-tool.m4, include_next.m4, nocrash.m4, off_t.m4,
+     onceonly.m4, ssize_t.m4, stdbool.m4, stddef_h.m4, stdlib_h.m4, strdup.m4,
+     strerror.m4, string_h.m4, sys_socket_h.m4, sys_types_h.m4, sysexits.m4,
+     unistd_h.m4, warn-on-use.m4, wchar_t.m4, snippet/arg-nonnull.h,
+     snippet/c++defs.h, snippet/warn-on-use.h: Updated gnulib.
+
+2016-06-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: -Wc++-compat is implied by -Wall.
+
+2016-05-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * utf8.h, util.h: Added _GL_INLINE_HEADER_BEGIN, _GL_INLINE_HEADER_END.
+   * utf8.h: Added _GL_INLINE_HEADER_END.
+
+2016-04-25  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Tweaked formatting.
+
+2016-04-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, dump.c, options.c, utf8.c, util.c, util.h: Renamed
+     freelist_* functions.
+
+2016-04-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Shifted options in usage message left.
+
+2016-03-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, dump.c, match.c, options.c, reverse.c, utf8.c, utf8.h,
+     util.c: Cosmetic changes.
+   * ad.c: No longer need "return 0;" in main().
+
+2016-03-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, options.c, test/Makefile.am, ad--c-array.txt,
+     ad--c-array.test: Fixed --c-array with no argument.
+
+2016-03-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * intprops.h: gnulib update.
+
+2016-01-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: No longer exiting on fail.
+
+2016-01-02  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: Whitespace fix.
+
+2016-01-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, ax_cflags_gcc_option.m4: Now using AX_CFLAGS_GCC_OPTION.
+
+2015-12-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Replaced .TP/.B "" with .IP "".
+
+2015-12-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * intprops.h: Updated to newer GNUlib.
+
+2015-12-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * devclean: Fixed / ignore removal.
+   * devclean: Now using / in .gitignore files; updated devclean to match.
+
+2015-12-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c: Removed unnecessary ().
+
 2015-12-17  Paul J. Lucas <paul@lucasmail.org>
 
    * lib/Makefile.am, stdlib.in.h, sysexits.in.h, gnulib-cache.m4,
@@ -85,8 +165,8 @@
 
 2015-08-25  Paul J. Lucas <paul@lucasmail.org>
 
-   * options.c, test/Makefile.am, ad-v_01.txt, ad-V_02.test, ad-v_01.test: Now
-     ensuring exclusivity of -V option.
+   * options.c, test/Makefile.am, ad-V_02.test: Now ensuring exclusivity of -V
+     option.
 
 2015-08-24  Paul J. Lucas <paul@lucasmail.org>
 
@@ -133,7 +213,6 @@
      ad-Css.test, ad-Ctt.test, ad-Cuu.test: Added check for duplicate flags to
      -C option.
    * reverse.c: s/ld/lu/
-   * COPYING: s/Copying/COPYING/
 
 2015-08-05  Paul J. Lucas <paul@lucasmail.org>
 
@@ -291,7 +370,6 @@
    * ad.c, util.c, util.h, test/Makefile.am, bad_patch-1.txt, bad_patch-2.txt,
      bad_patch-3.txt, bad_patch-4.txt, bad_patch-5.txt, ad-r_02.test,
      ad-r_03.test, ad-r_04.test, ad-r_05.test, ad-r_06.test: More -r tests.
-   * bad_patch-1.txt: Fixed typo.
 
 2015-06-26  Paul J. Lucas <paul@lucasmail.org>
 
@@ -362,8 +440,8 @@
    * test/Makefile.am, last_row-2.txt, last_row-3.txt, ad-last_row_01.txt,
      ad-last_row_02.txt, ad-last_row_01.test, ad-last_row_02.test: Added last
      row tests.
-   * test/Makefile.am, ad-B4-E8-m-p.txt, ad-p_01.txt, ad-p_02.txt,
-     ad-B4-E8-m-p.test, ad-p_01.test, ad-p_02.test: More -p tests.
+   * test/Makefile.am, ad-B4-E8-m-p.txt, ad-p_02.txt, ad-B4-E8-m-p.test,
+     ad-p_02.test: More -p tests.
    * ad.c, util.c, util.h: Now using MALLOC macro.
    * ad.c, util.c, util.h: Went back to using /* */ comments on preprocessor
      lines.
@@ -382,9 +460,7 @@
    * ad.c: s/line/row/
    * test/Makefile.am, ad-B2-e1-m_01.txt, ad-B4-e1-m_01.txt,
      ad-B2-e1-m_01.test, ad-B4-e1-m_01.test: More endian tests.
-   * test/Makefile.am, ad-B2-E1-m_02.txt, ad-B4-E1-m_02.txt,
-     ad-B2-E1-m_02.test, ad-B4-E1-m_02.test, ad-E1-sx_02.test,
-     ad-e1-sx_01.test: Renamed tests.
+   * test/Makefile.am: Renamed tests.
    * test/Makefile.am, ad-B2-E1-m.txt, ad-B4-E1-m.txt, ad-B2-E1-m.test,
      ad-B4-E1-m.test: More endian tests.
    * ad.c: Clean-up.
@@ -397,13 +473,7 @@
    * test/Makefile.am, endian.bin, ad-E0x0102030405060708-m_02.txt,
      ad-e0x0102030405060708-m_01.txt, ad-E0x0102030405060708-m_02.test,
      ad-e0x0102030405060708-m_01.test: More tests.
-   * test/Makefile.am, ad-N0.txt, ad-N0x0.txt, ad-N0x1.txt, ad-N0xf.txt,
-     ad-N1.txt, ad-N2.txt, ad-N3.txt, ad-N4.txt, ad-S_02.txt, ad-i-s_01.txt,
-     ad-j2-N14.txt, ad-j2-N17.txt, ad-m-s_01.txt, ad-m-s_02.txt, ad-p.txt,
-     ad-s_01.txt, ad-N0.test, ad-N0x0.test, ad-N0x1.test, ad-N0xf.test,
-     ad-N1.test, ad-N2.test, ad-N3.test, ad-N4.test, ad-S_02.test,
-     ad-c_01.test, ad-i-s_01.test, ad-j2-N14.test, ad-j2-N17.test,
-     ad-m-s_01.test, ad-m-s_02.test, ad-p.test, ad-s_01.test: Test renaming.
+   * test/Makefile.am, ad-m-s_02.test: Test renaming.
 
 2015-06-18  Paul J. Lucas <paul@lucasmail.org>
 
@@ -520,11 +590,10 @@
 
    * AUTHORS, INSTALL, Makefile.am, configure.ac, devclean, ax_append_flag.m4,
      ax_cflags_warn_all.m4, ax_check_compile_flag.m4, man/Makefile.am,
-     man/man1/Makefile.am, ad.1, src/Makefile.am, ad.c, util.c, util.h,
-     test/Makefile.am, pjl-conductor-200.jpg, ad-d.txt, ad-h.txt,
-     ad-no_options.txt, ad-o.txt, run_test.sh, ad-d.test, ad-h.test,
-     ad-no_options.test, ad-o.test: Initial version in git; now using
-     configure.
+     man/man1/Makefile.am, ad.1, ad.c, util.c, util.h, test/Makefile.am,
+     pjl-conductor-200.jpg, ad-d.txt, ad-h.txt, ad-no_options.txt, ad-o.txt,
+     run_test.sh, ad-d.test, ad-h.test, ad-no_options.test, ad-o.test: Initial
+     version in git; now using configure.
 
 2010-11-07  Paul J. Lucas <paul@lucasmail.org>
 
