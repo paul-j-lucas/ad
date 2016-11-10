@@ -28,6 +28,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>                   /* for SCNu64 */
+#include <stddef.h>                     /* fir size_t */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */

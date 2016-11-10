@@ -23,6 +23,7 @@
 #include "config.h"
 #define AD_UTF8_INLINE _GL_EXTERN_INLINE
 #include "utf8.h"
+#include "util.h"
 
 // standard
 #include <assert.h>

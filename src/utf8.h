@@ -23,10 +23,12 @@
 #define ad_utf8_H
 
 // local
-#include "util.h"                       /* for bool */
+#include "config.h"
 
 // standard
-#include <stdint.h>                     /* for uint32_t */
+#include <inttypes.h>                   /* for uint32_t */
+#include <stdbool.h>
+#include <stddef.h>                     /* for size_t */
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTF8_INLINE

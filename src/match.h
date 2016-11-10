@@ -23,8 +23,8 @@
 #define ad_match_H
 
 // standard
+#include <inttypes.h>                   /* for uint8_t, uint16_t */
 #include <stddef.h>                     /* for size_t */
-#include <stdint.h>                     /* for uint8_t, uint16_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 

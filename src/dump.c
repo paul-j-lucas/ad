@@ -32,7 +32,7 @@
 #include <ctype.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
 #include <libgen.h>                     /* for basename() */
-#include <stdint.h>
+#include <stddef.h>                     /* for size_t */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
