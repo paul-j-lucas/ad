@@ -1,3 +1,12 @@
+2016-11-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: Fixed IFS on Bourne Shell.
+
+2016-11-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, dump.c, match.h, options.c, options.h, reverse.c, utf8.c,
+     utf8.h, util.h: Header clean-up.
+
 2016-11-05  Paul J. Lucas <paul@lucasmail.org>
 
    * lib/Makefile.am, errno.in.h, getopt.c, getopt.in.h, getopt1.c,
