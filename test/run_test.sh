@@ -190,7 +190,10 @@ run_sh_file() {
 }
 
 run_test_file() {
-  IFS='|' read COMMAND OPTIONS INPUT OUTFILE EXPECTED_EXIT < $TEST
+  [ "$IFS" ] && IFS_old=$IFS
+  IFS='|'; read COMMAND OPTIONS INPUT OUTFILE EXPECTED_EXIT < $TEST
+  [ "$IFS_old" ] && IFS=$IFS_old
+
   COMMAND=`echo $COMMAND`               # trims whitespace
   INPUT=$DATA_DIR/`echo $INPUT`         # trims whitespace
   OUTFILE=`echo $OUTFILE`               # trims whitespace
