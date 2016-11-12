@@ -67,7 +67,7 @@ typedef enum utf8_when utf8_when_t;
  * @param codepoint The Unicode code-point to check.
  * @return Returns \c true only if \a codepoint is valid.
  */
-AD_UTF8_INLINE bool codepoint_is_valid( uint64_t codepoint ) {
+AD_UTF8_INLINE bool is_codepoint_valid( uint64_t codepoint ) {
   return                            codepoint <= 0x00D7FF
       ||  (codepoint >= 0x00E000 && codepoint <= 0x00FFFD)
       ||  (codepoint >= 0x010000 && codepoint <= 0x10FFFF);

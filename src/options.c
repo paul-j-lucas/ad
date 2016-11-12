@@ -279,7 +279,7 @@ static uint32_t parse_codepoint( char const *s ) {
     s = (char*)memcpy( t, "0x", 2 );
   }
   uint64_t const codepoint = parse_ull( s );
-  if ( codepoint_is_valid( codepoint ) )
+  if ( is_codepoint_valid( codepoint ) )
     return (uint32_t)codepoint;
   PMESSAGE_EXIT( EX_USAGE,
     "\"%s\": invalid Unicode code-point for --%s/-%c\n",
