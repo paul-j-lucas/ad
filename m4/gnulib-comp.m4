@@ -46,11 +46,15 @@ AC_DEFUN([gl_EARLY],
   # Code from module errno:
   # Code from module extensions:
   # Code from module extern-inline:
+  # Code from module getdelim:
+  # Code from module getline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
   # Code from module include_next:
   # Code from module intprops:
+  # Code from module limits-h:
+  # Code from module multiarch:
   # Code from module nocrash:
   # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
@@ -59,11 +63,14 @@ AC_DEFUN([gl_EARLY],
   # Code from module ssize_t:
   # Code from module stdbool:
   # Code from module stddef:
+  # Code from module stdint:
+  # Code from module stdio:
   # Code from module stdlib:
   # Code from module strdup:
   # Code from module strerror:
   # Code from module strerror-override:
   # Code from module string:
+  # Code from module strsep:
   # Code from module sys_types:
   # Code from module sysexits:
   # Code from module unistd:
@@ -88,6 +95,18 @@ AC_DEFUN([gl_INIT],
   gl_source_base='lib'
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FUNC_GETDELIM
+  if test $HAVE_GETDELIM = 0 || test $REPLACE_GETDELIM = 1; then
+    AC_LIBOBJ([getdelim])
+    gl_PREREQ_GETDELIM
+  fi
+  gl_STDIO_MODULE_INDICATOR([getdelim])
+  gl_FUNC_GETLINE
+  if test $REPLACE_GETLINE = 1; then
+    AC_LIBOBJ([getline])
+    gl_PREREQ_GETLINE
+  fi
+  gl_STDIO_MODULE_INDICATOR([getline])
   gl_FUNC_GETOPT_GNU
   if test $REPLACE_GETOPT = 1; then
     AC_LIBOBJ([getopt])
@@ -109,9 +128,13 @@ AC_DEFUN([gl_INIT],
   AC_SUBST([GNULIB_GL_UNISTD_H_GETOPT])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_LIMITS_H
+  gl_MULTIARCH
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
   gl_STDDEF_H
+  gl_STDINT_H
+  gl_STDIO_H
   gl_STDLIB_H
   gl_FUNC_STRDUP
   if test $ac_cv_func_strdup = no; then
@@ -132,6 +155,12 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_SYS_H_WINSOCK2
   fi
   gl_HEADER_STRING_H
+  gl_FUNC_STRSEP
+  if test $HAVE_STRSEP = 0; then
+    AC_LIBOBJ([strsep])
+    gl_PREREQ_STRSEP
+  fi
+  gl_STRING_MODULE_INDICATOR([strsep])
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_SYSEXITS
@@ -281,20 +310,26 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
   lib/errno.in.h
+  lib/getdelim.c
+  lib/getline.c
   lib/getopt.c
   lib/getopt.in.h
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
   lib/intprops.h
+  lib/limits.in.h
   lib/stdbool.in.h
   lib/stddef.in.h
+  lib/stdint.in.h
+  lib/stdio.in.h
   lib/stdlib.in.h
   lib/strdup.c
   lib/strerror-override.c
   lib/strerror-override.h
   lib/strerror.c
   lib/string.in.h
+  lib/strsep.c
   lib/sys_types.in.h
   lib/sysexits.in.h
   lib/unistd.c
@@ -305,19 +340,27 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/errno_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
+  m4/getdelim.m4
+  m4/getline.m4
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/limits-h.m4
+  m4/longlong.m4
+  m4/multiarch.m4
   m4/nocrash.m4
   m4/off_t.m4
   m4/onceonly.m4
   m4/ssize_t.m4
   m4/stdbool.m4
   m4/stddef_h.m4
+  m4/stdint.m4
+  m4/stdio_h.m4
   m4/stdlib_h.m4
   m4/strdup.m4
   m4/strerror.m4
   m4/string_h.m4
+  m4/strsep.m4
   m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/sysexits.m4

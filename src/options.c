@@ -118,6 +118,7 @@ static char const* get_long_opt( char short_opt ) {
     if ( long_opt->val == short_opt )
       return long_opt->name;
   assert( false );
+  return NULL;                          // suppress warning (never gets here)
 }
 
 /**
@@ -441,6 +442,7 @@ char const* get_offset_fmt_english( void ) {
     case OFMT_OCT: return "octal";
   } // switch
   assert( false );
+  return NULL;                          // suppress warning (never gets here)
 }
 
 char const* get_offset_fmt_format( void ) {
@@ -450,6 +452,7 @@ char const* get_offset_fmt_format( void ) {
     case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) PRIo64;
   } // switch
   assert( false );
+  return NULL;                          // suppress warning (never gets here)
 }
 
 void parse_options( int argc, char *argv[] ) {

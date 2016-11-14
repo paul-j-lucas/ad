@@ -1,7 +1,10 @@
 /errno.h
 /getopt.h
+/limits.h
 /stdbool.h
 /stddef.h
+/stdint.h
+/stdio.h
 /stdlib.h
 /string.h
 /sys
