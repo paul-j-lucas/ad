@@ -37,6 +37,10 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define CP_SURROGATE_HIGH_START 0x00D800
+#define CP_SURROGATE_LOW_END    0x00DFFF
+#define CP_VALID_MAX            0x10FFFF
+
 /**
  * The maximum number of bytes needed by a Unicode code-point encoded in UTF-8.
  */
@@ -68,9 +72,8 @@ typedef enum utf8_when utf8_when_t;
  * @return Returns \c true only if \a codepoint is valid.
  */
 AD_UTF8_INLINE bool is_codepoint_valid( uint64_t codepoint ) {
-  return                            codepoint <= 0x00D7FF
-      ||  (codepoint >= 0x00E000 && codepoint <= 0x00FFFD)
-      ||  (codepoint >= 0x010000 && codepoint <= 0x10FFFF);
+  return  codepoint < CP_SURROGATE_HIGH_START
+      || (codepoint > CP_SURROGATE_LOW_END && codepoint <= CP_VALID_MAX);
 }
 
 /**
