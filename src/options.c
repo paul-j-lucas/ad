@@ -20,10 +20,10 @@
 */
 
 // local
+#include "options.h"
 #include "color.h"
 #include "common.h"
 #include "config.h"
-#include "options.h"
 #include "utf8.h"
 
 // standard

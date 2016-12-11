@@ -20,8 +20,8 @@
 */
 
 // local
-#include "config.h"
 #include "match.h"
+#include "config.h"
 #include "util.h"
 
 // standard

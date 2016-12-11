@@ -22,8 +22,8 @@
 // local
 #include "config.h"
 #define AD_UTIL_INLINE _GL_EXTERN_INLINE
-#include "common.h"
 #include "util.h"
+#include "common.h"
 
 // standard
 #include <assert.h>
