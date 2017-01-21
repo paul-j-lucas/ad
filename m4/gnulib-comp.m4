@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2016 Free Software Foundation, Inc.
+# Copyright (C) 2002-2017 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module include_next:
   # Code from module intprops:
   # Code from module limits-h:
+  # Code from module malloc-posix:
   # Code from module multiarch:
   # Code from module nocrash:
   # Code from module snippet/_Noreturn:
@@ -66,7 +67,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module stdint:
   # Code from module stdio:
   # Code from module stdlib:
-  # Code from module strdup:
+  # Code from module strdup-posix:
   # Code from module strerror:
   # Code from module strerror-override:
   # Code from module string:
@@ -128,6 +129,11 @@ AC_DEFUN([gl_INIT],
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
   gl_LIMITS_H
+  gl_FUNC_MALLOC_POSIX
+  if test $REPLACE_MALLOC = 1; then
+    AC_LIBOBJ([malloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_MULTIARCH
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
@@ -135,8 +141,8 @@ AC_DEFUN([gl_INIT],
   gl_STDINT_H
   gl_STDIO_H
   gl_STDLIB_H
-  gl_FUNC_STRDUP
-  if test $ac_cv_func_strdup = no; then
+  gl_FUNC_STRDUP_POSIX
+  if test $ac_cv_func_strdup = no || test $REPLACE_STRDUP = 1; then
     AC_LIBOBJ([strdup])
     gl_PREREQ_STRDUP
   fi
@@ -318,6 +324,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/gettext.h
   lib/intprops.h
   lib/limits.in.h
+  lib/malloc.c
   lib/stdbool.in.h
   lib/stddef.in.h
   lib/stdint.in.h
@@ -346,6 +353,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/include_next.m4
   m4/limits-h.m4
   m4/longlong.m4
+  m4/malloc.m4
   m4/multiarch.m4
   m4/nocrash.m4
   m4/off_t.m4
