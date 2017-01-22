@@ -87,8 +87,8 @@ extern char        *elided_separator;   // separator used for elided rows
  * @param buf_pos The position within the row.
  * @param next A pointer to the next row.
  * @param utf8_char A pointer to the buffer to receive the UTF-8 character.
- * @return Returns the number of bytes comprising the UTF-8 character
- * or 0 if the bytes do not comprise a valid UTF-8 character.
+ * @return Returns the number of bytes comprising the UTF-8 character or 0 if
+ * the bytes do not comprise a valid UTF-8 character.
  */
 static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
                             row_buf_t const *next, uint8_t *utf8_char ) {
