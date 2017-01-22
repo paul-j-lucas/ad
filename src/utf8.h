@@ -40,16 +40,8 @@ _GL_INLINE_HEADER_BEGIN
 #define CP_SURROGATE_HIGH_START 0x00D800
 #define CP_SURROGATE_LOW_END    0x00DFFF
 #define CP_VALID_MAX            0x10FFFF
-
-/**
- * The maximum number of bytes needed by a Unicode code-point encoded in UTF-8.
- */
-#define UTF8_LEN_MAX            6
-
-/**
- * The default UTF-8 padding character ("white square": U+25A1).
- */
-#define UTF8_PAD_CHAR_DEFAULT   "\xE2\x96\xA1"
+#define UTF8_LEN_MAX            6       /* max bytes needed for UTF-8 char */
+#define UTF8_PAD_CHAR_DEFAULT   "\xE2\x96\xA1" /* U+25A1: "white square" */
 
 /**
  * When to dump in UTF-8.
