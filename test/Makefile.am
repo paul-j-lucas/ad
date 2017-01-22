@@ -2,7 +2,7 @@
 #	ad -- ASCII dump
 #	test/Makefile.am
 #
-#	Copyright (C) 2015  Paul J. Lucas
+#	Copyright (C) 2015-2017  Paul J. Lucas
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -127,6 +127,7 @@ TESTS =	tests/ad-no_options.test \
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .sh .test
+
 SH_LOG_DRIVER = $(srcdir)/run_test.sh
 TEST_LOG_DRIVER = $(srcdir)/run_test.sh
 
