@@ -22,18 +22,12 @@
 #ifndef ad_common_H
 #define ad_common_H
 
-// local
-#include "config.h"
-
-// standard
-#include <sysexits.h>
-
 ///////////////////////////////////////////////////////////////////////////////
 
-#define EX_NO_MATCHES       1           /* no errors, but no matches either */
-#define OFFSET_WIDTH        16          /* number of offset digits */
-#define ROW_SIZE            16          /* bytes dumped on a row */
-#define ROW_SIZE_C          8           /* bytes dumped on a row in C */
+#define EX_NO_MATCHES             1     /* no errors, but no matches either */
+#define OFFSET_WIDTH              16    /* number of offset digits */
+#define ROW_SIZE                  16    /* bytes dumped on a row */
+#define ROW_SIZE_C                8     /* bytes dumped on a row in C */
 
 /**
  * The endian order for numeric searches.

@@ -37,11 +37,11 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CP_SURROGATE_HIGH_START 0x00D800
-#define CP_SURROGATE_LOW_END    0x00DFFF
-#define CP_VALID_MAX            0x10FFFF
-#define UTF8_LEN_MAX            6       /* max bytes needed for UTF-8 char */
-#define UTF8_PAD_CHAR_DEFAULT   "\xE2\x96\xA1" /* U+25A1: "white square" */
+#define CP_SURROGATE_HIGH_START   0x00D800
+#define CP_SURROGATE_LOW_END      0x00DFFF
+#define CP_VALID_MAX              0x10FFFF
+#define UTF8_LEN_MAX              6       /* max bytes needed for UTF-8 char */
+#define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
 
 /**
  * When to dump in UTF-8.
@@ -53,7 +53,7 @@ enum utf8_when {
 };
 typedef enum utf8_when utf8_when_t;
 
-#define UTF8_WHEN_DEFAULT       UTF8_NEVER
+#define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
 ///////////////////////////////////////////////////////////////////////////////
 

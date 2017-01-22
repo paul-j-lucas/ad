@@ -39,6 +39,7 @@
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

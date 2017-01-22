@@ -21,6 +21,7 @@
 
 // local
 #include "color.h"
+#include "common.h"
 #include "config.h"
 #include "match.h"
 #include "options.h"
@@ -36,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

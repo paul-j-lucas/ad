@@ -23,10 +23,11 @@
 #define ad_options_H
 
 // local
-#include "util.h"                       /* for bool */
+#include <common.h>
 
 // standard
 #include <inttypes.h>                   /* for uint64_t */
+#include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for FILE */
 #include <sys/types.h>                  /* for off_t */

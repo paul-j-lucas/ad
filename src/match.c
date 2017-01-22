@@ -21,6 +21,7 @@
 
 // local
 #include "match.h"
+#include "common.h"
 #include "config.h"
 #include "util.h"
 
@@ -28,6 +29,7 @@
 #include <assert.h>
 #include <ctype.h>                      /* for tolower() */
 #include <stdlib.h>                     /* for exit() */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

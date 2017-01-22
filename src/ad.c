@@ -21,6 +21,7 @@
 
 // local
 #include "config.h"
+#include "common.h"
 #include "options.h"
 #include "util.h"
 
@@ -28,6 +29,7 @@
 #include <assert.h>
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

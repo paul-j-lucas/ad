@@ -33,6 +33,7 @@
 #include <string.h>
 #include <sys/stat.h>                   /* for fstat() */
 #include <unistd.h>                     /* for lseek() */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

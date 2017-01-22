@@ -48,10 +48,12 @@ _GL_INLINE_HEADER_BEGIN
 # define FSEEK_FN fseek
 #endif /* HAVE_FSEEKO */
 
-#define BLOCK(...)          do { __VA_ARGS__ } while (0)
-#define PERROR_EXIT(STATUS) BLOCK( perror( me ); exit( STATUS ); )
-#define PRINT_ERR(...)      fprintf( stderr, __VA_ARGS__ )
-#define STRERROR            strerror( errno )
+#define BLOCK(...)                do { __VA_ARGS__ } while (0)
+#define PERROR_EXIT(STATUS)       BLOCK( perror( me ); exit( STATUS ); )
+#define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
+#define STRERROR                  strerror( errno )
+#define STRINGIFY_HELPER(S)       #S
+#define STRINGIFY(S)              STRINGIFY_HELPER(S)
 
 #define FSEEK(STREAM,OFFSET,WHENCE) \
   BLOCK( if ( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
@@ -62,13 +64,11 @@ _GL_INLINE_HEADER_BEGIN
 #define LSEEK(FD,OFFSET,WHENCE) \
   BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
 
-#define MALLOC(TYPE,N)      (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+#define MALLOC(TYPE,N) \
+  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
-
-#define STRINGIFY_HELPER(S) #S
-#define STRINGIFY(S)        STRINGIFY_HELPER(S)
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -27,6 +27,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define COLOR_WHEN_DEFAULT        COLOR_NOT_FILE
+#define COLORS_DEFAULT            "bn=32:EC=35:MB=41;1:se=36"
+
 /**
  * When to colorize output.
  */
@@ -38,19 +41,15 @@ enum color_when {
 };
 typedef enum color_when color_when_t;
 
+// extern variables
 extern bool         colorize;           // dump in color?
-
 extern char const  *sgr_start;          // start color output
 extern char const  *sgr_end;            // end color output
-
 extern char const  *sgr_offset;         // offset color
 extern char const  *sgr_sep;            // separator color
 extern char const  *sgr_elided;         // elided byte count color
 extern char const  *sgr_hex_match;      // hex match color
 extern char const  *sgr_ascii_match;    // ASCII match color
-
-#define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
-#define COLORS_DEFAULT      "bn=32:EC=35:MB=41;1:se=36"
 
 ///////////////////////////////////////////////////////////////////////////////
 

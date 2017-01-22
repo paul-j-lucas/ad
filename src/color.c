@@ -32,6 +32,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// local constant definitions
+#define SGR_START "\33[%sm"             /* start color sequence */
+#define SGR_END   "\33[m"               /* end color sequence */
+#define SGR_EL    "\33[K"               /* Erase in Line (EL) sequence */
+
 /**
  * Color capability used to map an AD_COLORS/GREP_COLORS "capability" either to
  * the variable to set or the function to call.
@@ -42,11 +47,6 @@ struct color_cap {
   void (*cap_func)( char const* );      // ... OR function to call
 };
 typedef struct color_cap color_cap_t;
-
-// local constant definitions
-#define SGR_START "\33[%sm"             /* start color sequence */
-#define SGR_END   "\33[m"               /* end color sequence */
-#define SGR_EL    "\33[K"               /* Erase in Line (EL) sequence */
 
 // extern variable definitions
 bool        colorize;

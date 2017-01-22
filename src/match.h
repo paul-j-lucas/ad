@@ -30,6 +30,7 @@
 
 typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
 
+// extern variables
 extern unsigned long total_matches;
 
 /**
