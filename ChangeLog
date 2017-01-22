@@ -1,3 +1,64 @@
+2017-01-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am,
+     src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
+     match.h, options.c, options.h, reverse.c, utf8.c, utf8.h, util.c, util.h,
+     test/Makefile.am, run_test.sh: Updated copyright year.
+   * ad.1: Minor tweaks.
+
+2017-01-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, color.h, common.h, dump.c, match.c, match.h, options.c,
+     options.h, reverse.c, utf8.h, util.c, util.h: Clean-up.
+   * utf8.h: Cosmetic change.
+   * lib/Makefile.am, gnulib-cache.m4: Added extern-inline.
+   * lib/Makefile.am, errno.in.h, getdelim.c, getline.c, getopt.c, getopt.in.h,
+     getopt1.c, getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c,
+     stdbool.in.h, stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.in.h, verify.h,
+     00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, longlong.m4, malloc.m4, multiarch.m4, nocrash.m4, off_t.m4,
+     onceonly.m4, ssize_t.m4, stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4,
+     stdlib_h.m4, strdup.m4, strerror.m4, string_h.m4, strsep.m4,
+     sys_socket_h.m4, sys_types_h.m4, sysexits.m4, unistd_h.m4, warn-on-use.m4,
+     wchar_t.m4, wint_t.m4, snippet/arg-nonnull.h, snippet/c++defs.h,
+     snippet/warn-on-use.h: Gnulib update.
+
+2017-01-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: Fixed definition of free_now().
+
+2016-12-31  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, c++defs.h, getopt.in.h, stdint.in.h, stdio.in.h,
+     unistd.in.h, gnulib-comp.m4, stdint.m4, unistd_h.m4, wint_t.m4,
+     snippet/c++defs.h: Gnulib update.
+
+2016-12-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c, options.c, util.c: #include file re-ordering.
+
+2016-11-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * c++defs.h, errno.in.h, getdelim.c, getline.c, gettext.h, intprops.h,
+     limits.in.h, stdbool.in.h, stddef.in.h, stdint.in.h, stdio.in.h, strdup.c,
+     strerror.c, string.in.h, strsep.c, sys_types.in.h, unistd.in.h,
+     snippet/arg-nonnull.h, snippet/c++defs.h, snippet/warn-on-use.h: Updated
+     gnulib.
+
+2016-11-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, lib/Makefile.am, c++defs.h, errno.in.h, getdelim.c,
+     getline.c, gettext.h, intprops.h, limits.in.h, stdbool.in.h, stddef.in.h,
+     stdint.in.h, stdio.in.h, strdup.c, string.in.h, strsep.c, sys_types.in.h,
+     unistd.in.h, getdelim.m4, getline.m4, gnulib-cache.m4, gnulib-comp.m4,
+     limits-h.m4, longlong.m4, multiarch.m4, stdint.m4, stdio_h.m4, strsep.m4,
+     snippet/arg-nonnull.h, snippet/c++defs.h, snippet/warn-on-use.h,
+     options.c: Fixed build on Solaris.
+
 2016-11-13  Paul J. Lucas <paul@lucasmail.org>
 
    * utf8.h: Tweaked is_codepoint_valid().
