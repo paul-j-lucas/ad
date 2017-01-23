@@ -298,12 +298,12 @@ static uint32_t parse_codepoint( char const *s ) {
  */
 static color_when_t parse_color_when( char const *when ) {
   struct colorize_map {
-    char const *map_when;
-    color_when_t map_colorization;
+    char const   *map_when;
+    color_when_t  map_colorization;
   };
   typedef struct colorize_map colorize_map_t;
 
-  static colorize_map_t const colorize_map[] = {
+  static colorize_map_t const COLORIZE_MAP[] = {
     { "always",    COLOR_ALWAYS   },
     { "auto",      COLOR_ISATTY   },    // grep compatibility
     { "isatty",    COLOR_ISATTY   },    // explicit synonym for auto
@@ -319,7 +319,7 @@ static color_when_t parse_color_when( char const *when ) {
     tolower_s( (char*)free_later( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
     if ( strcmp( when_lc, m->map_when ) == 0 )
       return m->map_colorization;
     // sum sizes of names in case we need to construct an error message
@@ -329,7 +329,7 @@ static color_when_t parse_color_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( colorize_map_t const *m = colorize_map; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
@@ -357,7 +357,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   };
   typedef struct utf8_map utf8_map_t;
 
-  static utf8_map_t const utf8_map[] = {
+  static utf8_map_t const UTF8_MAP[] = {
     { "always",   UTF8_ALWAYS   },
     { "auto",     UTF8_ENCODING },
     { "encoding", UTF8_ENCODING },      // explicit synonym for auto
@@ -370,7 +370,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     tolower_s( (char*)free_later( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
+  for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {
     if ( strcmp( when_lc, m->map_when ) == 0 )
       return m->map_utf8;
     // sum sizes of names in case we need to construct an error message
@@ -380,7 +380,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( utf8_map_t const *m = utf8_map; m->map_when; ++m ) {
+  for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;

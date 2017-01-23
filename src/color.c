@@ -115,7 +115,7 @@ static void cap_ne( char const *sgr_color ) {
  * Color capabilities table.  Upper-case names are unique to us and upper-case
  * to avoid conflict with grep.  Lower-case names are for grep compatibility.
  */
-static color_cap_t const color_caps[] = {
+static color_cap_t const COLOR_CAPS[] = {
   { "bn", &sgr_offset,      NULL   },   // grep: byte offset
   { "EC", &sgr_elided,      NULL   },   // elided count
   { "MA", &sgr_ascii_match, NULL   },   // matched ASCII
@@ -149,7 +149,7 @@ bool parse_grep_colors( char const *capabilities ) {
 
     while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
       char const *const cap_name = strsep( &cap_name_val, "=" );
-      for ( color_cap_t const *cap = color_caps; cap->cap_name; ++cap ) {
+      for ( color_cap_t const *cap = COLOR_CAPS; cap->cap_name; ++cap ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
           char const *const cap_value = strsep( &cap_name_val, "=" );
           if ( cap_set( cap, cap_value ) )
