@@ -93,29 +93,34 @@ size_t utf8_encode( uint32_t codepoint, char *p ) {
   if ( n < 0x80 ) {
     // 0xxxxxxx
     *p++ = (char)n;
-  } else if ( n < 0x800 ) {
+  }
+  else if ( n < 0x800 ) {
     // 110xxxxx 10xxxxxx
     *p++ = (char)( Mask2 |  (n >>  6)         );
     *p++ = (char)( Mask1 | ( n        & 0x3F) );
-  } else if ( n < 0x10000 ) {
+  }
+  else if ( n < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
     *p++ = (char)( Mask3 |  (n >> 12)         );
     *p++ = (char)( Mask1 | ((n >>  6) & 0x3F) );
     *p++ = (char)( Mask1 | ( n        & 0x3F) );
-  } else if ( n < 0x200000 ) {
+  }
+  else if ( n < 0x200000 ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
     *p++ = (char)( Mask4 |  (n >> 18)         );
     *p++ = (char)( Mask1 | ((n >> 12) & 0x3F) );
     *p++ = (char)( Mask1 | ((n >>  6) & 0x3F) );
     *p++ = (char)( Mask1 | ( n        & 0x3F) );
-  } else if ( n < 0x4000000 ) {
+  }
+  else if ( n < 0x4000000 ) {
     // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
     *p++ = (char)( Mask5 |  (n >> 24)         );
     *p++ = (char)( Mask1 | ((n >> 18) & 0x3F) );
     *p++ = (char)( Mask1 | ((n >> 12) & 0x3F) );
     *p++ = (char)( Mask1 | ((n >>  6) & 0x3F) );
     *p++ = (char)( Mask1 | ( n        & 0x3F) );
-  } else if ( n < 0x8000000 ) {
+  }
+  else if ( n < 0x8000000 ) {
     // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
     *p++ = (char)( Mask6 |  (n >> 30)         );
     *p++ = (char)( Mask1 | ((n >> 24) & 0x3F) );
