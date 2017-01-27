@@ -198,7 +198,7 @@ void reverse_dump_file( void ) {
   exit( EX_OK );
 
 backwards_offset:
-  snprintf( msg_fmt, sizeof( msg_fmt ),
+  snprintf( msg_fmt, sizeof msg_fmt,
     "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
     get_offset_fmt_format(), get_offset_fmt_english()
   );

@@ -211,7 +211,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   assert( file );
 
   char    buf[ 8192 ];
-  size_t  bytes_to_read = sizeof( buf );
+  size_t  bytes_to_read = sizeof buf;
 
   while ( bytes_to_skip && !feof( file ) ) {
     if ( bytes_to_read > bytes_to_skip )
@@ -393,7 +393,7 @@ char const* printable_char( char c ) {
   if ( ascii_is_print( c ) )
     buf[0] = c, buf[1] = '\0';
   else
-    snprintf( buf, sizeof( buf ), "\\x%02X", (unsigned)c );
+    snprintf( buf, sizeof buf, "\\x%02X", (unsigned)c );
   return buf;
 }
 
