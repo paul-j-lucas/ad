@@ -43,9 +43,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define GAVE_OPTION(OPT)  isalpha( OPTION_VALUE(OPT) )
-#define OPTION_VALUE(OPT) opts_given[ !islower(OPT) ][ toupper(OPT) - 'A' ]
-#define SET_OPTION(OPT)   OPTION_VALUE(OPT) = (OPT)
+#define GAVE_OPTION(OPT)          (opts_given[ (unsigned char)(OPT) ])
+#define SET_OPTION(OPT)           (opts_given[ (unsigned char)(OPT) ] = (OPT))
 
 // option extern variable definitions
 bool              opt_case_insensitive;
@@ -104,7 +103,7 @@ static struct option const LONG_OPTS[] = {
 static char const SHORT_OPTS[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
 
 // local variable definitions
-static char       opts_given[ 2 /* lower/upper */ ][ 26 + 1 /*NULL*/ ];
+static char       opts_given[ 128 ];
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -462,10 +461,6 @@ void parse_options( int argc, char *argv[] ) {
   size_t        size_in_bits = 0, size_in_bytes = 0;
   uint32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
-
-  // just so it's pretty-printable when debugging
-  memset( opts_given, '.', sizeof opts_given );
-  opts_given[0][26] = opts_given[1][26] = '\0';
 
   me = basename( argv[0] );
   opterr = 1;
