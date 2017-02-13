@@ -45,31 +45,32 @@
 
 #define GAVE_OPTION(OPT)          (opts_given[ (unsigned char)(OPT) ])
 #define SET_OPTION(OPT)           (opts_given[ (unsigned char)(OPT) ] = (OPT))
+#define OPT_BUF_SIZE              32    /* used for format_opt() */
 
 // option extern variable definitions
-bool              opt_case_insensitive;
-c_fmt_t           opt_c_fmt;
-size_t            opt_max_bytes_to_read = SIZE_MAX;
-matches_t         opt_matches;
-offset_fmt_t      opt_offset_fmt = OFMT_HEX;
-bool              opt_only_matching;
-bool              opt_only_printing;
-bool              opt_reverse;
-bool              opt_utf8;
-char const       *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
-bool              opt_verbose;
+bool                opt_case_insensitive;
+c_fmt_t             opt_c_fmt;
+size_t              opt_max_bytes_to_read = SIZE_MAX;
+matches_t           opt_matches;
+offset_fmt_t        opt_offset_fmt = OFMT_HEX;
+bool                opt_only_matching;
+bool                opt_only_printing;
+bool                opt_reverse;
+bool                opt_utf8;
+char const         *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
+bool                opt_verbose;
 
 // other extern variable definitions
-FILE             *fin;
-off_t             fin_offset;
-char const       *fin_path = "<stdin>";
-FILE             *fout;
-char const       *fout_path = "<stdout>";
-char const       *me;
-char             *search_buf;
-endian_t          search_endian;
-size_t            search_len;
-uint64_t          search_number;
+FILE               *fin;
+off_t               fin_offset;
+char const         *fin_path = "<stdin>";
+FILE               *fout;
+char const         *fout_path = "<stdout>";
+char const         *me;
+char               *search_buf;
+endian_t            search_endian;
+size_t              search_len;
+uint64_t            search_number;
 
 // local constant definitions
 static struct option const LONG_OPTS[] = {
@@ -100,25 +101,46 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const SHORT_OPTS[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
+static char const   SHORT_OPTS[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
 
 // local variable definitions
-static char       opts_given[ 128 ];
+static char         opts_given[ 128 ];
+
+// local functions
+static char const*  get_long_opt( char );
 
 /////////// local functions ///////////////////////////////////////////////////
+
+/**
+ * Formats an option as <code>[--%s/]-%c</code> where \c %s is the long option
+ * (if any) and %c is the short option.
+ *
+ * @param short_opt The short option (along with its corresponding long option,
+ * if any) to format.
+ * @param buf The buffer to use.
+ * @param buf_size The size of \a buf.
+ * @return Returns \a buf.
+ */
+static char* format_opt( char short_opt, char buf[], size_t size ) {
+  char const *const long_opt = get_long_opt( short_opt );
+  snprintf(
+    buf, size, "%s%s%s-%c",
+    *long_opt ? "--" : "", long_opt, *long_opt ? "/" : "", short_opt
+  );
+  return buf;
+}
 
 /**
  * Gets the corresponding name of the long option for the given short option.
  *
  * @param short_opt The short option to get the corresponding long option for.
- * @return Returns the said option.
+ * @return Returns the said option or the empty string if none.
  */
 static char const* get_long_opt( char short_opt ) {
   for ( struct option const *long_opt = LONG_OPTS; long_opt->name; ++long_opt )
     if ( long_opt->val == short_opt )
       return long_opt->name;
-  assert( false );
-  return NULL;                          // suppress warning (never gets here)
+  return "";
 }
 
 /**
@@ -142,10 +164,12 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
       if ( GAVE_OPTION( *opt ) ) {
         if ( ++gave_count > 1 ) {
           char const gave_opt2 = *opt;
+          char opt1_buf[ OPT_BUF_SIZE ];
+          char opt2_buf[ OPT_BUF_SIZE ];
           PMESSAGE_EXIT( EX_USAGE,
-            "--%s/-%c and --%s/-%c are mutually exclusive\n",
-            get_long_opt( gave_opt1 ), gave_opt1,
-            get_long_opt( gave_opt2 ), gave_opt2
+            "%s and %s are mutually exclusive\n",
+            format_opt( gave_opt1, opt1_buf, sizeof opt1_buf ),
+            format_opt( gave_opt2, opt2_buf, sizeof opt2_buf  )
           );
         }
         gave_opt1 = *opt;
@@ -168,12 +192,15 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
  */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
-  if ( given_size < actual_size )
+  if ( given_size < actual_size ) {
+    char opt_buf[ OPT_BUF_SIZE ];
     PMESSAGE_EXIT( EX_USAGE,
-      "\"%zu\": value for --%s/-%c is too small for \"%" PRIu64 "\";"
+      "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
-      given_size, get_long_opt( opt ), opt, search_number, actual_size
+      given_size, format_opt( opt, opt_buf, sizeof opt_buf ),
+      search_number, actual_size
     );
+  }
 }
 
 /**
@@ -192,10 +219,11 @@ static void check_required( char const *opts, char const *req_opts ) {
       for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
         if ( GAVE_OPTION( *req_opt ) )
           return;
+      char opt_buf[ OPT_BUF_SIZE ];
       bool const reqs_multiple = strlen( req_opts ) > 1;
       PMESSAGE_EXIT( EX_USAGE,
-        "--%s/-%c requires %sthe -%s option%s to be given also\n",
-        get_long_opt( *opt ), *opt,
+        "%s requires %sthe -%s option%s to be given also\n",
+        format_opt( *opt, opt_buf, sizeof opt_buf ),
         (reqs_multiple ? "one of " : ""),
         req_opts, (reqs_multiple ? "s" : "")
       );
@@ -217,6 +245,7 @@ static void check_required( char const *opts, char const *req_opts ) {
 static c_fmt_t parse_c_fmt( char const *s ) {
   c_fmt_t c_fmt = CFMT_DEFAULT;
   char const *fmt;
+  char opt_buf[ OPT_BUF_SIZE ];
 
   if ( s && *s ) {
     for ( fmt = s; *fmt; ++fmt ) {
@@ -229,18 +258,18 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
           PMESSAGE_EXIT( EX_USAGE,
-            "'%c': invalid C format for --%s/-%c;"
+            "'%c': invalid C format for %s;"
             " must be one of: [cilstu]\n",
-            *fmt, get_long_opt( 'C' ), 'C'
+            *fmt, format_opt( 'C', opt_buf, sizeof opt_buf )
           );
       } // switch
     } // for
     if ( (c_fmt & CFMT_SIZE_T) &&
         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
       PMESSAGE_EXIT( EX_USAGE,
-        "\"%s\": invalid C format for --%s/-%c:"
+        "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
-        s, get_long_opt( 'C' ), 'C'
+        s, format_opt( 'C', opt_buf, sizeof opt_buf )
       );
     }
   }
@@ -248,9 +277,9 @@ static c_fmt_t parse_c_fmt( char const *s ) {
 
 dup_format:
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%s\": invalid C format for --%s/-%c:"
+    "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
-    s, get_long_opt( 'C' ), 'C', *fmt
+    s, format_opt( 'C', opt_buf, sizeof opt_buf ), *fmt
   );
 }
 
@@ -282,9 +311,11 @@ static uint32_t parse_codepoint( char const *s ) {
   uint64_t const codepoint = parse_ull( s );
   if ( is_codepoint_valid( codepoint ) )
     return (uint32_t)codepoint;
+
+  char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%s\": invalid Unicode code-point for --%s/-%c\n",
-    s0, get_long_opt( 'U' ), 'U'
+    "\"%s\": invalid Unicode code-point for %s\n",
+    s0, format_opt( 'U', opt_buf, sizeof opt_buf )
   );
 }
 
@@ -336,9 +367,11 @@ static color_when_t parse_color_when( char const *when ) {
     strcpy( pnames, m->map_when );
     pnames += strlen( m->map_when );
   } // for
+
+  char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
-    when, get_long_opt( 'c' ), 'c', names_buf
+    "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
+    when, format_opt( 'c', opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -387,9 +420,11 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     strcpy( pnames, m->map_when );
     pnames += strlen( m->map_when );
   } // for
+
+  char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%s\": invalid value for --%s/-%c; must be one of:\n\t%s\n",
-    when, get_long_opt( 'u' ), 'u', names_buf
+    "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
+    when, format_opt( 'u', opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -528,12 +563,14 @@ void parse_options( int argc, char *argv[] ) {
     exit( EX_OK );
   }
 
+  char opt_buf[ OPT_BUF_SIZE ];
+
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
       PMESSAGE_EXIT( EX_USAGE,
-        "\"%zu\": invalid value for --%s/-%c;"
+        "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
-        size_in_bits, get_long_opt( 'b' ), 'b'
+        size_in_bits, format_opt( 'b', opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bits * 8;
     check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
@@ -542,8 +579,8 @@ void parse_options( int argc, char *argv[] ) {
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
       PMESSAGE_EXIT( EX_USAGE,
-        "\"%zu\": invalid value for --%s/-%c; must be in 1-8\n",
-        size_in_bytes, get_long_opt( 'B' ), 'B'
+        "\"%zu\": invalid value for %s; must be in 1-8\n",
+        size_in_bytes, format_opt( 'B', opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bytes;
     check_number_size( size_in_bytes, int_len( search_number ), 'B' );
