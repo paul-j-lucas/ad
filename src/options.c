@@ -44,8 +44,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAVE_OPTION(OPT)          (opts_given[ (unsigned char)(OPT) ])
-#define SET_OPTION(OPT)           (opts_given[ (unsigned char)(OPT) ] = (OPT))
 #define OPT_BUF_SIZE              32    /* used for format_opt() */
+#define SET_OPTION(OPT)           (opts_given[ (unsigned char)(OPT) ] = (OPT))
 
 // option extern variable definitions
 bool                opt_case_insensitive;
