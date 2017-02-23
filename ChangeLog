@@ -1,5 +1,33 @@
+2017-02-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * COPYING, Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am,
+     ad.1, src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
+     match.h, options.c, options.h, reverse.c, utf8.c, utf8.h, util.c, util.h,
+     test/Makefile.am, run_test.sh: Updated to GPLv3.
+
+2017-02-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Sorted macros.
+   * options.c: Now using format_opt().
+
+2017-01-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Can now support non-alpha options.
+
+2017-01-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * reverse.c, util.c: sizeof clean-up.
+   * utf8.c: Cosmetic change.
+   * options.c: s/int/unsigned/
+
+2017-01-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * src/Makefile.am: Now using global LDADD; remove -L from AM_CPPFLAGS.
+   * color.c, options.c: Cosmetic changes.
+
 2017-01-22  Paul J. Lucas <paul@lucasmail.org>
 
+   * dump.c: Cosmetic change.
    * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am,
      src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
      match.h, options.c, options.h, reverse.c, utf8.c, utf8.h, util.c, util.h,
