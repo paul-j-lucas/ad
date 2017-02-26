@@ -68,10 +68,9 @@ bool should_utf8( utf8_when_t when ) {
 
 #if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
   setlocale( LC_CTYPE, "" );
-  char const *const encoding =
-    (char*)free_later( tolower_s( check_strdup( nl_langinfo( CODESET ) ) ) );
-  return  strcmp( encoding, "utf8"  ) == 0 ||
-          strcmp( encoding, "utf-8" ) == 0;
+  char const *const encoding = nl_langinfo( CODESET );
+  return  strcasecmp( encoding, "utf8"  ) == 0 ||
+          strcasecmp( encoding, "utf-8" ) == 0;
 #else
   return false;
 #endif

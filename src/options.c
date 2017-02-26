@@ -344,12 +344,10 @@ static color_when_t parse_color_when( char const *when ) {
   };
 
   assert( when );
-  char const *const when_lc =
-    tolower_s( (char*)free_later( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
-    if ( strcmp( when_lc, m->map_when ) == 0 )
+    if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_colorization;
     // sum sizes of names in case we need to construct an error message
     names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
@@ -397,12 +395,10 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   };
 
   assert( when );
-  char const *const when_lc =
-    tolower_s( (char*)free_later( check_strdup( when ) ) );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {
-    if ( strcmp( when_lc, m->map_when ) == 0 )
+    if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_utf8;
     // sum sizes of names in case we need to construct an error message
     names_buf_size += strlen( m->map_when ) + 2 /* ", " */;
