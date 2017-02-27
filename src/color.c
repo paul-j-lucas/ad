@@ -63,7 +63,7 @@ char const *sgr_ascii_match;
  * Sets the SGR color for the given capability.
  *
  * @param cap The color capability to set the color for.
- * @param sgr_color The SGR color to set or empty or NULL to unset.
+ * @param sgr_color The SGR color to set; or null or empty to unset.
  * @return Returns \c true only if \a sgr_color is valid.
  */
 static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
@@ -88,7 +88,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  * (This function is needed for the color capabilities table to support the
  * "MB" and "mt" capabilities.)
  *
- * @param sgr_color The SGR color to set or empty or NULL to unset.
+ * @param sgr_color The SGR color to set; or null or empty to unset.
  */
 static void cap_MB( char const *sgr_color ) {
   assert( sgr_color );
@@ -110,20 +110,23 @@ static void cap_ne( char const *sgr_color ) {
   sgr_end   = SGR_END;
 }
 
+#define CALL_FN(FN)   NULL, (FN)
+#define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
+
 /**
  * Color capabilities table.  Upper-case names are unique to us and upper-case
  * to avoid conflict with grep.  Lower-case names are for grep compatibility.
  */
 static color_cap_t const COLOR_CAPS[] = {
-  { "bn", &sgr_offset,      NULL   },   // grep: byte offset
-  { "EC", &sgr_elided,      NULL   },   // elided count
-  { "MA", &sgr_ascii_match, NULL   },   // matched ASCII
-  { "MH", &sgr_hex_match,   NULL   },   // matched hex
-  { "MB", NULL,             cap_MB },   // matched both
-  { "mt", NULL,             cap_MB },   // grep: matched text (both)
-  { "se", &sgr_sep,         NULL   },   // grep: separator
-  { "ne", NULL,             cap_ne },   // grep: no EL on SGR
-  { NULL, NULL,             NULL   }
+  { "bn", SET_SGR( offset       ) },    // grep: byte offset
+  { "EC", SET_SGR( elided       ) },    // elided count
+  { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
+  { "MH", SET_SGR( hex_match    ) },    // matched hex
+  { "MB", CALL_FN( cap_MB       ) },    // matched both
+  { "mt", CALL_FN( cap_MB       ) },    // grep: matched text (both)
+  { "se", SET_SGR( sep          ) },    // grep: separator
+  { "ne", CALL_FN( cap_ne       ) },    // grep: no EL on SGR
+  { NULL, NULL, NULL              }
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -141,9 +144,7 @@ bool parse_grep_colors( char const *capabilities ) {
 
   if ( capabilities ) {
     // free this later since the sgr_* variables point to substrings
-    char *const capabilities_dup =
-      (char*)free_later( check_strdup( capabilities ) );
-    char *next_cap = capabilities_dup;
+    char *next_cap = (char*)free_later( check_strdup( capabilities ) );
     char *cap_name_val;
 
     while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
