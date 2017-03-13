@@ -26,8 +26,35 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define SGR_BG_BLACK              "40"
+#define SGR_BG_RED                "41"
+#define SGR_BG_GREEN              "42"
+#define SGR_BG_YELLOW             "43"
+#define SGR_BG_BLUE               "44"
+#define SGR_BG_MAGENTA            "45"
+#define SGR_BG_CYAN               "46"
+#define SGR_BG_WHITE              "47"
+
+#define SGR_FG_BLACK              "30"
+#define SGR_FG_RED                "31"
+#define SGR_FG_GREEN              "32"
+#define SGR_FG_YELLOW             "33"
+#define SGR_FG_BLUE               "34"
+#define SGR_FG_MAGENTA            "35"
+#define SGR_FG_CYAN               "36"
+#define SGR_FG_WHITE              "37"
+
+#define SGR_BOLD                  "1"
+#define SGR_CAP_SEP               ":"   /* capability separator */
+#define SGR_SEP                   ";"   /* attribute/RGB separator */
+
 #define COLOR_WHEN_DEFAULT        COLOR_NOT_FILE
-#define COLORS_DEFAULT            "bn=32:EC=35:MB=41;1:se=36"
+
+#define COLORS_DEFAULT                                                  \
+  /* byte offset  */ "bn=" SGR_FG_GREEN                     SGR_CAP_SEP \
+  /* elided count */ "EC=" SGR_FG_MAGENTA                   SGR_CAP_SEP \
+  /* matched both */ "MB=" SGR_BG_RED     SGR_SEP SGR_BOLD  SGR_CAP_SEP \
+  /* separator    */ "se=" SGR_FG_CYAN
 
 /**
  * When to colorize output.
