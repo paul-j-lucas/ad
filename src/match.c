@@ -151,7 +151,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_drain = buf_pos;
           GOTO_STATE( S_MATCHED );
         }
-        // no break;
+        // FALLTHROUGH
       case S_MATCHING_CONT:
         if ( !get_byte( &byte ) ) {
           //
