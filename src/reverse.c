@@ -40,8 +40,8 @@
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
-#define FWRITE(PTR,SIZE,N,STREAM) \
-  BLOCK( if ( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) PERROR_EXIT( EX_IOERR ); )
+#define FWRITE(PTR,SIZE,N,STREAM) BLOCK( \
+  if ( unlikely( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) ) PERROR_EXIT( EX_IOERR ); )
 
 enum row_kind {
   ROW_BYTES,
@@ -134,12 +134,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
 
     // parse second nybble
     ++col;
-    if ( ++p == end )
+    if ( unlikely( ++p == end ) )
       INVALID_EXIT(
         "unexpected end of data; expected %d hexadecimal bytes\n",
         ROW_SIZE
       );
-    if ( !isxdigit( *p ) )
+    if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
     byte |= xtoi( *p );
 
@@ -177,7 +177,7 @@ void reverse_dump_file( void ) {
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES:
-        if ( new_offset < fout_offset + ROW_SIZE )
+        if ( unlikely( new_offset < fout_offset + ROW_SIZE ) )
           goto backwards_offset;
         if ( new_offset > fout_offset + ROW_SIZE )
           FSEEK( fout, new_offset, SEEK_SET );

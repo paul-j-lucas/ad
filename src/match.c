@@ -63,13 +63,13 @@ static void         unget_byte( uint8_t );
 static bool get_byte( uint8_t *pbyte ) {
   if ( total_bytes_read < opt_max_bytes_to_read ) {
     int const c = getc( fin );
-    if ( c != EOF ) {
+    if ( likely( c != EOF ) ) {
       ++total_bytes_read;
       assert( pbyte );
       *pbyte = (uint8_t)c;
       return true;
     }
-    if ( ferror( fin ) )
+    if ( unlikely( ferror( fin ) ) )
       PMESSAGE_EXIT( EX_IOERR,
         "\"%s\": read byte failed: %s\n", fin_path, STRERROR
       );
@@ -218,7 +218,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
  * @param byte The byte to unget.
  */
 static void unget_byte( uint8_t byte ) {
-  if ( ungetc( byte, fin ) == EOF )
+  if ( unlikely( ungetc( byte, fin ) == EOF ) )
     PMESSAGE_EXIT( EX_IOERR,
       "\"%s\": unget byte failed: %s\n", fin_path, STRERROR
     );

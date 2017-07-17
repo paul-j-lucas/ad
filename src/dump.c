@@ -40,17 +40,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FFLUSH(F) \
-  BLOCK( if ( fflush( F ) == EOF ) PERROR_EXIT( EX_IOERR ); )
+#define FFLUSH(F) BLOCK( \
+  if ( unlikely( fflush( F ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
 
-#define FPRINTF(...) \
-  BLOCK( if ( fprintf( fout, __VA_ARGS__ ) < 0 ) PERROR_EXIT( EX_IOERR ); )
+#define FPRINTF(...) BLOCK( \
+  if ( unlikely( fprintf( fout, __VA_ARGS__ ) < 0 ) ) PERROR_EXIT( EX_IOERR ); )
 
-#define FPUTC(C) \
-  BLOCK( if ( fputc( (C), fout ) == EOF ) PERROR_EXIT( EX_IOERR ); )
+#define FPUTC(C) BLOCK( \
+  if ( unlikely( fputc( (C), fout ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
 
-#define FPUTS(S) \
-  BLOCK( if ( fputs( (S), fout ) == EOF ) PERROR_EXIT( EX_IOERR ); )
+#define FPUTS(S) BLOCK( \
+  if ( unlikely( fputs( (S), fout ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
 
 #define SGR_START_IF(EXPR) \
   BLOCK( if ( colorize && (EXPR) ) FPRINTF( sgr_start, (EXPR) ); )
@@ -109,7 +109,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
       }
 
       uint8_t const byte = row->bytes[ buf_pos ];
-      if ( !utf8_is_cont( (char)byte ) )
+      if ( unlikely( !utf8_is_cont( (char)byte ) ) )
         return 0;
       *utf8_char++ = byte;
     } // for

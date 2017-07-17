@@ -162,7 +162,7 @@ void* check_realloc( void *p, size_t size ) {
   if ( !size )
     size = 1;
   void *const r = p ? realloc( p, size ) : malloc( size );
-  if ( !r )
+  if ( unlikely( !r ) )
     PERROR_EXIT( EX_OSERR );
   return r;
 }
@@ -170,7 +170,7 @@ void* check_realloc( void *p, size_t size ) {
 char* check_strdup( char const *s ) {
   assert( s );
   char *const dup = strdup( s );
-  if ( !dup )
+  if ( unlikely( !dup ) )
     PERROR_EXIT( EX_OSERR );
   return dup;
 }
@@ -180,7 +180,7 @@ char* fgetln( FILE *f, size_t *len ) {
   static char *buf;
   static size_t cap;
   ssize_t const temp_len = getline( &buf, &cap, f );
-  if ( temp_len == -1 )
+  if ( unlikely( temp_len == -1 ) )
     return NULL;
   *len = (size_t)temp_len;
   return buf;
@@ -216,7 +216,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
     if ( bytes_to_read > bytes_to_skip )
       bytes_to_read = bytes_to_skip;
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
-    if ( ferror( file ) )
+    if ( unlikely( ferror( file ) ) )
       PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
   } // while
@@ -322,7 +322,7 @@ uint64_t parse_offset( char const *s ) {
     char *end = NULL;
     errno = 0;
     uint64_t n = strtoull( s, &end, 0 );
-    if ( errno || end == s )
+    if ( unlikely( errno || end == s ) )
       goto error;
     if ( end[0] ) {                     // possibly 'b', 'k', or 'm'
       if ( end[1] )                     // not a single char
@@ -370,7 +370,7 @@ uint64_t parse_ull( char const *s ) {
     char *end = NULL;
     errno = 0;
     uint64_t const n = strtoull( s, &end, 0 );
-    if ( !errno && !*end )
+    if ( likely( !errno && !*end ) )
       return n;
   }
   PMESSAGE_EXIT( EX_USAGE, "\"%s\": invalid integer\n", s );

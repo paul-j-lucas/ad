@@ -54,14 +54,41 @@ _GL_INLINE_HEADER_BEGIN
 #define STRINGIFY_HELPER(S)       #S
 #define STRINGIFY(S)              STRINGIFY_HELPER(S)
 
-#define FSEEK(STREAM,OFFSET,WHENCE) \
-  BLOCK( if ( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
+#ifdef __GNUC__
 
-#define FSTAT(FD,STAT) \
-  BLOCK( if ( fstat( (FD), (STAT) ) < 0 ) PERROR_EXIT( EX_IOERR ); )
+/**
+ * Specifies that \a EXPR is \e very likely (as in 99.99% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * magrinally better performance.
+ *
+ * @see http://lwn.net/Articles/255364/
+ * @hideinitializer
+ */
+#define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
 
-#define LSEEK(FD,OFFSET,WHENCE) \
-  BLOCK( if ( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) PERROR_EXIT( EX_IOERR ); )
+/**
+ * Specifies that \a EXPR is \e very unlikely (as in .01% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * magrinally better performance.
+ *
+ * @see http://lwn.net/Articles/255364/
+ * @hideinitializer
+ */
+#define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
+
+#else
+# define likely(EXPR)             (EXPR)
+# define unlikely(EXPR)           (EXPR)
+#endif /* __GNUC__ */
+
+#define FSEEK(STREAM,OFFSET,WHENCE) BLOCK( \
+	if ( unlikely( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) ) PERROR_EXIT( EX_IOERR ); )
+
+#define FSTAT(FD,STAT) BLOCK( \
+	if ( unlikely( fstat( (FD), (STAT) ) < 0 ) ) PERROR_EXIT( EX_IOERR ); )
+
+#define LSEEK(FD,OFFSET,WHENCE) BLOCK( \
+	if ( unlikely( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) ) PERROR_EXIT( EX_IOERR ); )
 
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
