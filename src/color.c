@@ -67,7 +67,7 @@ char const *sgr_ascii_match;
  * @return Returns \c true only if \a sgr_color is valid.
  */
 static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
-  assert( cap );
+  assert( cap != NULL );
   assert( cap->cap_var_to_set || cap->cap_func );
 
   if ( sgr_color ) {
@@ -91,7 +91,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  * @param sgr_color The SGR color to set; or null or empty to unset.
  */
 static void cap_MB( char const *sgr_color ) {
-  assert( sgr_color );
+  assert( sgr_color != NULL );
   if ( !*sgr_color )                    // empty string -> NULL = unset
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;

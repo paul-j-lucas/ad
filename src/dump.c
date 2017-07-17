@@ -91,9 +91,9 @@ extern char        *elided_separator;   // separator used for elided rows
  */
 static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
                             row_buf_t const *next, uint8_t *utf8_char ) {
-  assert( cur );
-  assert( next );
-  assert( utf8_char );
+  assert( cur != NULL );
+  assert( next != NULL );
+  assert( utf8_char != NULL );
 
   size_t const len = utf8_len( cur->bytes[ buf_pos ] );
   if ( len > 1 ) {
@@ -128,9 +128,9 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
  */
 static void dump_row( char const *off_fmt, row_buf_t const *cur,
                       row_buf_t const *next ) {
-  assert( off_fmt );
-  assert( cur );
-  assert( next );
+  assert( off_fmt != NULL );
+  assert( cur != NULL );
+  assert( next != NULL );
 
   static bool   any_dumped = false;     // any data dumped yet?
   static off_t  dumped_offset = -1;     // offset of most recently dumped row
@@ -238,8 +238,8 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
  */
 static void dump_row_c( char const *off_fmt, uint8_t const *buf,
                         size_t buf_len ) {
-  assert( off_fmt );
-  assert( buf );
+  assert( off_fmt != NULL );
+  assert( buf != NULL );
 
   // print offset
   FPUTS( "  /* " );

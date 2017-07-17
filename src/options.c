@@ -151,8 +151,8 @@ static char const* get_long_opt( char short_opt ) {
  * @param opts2 The second set of short options.
  */
 static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
-  assert( opts1 );
-  assert( opts2 );
+  assert( opts1 != NULL );
+  assert( opts2 != NULL );
 
   unsigned gave_count = 0;
   char const *opt = opts1;
@@ -211,8 +211,8 @@ static void check_number_size( size_t given_size, size_t actual_size,
  * @param req_opts The set of required options for \a opts.
  */
 static void check_required( char const *opts, char const *req_opts ) {
-  assert( opts );
-  assert( req_opts );
+  assert( opts != NULL );
+  assert( req_opts != NULL );
   for ( char const *opt = opts; *opt; ++opt ) {
     if ( GAVE_OPTION( *opt ) ) {
       for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
@@ -296,7 +296,7 @@ dup_format:
  * or prints an error message and exits if \a s is invalid.
  */
 static uint32_t parse_codepoint( char const *s ) {
-  assert( s );
+  assert( s != NULL );
 
   if ( s[0] && !s[1] )                  // assume single-char ASCII
     return (uint32_t)s[0];
@@ -343,7 +343,7 @@ static color_when_t parse_color_when( char const *when ) {
     { NULL,        COLOR_NEVER    }
   };
 
-  assert( when );
+  assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
@@ -394,7 +394,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     { NULL,       UTF8_NEVER    }
   };
 
-  assert( when );
+  assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
   for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {

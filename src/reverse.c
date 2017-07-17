@@ -80,10 +80,10 @@ static inline unsigned xtoi( char c ) {
 static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
                              off_t *poffset, uint8_t *bytes,
                              size_t *pbytes_len ) {
-  assert( buf );
-  assert( poffset );
-  assert( bytes );
-  assert( pbytes_len );
+  assert( buf != NULL );
+  assert( poffset != NULL );
+  assert( bytes != NULL );
+  assert( pbytes_len != NULL );
 
   size_t col = 1;
 

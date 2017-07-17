@@ -65,7 +65,7 @@ static bool get_byte( uint8_t *pbyte ) {
     int const c = getc( fin );
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;
-      assert( pbyte );
+      assert( pbyte != NULL );
       *pbyte = (uint8_t)c;
       return true;
     }
@@ -106,8 +106,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 
   uint8_t byte;
 
-  assert( pbyte );
-  assert( matches );
+  assert( pbyte != NULL );
+  assert( matches != NULL );
   assert( state != S_DONE );
 
   *matches = false;
@@ -228,7 +228,7 @@ static void unget_byte( uint8_t byte ) {
 ////////// extern functions ///////////////////////////////////////////////////
 
 kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
-  assert( pattern );
+  assert( pattern != NULL );
 
   // allocating +1 eliminates "past the end" checking
   kmp_t *const kmps = MALLOC( kmp_t, pattern_len + 1 );
@@ -248,9 +248,9 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 
 size_t match_row( uint8_t *row_buf, size_t row_size, uint16_t *match_bits,
                   kmp_t const *kmps, uint8_t *match_buf ) {
-  assert( row_buf );
+  assert( row_buf != NULL );
   assert( row_size <= ROW_SIZE );
-  assert( match_bits );
+  assert( match_bits != NULL );
   *match_bits = 0;
 
   size_t buf_len;

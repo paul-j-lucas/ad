@@ -106,7 +106,7 @@ static inline uint64_t swap_64( uint64_t n ) {
  * empty.
  */
 static char const* skip_ws( char const *s ) {
-  assert( s );
+  assert( s != NULL );
   while ( isspace( *s ) )
     ++s;
   return s;
@@ -115,7 +115,7 @@ static char const* skip_ws( char const *s ) {
 ////////// extern funtions ////////////////////////////////////////////////////
 
 bool ascii_any_printable( char const *s, size_t s_len ) {
-  assert( s );
+  assert( s != NULL );
   for ( ; s_len; --s_len, ++s )
     if ( ascii_is_print( *s ) )
       return true;
@@ -123,8 +123,8 @@ bool ascii_any_printable( char const *s, size_t s_len ) {
 }
 
 FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
-  assert( path );
-  assert( mode );
+  assert( path != NULL );
+  assert( mode != NULL );
 
   FILE *const file = fopen( path, mode );
   if ( !file ) {
@@ -139,7 +139,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
 }
 
 int check_open( char const *path, int oflag, off_t offset ) {
-  assert( path );
+  assert( path != NULL );
   bool const create = oflag & O_CREAT;
   int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
   if ( fd == -1 )
@@ -168,7 +168,7 @@ void* check_realloc( void *p, size_t size ) {
 }
 
 char* check_strdup( char const *s ) {
-  assert( s );
+  assert( s != NULL );
   char *const dup = strdup( s );
   if ( unlikely( !dup ) )
     PERROR_EXIT( EX_OSERR );
@@ -188,7 +188,7 @@ char* fgetln( FILE *f, size_t *len ) {
 #endif /* HAVE_FGETLN */
 
 void* free_later( void *p ) {
-  assert( p );
+  assert( p != NULL );
   free_node_t *const new_node = MALLOC( free_node_t, 1 );
   new_node->ptr = p;
   new_node->next = free_head;
@@ -207,7 +207,7 @@ void free_now( void ) {
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
-  assert( file );
+  assert( file != NULL );
 
   char    buf[ 8192 ];
   size_t  bytes_to_read = sizeof buf;
@@ -223,7 +223,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
 }
 
 char* identify( char const *s ) {
-  assert( s );
+  assert( s != NULL );
   assert( *s );
 
   size_t const s_len = strlen( s );
@@ -257,7 +257,7 @@ size_t int_len( uint64_t n ) {
 }
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
-  assert( n );
+  assert( n != NULL );
   assert( bytes <= 8 );
 
   switch ( endian ) {
@@ -397,7 +397,7 @@ char const* printable_char( char c ) {
 }
 
 char* tolower_s( char *s ) {
-  assert( s );
+  assert( s != NULL );
   for ( char *t = s; *t; ++t )
     *t = tolower( *t );
   return s;

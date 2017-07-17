@@ -77,7 +77,7 @@ bool should_utf8( utf8_when_t when ) {
 }
 
 size_t utf8_encode( uint32_t codepoint, char *p ) {
-  assert( p );
+  assert( p != NULL );
 
   static unsigned const Mask1 = 0x80;
   static unsigned const Mask2 = 0xC0;
