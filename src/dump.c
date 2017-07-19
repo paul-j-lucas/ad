@@ -41,16 +41,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define FFLUSH(F) BLOCK( \
-  if ( unlikely( fflush( F ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
+  if ( unlikely( fflush( F ) == EOF ) ) perror_exit( EX_IOERR ); )
 
 #define FPRINTF(...) BLOCK( \
-  if ( unlikely( fprintf( fout, __VA_ARGS__ ) < 0 ) ) PERROR_EXIT( EX_IOERR ); )
+  if ( unlikely( fprintf( fout, __VA_ARGS__ ) < 0 ) ) perror_exit( EX_IOERR ); )
 
 #define FPUTC(C) BLOCK( \
-  if ( unlikely( fputc( (C), fout ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
+  if ( unlikely( fputc( (C), fout ) == EOF ) ) perror_exit( EX_IOERR ); )
 
 #define FPUTS(S) BLOCK( \
-  if ( unlikely( fputs( (S), fout ) == EOF ) ) PERROR_EXIT( EX_IOERR ); )
+  if ( unlikely( fputs( (S), fout ) == EOF ) ) perror_exit( EX_IOERR ); )
 
 #define SGR_START_IF(EXPR) \
   BLOCK( if ( colorize && (EXPR) ) FPRINTF( sgr_start, (EXPR) ); )

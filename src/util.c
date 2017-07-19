@@ -163,7 +163,7 @@ void* check_realloc( void *p, size_t size ) {
     size = 1;
   void *const r = p ? realloc( p, size ) : malloc( size );
   if ( unlikely( !r ) )
-    PERROR_EXIT( EX_OSERR );
+    perror_exit( EX_OSERR );
   return r;
 }
 
@@ -171,7 +171,7 @@ char* check_strdup( char const *s ) {
   assert( s != NULL );
   char *const dup = strdup( s );
   if ( unlikely( !dup ) )
-    PERROR_EXIT( EX_OSERR );
+    perror_exit( EX_OSERR );
   return dup;
 }
 
@@ -374,6 +374,11 @@ uint64_t parse_ull( char const *s ) {
       return n;
   }
   PMESSAGE_EXIT( EX_USAGE, "\"%s\": invalid integer\n", s );
+}
+
+void perror_exit( int status ) {
+  perror( me );
+  exit( status );
 }
 
 char const* printable_char( char c ) {

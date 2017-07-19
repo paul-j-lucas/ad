@@ -48,7 +48,6 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* HAVE_FSEEKO */
 
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
-#define PERROR_EXIT(STATUS)       BLOCK( perror( me ); exit( STATUS ); )
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 #define STRERROR                  strerror( errno )
 #define STRINGIFY_HELPER(S)       #S
@@ -82,13 +81,13 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* __GNUC__ */
 
 #define FSEEK(STREAM,OFFSET,WHENCE) BLOCK( \
-	if ( unlikely( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) ) PERROR_EXIT( EX_IOERR ); )
+	if ( unlikely( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
 
 #define FSTAT(FD,STAT) BLOCK( \
-	if ( unlikely( fstat( (FD), (STAT) ) < 0 ) ) PERROR_EXIT( EX_IOERR ); )
+	if ( unlikely( fstat( (FD), (STAT) ) < 0 ) ) perror_exit( EX_IOERR ); )
 
 #define LSEEK(FD,OFFSET,WHENCE) BLOCK( \
-	if ( unlikely( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) ) PERROR_EXIT( EX_IOERR ); )
+	if ( unlikely( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
 
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
@@ -281,6 +280,13 @@ bool parse_sgr( char const *sgr_color );
  * number or prints an error message and exits if there was an error.
  */
 uint64_t parse_ull( char const *s );
+
+/**
+ * Prints an error message for \c errno to standard error and exits.
+ *
+ * @param status The exit status code.
+ */
+void perror_exit( int status );
 
 /**
  * Gets a printable version of the given character:

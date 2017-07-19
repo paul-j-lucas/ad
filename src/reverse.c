@@ -41,7 +41,7 @@
   )
 
 #define FWRITE(PTR,SIZE,N,STREAM) BLOCK( \
-  if ( unlikely( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) ) PERROR_EXIT( EX_IOERR ); )
+  if ( unlikely( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) ) perror_exit( EX_IOERR ); )
 
 enum row_kind {
   ROW_BYTES,
