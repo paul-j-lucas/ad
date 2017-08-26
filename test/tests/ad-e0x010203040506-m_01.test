@@ -1,1 +1,1 @@
-ad | -c always -e 0x010203040506 -m | endian.bin | | 0
+ad | -c always -e0x010203040506 -m | endian.bin | | 0
