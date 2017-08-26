@@ -127,7 +127,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   assert( mode != NULL );
 
   FILE *const file = fopen( path, mode );
-  if ( !file ) {
+  if ( unlikely( !file ) ) {
     bool const create = strpbrk( mode, "aw" );
     PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
@@ -142,7 +142,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
   assert( path != NULL );
   bool const create = oflag & O_CREAT;
   int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
-  if ( fd == -1 )
+  if ( unlikely( fd == -1 ) )
     PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
@@ -315,7 +315,7 @@ bool is_file( int fd ) {
 
 uint64_t parse_offset( char const *s ) {
   s = skip_ws( s );
-  if ( !*s || *s == '-' )               // strtoull(3) wrongly allows '-'
+  if ( unlikely( !*s || *s == '-' ) )   // strtoull(3) wrongly allows '-'
     goto error;
 
   { // local scope
@@ -345,12 +345,12 @@ bool parse_sgr( char const *sgr_color ) {
   if ( !sgr_color )
     return false;
   for ( ;; ) {
-    if ( !isdigit( *sgr_color ) )
+    if ( unlikely( !isdigit( *sgr_color ) ) )
       return false;
     char *end;
     errno = 0;
     uint64_t const n = strtoull( sgr_color, &end, 10 );
-    if ( errno || n > 255 )
+    if ( unlikely( errno || n > 255 ) )
       return false;
     switch ( *end ) {
       case '\0':
@@ -366,7 +366,7 @@ bool parse_sgr( char const *sgr_color ) {
 
 uint64_t parse_ull( char const *s ) {
   s = skip_ws( s );
-  if ( *s && *s != '-' ) {              // strtoull(3) wrongly allows '-'
+  if ( unlikely( *s && *s != '-' ) ) {  // strtoull(3) wrongly allows '-'
     char *end = NULL;
     errno = 0;
     uint64_t const n = strtoull( s, &end, 0 );

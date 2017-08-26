@@ -61,7 +61,7 @@ static void         unget_byte( uint8_t );
  * @return Returns \c true if a byte was read successfully.
  */
 static bool get_byte( uint8_t *pbyte ) {
-  if ( total_bytes_read < opt_max_bytes_to_read ) {
+  if ( likely( total_bytes_read < opt_max_bytes_to_read ) ) {
     int const c = getc( fin );
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;
@@ -122,7 +122,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
   ( opt_case_insensitive ? (uint8_t)tolower( (char)(BYTE) ) : (BYTE) )
 
       case S_READING:
-        if ( !get_byte( &byte ) )
+        if ( unlikely( !get_byte( &byte ) ) )
           GOTO_STATE( S_DONE );
         if ( !search_len )              // user isn't searching for anything
           RETURN( byte );
@@ -153,7 +153,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
         }
         // FALLTHROUGH
       case S_MATCHING_CONT:
-        if ( !get_byte( &byte ) ) {
+        if ( unlikely( !get_byte( &byte ) ) ) {
           //
           // We've reached EOF and there weren't enough bytes to match the
           // search buffer: just drain the match buffer and return the bytes

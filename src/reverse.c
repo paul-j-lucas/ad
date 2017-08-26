@@ -107,7 +107,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     col += elided_sep_width;
     uint64_t delta;
     buf += elided_sep_width;
-    if ( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 )
+    if ( unlikely( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 ) )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
@@ -119,7 +119,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   char const *end = NULL;
   errno = 0;
   *poffset = strtoull( buf, (char**)&end, opt_offset_fmt );
-  if ( errno || *end != ':' )
+  if ( unlikely( errno || *end != ':' ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
@@ -137,7 +137,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
 
     // handle whitespace
     if ( isspace( *p ) ) {
-      if ( *p == '\n' )
+      if ( unlikely( *p == '\n' ) )
         break;                          // unexpected (expected ASCII), but OK
       if ( ++consec_spaces == 2 + (bytes_len == 7 && opt_group_by == 1) )
         break;                          // short row
@@ -146,7 +146,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     consec_spaces = 0;
 
     // parse first nybble
-    if ( !isxdigit( *p ) )
+    if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
     uint8_t byte = xtoi( *p ) << 4;
 
@@ -188,7 +188,7 @@ void reverse_dump_file( void ) {
     size_t row_len;
     char *const row_buf = fgetln( fin, &row_len );
     if ( !row_buf ) {
-      if ( ferror( fin ) )
+      if ( unlikely( ferror( fin ) ) )
         PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
       break;
     }
