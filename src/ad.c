@@ -37,9 +37,6 @@ extern void dump_file( void );
 extern void dump_file_c( void );
 extern void reverse_dump_file( void );
 
-// extern variable definitions
-char *elided_separator;                 // separator used for elided rows
-
 /////////// local functions ///////////////////////////////////////////////////
 
 /**
@@ -77,11 +74,6 @@ static void init( int argc, char *argv[] ) {
 
   if ( !opt_max_bytes_to_read )         // degenerate case
     exit( search_len ? EX_NO_MATCHES : EX_OK );
-
-  elided_separator =
-    (char*)free_later( MALLOC( char, OFFSET_WIDTH + 1 /*NULL*/ ) );
-  memset( elided_separator, '-', OFFSET_WIDTH );
-  elided_separator[ OFFSET_WIDTH ] = '\0';
 }
 
 /////////// main //////////////////////////////////////////////////////////////

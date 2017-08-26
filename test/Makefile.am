@@ -75,6 +75,12 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-E0x0102030405060708-m_02.test \
 	tests/ad-e1-sx_01.test \
 	tests/ad-E1-sx_02.test \
+	tests/ad-g1.test \
+	tests/ad-g2.test \
+	tests/ad-g3.test \
+	tests/ad-g4.test \
+	tests/ad-g8.test \
+	tests/ad-g16.test \
 	tests/ad-h.test \
 	tests/ad-i-s_01.test \
 	tests/ad-i.test \

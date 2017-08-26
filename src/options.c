@@ -49,6 +49,7 @@
 // option extern variable definitions
 bool                opt_case_insensitive;
 c_fmt_t             opt_c_fmt;
+unsigned            opt_group_by = GROUP_BY_DEFAULT;
 size_t              opt_max_bytes_to_read = SIZE_MAX;
 matches_t           opt_matches;
 offset_fmt_t        opt_offset_fmt = OFMT_HEX;
@@ -80,6 +81,7 @@ static struct option const LONG_OPTS[] = {
   { "decimal",            no_argument,        NULL, 'd' },
   { "little-endian",      required_argument,  NULL, 'e' },
   { "big-endian",         required_argument,  NULL, 'E' },
+  { "group-by",           required_argument,  NULL, 'g' },
   { "help",               no_argument,        NULL, 'H' },
   { "hexadecimal",        no_argument,        NULL, 'h' },
   { "ignore-case",        no_argument,        NULL, 'i' },
@@ -100,7 +102,7 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const   SHORT_OPTS[] = "b:B:c:C:de:E:hHij:mN:oprs:S:tTu:U:vV";
+static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:mN:oprs:S:tTu:U:vV";
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -373,6 +375,30 @@ static color_when_t parse_color_when( char const *when ) {
 }
 
 /**
+ * Parses the option for \c --group-by/-g.
+ *
+ * @param s The NULL-terminated string to parse.
+ * @return Returns the group-by value
+ * or prints an error message and exits if the value is invalid.
+ */
+static unsigned parse_group_by( char const *s ) {
+  uint64_t const group_by = parse_ull( s );
+  switch ( group_by ) {
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+    case 16:
+      return (unsigned)group_by;
+  } // switch
+  char opt_buf[ OPT_BUF_SIZE ];
+  PMESSAGE_EXIT( EX_USAGE,
+    "\"%" PRIu64 "\": invalid value for %s; must be one of: 1, 2, 4, or 8\n",
+    group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
+  );
+}
+
+/**
  * Parses a UTF-8 "when" value.
  *
  * @param when The NULL-terminated "when" string to parse.
@@ -441,6 +467,7 @@ static void usage( void ) {
 "  -d         Print offsets in decimal.\n"
 "  -e number  Search for little-endian number.\n"
 "  -E number  Search for big-endian number.\n"
+"  -g number  Dump bytes grouped by 1, 2, 4, 8, or 16 [default: %u].\n"
 "  -h         Print offsets in hexadecimal [default].\n"
 "  -H         Print this help and exit [default: no].\n"
 "  -i         Search for case-insensitive string [default: no].\n"
@@ -458,7 +485,8 @@ static void usage( void ) {
 "  -U number  Set UTF-8 padding character [default: U+2581].\n"
 "  -v         Dump all data including repeated rows [default: no].\n"
 "  -V         Print version and exit.\n"
-    , me, me, me, me
+    , me, me, me, me,
+    GROUP_BY_DEFAULT
   );
   exit( EX_USAGE );
 }
@@ -476,13 +504,27 @@ char const* get_offset_fmt_english( void ) {
 }
 
 char const* get_offset_fmt_format( void ) {
-  switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "%0" STRINGIFY(OFFSET_WIDTH) PRIu64;
-    case OFMT_HEX: return "%0" STRINGIFY(OFFSET_WIDTH) PRIX64;
-    case OFMT_OCT: return "%0" STRINGIFY(OFFSET_WIDTH) PRIo64;
-  } // switch
-  assert( false );
-  return NULL;                          // suppress warning (never gets here)
+  static char fmt[8];                   // e.g.: "%016llX"
+  if ( fmt[0] == '\0' ) {
+    switch ( opt_offset_fmt ) {
+      case OFMT_DEC:
+        sprintf( fmt, "%%0%zu" PRIu64, get_offset_width() );
+        break;
+      case OFMT_HEX:
+        sprintf( fmt, "%%0%zu" PRIX64, get_offset_width() );
+        break;
+      case OFMT_OCT:
+        sprintf( fmt, "%%0%zu" PRIo64, get_offset_width() );
+        break;
+      default:
+        assert( false );
+    } // switch
+  }
+  return fmt;
+}
+
+size_t get_offset_width( void ) {
+  return opt_group_by == 1 ? OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
 void parse_options( int argc, char *argv[] ) {
@@ -509,6 +551,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'e':
       case 'E': search_number = parse_ull( optarg );
                 search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
+      case 'g': opt_group_by = parse_group_by( optarg );                break;
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
@@ -540,12 +583,12 @@ void parse_options( int argc, char *argv[] ) {
 
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
-  check_mutually_exclusive( "C", "ceEimpsStTuUv" );
+  check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "bBcCeEimNpsStTuUv" );
+  check_mutually_exclusive( "r", "bBcCeEgimNpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "bBcCdeEhHijmNoprsStTuUv" );
+  check_mutually_exclusive( "V", "bBcCdeEghHijmNoprsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );

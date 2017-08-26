@@ -23,8 +23,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define ELIDED_SEP_CHAR           '-'
 #define EX_NO_MATCHES             1     /* no errors, but no matches either */
-#define OFFSET_WIDTH              16    /* number of offset digits */
+#define GROUP_BY_DEFAULT          2     /* how many bytes to group together */
+#define OFFSET_WIDTH_MIN          12    /* minimum number of offset digits */
+#define OFFSET_WIDTH_MAX          16    /* maximum number of offset digits */
 #define ROW_SIZE                  16    /* bytes dumped on a row */
 #define ROW_SIZE_C                8     /* bytes dumped on a row in C */
 

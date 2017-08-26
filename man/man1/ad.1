@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "January 22, 2017" "PJL TOOLS"
+.TH \f3ad\f1 1 "August 26, 2017" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -291,6 +291,19 @@ For
 or
 .BR \-r ,
 parses offsets in decimal.
+.TP
+.BI \-\-group-by \f1=\fPn "\f1 | \fP" "" \-g " n"
+Dumps bytes grouped by
+.I n
+bytes.
+Must be one of 1, 2, 4, 8, or 16.
+The default is 2.
+When 1,
+the offset is 12 digits;
+otherwise it is 16 digits.
+When less than 8,
+an additional space is dumped after the 8th byte
+to aid readability.
 .TP
 .BR \-\-help " | " \-H
 Prints a help message

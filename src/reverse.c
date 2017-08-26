@@ -49,9 +49,6 @@ enum row_kind {
 };
 typedef enum row_kind row_kind_t;
 
-// extern variable declarations
-extern char *elided_separator;
-
 ////////// inline functions ///////////////////////////////////////////////////
 
 /**
@@ -65,6 +62,23 @@ static inline unsigned xtoi( char c ) {
 }
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Parses an elided separator.
+ *
+ * @param buf A pointer to the buffer to parse.
+ * @param buf_len The number of characters pointer to by \a buf.
+ * @return Returns the width of the separator if between the minimum and
+ * maximum valid offset widths.
+ */
+static size_t parse_elided_separator( char const *buf, size_t buf_len ) {
+  size_t n = 0;
+  while ( n < buf_len && buf[n] == ELIDED_SEP_CHAR ) {
+    if ( unlikely( ++n > OFFSET_WIDTH_MAX ) )
+      return 0;
+  } // while
+  return n >= OFFSET_WIDTH_MIN ? n : 0;
+}
 
 /**
  * Parses a row of dump data.
@@ -88,10 +102,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   size_t col = 1;
 
   // maybe parse row separator for elided lines
-  if ( strncmp( buf, elided_separator, ROW_SIZE ) == 0 ) {
-    col += OFFSET_WIDTH;
+  size_t const elided_sep_width = parse_elided_separator( buf, buf_len );
+  if ( elided_sep_width > 0 ) {
+    col += elided_sep_width;
     uint64_t delta;
-    if ( sscanf( buf + OFFSET_WIDTH, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 )
+    buf += elided_sep_width;
+    if ( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 )
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
@@ -108,7 +124,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
     );
-  col += OFFSET_WIDTH;
+  col += end - buf;
 
   char const *p = end;
   end = buf + buf_len;
@@ -121,8 +137,10 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
 
     // handle whitespace
     if ( isspace( *p ) ) {
-      if ( *p == '\n' /* short row */ || ++consec_spaces == 2 )
-        break;
+      if ( *p == '\n' )
+        break;                          // unexpected (expected ASCII), but OK
+      if ( ++consec_spaces == 2 + (bytes_len == 7 && opt_group_by == 1) )
+        break;                          // short row
       continue;
     }
     consec_spaces = 0;

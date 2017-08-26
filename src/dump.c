@@ -71,11 +71,17 @@ struct row_buf {
 };
 typedef struct row_buf row_buf_t;
 
-// local constant definitions
-static size_t const HEX_COLUMN_WIDTH = 2; // bytes per hex column
+////////// inline functions ///////////////////////////////////////////////////
 
-// extern variable declarations
-extern char        *elided_separator;   // separator used for elided rows
+/**
+ * Gets whether to print an extra space between byte columns for readability.
+ *
+ * @param byte_pos The current byte position from the beginning of a line.
+ * @return Returns \c true only if
+ */
+static inline bool print_readability_space( size_t byte_pos ) {
+  return byte_pos == 8 && opt_group_by < 8;
+}
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -146,7 +152,8 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
     uint64_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
     if ( offset_delta && any_dumped ) {
       SGR_START_IF( sgr_elided );
-      FPUTS( elided_separator );
+      for ( size_t i = get_offset_width(); i > 0; --i )
+        FPUTC( ELIDED_SEP_CHAR );
       SGR_END_IF( sgr_elided );
       SGR_START_IF( sgr_sep );
       FPUTC( ':' );
@@ -173,9 +180,11 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
     bool const matches = cur->match_bits & (1 << buf_pos);
     bool const matches_changed = matches != prev_matches;
 
-    if ( buf_pos % HEX_COLUMN_WIDTH == 0 ) {
+    if ( buf_pos % opt_group_by == 0 ) {
       SGR_END_IF( prev_matches );
       FPUTC( ' ' );                     // print space between hex columns
+      if ( print_readability_space( buf_pos ) )
+        FPUTC( ' ' );
       SGR_HEX_START_IF( prev_matches );
     }
     if ( matches )
@@ -188,11 +197,13 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   SGR_END_IF( prev_matches );
 
   // print padding if necessary (last row only)
-  while ( buf_pos < ROW_SIZE ) {
-    if ( buf_pos++ % HEX_COLUMN_WIDTH == 0 )
+  for ( ; buf_pos < ROW_SIZE; ++buf_pos ) {
+    if ( buf_pos % opt_group_by == 0 )
       FPUTC( ' ' );                     // print space between hex columns
+    if ( print_readability_space( buf_pos ) )
+      FPUTC( ' ' );
     FPRINTF( "  " );
-  } // while
+  } // for
 
   // dump ASCII part
   FPRINTF( "  " );

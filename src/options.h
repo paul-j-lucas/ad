@@ -88,6 +88,7 @@ extern char const    *me;               // executable name from argv[0]
 
 extern bool           opt_case_insensitive;
 extern unsigned       opt_c_fmt;
+extern unsigned       opt_group_by;
 extern size_t         opt_max_bytes_to_read;
 extern matches_t      opt_matches;
 extern offset_fmt_t   opt_offset_fmt;
@@ -118,6 +119,13 @@ char const* get_offset_fmt_english( void );
  * @return Returns said printf(3) format.
  */
 char const* get_offset_fmt_format( void );
+
+/**
+ * Gets the offset width.
+ *
+ * @return Returns said width.
+ */
+size_t get_offset_width( void );
 
 /**
  * Parses command-line options and sets global variables.
