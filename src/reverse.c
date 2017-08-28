@@ -45,7 +45,8 @@
 
 enum row_kind {
   ROW_BYTES,
-  ROW_ELIDED
+  ROW_ELIDED,
+  ROW_IGNORE
 };
 typedef enum row_kind row_kind_t;
 
@@ -129,11 +130,13 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   char const *end = NULL;
   errno = 0;
   *poffset = strtoull( buf, (char**)&end, opt_offset_fmt );
-  if ( unlikely( errno || !is_offset_delim( *end ) ) )
+  if ( unlikely( errno || (*end != '\0' && !is_offset_delim( *end )) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
     );
+  if ( unlikely( *end == '\n' || *end == '\0' ) )
+    return ROW_IGNORE;
   col += end - buf;
 
   char const *p = end;
@@ -149,7 +152,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     if ( isspace( *p ) ) {
       if ( unlikely( *p == '\n' ) )
         break;                          // unexpected (expected ASCII), but OK
-      if ( ++consec_spaces == 2 + (bytes_len == 7 && opt_group_by == 1) )
+      if ( ++consec_spaces == 2 + (bytes_len == 8) )
         break;                          // short row
       continue;
     }
@@ -218,6 +221,9 @@ void reverse_dump_file( void ) {
         fout_offset += bytes_len / ROW_SIZE;
         for ( ; bytes_len; bytes_len -= ROW_SIZE )
           FWRITE( bytes, 1, ROW_SIZE, fout );
+        break;
+
+      case ROW_IGNORE:
         break;
     } // switch
 
