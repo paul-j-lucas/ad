@@ -52,6 +52,16 @@ typedef enum row_kind row_kind_t;
 ////////// inline functions ///////////////////////////////////////////////////
 
 /**
+ * Checks whether \a c is an offset delimiter character.
+ *
+ * @param c The character to check.
+ * @return Returns \c true only if \a c is an offset delimiter character.
+ */
+static inline bool is_offset_delim( char c ) {
+  return c == ':' || isspace( c );
+}
+
+/**
  * Converts a single hexadecimal digit [0-9A-Fa-f] to its integer value.
  *
  * @param c The hexadecimal character.
@@ -119,7 +129,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   char const *end = NULL;
   errno = 0;
   *poffset = strtoull( buf, (char**)&end, opt_offset_fmt );
-  if ( unlikely( errno || *end != ':' ) )
+  if ( unlikely( errno || !is_offset_delim( *end ) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
