@@ -19,7 +19,7 @@
 */
 
 // local
-#include "config.h"
+#include "config.h"                     /* must go first */
 #define AD_UTIL_INLINE _GL_EXTERN_INLINE
 #include "common.h"
 #include "util.h"

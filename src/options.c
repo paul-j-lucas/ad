@@ -19,10 +19,10 @@
 */
 
 // local
+#include "config.h"                     /* must go first */
 #include "options.h"
 #include "color.h"
 #include "common.h"
-#include "config.h"
 #include "utf8.h"
 
 // standard

@@ -19,9 +19,9 @@
 */
 
 // local
+#include "config.h"                     /* must go first */
 #include "color.h"
 #include "common.h"
-#include "config.h"
 #include "match.h"
 #include "options.h"
 #include "utf8.h"
