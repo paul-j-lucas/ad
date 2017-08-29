@@ -22,6 +22,7 @@
 #include "match.h"
 #include "common.h"
 #include "config.h"
+#include "options.h"
 #include "util.h"
 
 // standard
@@ -32,15 +33,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// extern variable declarations
-extern FILE        *fin;
-extern char const  *fin_path;
-extern char const  *me;
-extern bool         opt_case_insensitive;
-extern size_t       opt_max_bytes_to_read;
-extern char        *search_buf;
-extern size_t       search_len;
-
 // extern variable definitions
 unsigned long       total_matches;
 
@@ -48,8 +40,6 @@ unsigned long       total_matches;
 static size_t       total_bytes_read;
 
 // local functions
-static bool         get_byte( uint8_t* );
-static bool         match_byte( uint8_t*, bool*, kmp_t const*, uint8_t* );
 static void         unget_byte( uint8_t );
 
 ////////// local functions ////////////////////////////////////////////////////
