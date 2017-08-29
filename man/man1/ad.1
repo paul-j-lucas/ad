@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "August 26, 2017" "PJL TOOLS"
+.TH \f3ad\f1 1 "August 29, 2017" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -63,6 +63,16 @@ Like
 .BR xxd (1),
 .B ad
 can also patch binary files.
+.SS Input & Output
+By default,
+.B ad
+reads from standard input and writes to standard output.
+Alternatively,
+file names for either or both may be specified.
+A file name of ``\-''
+may be used for either
+and means standard input or standard output,
+depending.
 .SH OPTIONS
 An option argument
 .I n

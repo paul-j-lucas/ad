@@ -63,9 +63,9 @@ bool                opt_verbose;
 // other extern variable definitions
 FILE               *fin;
 off_t               fin_offset;
-char const         *fin_path = "<stdin>";
+char const         *fin_path = "-";
 FILE               *fout;
-char const         *fout_path = "<stdout>";
+char const         *fout_path = "-";
 char const         *me;
 char               *search_buf;
 endian_t            search_endian;
@@ -627,31 +627,35 @@ void parse_options( int argc, char *argv[] ) {
   if ( opt_case_insensitive )
     tolower_s( search_buf );
 
+  fin  = stdin;
+  fout = stdout;
+
   switch ( argc ) {
-    case 0:
-      fin  = stdin;
-      fout = stdout;
-      fskip( fin_offset, fin );
-      break;
+    case 2:                             // infile & outfile
+      fout_path = argv[2];
+      if ( strcmp( fout_path, "-" ) != 0 ) {
+        //
+        // We can't use fopen(3) because there's no mode that specifies opening
+        // a file for writing and NOT truncating it to zero length if it
+        // exists.
+        //
+        // Hence we have to use open(2) first so we can specify only O_WRONLY
+        // and O_CREAT but not O_TRUNC, then use fdopen(3) to wrap a FILE
+        // around it.
+        //
+        fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
+      }
+      // FALLTHROUGH
 
     case 1:                             // infile only
       fin_path = argv[1];
-      fin  = check_fopen( fin_path, "r", fin_offset );
-      fout = stdout;
-      break;
+      // FALLTHROUGH
 
-    case 2:                             // infile & outfile
-      fin_path  = argv[1];
-      fout_path = argv[2];
-      fin = check_fopen( fin_path, "r", fin_offset );
-      //
-      // We can't use fopen(3) because there's no mode that specifies opening a
-      // file for writing and NOT truncating it to zero length if it exists.
-      //
-      // Hence we have to use open(2) first so we can specify only O_WRONLY and
-      // O_CREAT but not O_TRUNC, then use fdopen(3) to wrap a FILE around it.
-      //
-      fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
+    case 0:
+      if ( strcmp( fin_path, "-" ) == 0 )
+        fskip( fin_offset, stdin );
+      else
+        fin = check_fopen( fin_path, "r", fin_offset );
       break;
 
     default:
