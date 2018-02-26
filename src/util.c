@@ -303,7 +303,7 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 #endif /* WORDS_BIGENDIAN */
 
     default:
-      assert( true );
+      assert( false );
   } // switch
 }
 
