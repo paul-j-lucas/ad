@@ -49,6 +49,8 @@ _GL_INLINE_HEADER_BEGIN
 
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
+#define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
+#define STATIC_CAST(T,EXPR)       ((T)(EXPR))
 #define STRERROR                  strerror( errno )
 #define STRINGIFY_HELPER(S)       #S
 #define STRINGIFY(S)              STRINGIFY_HELPER(S)

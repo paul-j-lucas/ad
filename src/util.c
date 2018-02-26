@@ -397,7 +397,7 @@ char const* printable_char( char c ) {
   if ( ascii_is_print( c ) )
     buf[0] = c, buf[1] = '\0';
   else
-    snprintf( buf, sizeof buf, "\\x%02X", (unsigned)c );
+    snprintf( buf, sizeof buf, "\\x%02X", STATIC_CAST(unsigned, c) );
   return buf;
 }
 

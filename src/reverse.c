@@ -122,14 +122,14 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
-    *pbytes_len = (size_t)delta;
+    *pbytes_len = STATIC_CAST(size_t, delta);
     return ROW_ELIDED;
   }
 
   // parse offset
   char const *end = NULL;
   errno = 0;
-  *poffset = strtoull( buf, (char**)&end, opt_offset_fmt );
+  *poffset = strtoull( buf, REINTERPRET_CAST(char**, &end), opt_offset_fmt );
   if ( unlikely( errno || (*end != '\0' && !is_offset_delim( *end )) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",

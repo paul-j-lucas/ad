@@ -301,7 +301,7 @@ static uint32_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
   if ( s[0] && !s[1] )                  // assume single-char ASCII
-    return (uint32_t)s[0];
+    return STATIC_CAST(uint32_t, s[0]);
 
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
@@ -311,7 +311,7 @@ static uint32_t parse_codepoint( char const *s ) {
   }
   uint64_t const codepoint = parse_ull( s );
   if ( is_codepoint_valid( codepoint ) )
-    return (uint32_t)codepoint;
+    return STATIC_CAST(uint32_t, codepoint);
 
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
@@ -389,7 +389,7 @@ static unsigned parse_group_by( char const *s ) {
     case 4:
     case 8:
     case 16:
-      return (unsigned)group_by;
+      return STATIC_CAST(unsigned, group_by);
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,

@@ -23,6 +23,7 @@
 
 // local
 #include "config.h"
+#include "util.h"
 
 // standard
 #include <inttypes.h>                   /* for uint32_t */
@@ -123,7 +124,9 @@ AD_UTF8_INLINE bool utf8_is_cont( char c ) {
  */
 AD_UTF8_INLINE size_t utf8_len( char start ) {
   extern char const UTF8_LEN_TABLE[];
-  return (size_t)UTF8_LEN_TABLE[ (unsigned char)start ];
+  return STATIC_CAST(
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
+  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

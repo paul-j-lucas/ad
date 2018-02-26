@@ -56,7 +56,7 @@ static bool get_byte( uint8_t *pbyte ) {
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;
       assert( pbyte != NULL );
-      *pbyte = (uint8_t)c;
+      *pbyte = STATIC_CAST(uint8_t, c);
       return true;
     }
     if ( unlikely( ferror( fin ) ) )
@@ -108,15 +108,17 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 #define GOTO_STATE(S)       { buf_pos = 0; state = (S); continue; }
 #define RETURN(BYTE)        BLOCK( *pbyte = (BYTE); return true; )
 
-#define MAYBE_NO_CASE(BYTE) \
-  ( opt_case_insensitive ? (uint8_t)tolower( (char)(BYTE) ) : (BYTE) )
+#define MAYBE_NO_CASE(BYTE)                                       \
+  ( opt_case_insensitive ?                                        \
+    STATIC_CAST(uint8_t, tolower( STATIC_CAST(char, (BYTE)) )) :  \
+    (BYTE) )
 
       case S_READING:
         if ( unlikely( !get_byte( &byte ) ) )
           GOTO_STATE( S_DONE );
         if ( !search_len )              // user isn't searching for anything
           RETURN( byte );
-        if ( MAYBE_NO_CASE( byte ) != (uint8_t)search_buf[0] )
+        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(uint8_t, search_buf[0]) )
           RETURN( byte );               // searching, but no match yet
         //
         // The read byte matches the first byte of the search buffer: start
@@ -152,7 +154,8 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_drain = buf_pos;
           GOTO_STATE( S_NOT_MATCHED );
         }
-        if ( MAYBE_NO_CASE( byte ) == (uint8_t)search_buf[ buf_pos ] ) {
+        if ( MAYBE_NO_CASE( byte )
+             == STATIC_CAST(uint8_t, search_buf[ buf_pos ]) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.

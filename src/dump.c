@@ -115,7 +115,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
       }
 
       uint8_t const byte = row->bytes[ buf_pos ];
-      if ( unlikely( !utf8_is_cont( (char)byte ) ) )
+      if ( unlikely( !utf8_is_cont( STATIC_CAST(char, byte) ) ) )
         return 0;
       *utf8_char++ = byte;
     } // for
@@ -168,7 +168,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print offset & column separator
   SGR_START_IF( sgr_offset );
-  FPRINTF( off_fmt, (uint64_t)fin_offset );
+  FPRINTF( off_fmt, STATIC_CAST(uint64_t, fin_offset) );
   SGR_END_IF( sgr_offset );
   SGR_START_IF( sgr_sep );
   FPUTC( ':' );
@@ -191,7 +191,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       SGR_HEX_START_IF( matches_changed );
     else
       SGR_END_IF( matches_changed );
-    FPRINTF( "%02X", (unsigned)cur->bytes[ buf_pos ] );
+    FPRINTF( "%02X", STATIC_CAST(unsigned, cur->bytes[ buf_pos ]) );
     prev_matches = matches;
   } // for
   SGR_END_IF( prev_matches );
@@ -226,7 +226,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       uint8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
       utf8_count = opt_utf8 ? utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
       if ( utf8_count > 1 )
-        FPUTS( (char*)utf8_char );
+        FPUTS( REINTERPRET_CAST(char*, utf8_char) );
       else
         FPUTC( ascii_is_print( byte ) ? byte : '.' );
     }
@@ -260,7 +260,7 @@ static void dump_row_c( char const *off_fmt, uint8_t const *buf,
   // dump hex part
   uint8_t const *const end = buf + buf_len;
   while ( buf < end )
-    FPRINTF( " 0x%02X,", (unsigned)*buf++ );
+    FPRINTF( " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
   FPUTC( '\n' );
 }
 
