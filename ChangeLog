@@ -113,28 +113,23 @@
 2017-01-27  Paul J. Lucas <paul@lucasmail.org>
 
    * reverse.c, util.c: sizeof clean-up.
-   * utf8.c: Cosmetic change.
    * options.c: s/int/unsigned/
 
 2017-01-23  Paul J. Lucas <paul@lucasmail.org>
 
    * src/Makefile.am: Now using global LDADD; remove -L from AM_CPPFLAGS.
-   * color.c, options.c: Cosmetic changes.
 
 2017-01-22  Paul J. Lucas <paul@lucasmail.org>
 
-   * dump.c: Cosmetic change.
    * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am,
      src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
      match.h, options.c, options.h, reverse.c, utf8.c, utf8.h, util.c, util.h,
      test/Makefile.am, run_test.sh: Updated copyright year.
-   * ad.1: Minor tweaks.
 
 2017-01-21  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, color.c, color.h, common.h, dump.c, match.c, match.h, options.c,
      options.h, reverse.c, utf8.h, util.c, util.h: Clean-up.
-   * utf8.h: Cosmetic change.
    * lib/Makefile.am, gnulib-cache.m4: Added extern-inline.
    * lib/Makefile.am, errno.in.h, getdelim.c, getline.c, getopt.c, getopt.in.h,
      getopt1.c, getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c,
@@ -238,8 +233,6 @@
 
 2016-03-14  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c, color.c, dump.c, match.c, options.c, reverse.c, utf8.c, utf8.h,
-     util.c: Cosmetic changes.
    * ad.c: No longer need "return 0;" in main().
 
 2016-03-12  Paul J. Lucas <paul@lucasmail.org>
@@ -491,10 +484,6 @@
 
    * match.c: Added missing \n to error messages.
 
-2015-07-26  Paul J. Lucas <paul@lucasmail.org>
-
-   * ad.c: Cosmetic change.
-
 2015-07-13  Paul J. Lucas <paul@lucasmail.org>
 
    * lib/Makefile.am, getopt.c, getopt.in.h, getopt1.c, getopt_int.h,
@@ -507,7 +496,6 @@
    * ad.c, common.h, options.c: Now using EXIT_SUCCESS.
    * ad.1, options.c: s/skip/skip-bytes/; s/max-read/max-bytes/
    * match.c, match.h: get_byte() and unget_byte() no longer take FILE*.
-   * util.c: Cosmetic change.
    * util.c, util.h: Fixed parse_offset() return value.
 
 2015-07-12  Paul J. Lucas <paul@lucasmail.org>
@@ -559,7 +547,6 @@
 
    * ad.c: Added FWRITE().
    * ad.c: Fixed typo.
-   * ad.c: Cosmetic change.
    * ad.c: Moved get_offset_fmt_*() functions.
    * ad.c: Now using get_offset_fmt_format() in dump_file().
    * ad.c, match.c, util.c, util.h: s/ERROR_STR/STRERROR/g
@@ -581,8 +568,6 @@
    * match.c: Fixed kmp_init() array overflow bug.
    * options.c, util.c, util.h: Split open_file() into check_open() and
      check_fopen().
-   * ad.1, ad.c, test/Makefile.am, patch-1.txt, patch-2.txt, ad-r_02.bin,
-     run_test.sh, ad-r_02.sh: Intermediate check-in.
 
 2015-06-25  Paul J. Lucas <paul@lucasmail.org>
 
@@ -712,7 +697,6 @@
 
 2015-06-16  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Cosmetic change.
    * ad.c: Set default colors.
    * ad.1, ad.c, util.h: Added support for "ne" capability.
    * ad.1: Corresponding change for -c option.
@@ -728,7 +712,6 @@
 
    * ad.c: Added -S option.
    * ad.c, util.c, util.h: More color support.
-   * common.h: Cosmetic change.
    * test/Makefile.am, ad-B1-e257.test, ad-B16-e1.test, ad-B2-e65536.test,
      ad-B2.test, ad-B4-e4294967296.test, ad-E1-sx-1.test, ad-b1-e1.test,
      ad-b16-B2.test, ad-b16-e65536.test, ad-b16.test, ad-b32-e4294967296.test,
@@ -737,13 +720,10 @@
 
 2015-06-13  Paul J. Lucas <paul@lucasmail.org>
 
-   * src/Makefile.am, ad.c, common.h, sgr_color.h, util.c, util.h: Intermediate
-     check-in.
    * configure.ac, ad.c, sgr_color.h: Working (?) version.
 
 2015-06-05  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Cosmetic change.
    * ad.c: Fixed assert() placement.
    * ad.c: Clean-up.
 
