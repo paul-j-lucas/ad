@@ -177,7 +177,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
         break;
       }
     } // for
-    if ( !gave_count )
+    if ( gave_count == 0 )
       break;
     opt = opts2;
   } // for
@@ -300,7 +300,7 @@ dup_format:
 static uint32_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
-  if ( s[0] && !s[1] )                  // assume single-char ASCII
+  if ( s[0] != '\0' && s[1] == '\0' )   // assume single-char ASCII
     return STATIC_CAST(uint32_t, s[0]);
 
   char const *const s0 = s;

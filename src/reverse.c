@@ -200,7 +200,7 @@ void reverse_dump_file( void ) {
   for ( ;; ) {
     size_t row_len;
     char *const row_buf = fgetln( fin, &row_len );
-    if ( !row_buf ) {
+    if ( row_buf == NULL ) {
       if ( unlikely( ferror( fin ) ) )
         PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
       break;

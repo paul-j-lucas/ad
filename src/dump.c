@@ -108,7 +108,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
 
     for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
       if ( buf_pos == row->len ) {      // ran off the end of the row
-        if ( row == next || !next->len )
+        if ( row == next || next->len == 0 )
           return 0;                     // incomplete UTF-8 character
         row = next;                     // continue on the next row
         buf_pos = 0;

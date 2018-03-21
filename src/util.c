@@ -127,7 +127,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   assert( mode != NULL );
 
   FILE *const file = fopen( path, mode );
-  if ( unlikely( !file ) ) {
+  if ( unlikely( file == NULL ) ) {
     bool const create = strpbrk( mode, "aw" );
     PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
@@ -159,10 +159,10 @@ void* check_realloc( void *p, size_t size ) {
   //    The C standard says a call realloc(NULL, size) is equivalent to
   //    malloc(size), but some old systems don't support this (e.g., NextStep).
   //
-  if ( !size )
+  if ( size == 0 )
     size = 1;
   void *const r = p ? realloc( p, size ) : malloc( size );
-  if ( unlikely( !r ) )
+  if ( unlikely( r == NULL ) )
     perror_exit( EX_OSERR );
   return r;
 }
@@ -170,7 +170,7 @@ void* check_realloc( void *p, size_t size ) {
 char* check_strdup( char const *s ) {
   assert( s != NULL );
   char *const dup = strdup( s );
-  if ( unlikely( !dup ) )
+  if ( unlikely( dup == NULL ) )
     perror_exit( EX_OSERR );
   return dup;
 }
@@ -342,7 +342,7 @@ error:
 }
 
 bool parse_sgr( char const *sgr_color ) {
-  if ( !sgr_color )
+  if ( sgr_color == NULL )
     return false;
   for ( ;; ) {
     if ( unlikely( !isdigit( *sgr_color ) ) )
@@ -370,7 +370,7 @@ uint64_t parse_ull( char const *s ) {
     char *end = NULL;
     errno = 0;
     uint64_t const n = strtoull( s, &end, 0 );
-    if ( likely( !errno && !*end ) )
+    if ( likely( errno == 0 && *end == '\0' ) )
       return n;
   }
   PMESSAGE_EXIT( EX_USAGE, "\"%s\": invalid integer\n", s );

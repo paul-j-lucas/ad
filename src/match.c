@@ -116,7 +116,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
       case S_READING:
         if ( unlikely( !get_byte( &byte ) ) )
           GOTO_STATE( S_DONE );
-        if ( !search_len )              // user isn't searching for anything
+        if ( search_len == 0 )          // user isn't searching for anything
           RETURN( byte );
         if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(uint8_t, search_buf[0]) )
           RETURN( byte );               // searching, but no match yet

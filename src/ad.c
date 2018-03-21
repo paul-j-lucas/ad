@@ -66,13 +66,13 @@ static void init( int argc, char *argv[] ) {
   if ( search_buf )                     // searching for a string?
     search_len = strlen( search_buf );
   else if ( search_endian ) {           // searching for a number?
-    if ( !search_len )                  // default to smallest possible size
+    if ( search_len == 0 )              // default to smallest possible size
       search_len = int_len( search_number );
     int_rearrange_bytes( &search_number, search_len, search_endian );
     search_buf = REINTERPRET_CAST(char*, &search_number);
   }
 
-  if ( !opt_max_bytes_to_read )         // degenerate case
+  if ( opt_max_bytes_to_read == 0 )     // degenerate case
     exit( search_len ? EX_NO_MATCHES : EX_OK );
 }
 

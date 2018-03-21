@@ -173,7 +173,7 @@ bool should_colorize( color_when_t when ) {
   // If TERM is unset, empty, or "dumb", color probably won't work.
   //
   char const *const term = getenv( "TERM" );
-  if ( !term || !*term || strcmp( term, "dumb" ) == 0 )
+  if ( term == NULL || *term == '\0' || strcmp( term, "dumb" ) == 0 )
     return false;
 
   int const fd_out = fileno( fout );
