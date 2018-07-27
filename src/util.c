@@ -322,10 +322,10 @@ uint64_t parse_offset( char const *s ) {
     char *end = NULL;
     errno = 0;
     uint64_t n = strtoull( s, &end, 0 );
-    if ( unlikely( errno || end == s ) )
+    if ( unlikely( errno != 0 || end == s ) )
       goto error;
-    if ( end[0] ) {                     // possibly 'b', 'k', or 'm'
-      if ( end[1] )                     // not a single char
+    if ( end[0] != '\0' ) {             // possibly 'b', 'k', or 'm'
+      if ( end[1] != '\0' )             // not a single char
         goto error;
       switch ( end[0] ) {
         case 'b': n *=         512; break;
