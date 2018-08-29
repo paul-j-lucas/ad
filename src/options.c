@@ -50,7 +50,7 @@
 bool                opt_case_insensitive;
 c_fmt_t             opt_c_fmt;
 unsigned            opt_group_by = GROUP_BY_DEFAULT;
-size_t              opt_max_bytes_to_read = SIZE_MAX;
+size_t              opt_max_bytes = SIZE_MAX;
 matches_t           opt_matches;
 offset_fmt_t        opt_offset_fmt = OFMT_HEX;
 bool                opt_only_matching;
@@ -86,6 +86,7 @@ static struct option const LONG_OPTS[] = {
   { "hexadecimal",        no_argument,        NULL, 'h' },
   { "ignore-case",        no_argument,        NULL, 'i' },
   { "skip-bytes",         required_argument,  NULL, 'j' },
+  { "max-lines",          required_argument,  NULL, 'L' },
   { "matching-only",      no_argument,        NULL, 'm' },
   { "max-bytes",          required_argument,  NULL, 'N' },
   { "octal",              no_argument,        NULL, 'o' },
@@ -102,7 +103,7 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:mN:oprs:S:tTu:U:vV";
+static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:L:mN:oprs:S:tTu:U:vV";
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -472,6 +473,7 @@ static void usage( void ) {
 "  -H         Print this help and exit [default: no].\n"
 "  -i         Search for case-insensitive string [default: no].\n"
 "  -j offset  Jump to offset before dumping [default: 0].\n"
+"  -L number  Dump max number of lines [default: unlimited].\n"
 "  -m         Only dump rows having matches [default: no].\n"
 "  -N bytes   Dump max number of bytes [default: unlimited].\n"
 "  -o         Print offsets in octal.\n"
@@ -529,6 +531,7 @@ size_t get_offset_width( void ) {
 
 void parse_options( int argc, char *argv[] ) {
   color_when_t  color_when = COLOR_WHEN_DEFAULT;
+  size_t        max_lines = 0;
   bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
   uint32_t      utf8_pad = 0;
@@ -557,8 +560,9 @@ void parse_options( int argc, char *argv[] ) {
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += parse_offset( optarg );                   break;
+      case 'L': max_lines = parse_ull( optarg );                        break;
       case 'm': opt_only_matching = true;                               break;
-      case 'N': opt_max_bytes_to_read = parse_offset( optarg );         break;
+      case 'N': opt_max_bytes = parse_offset( optarg );                 break;
       case 'o': opt_offset_fmt = OFMT_OCT;                              break;
       case 'p': opt_only_printing = true;                               break;
       case 'r': opt_reverse = true;                                     break;
@@ -585,10 +589,11 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
   check_mutually_exclusive( "eE", "sS" );
+  check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "bBcCeEgimNpsStTuUv" );
+  check_mutually_exclusive( "r", "bBcCeEgimLNpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "bBcCdeEghHijmNoprsStTuUv" );
+  check_mutually_exclusive( "V", "bBcCdeEghHijmLNoprsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );
@@ -626,6 +631,9 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( opt_case_insensitive )
     tolower_s( search_buf );
+
+  if ( max_lines > 0 )
+    opt_max_bytes = max_lines * ROW_SIZE;
 
   fin  = stdin;
   fout = stdout;

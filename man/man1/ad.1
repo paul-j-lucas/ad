@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "August 29, 2017" "PJL TOOLS"
+.TH \f3ad\f1 1 "August 29, 2018" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -354,6 +354,14 @@ Only dumps rows having matches.
 Reads at most
 .I n
 bytes.
+.TP
+.BI \-\-max-lines \f1=\fPn "\f1 | \fP" "" \-L " n"
+Reads at most
+.I n
+lines
+.RI ( n
+* 16
+bytes).
 .TP
 .BR \-\-octal " | " \-o
 Prints offsets in octal.

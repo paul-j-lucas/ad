@@ -51,7 +51,7 @@ static void         unget_byte( uint8_t );
  * @return Returns \c true if a byte was read successfully.
  */
 static bool get_byte( uint8_t *pbyte ) {
-  if ( likely( total_bytes_read < opt_max_bytes_to_read ) ) {
+  if ( likely( total_bytes_read < opt_max_bytes ) ) {
     int const c = getc( fin );
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;

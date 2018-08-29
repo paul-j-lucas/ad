@@ -72,7 +72,7 @@ static void init( int argc, char *argv[] ) {
     search_buf = REINTERPRET_CAST(char*, &search_number);
   }
 
-  if ( opt_max_bytes_to_read == 0 )     // degenerate case
+  if ( opt_max_bytes == 0 )             // degenerate case
     exit( search_len ? EX_NO_MATCHES : EX_OK );
 }
 
