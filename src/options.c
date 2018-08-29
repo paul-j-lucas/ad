@@ -394,7 +394,8 @@ static unsigned parse_group_by( char const *s ) {
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%" PRIu64 "\": invalid value for %s; must be one of: 1, 2, 4, or 8\n",
+    "\"%" PRIu64 "\": invalid value for %s;"
+    " must be one of: 1, 2, 4, 8, or 16\n",
     group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
   );
 }
