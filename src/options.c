@@ -234,7 +234,7 @@ static void check_required( char const *opts, char const *req_opts ) {
 }
 
 #define ADD_CFMT(F) \
-  BLOCK( if ( c_fmt & CFMT_##F ) goto dup_format; c_fmt |= CFMT_##F; )
+  BLOCK( if ( (c_fmt & CFMT_##F) != 0 ) goto dup_format; c_fmt |= CFMT_##F; )
 
 /**
  * Parses a C array format value.
@@ -266,8 +266,8 @@ static c_fmt_t parse_c_fmt( char const *s ) {
           );
       } // switch
     } // for
-    if ( (c_fmt & CFMT_SIZE_T) &&
-        (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) ) {
+    if ( (c_fmt & CFMT_SIZE_T) != 0 &&
+         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != 0 ) {
       PMESSAGE_EXIT( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",

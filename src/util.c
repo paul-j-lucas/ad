@@ -140,7 +140,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
 
 int check_open( char const *path, int oflag, off_t offset ) {
   assert( path != NULL );
-  bool const create = oflag & O_CREAT;
+  bool const create = (oflag & O_CREAT) != 0;
   int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
   if ( unlikely( fd == -1 ) )
     PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
