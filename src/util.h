@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      util.h
+**      src/util.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -22,8 +22,8 @@
 #define ad_util_H
 
 // local
+#include "ad.h"                         /* must go first */
 #include "common.h"
-#include "config.h"
 
 // standard
 #include <errno.h>

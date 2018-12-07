@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      color.h
+**      src/color.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -22,7 +22,10 @@
 #define ad_color_H
 
 // local
-#include "util.h"                       /* for bool */
+#include "ad.h"                         /* must go first */
+
+// standard
+#include <stdbool.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 

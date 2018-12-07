@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      match.h
+**      src/match.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -20,6 +20,9 @@
 
 #ifndef ad_match_H
 #define ad_match_H
+
+// local
+#include "ad.h"                         /* must go first */
 
 // standard
 #include <inttypes.h>                   /* for uint8_t, uint16_t */

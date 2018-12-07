@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      ad.c
+**      src/ad.c
 **
 **      Copyright (C) 1996-2017  Paul J. Lucas
 **
@@ -19,7 +19,7 @@
 */
 
 // local
-#include "config.h"                     /* must go first */
+#include "ad.h"                         /* must go first */
 #include "common.h"
 #include "options.h"
 #include "util.h"

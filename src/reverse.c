@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      reverse.c
+**      src/reverse.c
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -19,7 +19,7 @@
 */
 
 // local
-#include "config.h"                     /* must go first */
+#include "ad.h"                         /* must go first */
 #include "options.h"
 #include "util.h"
 

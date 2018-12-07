@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      common.h
+**      src/common.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **

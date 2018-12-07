@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      utf8.h
+**      src/utf8.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -22,7 +22,7 @@
 #define ad_utf8_H
 
 // local
-#include "config.h"
+#include "ad.h"                         /* must go first */
 #include "util.h"
 
 // standard

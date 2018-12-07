@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      color.c
+**      src/color.c
 **
 **      Copyright (C) 2017  Paul J. Lucas
 **
@@ -19,8 +19,10 @@
 */
 
 // local
+#include "ad.h"                         /* must go first */
 #include "color.h"
 #include "options.h"
+#include "util.h"
 
 // standard
 #include <assert.h>

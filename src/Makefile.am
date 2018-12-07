@@ -2,7 +2,7 @@
 #	ad -- ASCII dump
 #	src/Makefile.am
 #
-#	Copyright (C) 2015-2017  Paul J. Lucas
+#	Copyright (C) 2015-2018  Paul J. Lucas
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 LDADD = $(top_builddir)/lib/libgnu.a
 
 ad_SOURCES = \
-	ad.c \
+	ad.c ad.h \
 	color.c color.h \
 	common.h \
 	dump.c \

@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      util.c
+**      src/util.c
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -19,9 +19,9 @@
 */
 
 // local
-#include "config.h"                     /* must go first */
-#define AD_UTIL_INLINE _GL_EXTERN_INLINE
+#include "ad.h"                         /* must go first */
 #include "common.h"
+#define AD_UTIL_INLINE _GL_EXTERN_INLINE
 #include "util.h"
 
 // standard

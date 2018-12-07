@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      options.c
+**      src/options.c
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -19,10 +19,10 @@
 */
 
 // local
-#include "config.h"                     /* must go first */
-#include "options.h"
+#include "ad.h"                         /* must go first */
 #include "color.h"
 #include "common.h"
+#include "options.h"
 #include "utf8.h"
 
 // standard

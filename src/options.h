@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      options.h
+**      src/options.h
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -22,7 +22,8 @@
 #define ad_options_H
 
 // local
-#include <common.h>
+#include "ad.h"                         /* must go first */
+#include "common.h"
 
 // standard
 #include <inttypes.h>                   /* for uint64_t */

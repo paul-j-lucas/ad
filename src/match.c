@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      match.c
+**      src/match.c
 **
 **      Copyright (C) 2015-2017  Paul J. Lucas
 **
@@ -19,9 +19,9 @@
 */
 
 // local
-#include "config.h"                     /* must go first */
-#include "match.h"
+#include "ad.h"                         /* must go first */
 #include "common.h"
+#include "match.h"
 #include "options.h"
 #include "util.h"
 
