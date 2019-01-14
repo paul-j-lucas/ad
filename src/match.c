@@ -188,7 +188,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           // go to S_MATCHING_CONT.
           //
           buf_pos = kmp;
-          state = buf_pos ? S_MATCHING_CONT : S_READING;
+          state = buf_pos > 0 ? S_MATCHING_CONT : S_READING;
           continue;
         }
         *matches = state == S_MATCHED;

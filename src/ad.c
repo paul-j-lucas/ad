@@ -47,9 +47,9 @@ extern void reverse_dump_file( void );
  */
 static void clean_up( void ) {
   free_now();
-  if ( fin )
+  if ( fin != NULL )
     fclose( fin );
-  if ( fout )
+  if ( fout != NULL )
     fclose( fout );
 }
 
@@ -63,7 +63,7 @@ static void init( int argc, char *argv[] ) {
   atexit( clean_up );
   parse_options( argc, argv );
 
-  if ( search_buf )                     // searching for a string?
+  if ( search_buf != NULL )             // searching for a string?
     search_len = strlen( search_buf );
   else if ( search_endian ) {           // searching for a number?
     if ( search_len == 0 )              // default to smallest possible size
@@ -82,7 +82,7 @@ int main( int argc, char *argv[] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
-  else if ( opt_c_fmt )
+  else if ( opt_c_fmt != 0 )
     dump_file_c();
   else
     dump_file();

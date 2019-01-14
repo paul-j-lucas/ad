@@ -70,15 +70,15 @@ char const *sgr_ascii_match;
  */
 static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   assert( cap != NULL );
-  assert( cap->cap_var_to_set || cap->cap_func );
+  assert( cap->cap_var_to_set != NULL || cap->cap_func != NULL );
 
-  if ( sgr_color ) {
-    if ( !*sgr_color )                  // empty string -> NULL = unset
+  if ( sgr_color != NULL ) {
+    if ( sgr_color[0] == '\0' )         // empty string -> NULL = unset
       sgr_color = NULL;
     else if ( !parse_sgr( sgr_color ) )
       return false;
   }
-  if ( cap->cap_var_to_set )
+  if ( cap->cap_var_to_set != NULL )
     *cap->cap_var_to_set = sgr_color;
   else
     (*cap->cap_func)( sgr_color );
@@ -94,7 +94,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
  */
 static void cap_MB( char const *sgr_color ) {
   assert( sgr_color != NULL );
-  if ( !*sgr_color )                    // empty string -> NULL = unset
+  if ( sgr_color[0] == '\0' )           // empty string -> NULL = unset
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
 }
@@ -144,12 +144,12 @@ bool parse_grep_color( char const *sgr_color ) {
 bool parse_grep_colors( char const *capabilities ) {
   bool set_something = false;
 
-  if ( capabilities ) {
+  if ( capabilities != NULL ) {
     // free this later since the sgr_* variables point to substrings
     char *next_cap = (char*)free_later( check_strdup( capabilities ) );
     char *cap_name_val;
 
-    while ( (cap_name_val = strsep( &next_cap, ":" )) ) {
+    while ( (cap_name_val = strsep( &next_cap, ":" )) != NULL ) {
       char const *const cap_name = strsep( &cap_name_val, "=" );
       for ( color_cap_t const *cap = COLOR_CAPS; cap->cap_name; ++cap ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
@@ -175,7 +175,7 @@ bool should_colorize( color_when_t when ) {
   // If TERM is unset, empty, or "dumb", color probably won't work.
   //
   char const *const term = getenv( "TERM" );
-  if ( term == NULL || *term == '\0' || strcmp( term, "dumb" ) == 0 )
+  if ( term == NULL || term[0] == '\0' || strcmp( term, "dumb" ) == 0 )
     return false;
 
   int const fd_out = fileno( fout );

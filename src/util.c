@@ -116,7 +116,7 @@ static char const* skip_ws( char const *s ) {
 
 bool ascii_any_printable( char const *s, size_t s_len ) {
   assert( s != NULL );
-  for ( ; s_len; --s_len, ++s )
+  for ( ; s_len > 0; --s_len, ++s )
     if ( ascii_is_print( *s ) )
       return true;
   return false;
@@ -133,7 +133,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   }
-  if ( offset )
+  if ( offset > 0 )
     FSEEK( file, offset, SEEK_SET );
   return file;
 }
@@ -146,7 +146,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
     PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
-  if ( offset )
+  if ( offset > 0 )
     LSEEK( fd, offset, SEEK_SET );
   return fd;
 }
@@ -197,7 +197,7 @@ void* free_later( void *p ) {
 }
 
 void free_now( void ) {
-  for ( free_node_t *p = free_head; p; ) {
+  for ( free_node_t *p = free_head; p != NULL; ) {
     free_node_t *const next = p->next;
     free( p->ptr );
     free( p );
@@ -212,7 +212,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   char    buf[ 8192 ];
   size_t  bytes_to_read = sizeof buf;
 
-  while ( bytes_to_skip && !feof( file ) ) {
+  while ( bytes_to_skip > 0 && !feof( file ) ) {
     if ( bytes_to_read > bytes_to_skip )
       bytes_to_read = bytes_to_skip;
     ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
@@ -235,7 +235,7 @@ char* identify( char const *s ) {
   *p++ = substitute_ ? '_' : *s++;
 
   // remaining chars must be alphanum or _
-  for ( ; *s; ++s ) {
+  for ( ; *s != '\0'; ++s ) {
     if ( isalnum( *s ) || *s == '_' ) {
       *p++ = *s;
       substitute_ = false;
@@ -315,8 +315,8 @@ bool is_file( int fd ) {
 
 uint64_t parse_offset( char const *s ) {
   s = skip_ws( s );
-  if ( unlikely( !*s || *s == '-' ) )   // strtoull(3) wrongly allows '-'
-    goto error;
+  if ( unlikely( s[0] == '\0' || s[0] == '-' ) )
+    goto error;                         // strtoull(3) wrongly allows '-'
 
   { // local scope
     char *end = NULL;
@@ -350,9 +350,9 @@ bool parse_sgr( char const *sgr_color ) {
     char *end;
     errno = 0;
     uint64_t const n = strtoull( sgr_color, &end, 10 );
-    if ( unlikely( errno || n > 255 ) )
+    if ( unlikely( errno != 0 || n > 255 ) )
       return false;
-    switch ( *end ) {
+    switch ( end[0] ) {
       case '\0':
         return true;
       case ';':
@@ -366,7 +366,7 @@ bool parse_sgr( char const *sgr_color ) {
 
 uint64_t parse_ull( char const *s ) {
   s = skip_ws( s );
-  if ( unlikely( *s && *s != '-' ) ) {  // strtoull(3) wrongly allows '-'
+  if ( likely( s[0] != '\0' || s[0] != '-' ) ) {
     char *end = NULL;
     errno = 0;
     uint64_t const n = strtoull( s, &end, 0 );
@@ -403,7 +403,7 @@ char const* printable_char( char c ) {
 
 char* tolower_s( char *s ) {
   assert( s != NULL );
-  for ( char *t = s; *t; ++t )
+  for ( char *t = s; *t != '\0'; ++t )
     *t = tolower( *t );
   return s;
 }

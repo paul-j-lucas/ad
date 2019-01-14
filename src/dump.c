@@ -150,7 +150,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
     uint64_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
-    if ( offset_delta && any_dumped ) {
+    if ( offset_delta > 0 && any_dumped ) {
       SGR_START_IF( sgr_elided );
       for ( size_t i = get_offset_width(); i > 0; --i )
         FPUTC( ELIDED_SEP_CHAR );
@@ -274,7 +274,7 @@ void dump_file( void ) {
   uint8_t    *match_buf = NULL;         // used only by match_byte()
   char const *off_fmt = get_offset_fmt_format();
 
-  if ( search_len ) {                   // searching for anything?
+  if ( search_len > 0 ) {               // searching for anything?
     kmps = (kmp_t*)free_later( kmp_init( search_buf, search_len ) );
     match_buf = (uint8_t*)free_later( MALLOC( uint8_t, search_len ) );
   }
@@ -283,7 +283,7 @@ void dump_file( void ) {
   cur->len =
     match_row( cur->bytes, ROW_SIZE, &cur->match_bits, kmps, match_buf );
 
-  while ( cur->len ) {
+  while ( cur->len > 0 ) {
     //
     // We need to know whether the current row is the last row.  The current
     // row is the last if its length < ROW_SIZE.  However, if the file's length
@@ -297,7 +297,7 @@ void dump_file( void ) {
     if ( opt_matches != MATCHES_ONLY ) {
       bool const is_last_row = next->len == 0;
 
-      if ( cur->match_bits || (         // always dump matching rows
+      if ( cur->match_bits != 0 || (    // always dump matching rows
           // Otherwise dump only if:
           //  + for non-matching rows, if not -m
           !opt_only_matching &&
@@ -317,7 +317,7 @@ void dump_file( void ) {
         memcmp( cur->bytes, next->bytes, ROW_SIZE ) == 0;
     }
 
-    if ( cur->match_bits )
+    if ( cur->match_bits != 0 )
       any_matches = true;
 
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
@@ -326,12 +326,12 @@ void dump_file( void ) {
     fin_offset += ROW_SIZE;
   } // while
 
-  if ( opt_matches ) {
+  if ( opt_matches != MATCHES_NONE ) {
     FFLUSH( fout );
     PRINT_ERR( "%lu\n", total_matches );
   }
 
-  exit( search_len && !any_matches ? EX_NO_MATCHES : EX_OK );
+  exit( search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
 }
 
 void dump_file_c( void ) {

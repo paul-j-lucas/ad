@@ -130,12 +130,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   char const *end = NULL;
   errno = 0;
   *poffset = strtoull( buf, REINTERPRET_CAST(char**, &end), opt_offset_fmt );
-  if ( unlikely( errno || (*end != '\0' && !is_offset_delim( *end )) ) )
+  if ( unlikely( errno != 0 || (end[0] != '\0' && !is_offset_delim( *end )) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
     );
-  if ( unlikely( *end == '\n' || *end == '\0' ) )
+  if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
     return ROW_IGNORE;
   col += end - buf;
 
@@ -219,7 +219,7 @@ void reverse_dump_file( void ) {
       case ROW_ELIDED:
         assert( bytes_len % ROW_SIZE == 0 );
         fout_offset += bytes_len / ROW_SIZE;
-        for ( ; bytes_len; bytes_len -= ROW_SIZE )
+        for ( ; bytes_len > 0; bytes_len -= ROW_SIZE )
           FWRITE( bytes, 1, ROW_SIZE, fout );
         break;
 

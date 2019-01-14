@@ -218,7 +218,7 @@ static void check_required( char const *opts, char const *req_opts ) {
   assert( req_opts != NULL );
   for ( char const *opt = opts; *opt; ++opt ) {
     if ( GAVE_OPTION( *opt ) ) {
-      for ( char const *req_opt = req_opts; *req_opt; ++req_opt )
+      for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
         if ( GAVE_OPTION( *req_opt ) )
           return;
       char opt_buf[ OPT_BUF_SIZE ];
@@ -249,9 +249,9 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   char const *fmt;
   char opt_buf[ OPT_BUF_SIZE ];
 
-  if ( s && *s ) {
-    for ( fmt = s; *fmt; ++fmt ) {
-      switch ( *fmt ) {
+  if ( s != NULL && s[0] != '\0' ) {
+    for ( fmt = s; fmt[0] != '\0'; ++fmt ) {
+      switch ( fmt[0] ) {
         case 'c': ADD_CFMT( CONST );    break;
         case 'i': ADD_CFMT( INT );      break;
         case 'l': ADD_CFMT( LONG );     break;
@@ -349,7 +349,7 @@ static color_when_t parse_color_when( char const *when ) {
   assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when != NULL; ++m ) {
     if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_colorization;
     // sum sizes of names in case we need to construct an error message
@@ -359,7 +359,7 @@ static color_when_t parse_color_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when; ++m ) {
+  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when != NULL; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
@@ -425,7 +425,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {
+  for ( utf8_map_t const *m = UTF8_MAP; m->map_when != NULL; ++m ) {
     if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_utf8;
     // sum sizes of names in case we need to construct an error message
@@ -435,7 +435,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( utf8_map_t const *m = UTF8_MAP; m->map_when; ++m ) {
+  for ( utf8_map_t const *m = UTF8_MAP; m->map_when != NULL; ++m ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
