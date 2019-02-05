@@ -41,19 +41,27 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/** The fseek(3) function to use. */
 #ifdef HAVE_FSEEKO
 # define FSEEK_FN fseeko
 #else
 # define FSEEK_FN fseek
 #endif /* HAVE_FSEEKO */
 
+/** Embeds the given statements into a compount statement block. */
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
+
+/** Shorthand for printing to standard error. */
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
+
+/** Explicit C version of C++'s `reinterpret_cast`. */
 #define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
+
+/** Explicit C version of C++'s `static_cast`. */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
+
+/** Shorthand for calling **strerror**(3). */
 #define STRERROR                  strerror( errno )
-#define STRINGIFY_HELPER(S)       #S
-#define STRINGIFY(S)              STRINGIFY_HELPER(S)
 
 #ifdef __GNUC__
 
