@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/options.c
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2019  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -89,6 +89,7 @@ static struct option const LONG_OPTS[] = {
   { "max-lines",          required_argument,  NULL, 'L' },
   { "matching-only",      no_argument,        NULL, 'm' },
   { "max-bytes",          required_argument,  NULL, 'N' },
+  { "no-offsets",         no_argument,        NULL, 'O' },
   { "octal",              no_argument,        NULL, 'o' },
   { "printable-only",     no_argument,        NULL, 'p' },
   { "reverse",            no_argument,        NULL, 'r' },
@@ -103,7 +104,7 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:L:mN:oprs:S:tTu:U:vV";
+static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:L:mN:oOprs:S:tTu:U:vV";
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -478,6 +479,7 @@ static void usage( void ) {
 "  -m         Only dump rows having matches [default: no].\n"
 "  -N bytes   Dump max number of bytes [default: unlimited].\n"
 "  -o         Print offsets in octal.\n"
+"  -O         Suppress printing offsets [default: no].\n"
 "  -p         Only dump rows having printable characters [default: no].\n"
 "  -r         Reverse from dump back to binary [default: no].\n"
 "  -s string  Search for string.\n"
@@ -498,9 +500,10 @@ static void usage( void ) {
 
 char const* get_offset_fmt_english( void ) {
   switch ( opt_offset_fmt ) {
-    case OFMT_DEC: return "decimal";
-    case OFMT_HEX: return "hexadecimal";
-    case OFMT_OCT: return "octal";
+    case OFMT_NONE: return "none";
+    case OFMT_DEC : return "decimal";
+    case OFMT_HEX : return "hexadecimal";
+    case OFMT_OCT : return "octal";
   } // switch
   assert( false );
   return NULL;                          // suppress warning (never gets here)
@@ -510,6 +513,9 @@ char const* get_offset_fmt_format( void ) {
   static char fmt[8];                   // e.g.: "%016llX"
   if ( fmt[0] == '\0' ) {
     switch ( opt_offset_fmt ) {
+      case OFMT_NONE:
+        strcpy( fmt, "%00" );
+        break;
       case OFMT_DEC:
         sprintf( fmt, "%%0%zu" PRIu64, get_offset_width() );
         break;
@@ -565,6 +571,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'm': opt_only_matching = true;                               break;
       case 'N': opt_max_bytes = parse_offset( optarg );                 break;
       case 'o': opt_offset_fmt = OFMT_OCT;                              break;
+      case 'O': opt_offset_fmt = OFMT_NONE;                             break;
       case 'p': opt_only_printing = true;                               break;
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = (char*)free_later( check_strdup( optarg ) );
@@ -589,12 +596,13 @@ void parse_options( int argc, char *argv[] ) {
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
+  check_mutually_exclusive( "d", "hoO" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "bBcCeEgimLNpsStTuUv" );
+  check_mutually_exclusive( "r", "bBcCeEgimLNOpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "bBcCdeEghHijmLNoprsStTuUv" );
+  check_mutually_exclusive( "V", "bBcCdeEghHijmLNoOprsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );

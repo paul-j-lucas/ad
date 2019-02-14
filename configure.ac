@@ -4,7 +4,7 @@
 #       ad -- ASCII dump
 #       configure.ac
 #
-#       Copyright (C) 2016-2017  Paul J. Lucas
+#       Copyright (C) 2016-2019  Paul J. Lucas
 #
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-AC_INIT([ad], [3.2.1], [paul@lucasmail.org],,[https://github.com/paul-j-lucas/ad])
+AC_INIT([ad], [3.3], [paul@lucasmail.org],,[https://github.com/paul-j-lucas/ad])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 

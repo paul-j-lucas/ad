@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/options.h
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2019  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -72,9 +72,10 @@ typedef enum matches matches_t;
  * Offset formats.
  */
 enum offset_fmt {
-  OFMT_DEC = 10,
-  OFMT_HEX = 16,
-  OFMT_OCT =  8
+  OFMT_NONE =  0,
+  OFMT_DEC  = 10,
+  OFMT_HEX  = 16,
+  OFMT_OCT  =  8
 };
 typedef enum offset_fmt offset_fmt_t;
 

@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/dump.c
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2019  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -167,12 +167,14 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   }
 
   // print offset & column separator
-  SGR_START_IF( sgr_offset );
-  FPRINTF( off_fmt, STATIC_CAST(uint64_t, fin_offset) );
-  SGR_END_IF( sgr_offset );
-  SGR_START_IF( sgr_sep );
-  FPUTC( ':' );
-  SGR_END_IF( sgr_sep );
+  if ( opt_offset_fmt != OFMT_NONE ) {
+    SGR_START_IF( sgr_offset );
+    FPRINTF( off_fmt, STATIC_CAST(uint64_t, fin_offset) );
+    SGR_END_IF( sgr_offset );
+    SGR_START_IF( sgr_sep );
+    FPUTC( ':' );
+    SGR_END_IF( sgr_sep );
+  }
 
   // dump hex part
   prev_matches = false;
@@ -182,7 +184,8 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
     if ( buf_pos % opt_group_by == 0 ) {
       SGR_END_IF( prev_matches );
-      FPUTC( ' ' );                     // print space between hex columns
+      if ( opt_offset_fmt != OFMT_NONE || buf_pos > 0 )
+        FPUTC( ' ' );                   // print space between hex columns
       if ( print_readability_space( buf_pos ) )
         FPUTC( ' ' );
       SGR_HEX_START_IF( prev_matches );

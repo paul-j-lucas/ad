@@ -105,7 +105,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-N3.test \
 	tests/ad-N4.test \
 	tests/ad-no_options-out.test \
-	tests/ad-o.test \
+	tests/ad-o_01.test \
+	tests/ad-O_02.test \
 	tests/ad-p-v.test \
 	tests/ad-p_01.test \
 	tests/ad-p_02.test \
