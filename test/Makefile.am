@@ -21,6 +21,7 @@
 AUTOMAKE_OPTIONS = 1.12			# needed for TEST_LOG_DRIVER
 
 TESTS =	tests/ad-no_options.test \
+	tests/ad-A.test \
 	tests/ad-b1-e1.test \
 	tests/ad-B1-e257.test \
 	tests/ad-b16-B2.test \

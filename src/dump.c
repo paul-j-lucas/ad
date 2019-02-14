@@ -199,44 +199,48 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   } // for
   SGR_END_IF( prev_matches );
 
-  // print padding if necessary (last row only)
-  for ( ; buf_pos < ROW_SIZE; ++buf_pos ) {
-    if ( buf_pos % opt_group_by == 0 )
-      FPUTC( ' ' );                     // print space between hex columns
-    if ( print_readability_space( buf_pos ) )
-      FPUTC( ' ' );
+  if ( opt_print_ascii ) {
+    // print padding if necessary (last row only)
+    for ( ; buf_pos < ROW_SIZE; ++buf_pos ) {
+      if ( buf_pos % opt_group_by == 0 )
+        FPUTC( ' ' );                   // print space between hex columns
+      if ( print_readability_space( buf_pos ) )
+        FPUTC( ' ' );
+      FPRINTF( "  " );
+    } // for
+
+    // dump ASCII part
     FPRINTF( "  " );
-  } // for
+    prev_matches = false;
+    for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
+      bool const matches = (cur->match_bits & (1 << buf_pos)) != 0;
+      bool const matches_changed = matches != prev_matches;
+      uint8_t const byte = cur->bytes[ buf_pos ];
 
-  // dump ASCII part
-  FPRINTF( "  " );
-  prev_matches = false;
-  for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-    bool const matches = (cur->match_bits & (1 << buf_pos)) != 0;
-    bool const matches_changed = matches != prev_matches;
-    uint8_t const byte = cur->bytes[ buf_pos ];
-
-    if ( matches )
-      SGR_ASCII_START_IF( matches_changed );
-    else
-      SGR_END_IF( matches_changed );
-
-    static size_t utf8_count;
-    if ( utf8_count > 1 ) {
-      FPUTS( opt_utf8_pad );
-      --utf8_count;
-    } else {
-      uint8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
-      utf8_count = opt_utf8 ? utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
-      if ( utf8_count > 1 )
-        FPUTS( REINTERPRET_CAST(char*, utf8_char) );
+      if ( matches )
+        SGR_ASCII_START_IF( matches_changed );
       else
-        FPUTC( ascii_is_print( byte ) ? byte : '.' );
-    }
+        SGR_END_IF( matches_changed );
 
-    prev_matches = matches;
-  } // for
-  SGR_END_IF( prev_matches );
+      static size_t utf8_count;
+      if ( utf8_count > 1 ) {
+        FPUTS( opt_utf8_pad );
+        --utf8_count;
+      } else {
+        uint8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+        utf8_count = opt_utf8 ?
+          utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
+        if ( utf8_count > 1 )
+          FPUTS( REINTERPRET_CAST(char*, utf8_char) );
+        else
+          FPUTC( ascii_is_print( byte ) ? byte : '.' );
+      }
+
+      prev_matches = matches;
+    } // for
+    SGR_END_IF( prev_matches );
+  }
+
   FPUTC( '\n' );
 
   any_dumped = true;

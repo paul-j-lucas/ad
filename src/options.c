@@ -55,6 +55,7 @@ matches_t           opt_matches;
 offset_fmt_t        opt_offset_fmt = OFMT_HEX;
 bool                opt_only_matching;
 bool                opt_only_printing;
+bool                opt_print_ascii = true;
 bool                opt_reverse;
 bool                opt_utf8;
 char const         *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
@@ -89,6 +90,7 @@ static struct option const LONG_OPTS[] = {
   { "max-lines",          required_argument,  NULL, 'L' },
   { "matching-only",      no_argument,        NULL, 'm' },
   { "max-bytes",          required_argument,  NULL, 'N' },
+  { "no-ascii",           no_argument,        NULL, 'A' },
   { "no-offsets",         no_argument,        NULL, 'O' },
   { "octal",              no_argument,        NULL, 'o' },
   { "printable-only",     no_argument,        NULL, 'p' },
@@ -104,7 +106,7 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const   SHORT_OPTS[] = "b:B:c:C:de:E:g:hHij:L:mN:oOprs:S:tTu:U:vV";
+static char const   SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOprs:S:tTu:U:vV";
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -463,6 +465,7 @@ static void usage( void ) {
 "       %s -V\n"
 "\n"
 "options:\n"
+"  -A         Suppress printing the ASCII part [default: no].\n"
 "  -b bits    Set number size in bits: 8-64 [default: auto].\n"
 "  -B bytes   Set number size in bytes: 1-8 [default: auto].\n"
 "  -c when    Specify when to colorize output [default: not_file].\n"
@@ -553,6 +556,7 @@ void parse_options( int argc, char *argv[] ) {
       break;
     SET_OPTION( opt );
     switch ( opt ) {
+      case 'A': opt_print_ascii = false;                                break;
       case 'b': size_in_bits = parse_ull( optarg );                     break;
       case 'B': size_in_bytes = parse_ull( optarg );                    break;
       case 'c': color_when = parse_color_when( optarg );                break;
@@ -600,9 +604,9 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "bBcCeEgimLNOpsStTuUv" );
+  check_mutually_exclusive( "r", "AbBcCeEgimLNOpsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "bBcCdeEghHijmLNoOprsStTuUv" );
+  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOprsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );
