@@ -474,7 +474,7 @@ static void usage( void ) {
 "  -e number  Search for little-endian number.\n"
 "  -E number  Search for big-endian number.\n"
 "  -g number  Dump bytes grouped by 1, 2, 4, 8, or 16 [default: %u].\n"
-"  -h         Print offsets in hexadecimal [default].\n"
+"  -h         Print offsets in hexadecimal [default: yes].\n"
 "  -H         Print this help and exit [default: no].\n"
 "  -i         Search for case-insensitive string [default: no].\n"
 "  -j offset  Jump to offset before dumping [default: 0].\n"
