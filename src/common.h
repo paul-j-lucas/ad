@@ -21,15 +21,19 @@
 #ifndef ad_common_H
 #define ad_common_H
 
+// standard
+#include <stddef.h>                     /* for size_t */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define ELIDED_SEP_CHAR           '-'
 #define EX_NO_MATCHES             1     /* no errors, but no matches either */
 #define GROUP_BY_DEFAULT          2     /* how many bytes to group together */
-#define OFFSET_WIDTH_MIN          12    /* minimum number of offset digits */
-#define OFFSET_WIDTH_MAX          16    /* maximum number of offset digits */
-#define ROW_SIZE                  16    /* bytes dumped on a row */
-#define ROW_SIZE_C                8     /* bytes dumped on a row in C */
+#define OFFSET_WIDTH_MIN          12    /* minimum offset digits */
+#define OFFSET_WIDTH_MAX          16    /* maximum offset digits */
+#define ROW_BYTES_DEFAULT         16    /* default bytes dumped on a row */
+#define ROW_BYTES_C               8     /* bytes dumped on a row in C */
+#define ROW_BYTES_MAX             32    /* maximum bytes dumped on a row */
 
 /**
  * The endian order for numeric searches.
@@ -40,6 +44,8 @@ enum endian {
   ENDIAN_LITTLE
 };
 typedef enum endian endian_t;
+
+extern size_t row_bytes;                // bytes dumped on a row
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -94,6 +94,7 @@ static struct option const LONG_OPTS[] = {
   { "no-offsets",         no_argument,        NULL, 'O' },
   { "octal",              no_argument,        NULL, 'o' },
   { "printable-only",     no_argument,        NULL, 'p' },
+  { "plain",              no_argument,        NULL, 'P' },
   { "reverse",            no_argument,        NULL, 'r' },
   { "revert",             no_argument,        NULL, 'r' },
   { "string",             required_argument,  NULL, 's' },
@@ -106,7 +107,7 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const   SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOprs:S:tTu:U:vV";
+static char const SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOpPrs:S:tTu:U:vV";
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -393,12 +394,13 @@ static unsigned parse_group_by( char const *s ) {
     case 4:
     case 8:
     case 16:
+    case 32:
       return STATIC_CAST(unsigned, group_by);
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
     "\"%" PRIu64 "\": invalid value for %s;"
-    " must be one of: 1, 2, 4, 8, or 16\n",
+    " must be one of: 1, 2, 4, 8, 16, or 32\n",
     group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
   );
 }
@@ -484,6 +486,7 @@ static void usage( void ) {
 "  -o         Print offsets in octal.\n"
 "  -O         Suppress printing offsets [default: no].\n"
 "  -p         Only dump rows having printable characters [default: no].\n"
+"  -P         Dump in plain format; same as: -AOg32 [default: no].\n"
 "  -r         Reverse from dump back to binary [default: no].\n"
 "  -s string  Search for string.\n"
 "  -S string  Search for case-insensitive string.\n"
@@ -536,7 +539,9 @@ char const* get_offset_fmt_format( void ) {
 }
 
 size_t get_offset_width( void ) {
-  return opt_group_by == 1 ? OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
+  return  (opt_group_by == 1 && opt_print_ascii) ||
+          (row_bytes > ROW_BYTES_DEFAULT && !opt_print_ascii) ?
+      OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
 void parse_options( int argc, char *argv[] ) {
@@ -577,6 +582,10 @@ void parse_options( int argc, char *argv[] ) {
       case 'o': opt_offset_fmt = OFMT_OCT;                              break;
       case 'O': opt_offset_fmt = OFMT_NONE;                             break;
       case 'p': opt_only_printing = true;                               break;
+      case 'P': opt_group_by = ROW_BYTES_MAX;
+                opt_offset_fmt = OFMT_NONE;
+                opt_print_ascii = false;
+                break;
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = (char*)free_later( check_strdup( optarg ) );
                                                                         break;
@@ -600,13 +609,14 @@ void parse_options( int argc, char *argv[] ) {
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
-  check_mutually_exclusive( "d", "hoO" );
+  check_mutually_exclusive( "d", "hoOP" );
   check_mutually_exclusive( "eE", "sS" );
+  check_mutually_exclusive( "g", "P" );
   check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "AbBcCeEgimLNOpsStTuUv" );
+  check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOprsStTuUv" );
+  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOpPrsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );
@@ -645,8 +655,11 @@ void parse_options( int argc, char *argv[] ) {
   if ( opt_case_insensitive )
     tolower_s( search_buf );
 
+  if ( opt_group_by > row_bytes )
+    row_bytes = opt_group_by;
+
   if ( max_lines > 0 )
-    opt_max_bytes = max_lines * ROW_SIZE;
+    opt_max_bytes = max_lines * row_bytes;
 
   fin  = stdin;
   fout = stdout;

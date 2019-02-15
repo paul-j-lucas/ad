@@ -145,7 +145,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   unsigned consec_spaces = 0;
 
   // parse hexadecimal bytes
-  while ( bytes_len < ROW_SIZE ) {
+  while ( bytes_len < row_bytes ) {
     ++p, ++col;
 
     // handle whitespace
@@ -167,8 +167,8 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     ++col;
     if ( unlikely( ++p == end ) )
       INVALID_EXIT(
-        "unexpected end of data; expected %d hexadecimal bytes\n",
-        ROW_SIZE
+        "unexpected end of data; expected %zu hexadecimal bytes\n",
+        row_bytes
       );
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
@@ -190,9 +190,9 @@ expected_hex_digit:
 ////////// extern functions ///////////////////////////////////////////////////
 
 void reverse_dump_file( void ) {
-  uint8_t bytes[ ROW_SIZE ];
+  uint8_t bytes[ row_bytes ];
   size_t  bytes_len;
-  off_t   fout_offset = -ROW_SIZE;
+  off_t   fout_offset = -row_bytes;
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
@@ -207,20 +207,22 @@ void reverse_dump_file( void ) {
     }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
-      case ROW_BYTES:
-        if ( unlikely( new_offset < fout_offset + ROW_SIZE ) )
+      case ROW_BYTES: {
+        off_t const row_end_offset = fout_offset + (off_t)row_bytes;
+        if ( unlikely( new_offset < row_end_offset ) )
           goto backwards_offset;
-        if ( new_offset > fout_offset + ROW_SIZE )
+        if ( new_offset > row_end_offset )
           FSEEK( fout, new_offset, SEEK_SET );
         FWRITE( bytes, 1, bytes_len, fout );
         fout_offset = new_offset;
         break;
+      }
 
       case ROW_ELIDED:
-        assert( bytes_len % ROW_SIZE == 0 );
-        fout_offset += bytes_len / ROW_SIZE;
-        for ( ; bytes_len > 0; bytes_len -= ROW_SIZE )
-          FWRITE( bytes, 1, ROW_SIZE, fout );
+        assert( bytes_len % row_bytes == 0 );
+        fout_offset += bytes_len / row_bytes;
+        for ( ; bytes_len > 0; bytes_len -= row_bytes )
+          FWRITE( bytes, 1, row_bytes, fout );
         break;
 
       case ROW_IGNORE:

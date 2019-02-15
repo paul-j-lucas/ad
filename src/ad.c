@@ -37,6 +37,9 @@ extern void dump_file( void );
 extern void dump_file_c( void );
 extern void reverse_dump_file( void );
 
+// extern variable definitions
+size_t row_bytes = ROW_BYTES_DEFAULT;
+
 /////////// local functions ///////////////////////////////////////////////////
 
 /**

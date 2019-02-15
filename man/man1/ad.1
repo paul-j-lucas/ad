@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "February 14, 2018" "PJL TOOLS"
+.TH \f3ad\f1 1 "February 15, 2018" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -39,6 +39,7 @@ ad \- ASCII dump
 .B ad
 dumps a file
 as rows of 16 bytes
+(by default)
 in both hexadecimal
 and also ASCII or UTF-8
 (for those bytes for which
@@ -309,11 +310,8 @@ parses offsets in decimal.
 Dumps bytes grouped by
 .I n
 bytes.
-Must be one of 1, 2, 4, 8, or 16.
+Must be one of 1, 2, 4, 8, 16, or 32.
 The default is 2.
-When 1,
-the offset is 12 digits;
-otherwise it is 16 digits.
 When less than 8,
 an additional space is dumped after the 8th byte
 to aid readability.
@@ -361,10 +359,7 @@ bytes.
 .BI \-\-max-lines \f1=\fPn "\f1 | \fP" "" \-L " n"
 Reads at most
 .I n
-lines
-.RI ( n
-* 16
-bytes).
+lines.
 .TP
 .BR \-\-no-offsets " | " \-O
 Suppresses printing offsets.
@@ -377,6 +372,10 @@ For
 or
 .BR \-r ,
 parses offsets in octal.
+.TP
+.BR \-\-plain " | " \-P
+Dump in plain format;
+same as: \-AOg32
 .TP
 .BR \-\-printing-only " | " \-p
 Only dumps rows having printable characters.

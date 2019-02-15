@@ -65,7 +65,7 @@
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
 struct row_buf {
-  uint8_t   bytes[ ROW_SIZE ];          // bytes in buffer, left-to-right
+  uint8_t   bytes[ ROW_BYTES_MAX ];     // bytes in buffer, left-to-right
   size_t    len;                        // length of buffer
   uint16_t  match_bits;                 // which bytes match, right-to-left
 };
@@ -149,7 +149,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    uint64_t const offset_delta = fin_offset - dumped_offset - ROW_SIZE;
+    uint64_t const offset_delta = fin_offset - dumped_offset - row_bytes;
     if ( offset_delta > 0 && any_dumped ) {
       SGR_START_IF( sgr_elided );
       for ( size_t i = get_offset_width(); i > 0; --i )
@@ -201,7 +201,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   if ( opt_print_ascii ) {
     // print padding if necessary (last row only)
-    for ( ; buf_pos < ROW_SIZE; ++buf_pos ) {
+    for ( ; buf_pos < row_bytes; ++buf_pos ) {
       if ( buf_pos % opt_group_by == 0 )
         FPUTC( ' ' );                   // print space between hex columns
       if ( print_readability_space( buf_pos ) )
@@ -288,18 +288,18 @@ void dump_file( void ) {
 
   // prime the pump by reading the first row
   cur->len =
-    match_row( cur->bytes, ROW_SIZE, &cur->match_bits, kmps, match_buf );
+    match_row( cur->bytes, row_bytes, &cur->match_bits, kmps, match_buf );
 
   while ( cur->len > 0 ) {
     //
     // We need to know whether the current row is the last row.  The current
-    // row is the last if its length < ROW_SIZE.  However, if the file's length
-    // is an exact multiple of ROW_SIZE, then we don't know the current row is
-    // the last.  We therefore have to read the next row: the current row is
-    // the last row if the length of the next row is zero.
+    // row is the last if its length < row_bytes.  However, if the file's
+    // length is an exact multiple of row_bytes, then we don't know the current
+    // row is the last.  We therefore have to read the next row: the current
+    // row is the last row if the length of the next row is zero.
     //
-    next->len = cur->len < ROW_SIZE ? 0 :
-      match_row( next->bytes, ROW_SIZE, &next->match_bits, kmps, match_buf );
+    next->len = cur->len < row_bytes ? 0 :
+      match_row( next->bytes, row_bytes, &next->match_bits, kmps, match_buf );
 
     if ( opt_matches != MATCHES_ONLY ) {
       bool const is_last_row = next->len == 0;
@@ -321,7 +321,7 @@ void dump_file( void ) {
       is_same_row =
         !(opt_verbose || is_last_row) &&// + neither -v or is the last row
         cur->len == next->len &&        // + the two row lengths are equal
-        memcmp( cur->bytes, next->bytes, ROW_SIZE ) == 0;
+        memcmp( cur->bytes, next->bytes, row_bytes ) == 0;
     }
 
     if ( cur->match_bits != 0 )
@@ -330,7 +330,7 @@ void dump_file( void ) {
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
     cur = next, next = temp;
 
-    fin_offset += ROW_SIZE;
+    fin_offset += row_bytes;
   } // while
 
   if ( opt_matches != MATCHES_NONE ) {
@@ -361,13 +361,13 @@ void dump_file_c( void ) {
   );
 
   do {
-    uint8_t  bytes[ ROW_SIZE_C ];       // bytes in buffer
+    uint8_t  bytes[ ROW_BYTES_C ];      // bytes in buffer
     uint16_t match_bits;                // not used when dumping in C
-    row_len = match_row( bytes, ROW_SIZE_C, &match_bits, NULL, NULL );
+    row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
     fin_offset += row_len;
     array_len += row_len;
-  } while ( row_len == ROW_SIZE_C );
+  } while ( row_len == ROW_BYTES_C );
 
   FPUTS( "};\n" );
 
