@@ -206,11 +206,11 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         FPUTC( ' ' );                   // print space between hex columns
       if ( print_readability_space( buf_pos ) )
         FPUTC( ' ' );
-      FPRINTF( "  " );
+      FPUTS( "  " );
     } // for
 
     // dump ASCII part
-    FPRINTF( "  " );
+    FPUTS( "  " );
     prev_matches = false;
     for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
       bool const matches = (cur->match_bits & (1 << buf_pos)) != 0;
@@ -369,7 +369,7 @@ void dump_file_c( void ) {
     array_len += row_len;
   } while ( row_len == ROW_SIZE_C );
 
-  FPRINTF( "};\n" );
+  FPUTS( "};\n" );
 
   if ( CFMT_HAS_TYPE( opt_c_fmt ) )
     FPRINTF(
