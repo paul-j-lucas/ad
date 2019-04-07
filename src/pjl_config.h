@@ -1,8 +1,8 @@
 /*
-**      ad -- ASCII dump
-**      src/ad.h
+**      PJL Library
+**      src/pjl_config.h
 **
-**      Copyright (C) 2018  Paul J. Lucas, et al.
+**      Copyright (C) 2018-2019  Paul J. Lucas, et al.
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_ad_H
-#define ad_ad_H
+#ifndef pjl_config_H
+#define pjl_config_H
 
 /**
  * @file
@@ -63,5 +63,5 @@
 // local
 #include "config.h"                     /* must go first */
 
-#endif /* ad_ad_H */
+#endif /* pjl_config_H */
 /* vim:set et sw=2 ts=2: */

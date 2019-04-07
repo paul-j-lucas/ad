@@ -22,7 +22,7 @@
 #define ad_util_H
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 #include "common.h"
 
 // standard
@@ -51,17 +51,26 @@ _GL_INLINE_HEADER_BEGIN
 /** Embeds the given statements into a compount statement block. */
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 
+/** Explicit C version of C++'s `const_cast`. */
+#define CONST_CAST(T,EXPR)        ((T)(uintptr_t)(EXPR))
+
+/** Frees the given memory. */
+#define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
+
 /** Shorthand for printing to standard error. */
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 
 /** Explicit C version of C++'s `reinterpret_cast`. */
-#define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
+#define REINTERPRET_CAST(T,EXPR)  ((T)(uintptr_t)(EXPR))
 
 /** Explicit C version of C++'s `static_cast`. */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
 
 /** Shorthand for calling **strerror**(3). */
 #define STRERROR                  strerror( errno )
+
+/** Zeros the given `struct`. */
+#define STRUCT_ZERO(PTR)          memset( (PTR), 0, sizeof *(PTR) )
 
 #ifdef __GNUC__
 

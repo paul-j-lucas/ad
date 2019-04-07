@@ -22,7 +22,7 @@
 #define ad_match_H
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 
 // standard
 #include <inttypes.h>                   /* for uint8_t, uint32_t */

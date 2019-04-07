@@ -24,13 +24,15 @@ AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 LDADD = $(top_builddir)/lib/libgnu.a
 
 ad_SOURCES = \
-	ad.c ad.h \
+	pjl_config.h \
+	ad.c \
 	color.c color.h \
 	common.h \
 	dump.c \
 	match.c match.h \
 	options.c options.h \
 	reverse.c \
+	slist.c slist.h \
 	util.c util.h \
 	utf8.c utf8.h
 
