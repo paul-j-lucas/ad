@@ -30,8 +30,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
-typedef uint32_t match_bits_t;
+typedef size_t    kmp_t;                // Knuth-Morris-Pratt prefix value
+typedef uint32_t  match_bits_t;
 
 // extern variables
 extern unsigned long total_matches;
