@@ -55,6 +55,8 @@ typedef enum utf8_when utf8_when_t;
 
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
+typedef uint32_t codepoint_t;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -85,7 +87,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns the number of bytes comprising the codepoint encoded as
  * UTF-8.
  */
-size_t utf8_encode( uint32_t codepoint, char *utf8_buf );
+size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
 
 /**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence

@@ -302,11 +302,11 @@ dup_format:
  * @return Returns the Unicode code-point value
  * or prints an error message and exits if \a s is invalid.
  */
-static uint32_t parse_codepoint( char const *s ) {
+static codepoint_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
   if ( s[0] != '\0' && s[1] == '\0' )   // assume single-char ASCII
-    return STATIC_CAST(uint32_t, s[0]);
+    return STATIC_CAST(codepoint_t, s[0]);
 
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
@@ -316,7 +316,7 @@ static uint32_t parse_codepoint( char const *s ) {
   }
   uint64_t const codepoint = parse_ull( s );
   if ( is_codepoint_valid( codepoint ) )
-    return STATIC_CAST(uint32_t, codepoint);
+    return STATIC_CAST(codepoint_t, codepoint);
 
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
@@ -549,7 +549,7 @@ void parse_options( int argc, char *argv[] ) {
   size_t        max_lines = 0;
   bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
-  uint32_t      utf8_pad = 0;
+  codepoint_t   utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
   me = basename( argv[0] );
