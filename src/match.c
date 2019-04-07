@@ -239,7 +239,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   return kmps;
 }
 
-size_t match_row( uint8_t *row_buf, size_t row_size, uint16_t *match_bits,
+size_t match_row( uint8_t *row_buf, size_t row_size, match_bits_t *match_bits,
                   kmp_t const *kmps, uint8_t *match_buf ) {
   assert( row_buf != NULL );
   assert( row_size <= row_bytes );

@@ -65,9 +65,9 @@
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
 struct row_buf {
-  uint8_t   bytes[ ROW_BYTES_MAX ];     // bytes in buffer, left-to-right
-  size_t    len;                        // length of buffer
-  uint16_t  match_bits;                 // which bytes match, right-to-left
+  uint8_t       bytes[ ROW_BYTES_MAX ]; // bytes in buffer, left-to-right
+  size_t        len;                    // length of buffer
+  match_bits_t  match_bits;             // which bytes match, right-to-left
 };
 typedef struct row_buf row_buf_t;
 
@@ -362,7 +362,7 @@ void dump_file_c( void ) {
 
   do {
     uint8_t  bytes[ ROW_BYTES_C ];      // bytes in buffer
-    uint16_t match_bits;                // not used when dumping in C
+    match_bits_t match_bits;            // not used when dumping in C
     row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
     fin_offset += row_len;

@@ -25,12 +25,13 @@
 #include "ad.h"                         /* must go first */
 
 // standard
-#include <inttypes.h>                   /* for uint8_t, uint16_t */
+#include <inttypes.h>                   /* for uint8_t, uint32_t */
 #include <stddef.h>                     /* for size_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 
 typedef size_t kmp_t;                   // Knuth-Morris-Pratt prefix value
+typedef uint32_t match_bits_t;
 
 // extern variables
 extern unsigned long total_matches;
@@ -66,7 +67,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * \a row_size except on the last row in which case it will be less than
  * \a row_size.
  */
-size_t match_row( uint8_t *row_buf, size_t row_size, uint16_t *match_bits,
+size_t match_row( uint8_t *row_buf, size_t row_size, match_bits_t *match_bits,
                   kmp_t const *kmps, uint8_t *match_buf );
 
 ///////////////////////////////////////////////////////////////////////////////
