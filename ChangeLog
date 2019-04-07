@@ -1,3 +1,124 @@
+2019-04-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * _Noreturn.h: Updated Gnulib.
+   * configure.ac: Updated version.
+
+2019-04-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, utf8.c, utf8.h: Added codepoint_t.
+   * dump.c, match.c, match.h: Added match_bits_t.
+
+2019-04-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, gettext.h, stdio.in.h, stdlib.in.h,
+     unistd.in.h, getdelim.m4, getline.m4, gnulib-common.m4, malloc.m4,
+     stdlib_h.m4, strerror.m4: Updated Gnulib.
+
+2019-02-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: s/Dump/Dumps/
+
+2019-02-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, ad.c, common.h, dump.c, match.c, options.c, reverse.c,
+     test/Makefile.am, ad-P.txt, ad-g32.txt, ad-P.test, ad-g32.test: Now allow
+     -g32; added -P as a synonym for -AOg32.
+   * dump.c: s/FPRINTF/FPUTS/
+   * options.c: Added "yes".
+
+2019-02-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, dump.c, options.c, options.h, test/Makefile.am, ad-A.txt, ad-A.test:
+     Added --no-ascii/-A options.
+   * configure.ac, ad.1, dump.c, options.c, options.h, test/Makefile.am,
+     ad-O_02.txt, ad-O_02.test: Added --no-offsets/-O options.
+
+2019-02-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.h: Added comments; removed STRINGIFY -- not used.
+
+2019-01-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, dump.c, match.c, options.c, reverse.c, util.c: More
+     explicit code.
+
+2019-01-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, arg-nonnull.h, c++defs.h, errno.in.h, getdelim.c,
+     getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, 00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, longlong.m4, malloc.m4, multiarch.m4, nocrash.m4, off_t.m4,
+     ssize_t.m4, stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4, stdlib_h.m4,
+     strdup.m4, strerror.m4, string_h.m4, strsep.m4, sys_socket_h.m4,
+     sys_types_h.m4, sysexits.m4, unistd_h.m4, warn-on-use.m4, wchar_t.m4,
+     wint_t.m4: Updated Gnulib.
+
+2018-12-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, color.h, common.h, dump.c, match.c, match.h, options.c,
+     options.h, reverse.c, utf8.c, utf8.h, util.c, util.h: Updated copyright
+     year.
+   * configure.ac, src/Makefile.am, ad.c, ad.h, color.c, color.h, common.h,
+     dump.c, match.c, match.h, options.c, options.h, reverse.c, utf8.c, utf8.h,
+     util.c, util.h: Now handling "inline" properly on Mac OS X; header
+     clean-up.
+   * lib/Makefile.am, _Noreturn.h, intprops.h, limits.in.h, stdlib.in.h,
+     unistd.in.h, errno_h.m4, gnulib-common.m4, gnulib-comp.m4, limits-h.m4,
+     longlong.m4, stddef_h.m4, stdint.m4, unistd_h.m4: Updated GNUlib.
+
+2018-10-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, options.c, util.c: Made bitwise expressions explicit.
+
+2018-08-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Added missing "16" to error message.
+   * configure.ac, ad.1, ad.c, match.c, options.c, options.h: Added
+     --max-lines/-L options.
+
+2018-08-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, unistd.in.h, verify.h, warn-on-use.h, extern-inline.m4,
+     gnulib-cache.m4, gnulib-common.m4, warn-on-use.m4: Updated Gnulib.
+
+2018-07-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: More explicit expressions.
+
+2018-05-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, arg-nonnull.h, c++defs.h, errno.in.h, getdelim.c,
+     getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, 00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, longlong.m4, malloc.m4, multiarch.m4, nocrash.m4, off_t.m4,
+     onceonly.m4, ssize_t.m4, stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4,
+     stdlib_h.m4, strdup.m4, strerror.m4, string_h.m4, strsep.m4,
+     sys_socket_h.m4, sys_types_h.m4, sysexits.m4, unistd_h.m4, warn-on-use.m4,
+     wchar_t.m4, wint_t.m4: Updated GNUlib.
+
+2018-04-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: Made color output match standard test-driver.
+
+2018-03-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, color.c, dump.c, match.c, options.c, reverse.c, util.c: Replaced
+     non-bool use of ! with explicit checks.
+
 2018-02-26  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, dump.c, match.c, options.c, reverse.c, utf8.c, utf8.h, util.c,
