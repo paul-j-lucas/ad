@@ -57,6 +57,9 @@ _GL_INLINE_HEADER_BEGIN
 /** Frees the given memory. */
 #define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
 
+/** Zeros the memory. */
+#define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
+
 /** Shorthand for printing to standard error. */
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 
@@ -70,7 +73,7 @@ _GL_INLINE_HEADER_BEGIN
 #define STRERROR                  strerror( errno )
 
 /** Zeros the given `struct`. */
-#define STRUCT_ZERO(PTR)          memset( (PTR), 0, sizeof *(PTR) )
+#define MEM_ZERO(PTR)          memset( (PTR), 0, sizeof *(PTR) )
 
 #ifdef __GNUC__
 

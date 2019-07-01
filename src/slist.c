@@ -1,5 +1,5 @@
 /*
-**      PJL Library
+**      ad -- ASCII dump
 **      src/slist.c
 **
 **      Copyright (C) 2017-2019  Paul J. Lucas, et al.
@@ -26,7 +26,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 /// @cond DOXYGEN_IGNORE
-#define PJL_SLIST_INLINE _GL_EXTERN_INLINE
+#define AD_SLIST_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "slist.h"
 
@@ -56,14 +56,16 @@ int slist_cmp( slist_t const *list_i, slist_t const *list_j,
   return node_i == NULL ? (node_j == NULL ? 0 : -1) : 1;
 }
 
-slist_t slist_dup( slist_t const *src, slist_data_dup_fn_t data_dup_fn,
+slist_t slist_dup( slist_t const *src, ssize_t n,
+                   slist_data_dup_fn_t data_dup_fn,
                    slist_node_data_dup_fn_t node_data_dup_fn ) {
   slist_t dst;
   slist_init( &dst );
 
-  if ( src != NULL ) {
+  if ( src != NULL && n != 0 ) {
+    size_t un = (size_t)n;
     dst.data = data_dup_fn != NULL ? (*data_dup_fn)( src->data ) : src->data;
-    for ( slist_node_t *src_node = src->head; src_node != NULL;
+    for ( slist_node_t *src_node = src->head; src_node != NULL && un-- > 0;
           src_node = src_node->next ) {
       void *const dst_data = node_data_dup_fn != NULL ?
         (*node_data_dup_fn)( src_node->data ) : src_node->data;
@@ -90,6 +92,24 @@ void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
   }
 }
 
+void* slist_peek_at( slist_t const *list, size_t offset ) {
+  assert( list != NULL );
+  if ( offset >= list->len )
+    return NULL;
+
+  slist_node_t *p;
+
+  if ( offset == list->len - 1 ) {
+    p = list->tail;
+  } else {
+    for ( p = list->head; offset-- > 0; p = p->next )
+      ;
+  }
+
+  assert( p != NULL );
+  return p->data;
+}
+
 void* slist_pop_head( slist_t *list ) {
   assert( list != NULL );
   if ( list->head != NULL ) {
@@ -105,7 +125,7 @@ void* slist_pop_head( slist_t *list ) {
   return NULL;
 }
 
-void* slist_push_head( slist_t *list, void *data ) {
+void slist_push_head( slist_t *list, void *data ) {
   assert( list != NULL );
   slist_node_t *const new_head = MALLOC( slist_node_t, 1 );
   new_head->data = data;
@@ -114,7 +134,6 @@ void* slist_push_head( slist_t *list, void *data ) {
   if ( list->tail == NULL )
     list->tail = new_head;
   ++list->len;
-  return data;
 }
 
 void slist_push_list_head( slist_t *dst, slist_t *src ) {
@@ -152,7 +171,7 @@ void slist_push_list_tail( slist_t *dst, slist_t *src ) {
   slist_init( src );
 }
 
-void* slist_push_tail( slist_t *list, void *data ) {
+void slist_push_tail( slist_t *list, void *data ) {
   assert( list != NULL );
   slist_node_t *const new_tail = MALLOC( slist_node_t, 1 );
   new_tail->data = data;
@@ -168,7 +187,6 @@ void* slist_push_tail( slist_t *list, void *data ) {
   }
   list->tail = new_tail;
   ++list->len;
-  return data;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

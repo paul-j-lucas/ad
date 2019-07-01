@@ -1,5 +1,5 @@
 /*
-**      PJL Library
+**      ad -- ASCII dump
 **      src/slist.h
 **
 **      Copyright (C) 2017-2019  Paul J. Lucas, et al.
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef pjl_slist_H
-#define pjl_slist_H
+#ifndef ad_slist_H
+#define ad_slist_H
 
 /**
  * @file
@@ -36,9 +36,9 @@
 #include <stddef.h>                     /* for NULL */
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef PJL_SLIST_INLINE
-# define PJL_SLIST_INLINE _GL_INLINE
-#endif /* PJL_SLIST_INLINE */
+#ifndef AD_SLIST_INLINE
+# define AD_SLIST_INLINE _GL_INLINE
+#endif /* AD_SLIST_INLINE */
 
 /// @endcond
 
@@ -54,11 +54,12 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @param VAR_NAME The name for the temporary `slist` variable.
  * @param NODE_DATA A pointer to the node data.
+ * @param LIST_DATA A pointer to the list data.
  * @hideinitializer
  */
-#define SLIST_TEMP_INIT_VAR(VAR_NAME,NODE_DATA)                               \
+#define SLIST_TEMP_INIT_VAR(VAR_NAME,NODE_DATA,LIST_DATA)                     \
   slist_node_t VAR_NAME##_node = { NULL, CONST_CAST( void*, (NODE_DATA) ) };  \
-  slist_t VAR_NAME = { &VAR_NAME##_node, &VAR_NAME##_node, 1, NULL }
+  slist_t VAR_NAME = { &VAR_NAME##_node, &VAR_NAME##_node, 1, (LIST_DATA) }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -131,28 +132,6 @@ struct slist_node {
   void *data;                           ///< Pointer to user data.
 };
 
-/**
- * Convenience macro to get an slist's data cast to \a DATA_TYPE.
- *
- * @param DATA_TYPE The type of the data to cast to.
- * @param LIST The `slist` to get the data of.
- * @return Returns said data cast to \a DATA_TYPE.
- * @hideinitializer
- */
-#define SLIST_DATA(DATA_TYPE,LIST) \
-  REINTERPRET_CAST( DATA_TYPE, (LIST)->data )
-
-/**
- * Convenience macro to get an slist's node's data cast to \a DATA_TYPE.
- *
- * @param DATA_TYPE The type of the data to cast to.
- * @param NODE The `slist_node` to get the data of.
- * @return Returns said data cast to \a DATA_TYPE.
- * @hideinitializer
- */
-#define SLIST_NODE_DATA(DATA_TYPE,NODE) \
-  REINTERPRET_CAST( DATA_TYPE, (NODE)->data )
-
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
@@ -173,6 +152,7 @@ int slist_cmp( slist_t const *list_i, slist_t const *list_j,
  * Duplicates \a src and all of its nodes.
  *
  * @param src The <code>\ref slist</code> to duplicate.  It may ne null.
+ * @param n The number of nodes to duplicate; -1 is equivalent to `slist_len()`.
  * @param data_dup_fn A pointer to a function to use to duplicate the data of
  * \a src or null if none is required (hence a shallow copy will be done).
  * @param node_data_dup_fn A pointer to a function to use to duplicate the data
@@ -180,7 +160,8 @@ int slist_cmp( slist_t const *list_i, slist_t const *list_j,
  * will be done).
  * @return Returns a duplicate of \a src.
  */
-slist_t slist_dup( slist_t const *src, slist_data_dup_fn_t data_dup_fn,
+slist_t slist_dup( slist_t const *src, ssize_t n,
+                   slist_data_dup_fn_t data_dup_fn,
                    slist_node_data_dup_fn_t node_data_dup_fn );
 
 /**
@@ -189,7 +170,7 @@ slist_t slist_dup( slist_t const *src, slist_data_dup_fn_t data_dup_fn,
  * @param list A pointer to the <code>\ref slist</code> to check.
  * @return Returns `true` only if \a list is empty.
  */
-PJL_SLIST_INLINE bool slist_empty( slist_t const *list ) {
+AD_SLIST_INLINE bool slist_empty( slist_t const *list ) {
   return list->head == NULL;
 }
 
@@ -210,10 +191,10 @@ void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
  * Peeks at the data at the head of \a list.
  *
  * @param list A pointer to the <code>\ref slist</code>.
- * @return Returns a pointer to the data from the node at the head of \a list
- * or null if \a list is empty.
+ * @return Returns the data from the node at the head of \a list or null if \a
+ * list is empty.
  */
-PJL_SLIST_INLINE void* slist_head( slist_t const *list ) {
+AD_SLIST_INLINE void* slist_head( slist_t const *list ) {
   return list->head != NULL ? list->head->data : NULL;
 }
 
@@ -236,8 +217,8 @@ PJL_SLIST_INLINE void* slist_head( slist_t const *list ) {
  *
  * @param list A pointer to the <code>\ref slist</code> to initialize.
  */
-PJL_SLIST_INLINE void slist_init( slist_t *list ) {
-  STRUCT_ZERO( list );
+AD_SLIST_INLINE void slist_init( slist_t *list ) {
+  MEM_ZERO( list );
 }
 
 /**
@@ -246,9 +227,60 @@ PJL_SLIST_INLINE void slist_init( slist_t *list ) {
  * @param list A pointer to the <code>\ref slist</code> to get the length of.
  * @return Returns said length.
  */
-PJL_SLIST_INLINE size_t slist_len( slist_t const *list ) {
+AD_SLIST_INLINE size_t slist_len( slist_t const *list ) {
   return list->len;
 }
+
+/**
+ * Peeks at the data at \a offset of \a list.
+ *
+ * @param list A pointer to the <code>\ref slist</code>.
+ * @param offset The offset (starting at 0) of the data to get.
+ * @return Returns the data from the node at \a offset or null if \a offset
+ * &gt;= slist_len().
+ */
+void* slist_peek_at( slist_t const *list, size_t offset );
+
+/**
+ * Convenience macro that peeks at the data at \a OFFSET of \a LIST and casts
+ * it to the requested type.
+ *
+ * @param DATA_TYPE The type of the data.
+ * @param LIST A pointer to the <code>\ref slist</code>.
+ * @param OFFSET The offset (starting at 0) of the data to get.
+ * @return Returns the data from the node at \a OFFSET cast to \a DATA_TYPE or
+ * null (or equivalent) if \a OFFSET &gt;= slist_len().
+ * @hideinitializer
+ */
+#define SLIST_PEEK_AT(DATA_TYPE,LIST,OFFSET) \
+  REINTERPRET_CAST( DATA_TYPE, slist_peek_at( (LIST), (OFFSET) ) )
+
+/**
+ * Peeks at the data at \a roffset from the tail of \a list.
+ *
+ * @param list A pointer to the <code>\ref slist</code>.
+ * @param roffset The reverse offset (starting at 0) of the data to get.
+ * @return Returns the data from the node at \a roffset or null if \a roffset
+ * &gt;= slist_len().
+ */
+AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
+  return roffset < list->len ?
+    slist_peek_at( list, list->len - (roffset + 1) ) : NULL;
+}
+
+/**
+ * Convenience macro that peeks at the data at \a ROFFSET of \a LIST and casts
+ * it to the requested type.
+ *
+ * @param DATA_TYPE The type of the data.
+ * @param LIST A pointer to the <code>\ref slist</code>.
+ * @param ROFFSET The reverse offset (starting at 0) of the data to get.
+ * @return Returns the data from the node at \a ROFFSET cast to \a DATA_TYPE or
+ * null (or equivalent) if \a ROFFSET &gt;= slist_len().
+ * @hideinitializer
+ */
+#define SLIST_PEEK_ATR(DATA_TYPE,LIST,ROFFSET) \
+  REINTERPRET_CAST( DATA_TYPE, slist_peek_atr( (LIST), (ROFFSET) ) )
 
 /**
  * Pops data from the head of \a list.
@@ -278,21 +310,8 @@ void* slist_pop_head( slist_t *list );
  *
  * @param list A pointer to the <code>\ref slist</code>.
  * @param data The pointer to the data to add.
- * @return Returns \a data.
  */
-void* slist_push_head( slist_t *list, void *data );
-
-/**
- * Convenience macro that pushes \a DATA onto the head of \a LIST.
- *
- * @param DATA_TYPE The type of the data to cast to.
- * @param LIST A pointer to the <code>\ref slist</code> to push onto.
- * @param DATA The data to pushed.
- * @return Returns \a DATA cast to \a DATA_TYPE.
- * @hideinitializer
- */
-#define SLIST_PUSH_HEAD(DATA_TYPE,LIST,DATA) \
-  REINTERPRET_CAST( DATA_TYPE, slist_push_head( (LIST), REINTERPRET_CAST( void*, (DATA) ) ) )
+void slist_push_head( slist_t *list, void *data );
 
 /**
  * Pushes \a src onto the head of \a dst.
@@ -315,30 +334,17 @@ void slist_push_list_tail( slist_t *dst, slist_t *src );
  *
  * @param list The <code>\ref slist</code> to push onto.
  * @param data The data to pushed.
- * @return Returns \a data.
  */
-void* slist_push_tail( slist_t *list, void *data );
-
-/**
- * Convenience macro that pushes \a DATA onto the tail of \a LIST.
- *
- * @param DATA_TYPE The type of the data to cast to.
- * @param LIST A pointer to the <code>\ref slist</code> to push onto.
- * @param DATA The data to pushed.
- * @return Returns \a DATA cast to \a DATA_TYPE.
- * @hideinitializer
- */
-#define SLIST_PUSH_TAIL(DATA_TYPE,LIST,DATA) \
-  REINTERPRET_CAST( DATA_TYPE, slist_push_tail( (LIST), REINTERPRET_CAST( void*, (DATA) ) ) )
+void slist_push_tail( slist_t *list, void *data );
 
 /**
  * Peeks at the data at the tail of \a list.
  *
  * @param list A pointer to the <code>\ref slist</code>.
- * @return Returns a pointer to the data from the node at the tail of \a list
- * or null if \a list is empty.
+ * @return Returns the data from the node at the tail of \a list or null if \a
+ * list is empty.
  */
-PJL_SLIST_INLINE void* slist_tail( slist_t const *list ) {
+AD_SLIST_INLINE void* slist_tail( slist_t const *list ) {
   return list->tail != NULL ? list->tail->data : NULL;
 }
 
@@ -361,5 +367,5 @@ PJL_SLIST_INLINE void* slist_tail( slist_t const *list ) {
 
 _GL_INLINE_HEADER_END
 
-#endif /* pjl_slist_H */
+#endif /* ad_slist_H */
 /* vim:set et sw=2 ts=2: */
