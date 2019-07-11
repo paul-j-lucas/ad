@@ -30,6 +30,7 @@ ad_SOURCES = \
 	common.h \
 	expr.c expr.h \
 	dump.c \
+	literals.c literals.h \
 	match.c match.h \
 	options.c options.h \
 	reverse.c \

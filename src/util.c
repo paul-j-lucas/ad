@@ -21,6 +21,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #define AD_UTIL_INLINE _GL_EXTERN_INLINE
+#include "slist.h"
 #include "util.h"
 
 // standard
@@ -35,22 +36,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct free_node free_node_t;
-
-/**
- * A node for a singly linked list of pointers to memory to be freed via
- * \c atexit().
- */
-struct free_node {
-  void         *ptr;
-  free_node_t  *next;
-};
-
 // extern variable declarations
 extern char const  *me;
 
 // local variable definitions
-static free_node_t *free_head;          // linked list of stuff to free
+static slist_t free_later_list;         ///< List of stuff to free later.
 
 /////////// inline functions //////////////////////////////////////////////////
 
@@ -189,21 +179,12 @@ char* fgetln( FILE *f, size_t *len ) {
 
 void* free_later( void *p ) {
   assert( p != NULL );
-  free_node_t *const new_node = MALLOC( free_node_t, 1 );
-  new_node->ptr = p;
-  new_node->next = free_head;
-  free_head = new_node;
+  slist_push_tail( &free_later_list, p );
   return p;
 }
 
 void free_now( void ) {
-  for ( free_node_t *p = free_head; p != NULL; ) {
-    free_node_t *const next = p->next;
-    free( p->ptr );
-    free( p );
-    p = next;
-  } // for
-  free_head = NULL;
+  slist_free( &free_later_list, NULL, &free );
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
