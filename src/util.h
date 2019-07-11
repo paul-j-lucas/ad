@@ -23,7 +23,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
 
 // standard
 #include <errno.h>
@@ -72,9 +71,6 @@ _GL_INLINE_HEADER_BEGIN
 /** Shorthand for calling **strerror**(3). */
 #define STRERROR                  strerror( errno )
 
-/** Zeros the given `struct`. */
-#define MEM_ZERO(PTR)          memset( (PTR), 0, sizeof *(PTR) )
-
 #ifdef __GNUC__
 
 /**
@@ -116,6 +112,18 @@ _GL_INLINE_HEADER_BEGIN
 
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
   BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Endian-ness.
+ */
+enum ad_endian {
+  ENDIAN_NONE,
+  ENDIAN_BIG,
+  ENDIAN_LITTLE
+};
+typedef enum ad_endian ad_endian_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -257,7 +265,7 @@ size_t int_len( uint64_t n );
  * @param bytes The number of bytes to use; must be 1-8.
  * @param endian The endianness to use.
  */
-void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
+void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian );
 
 /**
  * Checks whether the given file descriptor refers to a regular file.

@@ -20,7 +20,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
 #define AD_UTIL_INLINE _GL_EXTERN_INLINE
 #include "util.h"
 
@@ -36,15 +35,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef struct free_node free_node_t;
+
 /**
  * A node for a singly linked list of pointers to memory to be freed via
  * \c atexit().
  */
 struct free_node {
-  void *ptr;
-  struct free_node *next;
+  void         *ptr;
+  free_node_t  *next;
 };
-typedef struct free_node free_node_t;
 
 // extern variable declarations
 extern char const  *me;
@@ -256,7 +256,7 @@ size_t int_len( uint64_t n ) {
     (n <= 0xFFFFFFFFFFul ? 5 : 6) : (n <= 0xFFFFFFFFFFFFFFul ? 7 : 8);
 }
 
-void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
+void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
   assert( n != NULL );
   assert( bytes <= 8 );
 

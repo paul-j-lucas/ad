@@ -35,16 +35,6 @@
 #define ROW_BYTES_C               8     /* bytes dumped on a row in C */
 #define ROW_BYTES_MAX             32    /* maximum bytes dumped on a row */
 
-/**
- * The endian order for numeric searches.
- */
-enum endian {
-  ENDIAN_UNSPECIFIED,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE
-};
-typedef enum endian endian_t;
-
 extern size_t row_bytes;                // bytes dumped on a row
 
 ///////////////////////////////////////////////////////////////////////////////

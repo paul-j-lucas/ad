@@ -69,7 +69,7 @@ FILE               *fout;
 char const         *fout_path = "-";
 char const         *me;
 char               *search_buf;
-endian_t            search_endian;
+ad_endian_t         search_endian;
 size_t              search_len;
 uint64_t            search_number;
 

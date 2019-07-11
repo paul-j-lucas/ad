@@ -28,6 +28,7 @@ ad_SOURCES = \
 	ad.c \
 	color.c color.h \
 	common.h \
+	expr.c expr.h \
 	dump.c \
 	match.c match.h \
 	options.c options.h \

@@ -23,7 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
+#include "types.h"
 
 // standard
 #include <inttypes.h>                   /* for uint64_t */
@@ -103,7 +103,7 @@ extern char const    *opt_utf8_pad;
 extern bool           opt_verbose;
 
 extern char          *search_buf;       // not NULL-terminated when numeric
-extern endian_t       search_endian;    // if searching for a number
+extern ad_endian_t    search_endian;    // if searching for a number
 extern size_t         search_len;       // number of bytes in search_buf
 extern uint64_t       search_number;    // the number to search for
 
