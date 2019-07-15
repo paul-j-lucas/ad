@@ -572,6 +572,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
+                // FALLTHROUGH
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += parse_offset( optarg );                   break;
       case 'L': max_lines = parse_ull( optarg );                        break;
