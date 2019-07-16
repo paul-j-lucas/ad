@@ -2,11 +2,12 @@
 *.in
 *.o
 *~
-.*.swp
+.*.sw[op]
 .deps
 .DS_Store
 Makefile
 /aclocal.m4
+/ad-*.tar.gz
 /ar-lib
 /autom4te.cache
 /compile
