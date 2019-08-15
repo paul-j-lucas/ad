@@ -41,6 +41,7 @@ AC_CHECK_HEADERS([inttypes.h])
 AC_CHECK_HEADERS([langinfo.h])
 AC_CHECK_HEADERS([libgen.h])
 AC_CHECK_HEADERS([locale.h])
+AC_CHECK_HEADERS([regex.h])
 AC_CHECK_HEADERS([stddef.h])
 AC_CHECK_HEADERS([stdint.h])
 AC_CHECK_HEADERS([sys/stat.h])
@@ -61,6 +62,10 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
+AX_CHECK_TYPEDEF(char16_t,[uchar.h],
+  [AC_DEFINE([HAVE_CHAR16_T], [1], [Define to 1 if `char16_t' is supported.])],
+  [AC_DEFINE([HAVE_CHAR16_T], [0], [Define to 1 if `char16_t' is supported.])]
+)
 
 # Checks for library functions.
 AC_FUNC_FSEEKO

@@ -52,9 +52,9 @@ _GL_INLINE_HEADER_BEGIN
  * Expression errors.
  */
 enum ad_expr_err {
-  ERR_NONE,                             ///< No error.
-  ERR_BAD_OPERAND,                      ///< Bad operand, e.g., & for double.
-  ERR_DIV_0,                            ///< Divide by 0.
+  AD_ERR_NONE,                          ///< No error.
+  AD_ERR_BAD_OPERAND,                   ///< Bad operand, e.g., & for double.
+  AD_ERR_DIV_0,                         ///< Divide by 0.
 };
 typedef enum ad_expr_err ad_expr_err_t;
 
@@ -88,6 +88,13 @@ enum ad_expr_id {
   AD_EXPR_LOG_XOR,                      ///< Logical-exclusive-or expression.
   AD_EXPR_SHIFT_LEFT,                   ///< Bitwise-left-shift expression.
   AD_EXPR_SHIFT_RIGHT,                  ///< Bitwise-right-shift expression.
+
+  AD_EXPR_LESS,                         ///< Less than.
+  AD_EXPR_LESS_EQUAL,                   ///< Less than or equal to.
+  AD_EXPR_GREATER,                      ///< Greater than.
+  AD_EXPR_GREATER_EQUAL,                ///< Greater than or equal to.
+  AD_EXPR_EQUAL,                        ///< Equal.
+  AD_EXPR_NOT_EQUAL,                    ///< Not equal.
 
   // ternary
   AD_EXPR_IF_ELSE = AD_EXPR_TERNARY + 1,///< If-else ?: expression.
@@ -186,6 +193,14 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv );
  * @param expr The expression to free.
  */
 void ad_expr_free( ad_expr_t *expr );
+
+/**
+ * Creates a new `ad_expr`.
+ *
+ * @param expr_id The ID of the expression to create.
+ * @return Returns a pointer to a new `ad_expr`.
+ */
+ad_expr_t* ad_expr_new( ad_expr_id_t expr_id );
 
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
   return expr->expr_id == AD_EXPR_VALUE ? expr->as.value.type : T_NONE;

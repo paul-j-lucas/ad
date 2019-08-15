@@ -28,44 +28,21 @@
 
 ////////// literals ///////////////////////////////////////////////////////////
 
-extern char const L_ALIGNAS[];
 extern char const L_BOOL[];
 extern char const L_BREAK[];
 extern char const L_CASE[];
-extern char const L_CHAR16_T[];
-extern char const L_CHAR32_T[];
-extern char const L_CHAR[];
-extern char const L_CONST[];
-extern char const L_CONTINUE[];
-extern char const L_DECLARE[];
 extern char const L_DEFAULT[];
-extern char const L_DEFINE[];
-extern char const L_DOUBLE[];
-extern char const L_DO[];
-extern char const L_ELSE[];
 extern char const L_ENUM[];
 extern char const L_FALSE[];
 extern char const L_FLOAT[];
-extern char const L_FOR[];
-extern char const L_FUNC[];
-extern char const L_GOTO[];
-extern char const L_IF[];
 extern char const L_INT[];
-extern char const L_LONG[];
-extern char const L_NULLPTR[];
-extern char const L_RETURN[];
-extern char const L_SHORT[];
+extern char const L_OFFSETOF[];
 extern char const L_SIZEOF[];
-extern char const L_STATIC[];
 extern char const L_STRUCT[];
 extern char const L_SWITCH[];
 extern char const L_TRUE[];
 extern char const L_TYPEDEF[];
-extern char const L_TYPE[];
-extern char const L_UNION[];
-extern char const L_UNSIGNED[];
-extern char const L_VOID[];
-extern char const L_WHILE[];
+extern char const L_UINT[];
 
 ///////////////////////////////////////////////////////////////////////////////
 

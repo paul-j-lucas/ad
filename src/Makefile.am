@@ -38,4 +38,8 @@ ad_SOURCES = \
 	util.c util.h \
 	utf8.c utf8.h
 
+parser.output: parser.y
+	bison -v --report=all $<
+	@rm -f parser.tab.c
+
 # vim:set noet sw=8 ts=8:

@@ -1,0 +1,110 @@
+enum endian {
+  BE,
+  LE
+};
+
+//////////
+
+% option:endian = BE
+
+    struct SOI {
+      1 uint<16,BE> marker == 0xFFD8;
+    };
+
+    struct APP0 {
+      enum units_t : uint<8> {
+        NONE      = 0,
+        DOTS_INCH = 1,
+        DOTS_CM   = 2
+      };
+
+      1 uint<16,BE> marker == 0xFFE0;
+      1 uint<16,BE> size;                     %u
+      1 utf<8>      jfif[] == "JFIF";
+      1 uint<8>     major;
+      1 uint<8>     minor;
+      1 units_t     units;
+
+      switch ( units ) {
+        case NONE:
+          1 uint<8> thumbnail_x;
+          1 uint<8> thumbnail_y;
+          break;
+        case DOTS_INCH:
+          1 uint<8> x_in;
+          1 uint<8> y_in;
+          break;
+        case DOTS_CM:
+          1 uint<8> x_cm;
+          1 uint<8> y_cm;
+          break;
+        default:
+          WARN( "\"%u\": invalid units\n", units );
+          units = NONE;
+      } // switch
+
+      uint<8> thumbnail[ size ];
+    };
+
+    struct COM {
+    };
+
+    struct DHT {
+    };
+
+    struct SOF {
+    };
+
+    struct rgb {
+      1 uint<8> r;
+      1 uint<8> g;
+      1 uint<8> b;
+    };
+
+    struct extension_APP0 {
+      enum thumbnail_format : uint<8> {
+        THUMB_JPEG  = 0x10,
+        THUMB_1BPP  = 0x11,
+        THUMB_3BPP  = 0x13
+      };
+
+      1 uint<16,BE> marker == 0xFFE0;
+      1 uint<16,BE> size;                     %u
+      1 utf<8>      jfxx[] == "JFXX";
+      1 thumbnail_format thumb_fmt;
+
+        switch ( thumb_fmt ) {
+          case THUMB_JPEG:
+            1 SOI;
+            + SOF;
+            1 EOI;
+            break;
+          case THUMB_1BPP:
+            1 uint<8> x_thumb;
+            1 uint<8> y_thumb;
+            1 rgb     palette[ 256 ];
+            1 uint<8> pixel[ x_thumb * y_thumb ];
+            break;
+          case THUMB_3BPP:
+            break;
+        }
+    };
+
+    struct SOS {
+      1 uint<16,BE> marker == 0xFFDA;
+    };
+
+    struct EOI {
+      1 uint<16,BE> marker == 0xFFD9;
+    };
+
+    1 SOI;
+    1 APP0;
+    ? extension_APP0;
+    * COM
+    | DHT
+    | SOF;
+    1 SOS;
+    1 EOI;
+
+/* vim:set syntax=c et sw=2 ts=2: */
