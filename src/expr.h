@@ -72,29 +72,32 @@ enum ad_expr_id {
   AD_EXPR_NEG,                          ///< Negation expression.
 
   // binary
-  AD_EXPR_ADD     = AD_EXPR_BINARY + 1, ///< Addition expression.
-  AD_EXPR_CAST,                         ///< Cast expression.
-  AD_EXPR_SUB,                          ///< Subtraction expression.
-  AD_EXPR_MUL,                          ///< Multiplication expression.
-  AD_EXPR_DIV,                          ///< Division expression.
-  AD_EXPR_MOD,                          ///< Modulus expression.
+  AD_EXPR_CAST    = AD_EXPR_BINARY + 1, ///< Cast expression.
+
   AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
   AD_EXPR_BIT_COMP,                     ///< Bitwise-complement expression.
   AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.
+  AD_EXPR_BIT_SHIFT_LEFT,               ///< Bitwise-left-shift expression.
+  AD_EXPR_BIT_SHIFT_RIGHT,              ///< Bitwise-right-shift expression.
   AD_EXPR_BIT_XOR,                      ///< Bitwise-exclusive-or expression.
+
   AD_EXPR_LOG_AND,                      ///< Logical-and expression.
   AD_EXPR_LOG_NOT,                      ///< Logical-not expression.
   AD_EXPR_LOG_OR,                       ///< Logical-or expression.
   AD_EXPR_LOG_XOR,                      ///< Logical-exclusive-or expression.
-  AD_EXPR_SHIFT_LEFT,                   ///< Bitwise-left-shift expression.
-  AD_EXPR_SHIFT_RIGHT,                  ///< Bitwise-right-shift expression.
 
-  AD_EXPR_LESS,                         ///< Less than.
-  AD_EXPR_LESS_EQUAL,                   ///< Less than or equal to.
-  AD_EXPR_GREATER,                      ///< Greater than.
-  AD_EXPR_GREATER_EQUAL,                ///< Greater than or equal to.
-  AD_EXPR_EQUAL,                        ///< Equal.
-  AD_EXPR_NOT_EQUAL,                    ///< Not equal.
+  AD_EXPR_MATH_ADD,                     ///< Addition expression.
+  AD_EXPR_MATH_SUB,                     ///< Subtraction expression.
+  AD_EXPR_MATH_MUL,                     ///< Multiplication expression.
+  AD_EXPR_MATH_DIV,                     ///< Division expression.
+  AD_EXPR_MATH_MOD,                     ///< Modulus expression.
+
+  AD_EXPR_REL_EQ,                       ///< Equal.
+  AD_EXPR_REL_NOT_EQ,                   ///< Not equal.
+  AD_EXPR_REL_GREATER,                  ///< Greater than.
+  AD_EXPR_REL_GREATER_EQ,               ///< Greater than or equal to.
+  AD_EXPR_REL_LESS,                     ///< Less than.
+  AD_EXPR_REL_LESS_EQ,                  ///< Less than or equal to.
 
   // ternary
   AD_EXPR_IF_ELSE = AD_EXPR_TERNARY + 1,///< If-else ?: expression.
@@ -214,25 +217,13 @@ AD_EXPR_INLINE bool ad_expr_is_zero( ad_expr_t const *expr ) {
   return expr->as.value.as.u64 == 0;
 }
 
-AD_EXPR_INLINE void ad_expr_set_bool( ad_expr_t *expr, bool bval ) {
-  expr->expr_id = AD_EXPR_VALUE;
-  expr->as.value.as.u64 = bval;
-}
+void ad_expr_set_bool( ad_expr_t *expr, bool bval );
 
-AD_EXPR_INLINE void ad_expr_set_double( ad_expr_t *expr, double dval ) {
-  expr->expr_id = AD_EXPR_VALUE;
-  expr->as.value.as.f64 = dval;
-}
+void ad_expr_set_double( ad_expr_t *expr, double dval );
 
-AD_EXPR_INLINE void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
-  expr->expr_id = AD_EXPR_ERROR;
-  expr->as.value.as.err = err;
-}
+void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err );
 
-AD_EXPR_INLINE void ad_expr_set_int( ad_expr_t *expr, long ival ) {
-  expr->expr_id = AD_EXPR_VALUE;
-  expr->as.value.as.i64 = ival;
-}
+void ad_expr_set_int( ad_expr_t *expr, long ival );
 
 ///////////////////////////////////////////////////////////////////////////////
 
