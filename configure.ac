@@ -62,9 +62,13 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
-AX_CHECK_TYPEDEF(char16_t,[uchar.h],
-  [AC_DEFINE([HAVE_CHAR16_T], [1], [Define to 1 if `char16_t' is supported.])],
-  [AC_DEFINE([HAVE_CHAR16_T], [0], [Define to 1 if `char16_t' is supported.])]
+PJL_CHECK_TYPEDEF(char16_t,[uchar.h],
+  AC_DEFINE([HAVE_CHAR16_T], [1], [Define to 1 if `char16_t' is supported.]),
+  AC_DEFINE([HAVE_CHAR16_T], [0], [Define to 1 if `char16_t' is supported.])
+)
+PJL_CHECK_TYPEDEF(char32_t,[uchar.h],
+  AC_DEFINE([HAVE_CHAR32_T], [1], [Define to 1 if `char32_t' is supported.]),
+  AC_DEFINE([HAVE_CHAR32_T], [0], [Define to 1 if `char32_t' is supported.])
 )
 
 # Checks for library functions.
