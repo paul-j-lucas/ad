@@ -69,7 +69,7 @@ enum ad_expr_id {
 
   // unary
   AD_EXPR_DEREF   = AD_EXPR_UNARY + 1,  ///< Dereference expression.
-  AD_EXPR_NEG,                          ///< Negation expression.
+  AD_EXPR_MATH_NEG,                     ///< Negation expression.
 
   // binary
   AD_EXPR_CAST    = AD_EXPR_BINARY + 1, ///< Cast expression.
@@ -205,25 +205,68 @@ void ad_expr_free( ad_expr_t *expr );
  */
 ad_expr_t* ad_expr_new( ad_expr_id_t expr_id );
 
+/**
+ * Gets the type of \a expr.
+ *
+ * @param expr The expression to get the type of.
+ * @return Returns said type.
+ * @sa ad_expr_get_base_type(ad_expr_t const*)
+ */
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
   return expr->expr_id == AD_EXPR_VALUE ? expr->as.value.type : T_NONE;
 }
 
+/**
+ * Gets the base type of \a expr.
+ *
+ * @param expr The expression to get the base type of.
+ * @rerurn Returns said base type.
+ */
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
   return ad_expr_get_type( expr ) & T_MASK_TYPE;
 }
 
+/**
+ * Gets whether \a expr is zero.
+ *
+ * @param expr The expresion to check.
+ * @return Returns `true` only of \a expr is zero.
+ */
 AD_EXPR_INLINE bool ad_expr_is_zero( ad_expr_t const *expr ) {
-  return expr->as.value.as.u64 == 0;
+  return expr->expr_id == AD_EXPR_VALUE ? expr->as.value.as.u64 == 0 : T_NONE;
 }
 
-void ad_expr_set_bool( ad_expr_t *expr, bool bval );
+/**
+ * Sets the type of \a expr to #T_BOOL and its value to \a bval.
+ *
+ * @param expr The expression to set.
+ * @param bval The boolean value.
+ */
+void ad_expr_set_b( ad_expr_t *expr, bool bval );
 
-void ad_expr_set_double( ad_expr_t *expr, double dval );
-
+/**
+ * Sets the type of \a expr to #T_ERR and its value to \a err.
+ *
+ * @param expr The expression to set.
+ * @param err The error value.
+ */
 void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err );
 
-void ad_expr_set_int( ad_expr_t *expr, long ival );
+/**
+ * Sets the type of \a expr to #T_FLOAT and its value to \a fval.
+ *
+ * @param expr The expression to set.
+ * @param fval The floating-point value.
+ */
+void ad_expr_set_f( ad_expr_t *expr, double fval );
+
+/**
+ * Sets the type of \a expr to #T_INT and its value to \a ival.
+ *
+ * @param expr The expression to set.
+ * @param ival The integer value.
+ */
+void ad_expr_set_i( ad_expr_t *expr, long ival );
 
 ///////////////////////////////////////////////////////////////////////////////
 
