@@ -232,9 +232,7 @@ AD_EXPR_INLINE ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
  * @param expr The expresion to check.
  * @return Returns `true` only of \a expr is zero.
  */
-AD_EXPR_INLINE bool ad_expr_is_zero( ad_expr_t const *expr ) {
-  return expr->expr_id == AD_EXPR_VALUE ? expr->as.value.as.u64 == 0 : T_NONE;
-}
+bool ad_expr_is_zero( ad_expr_t const *expr );
 
 /**
  * Sets the type of \a expr to #T_BOOL and its value to \a bval.

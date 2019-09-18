@@ -37,22 +37,17 @@
     return false;                           \
   } )
 
-#define EVAL_BINARY()                                               \
-  ad_expr_t lhs_expr, rhs_expr;                                     \
-  EVAL_CHECK( expr->as.binary.lhs_expr, &lhs_expr );                \
-  EVAL_CHECK( expr->as.binary.rhs_expr, &rhs_expr )
+#define EVAL_EXPR(FIELD,VAR_PFX)                                          \
+  ad_expr_t VAR_PFX##_expr;                                               \
+  if ( !ad_expr_eval( expr->as.FIELD.VAR_PFX##_expr, &VAR_PFX##_expr ) )  \
+    return false;                                                         \
+  assert( VAR_PFX##_expr.expr_id == AD_EXPR_VALUE )
 
-#define EVAL_CHECK(EXPR_PTR,RESULT) BLOCK(        \
-  if ( !ad_expr_eval( (EXPR_PTR), (RESULT) ) )    \
-    return false;                                 \
-  assert( (RESULT)->expr_id == AD_EXPR_VALUE ); )
+#define GET_TYPE(VAR_PFX) \
+  ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr )
 
-#define GET_TYPES()                                                 \
-  ad_type_id_t const lhs_type = ad_expr_get_base_type( &lhs_expr ); \
-  ad_type_id_t const rhs_type = ad_expr_get_base_type( &rhs_expr )
-
-#define TYPE_CHECK(EXPR_PTR,TYPE) \
-  ENSURE_ELSE( (ad_expr_get_base_type( (EXPR_PTR) ) & (TYPE)) != T_NONE, BAD_OPERAND )
+#define CHECK_TYPE(VAR_PFX,TYPE) \
+  ENSURE_ELSE( (VAR_PFX##_type & (TYPE)) != T_NONE, BAD_OPERAND )
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -109,82 +104,110 @@ static uint64_t widen_int( ad_expr_t const *expr ) {
 }
 
 static bool ad_expr_bit_and( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 & rhs_expr.as.value.as.i64 );
   return true;
 }
 
+static bool ad_expr_bit_comp( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( unary, sub );
+  GET_TYPE( sub );
+  CHECK_TYPE( sub, T_INT );
+  ad_expr_set_i( rv, ~sub_expr.as.value.as.i64 );
+  return true;
+}
+
 static bool ad_expr_bit_or( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 | rhs_expr.as.value.as.i64 );
   return true;
 }
 
 static bool ad_expr_bit_shift_left( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 << rhs_expr.as.value.as.i64 );
   return true;
 }
 
 static bool ad_expr_bit_shift_right( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 >> rhs_expr.as.value.as.i64 );
   return true;
 }
 
 static bool ad_expr_bit_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 ^ rhs_expr.as.value.as.i64 );
   return true;
 }
 
+static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( ternary, cond );
+  return ad_expr_is_zero( &cond_expr ) ?
+    ad_expr_eval( expr->as.ternary.false_expr, rv ) :
+    ad_expr_eval( expr->as.ternary.true_expr, rv );
+}
+
 static bool ad_expr_log_and( ad_expr_t const *expr, ad_expr_t *rv ) {
-  ad_expr_t lhs_expr;
-  EVAL_CHECK( expr->as.binary.lhs_expr, &lhs_expr );
+  EVAL_EXPR( binary, lhs );
   if ( ad_expr_is_zero( &lhs_expr ) ) {
     ad_expr_set_b( rv, false );
   } else {
-    ad_expr_t rhs_expr;
-    EVAL_CHECK( expr->as.binary.rhs_expr, &rhs_expr );
+    EVAL_EXPR( binary, rhs );
     ad_expr_set_b( rv, !ad_expr_is_zero( &rhs_expr ) );
   }
   return true;
 }
 
 static bool ad_expr_log_not( ad_expr_t const *expr, ad_expr_t *rv ) {
-  ad_expr_t sub_expr;
-  EVAL_CHECK( expr->as.unary.sub_expr, &sub_expr );
+  EVAL_EXPR( unary, sub );
   ad_expr_set_b( rv, ad_expr_is_zero( &sub_expr ) );
   return true;
 }
 
 static bool ad_expr_log_or( ad_expr_t const *expr, ad_expr_t *rv ) {
-  ad_expr_t lhs_expr;
-  EVAL_CHECK( expr->as.binary.lhs_expr, &lhs_expr );
+  EVAL_EXPR( binary, lhs );
   if ( !ad_expr_is_zero( &lhs_expr ) ) {
     ad_expr_set_b( rv, true );
   } else {
-    ad_expr_t rhs_expr;
-    EVAL_CHECK( expr->as.binary.rhs_expr, &rhs_expr );
+    EVAL_EXPR( binary, rhs );
     ad_expr_set_b( rv, !ad_expr_is_zero( &rhs_expr ) );
   }
   return true;
 }
 
 static bool ad_expr_log_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  TYPE_CHECK( &lhs_expr, T_INT );
-  TYPE_CHECK( &rhs_expr, T_INT );
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  CHECK_TYPE( lhs, T_INT );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
+  CHECK_TYPE( rhs, T_INT );
   ad_expr_set_b( rv,
     !ad_expr_is_zero( &lhs_expr ) ^ !ad_expr_is_zero( &rhs_expr )
   );
@@ -192,8 +215,10 @@ static bool ad_expr_log_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT && rhs_type == T_INT ) {
     ad_expr_set_i( rv, lhs_expr.as.value.as.i64 + rhs_expr.as.value.as.i64 );
@@ -217,8 +242,10 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT && rhs_type == T_INT ) {
     ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
@@ -246,8 +273,10 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT && rhs_type == T_INT ) {
     ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
@@ -281,8 +310,10 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT && rhs_type == T_INT ) {
     ad_expr_set_i( rv, lhs_expr.as.value.as.i64 * rhs_expr.as.value.as.i64 );
@@ -306,21 +337,22 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
-  ad_expr_t sub_expr;
-  EVAL_CHECK( expr->as.unary.sub_expr, &sub_expr );
-  ad_type_id_t const t1 = ad_expr_get_base_type( &sub_expr );
-  if ( t1 == T_INT ) {
+  EVAL_EXPR( unary, sub );
+  ad_type_id_t const t = ad_expr_get_base_type( &sub_expr );
+  if ( t == T_INT ) {
     ad_expr_set_i( rv, -sub_expr.as.value.as.i64 );
   } else {
-    assert( t1 == T_FLOAT );
+    assert( t == T_FLOAT );
     ad_expr_set_f( rv, -sub_expr.as.value.as.f64 );
   }
   return true;
 }
 
 static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT && rhs_type == T_INT ) {
     ad_expr_set_i( rv, lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.i64 );
@@ -350,8 +382,10 @@ static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_rel_greater( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
-  GET_TYPES();
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_TYPE( rhs );
 
   if ( lhs_type == T_INT ) {
     if ( rhs_type == T_INT ) {
@@ -367,16 +401,43 @@ static bool ad_expr_rel_greater( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 static bool ad_expr_rel_greater_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
-  EVAL_BINARY();
+  EVAL_EXPR( binary, lhs );
+  EVAL_EXPR( binary, rhs );
   ad_expr_set_i( rv, lhs_expr.as.value.as.u64 >= rhs_expr.as.value.as.u64 );
+  return true;
+}
+
+static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  EVAL_EXPR( binary, rhs );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 == rhs_expr.as.value.as.u64 );
+  return true;
+}
+
+static bool ad_expr_rel_less( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  EVAL_EXPR( binary, rhs );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 < rhs_expr.as.value.as.u64 );
+  return true;
+}
+
+static bool ad_expr_rel_less_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  EVAL_EXPR( binary, rhs );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 <= rhs_expr.as.value.as.u64 );
+  return true;
+}
+
+static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  EVAL_EXPR( binary, rhs );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 != rhs_expr.as.value.as.u64 );
   return true;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
-  ad_expr_t temp1, temp2;
-
   switch ( expr->expr_id ) {
     case AD_EXPR_NONE:
       break;
@@ -386,10 +447,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
 
     case AD_EXPR_IF_ELSE:
-      ad_expr_eval( expr->as.ternary.cond_expr, &temp1 );
-      return ad_expr_is_zero( &temp1 ) ?
-        ad_expr_eval( expr->as.ternary.false_expr, rv ) :
-        ad_expr_eval( expr->as.ternary.true_expr, rv );
+      return ad_expr_if_else( expr, rv );
 
     case AD_EXPR_BIT_SHIFT_LEFT:
       return ad_expr_bit_shift_left( expr, rv );
@@ -401,10 +459,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       return ad_expr_bit_and( expr, rv );
 
     case AD_EXPR_BIT_COMP:
-      EVAL_CHECK( expr->as.unary.sub_expr, &temp1 );
-      TYPE_CHECK( &temp1, T_INT );
-      ad_expr_set_i( rv, ~temp1.as.value.as.i64 );
-      return true;
+      return ad_expr_bit_comp( expr, rv );
 
     case AD_EXPR_BIT_OR:
       return ad_expr_bit_or( expr, rv );
@@ -417,7 +472,6 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
 
     case AD_EXPR_DEREF:
-      EVAL_CHECK( expr->as.unary.sub_expr, &temp1 );
       // TODO
       return true;
 
@@ -458,28 +512,16 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       return ad_expr_rel_greater_eq( expr, rv );
 
     case AD_EXPR_REL_EQ:
-      EVAL_CHECK( expr->as.binary.lhs_expr, &temp1 );
-      EVAL_CHECK( expr->as.binary.rhs_expr, &temp2 );
-      ad_expr_set_i( rv, temp1.as.value.as.u64 == temp2.as.value.as.u64 );
-      return true;
+      return ad_expr_rel_eq( expr, rv );
 
     case AD_EXPR_REL_LESS:
-      EVAL_CHECK( expr->as.binary.lhs_expr, &temp1 );
-      EVAL_CHECK( expr->as.binary.rhs_expr, &temp2 );
-      ad_expr_set_i( rv, temp1.as.value.as.i64 < temp2.as.value.as.i64 );
-      return true;
+      return ad_expr_rel_less( expr, rv );
 
     case AD_EXPR_REL_LESS_EQ:
-      EVAL_CHECK( expr->as.binary.lhs_expr, &temp1 );
-      EVAL_CHECK( expr->as.binary.rhs_expr, &temp2 );
-      ad_expr_set_i( rv, temp1.as.value.as.u64 <= temp2.as.value.as.u64 );
-      return true;
+      return ad_expr_rel_less_eq( expr, rv );
 
     case AD_EXPR_REL_NOT_EQ:
-      EVAL_CHECK( expr->as.binary.lhs_expr, &temp1 );
-      EVAL_CHECK( expr->as.binary.rhs_expr, &temp2 );
-      ad_expr_set_i( rv, temp1.as.value.as.u64 != temp2.as.value.as.u64 );
-      return true;
+      return ad_expr_rel_not_eq( expr, rv );
 
   } // switch
   return false;
@@ -497,6 +539,20 @@ void ad_expr_free( ad_expr_t *expr ) {
       ad_expr_free( expr->as.unary.sub_expr );
   } // switch
   free( expr );
+}
+
+bool ad_expr_is_zero( ad_expr_t const *expr ) {
+  if ( expr->expr_id == AD_EXPR_VALUE ) {
+    ad_type_id_t const t = ad_expr_get_base_type( expr );
+    switch ( t ) {
+      case T_BOOL:
+      case T_INT:
+        return expr->as.value.as.u64 == 0;
+      case T_FLOAT:
+        return expr->as.value.as.f64 == 0.0;
+    } // switch
+  }
+  return false;
 }
 
 ad_expr_t* ad_expr_new( ad_expr_id_t expr_id ) {
