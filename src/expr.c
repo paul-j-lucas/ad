@@ -31,17 +31,17 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define ENSURE_ELSE(EXPR,ERR) BLOCK(        \
-  if ( !(EXPR) ) {                          \
-    ad_expr_set_err( rv, AD_ERR_ ## ERR );  \
-    return false;                           \
+#define ENSURE_ELSE(EXPR,ERR) BLOCK(      \
+  if ( !(EXPR) ) {                        \
+    ad_expr_set_err( rv, AD_ERR_##ERR );  \
+    return false;                         \
   } )
 
 #define EVAL_EXPR(FIELD,VAR_PFX)                                          \
   ad_expr_t VAR_PFX##_expr;                                               \
   if ( !ad_expr_eval( expr->as.FIELD.VAR_PFX##_expr, &VAR_PFX##_expr ) )  \
     return false;                                                         \
-  assert( VAR_PFX##_expr.expr_id == AD_EXPR_VALUE )
+  assert( ad_expr_is_value( &VAR_PFX##_expr ) )
 
 #define GET_TYPE(VAR_PFX) \
   ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr )
@@ -91,7 +91,7 @@ static void narrow( ad_expr_t *expr ) {
 }
 
 static uint64_t widen_int( ad_expr_t const *expr ) {
-  assert( expr->expr_id == AD_EXPR_VALUE );
+  assert( ad_expr_is_value( expr ) );
   assert( ad_expr_get_base_type( expr ) == T_INT );
 
   switch ( expr->as.value.type ) {
@@ -542,7 +542,7 @@ void ad_expr_free( ad_expr_t *expr ) {
 }
 
 bool ad_expr_is_zero( ad_expr_t const *expr ) {
-  if ( expr->expr_id == AD_EXPR_VALUE ) {
+  if ( ad_expr_is_value( expr ) ) {
     ad_type_id_t const t = ad_expr_get_base_type( expr );
     switch ( t ) {
       case T_BOOL:

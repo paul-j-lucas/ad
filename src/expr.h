@@ -198,6 +198,16 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv );
 void ad_expr_free( ad_expr_t *expr );
 
 /**
+ * Gets whether \a expr is a value.
+ *
+ * @parm expr The expression to check.
+ * @return Returns `true` only if \a expr is a value.
+ */
+AD_EXPR_INLINE bool ad_expr_is_value( ad_expr_t const *expr ) {
+  return expr->expr_id == AD_EXPR_VALUE;
+}
+
+/**
  * Creates a new `ad_expr`.
  *
  * @param expr_id The ID of the expression to create.
@@ -213,7 +223,7 @@ ad_expr_t* ad_expr_new( ad_expr_id_t expr_id );
  * @sa ad_expr_get_base_type(ad_expr_t const*)
  */
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
-  return expr->expr_id == AD_EXPR_VALUE ? expr->as.value.type : T_NONE;
+  return ad_expr_is_value( expr ) ? expr->as.value.type : T_NONE;
 }
 
 /**
