@@ -37,12 +37,28 @@
     return false;                         \
   } )
 
+/**
+ * Evalulates an expression by:
+ *  1. Declaring a variable VAR_PFX_expr of type ad_expr_t.
+ *  2. Evaluating the expression into it.
+ *  3. If the evaluation fails, returns false.
+ *
+ * @param FIELD The expression field (`unary`, `binary`, or `ternary`).
+ * @param VAR_PREFIX The prefix of the variable to create.
+ */
 #define EVAL_EXPR(FIELD,VAR_PFX)                                          \
   ad_expr_t VAR_PFX##_expr;                                               \
   if ( !ad_expr_eval( expr->as.FIELD.VAR_PFX##_expr, &VAR_PFX##_expr ) )  \
     return false;                                                         \
   assert( ad_expr_is_value( &VAR_PFX##_expr ) )
 
+/**
+ * Gets the base type of an expression by:
+ *  1. Declaring a variable VAR_PFX_type.
+ *  2. Getting the base type of VAR_PFX_expr into it.
+ *
+ * @param VAR_PFX The prefix of the variable to create.
+ */
 #define GET_TYPE(VAR_PFX) \
   ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr )
 
@@ -56,6 +72,9 @@ static void narrow( ad_expr_t *expr ) {
   assert( ((t & T_MASK_TYPE) & T_NUMBER) != T_NONE );
 
   switch ( t ) {
+    case T_BOOL8:
+      expr->as.value.as.u64 = expr->as.value.as.u64 ? 1 : 0;
+      break;
     case T_FLOAT32:
       expr->as.value.as.f64 = (float)expr->as.value.as.f64;
       break;
@@ -71,7 +90,6 @@ static void narrow( ad_expr_t *expr ) {
     case T_INT64:
       expr->as.value.as.i64 = (int64_t)expr->as.value.as.i64;
       break;
-    case T_BOOL8:
     case T_UINT8:
       expr->as.value.as.u64 = (uint8_t)expr->as.value.as.u64;
       break;
@@ -164,6 +182,18 @@ static bool ad_expr_bit_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
   CHECK_TYPE( rhs, T_INT );
   ad_expr_set_i( rv, lhs_expr.as.value.as.i64 ^ rhs_expr.as.value.as.i64 );
   return true;
+}
+
+static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  GET_TYPE( lhs );
+  ad_expr_t *const rhs_expr = expr->as.binary.rhs_expr;
+  // rhs_expr->expr_id == AD_EXPR_CAST
+  ad_type_if_t const rhs_type = ad_expr_get_type( rhs_expr );
+
+  switch ( rhs_type ) {
+    case T_BOOL:
+  } // switch
 }
 
 static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
