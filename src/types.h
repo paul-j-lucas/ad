@@ -36,6 +36,11 @@ typedef uint16_t char16_t;
 typedef uint32_t char32_t;
 #endif /* !HAVE_CHAR32_T */
 
+_GL_INLINE_HEADER_BEGIN
+#ifndef AD_TYPES_INLINE
+# define AD_TYPES_INLINE _GL_INLINE
+#endif /* AD_TYPES_INLINE */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define T_08_BITS               0x0001u               /**< 8-bit type.        */
@@ -73,7 +78,8 @@ typedef uint32_t char32_t;
 #define T_STRUCT                0x0100                /**< `struct`           */
 #define T_SWITCH                0x0200                /**< `switch`           */
 
-#define T_NUMBER  (T_BOOL | T_INT | T_FLOAT)
+#define T_INT_LIKE  (T_BOOL | T_INT)
+#define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)
 
 // bit masks
 #define T_MASK_BITS             0x000Fu               /**< Bits bitmask.      */
@@ -184,6 +190,16 @@ struct ad_type {
 void ad_type_free( ad_type_t *type );
 
 ad_type_t* ad_type_new( ad_type_id_t tid );
+
+/**
+ * Gets the size (in bits) of the type represented by \a tid.
+ *
+ * @param tid The type to get the size of.
+ * @return Returns said size.
+ */
+AD_TYPES_INLINE size_t ad_type_size( ad_type_id_t tid ) {
+  return (tid & T_MASK_BITS);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
