@@ -43,25 +43,37 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define T_08_BITS               0x0001u               /**< 8-bit type.        */
-#define T_16_BITS               0x0002u               /**< 16-bit type.       */
-#define T_32_BITS               0x0004u               /**< 32-bit type.       */
-#define T_64_BITS               0x0008u               /**< 64-bit type.       */
+//
+// The bits are used as follows:
+//
+//    S-TT TTTT -ZZZ Z---
+//
+// where:
+//
+//    S = sign: 0 = unsigned, 1 = signed
+//    T = type (at most one set)
+//    Z = size in bits (at most one set)
+//
+
+#define T_08_BITS               0x0008u               /**< 8-bit type.        */
+#define T_16_BITS               0x0010u               /**< 16-bit type.       */
+#define T_32_BITS               0x0020u               /**< 32-bit type.       */
+#define T_64_BITS               0x0040u               /**< 64-bit type.       */
 
 #define T_SIGNED                0x8000u               /**< Signed type.       */
 
 // types
 #define T_NONE                  0u                    /**< No type.           */
 
-#define T_BOOL                  0x0010                /**< Boolean.           */
+#define T_BOOL                  0x0100                /**< Boolean.           */
 #define T_BOOL8   (             T_BOOL  | T_08_BITS ) /**< `bool`             */
 
-#define T_UTF                   0x0020                /**< Unicode.           */
+#define T_UTF                   0x0200                /**< Unicode.           */
 #define T_UTF8    (             T_UTF   | T_08_BITS ) /**< UTF-8 (multibyte). */
 #define T_UTF16   (             T_UTF   | T_16_BITS ) /**< `char16_t`         */
 #define T_UTF32   (             T_UTF   | T_32_BITS ) /**< `char32_t`         */
 
-#define T_INT     (             0x0040              ) /**< Integer.           */
+#define T_INT     (             0x0400              ) /**< Integer.           */
 #define T_INT8    ( T_SIGNED |  T_INT   | T_08_BITS ) /**< `signed int8`      */
 #define T_INT16   ( T_SIGNED |  T_INT   | T_16_BITS ) /**< `signed int16`     */
 #define T_INT32   ( T_SIGNED |  T_INT   | T_32_BITS ) /**< `signed int32`     */
@@ -71,20 +83,20 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UINT32  (             T_INT   | T_32_BITS ) /**< `unsigned int32`   */
 #define T_UINT64  (             T_INT   | T_64_BITS ) /**< `unsigned int64`   */
 
-#define T_FLOAT                 0x0080                /**< Floating point.    */
+#define T_FLOAT                 0x0800                /**< Floating point.    */
 #define T_FLOAT32 ( T_SIGNED |  T_FLOAT | T_32_BITS ) /**< `float32`          */
 #define T_FLOAT64 ( T_SIGNED |  T_FLOAT | T_64_BITS ) /**< `float64`          */
 
-#define T_STRUCT                0x0100                /**< `struct`           */
-#define T_SWITCH                0x0200                /**< `switch`           */
+#define T_STRUCT                0x1000                /**< `struct`           */
+#define T_SWITCH                0x2000                /**< `switch`           */
 
 #define T_INT_LIKE  (T_BOOL | T_INT)
 #define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)
 
 // bit masks
-#define T_MASK_BITS             0x000Fu               /**< Bits bitmask.      */
+#define T_MASK_BITS             0x0078u               /**< Bits bitmask.      */
 #define T_MASK_SIGN             T_SIGNED              /**< Sign bitmask.      */
-#define T_MASK_TYPE             0x0FF0u               /**< Type bitmask.      */
+#define T_MASK_TYPE             0x3F00u               /**< Type bitmask.      */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -198,7 +210,7 @@ ad_type_t* ad_type_new( ad_type_id_t tid );
  * @return Returns said size.
  */
 AD_TYPES_INLINE size_t ad_type_size( ad_type_id_t tid ) {
-  return (tid & T_MASK_BITS);
+  return tid & T_MASK_BITS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
