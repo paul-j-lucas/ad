@@ -35,6 +35,7 @@ ad_SOURCES = \
 	options.c options.h \
 	reverse.c \
 	slist.c slist.h \
+	types.c types.h \
 	util.c util.h \
 	utf8.c utf8.h
 
