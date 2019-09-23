@@ -40,11 +40,13 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define AD_EXPR_UNARY   0x0100
-#define AD_EXPR_BINARY  0x0200
-#define AD_EXPR_TERNARY 0x0400
+#define AD_EXPR_UNARY       0x0100
+#define AD_EXPR_BINARY      0x0200
+#define AD_EXPR_TERNARY     0x0400
 
-#define AD_EXPR_MASK    0x0F00
+#define AD_EXPR_MASK        0x0F00
+
+#define UTF8_CHAR_SIZE_MAX  6           /**< Max bytes needed for UTF-8 char. */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -155,13 +157,27 @@ struct ad_ternary_expr {
  * Constant value expression.
  */
 struct ad_value_expr {
-  ad_type_id_t    type;                 ///< The type of the value.
+  ad_type_id_t    type;                     ///< The type of the value.
   union {
-    int64_t       i64;
-    uint64_t      u64;
-    double        f64;
+    // Numeric.
+    int64_t       i64;                      ///< i8, i16, i32, i64
+    uint64_t      u64;                      ///< u8, u16, u32, u64
+    double        f64;                      ///< f32, f64
+
+    // UTF characters.
+    char8_t       c8[ UTF8_CHAR_SIZE_MAX ]; ///< UTF-8 character.
+    char16_t      c16;                      ///< UTF-16 character.
+    char32_t      c32;                      ///< UTF-32 character.
+
+    // UTF strings.
+    char8_t      *s8;                       ///< UTF-8 string.
+    char16_t     *s16;                      ///< UTF-16 string.
+    char32_t     *s32;                      ///< UTF-32 string.
+
+    // Miscellaneous.
+    ad_type_t     cast_type;
     ad_expr_err_t err;
-    ad_type_t     type;                 ///< For casting.
+    ad_expr_err_t err;
   } as;
 };
 
@@ -275,6 +291,13 @@ void ad_expr_set_f( ad_expr_t *expr, double fval );
  * @param ival The integer value.
  */
 void ad_expr_set_i( ad_expr_t *expr, long ival );
+
+/**
+ * Frees the memory associated with \a value.
+ *
+ * @param value The value to free.
+ */
+void ad_value_free( ad_value_expr_t *value );
 
 ///////////////////////////////////////////////////////////////////////////////
 

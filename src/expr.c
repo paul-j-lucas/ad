@@ -31,6 +31,12 @@
 #include <math.h>
 #include <stdlib.h>
 
+/**
+ * Ensures \a EXPR is `true`, otherwise sets the implicit \a rv to \a ERR.
+ *
+ * @param EXPR The expression to test.
+ * @param ERR The error to set if \a EXPR is `false`.
+ */
 #define ENSURE_ELSE(EXPR,ERR) BLOCK(      \
   if ( !(EXPR) ) {                        \
     ad_expr_set_err( rv, AD_ERR_##ERR );  \
@@ -57,21 +63,27 @@
  *  1. Declaring a variable VAR_PFX_type.
  *  2. Getting the base type of VAR_PFX_expr into it.
  *
- * @param VAR_PFX The prefix of the variable to create.
+ * @param VAR_PFX The prefix of the type variable to create.
  */
 #define GET_TYPE(VAR_PFX) \
   ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr )
 
+/**
+ * Checks that ...
+ *
+ * @param VAR_PFX The prefix of the type variable to check.
+ * @param TYPE The bitwise-or of types to check against.
+ */
 #define CHECK_TYPE(VAR_PFX,TYPE) \
   ENSURE_ELSE( (VAR_PFX##_type & (TYPE)) != T_NONE, BAD_OPERAND )
 
 ////////// local functions ////////////////////////////////////////////////////
 
 static void narrow( ad_expr_t *expr ) {
-  ad_type_id_t const t = expr->as.value.type;
-  assert( ((t & T_MASK_TYPE) & T_NUMBER) != T_NONE );
+  ad_type_id_t const to_type = expr->as.value.type;
+  assert( ((to_type & T_MASK_TYPE) & T_NUMBER) != T_NONE );
 
-  switch ( t ) {
+  switch ( to_type ) {
     case T_BOOL8:
       expr->as.value.as.u64 = expr->as.value.as.u64 ? 1 : 0;
       break;
@@ -128,7 +140,7 @@ static bool ad_expr_bit_and( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_TYPE( rhs );
   CHECK_TYPE( rhs, T_INT );
-  ad_expr_set_i( rv, lhs_expr.as.value.as.i64 & rhs_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 & rhs_expr.as.value.as.u64 );
   return true;
 }
 
@@ -136,7 +148,7 @@ static bool ad_expr_bit_comp( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( unary, sub );
   GET_TYPE( sub );
   CHECK_TYPE( sub, T_INT );
-  ad_expr_set_i( rv, ~sub_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, ~sub_expr.as.value.as.u64 );
   return true;
 }
 
@@ -147,7 +159,7 @@ static bool ad_expr_bit_or( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_TYPE( rhs );
   CHECK_TYPE( rhs, T_INT );
-  ad_expr_set_i( rv, lhs_expr.as.value.as.i64 | rhs_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 | rhs_expr.as.value.as.u64 );
   return true;
 }
 
@@ -158,7 +170,7 @@ static bool ad_expr_bit_shift_left( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_TYPE( rhs );
   CHECK_TYPE( rhs, T_INT );
-  ad_expr_set_i( rv, lhs_expr.as.value.as.i64 << rhs_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 << rhs_expr.as.value.as.u64 );
   return true;
 }
 
@@ -169,7 +181,7 @@ static bool ad_expr_bit_shift_right( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_TYPE( rhs );
   CHECK_TYPE( rhs, T_INT );
-  ad_expr_set_i( rv, lhs_expr.as.value.as.i64 >> rhs_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 >> rhs_expr.as.value.as.u64 );
   return true;
 }
 
@@ -180,20 +192,63 @@ static bool ad_expr_bit_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_TYPE( rhs );
   CHECK_TYPE( rhs, T_INT );
-  ad_expr_set_i( rv, lhs_expr.as.value.as.i64 ^ rhs_expr.as.value.as.i64 );
+  ad_expr_set_i( rv, lhs_expr.as.value.as.u64 ^ rhs_expr.as.value.as.u64 );
   return true;
 }
 
 static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_TYPE( lhs );
-  ad_expr_t *const rhs_expr = expr->as.binary.rhs_expr;
-  // rhs_expr->expr_id == AD_EXPR_CAST
-  ad_type_if_t const rhs_type = ad_expr_get_type( rhs_expr );
+  ad_expr_t *const cast_expr = expr->as.binary.rhs_expr;
+  assert( cast_expr->expr_id == AD_EXPR_CAST );
+  ad_type_id_t const cast_type = ad_expr_get_type( cast_expr );
 
-  switch ( rhs_type ) {
+  switch ( cast_type & T_MASK_TYPE ) {
+
     case T_BOOL:
+      *rv = *expr;
+      rv->as.value.type = cast_type;
+      switch ( lhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          if ( (lhs_type & T_MASK_SIZE) < (cast_type & T_MASK_SIZE) )
+            narrow( rv );
+          break;
+        case T_FLOAT:
+          rv->as.value.as.u64 = rv->as.value.as.f64 ? 1 : 0;
+          break;
+      } // switch
+      break;
+
+    case T_INT:
+      *rv = *expr;
+      rv->as.value.type = cast_type;
+      switch ( lhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          if ( (lhs_type & T_MASK_SIZE) < (cast_type & T_MASK_SIZE) )
+            narrow( rv );
+          break;
+        case T_FLOAT:
+          rv->as.value.as.i64 = (int32_t)rv->as.value.as.f64;
+          break;
+      } // switch
+      break;
+
+    case T_FLOAT:
+      rv->as.value.type = cast_type;
+      switch ( lhs_type & ~T_MASK_SIZE ) {
+        case T_INT:
+          rv->as.value.as.f64 = lhs_expr.as.value.as.u64;
+          break;
+        case T_SIGNED | T_INT:
+          rv->as.value.as.f64 = lhs_expr.as.value.as.i64;
+          break;
+      } // switch
+      break;
   } // switch
+
+  return true;
 }
 
 static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
@@ -266,7 +321,7 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
     return true;
   }
 
-  assert( rhs_expr.expr_id == T_FLOAT );
+  //assert( rhs_expr.expr_id == T_FLOAT );
   ad_expr_set_f( rv, lhs_expr.as.value.as.f64 + rhs_expr.as.value.as.f64 );
   return true;
 }
@@ -498,8 +553,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       return ad_expr_bit_xor( expr, rv );
 
     case AD_EXPR_CAST:
-      // TODO
-      break;
+      return ad_expr_cast( expr, rv );
 
     case AD_EXPR_DEREF:
       // TODO
@@ -567,6 +621,10 @@ void ad_expr_free( ad_expr_t *expr ) {
       // FALLTHROUGH
     case AD_EXPR_UNARY:
       ad_expr_free( expr->as.unary.sub_expr );
+      break;
+    case AD_EXPR_VALUE:
+      ad_value_free( &expr->as.value );
+      break;
   } // switch
   free( expr );
 }
@@ -613,6 +671,11 @@ void ad_expr_set_i( ad_expr_t *expr, long ival ) {
   expr->expr_id = AD_EXPR_VALUE;
   expr->as.value.type = T_INT64;
   expr->as.value.as.i64 = ival;
+}
+
+void ad_value_free( ad_value_expr_t *value ) {
+  if ( (value->type & T_NULL) != T_NONE )
+    FREE( value->as.s8 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
