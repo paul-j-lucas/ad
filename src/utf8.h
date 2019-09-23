@@ -65,7 +65,7 @@ typedef uint32_t codepoint_t;
  * @param codepoint The Unicode code-point to check.
  * @return Returns \c true only if \a codepoint is valid.
  */
-AD_UTF8_INLINE bool is_codepoint_valid( uint64_t codepoint ) {
+AD_UTF8_INLINE bool cp_is_valid( uint64_t codepoint ) {
   return  codepoint < CP_SURROGATE_HIGH_START
       || (codepoint > CP_SURROGATE_LOW_END && codepoint <= CP_VALID_MAX);
 }

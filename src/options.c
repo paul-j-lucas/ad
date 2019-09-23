@@ -315,7 +315,7 @@ static codepoint_t parse_codepoint( char const *s ) {
     s = (char*)memcpy( t, "0x", 2 );
   }
   uint64_t const codepoint = parse_ull( s );
-  if ( is_codepoint_valid( codepoint ) )
+  if ( cp_is_valid( codepoint ) )
     return STATIC_CAST(codepoint_t, codepoint);
 
   char opt_buf[ OPT_BUF_SIZE ];
