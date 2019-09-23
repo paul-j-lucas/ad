@@ -24,6 +24,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "types.h"
+#include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -45,8 +46,6 @@ _GL_INLINE_HEADER_BEGIN
 #define AD_EXPR_TERNARY     0x0400
 
 #define AD_EXPR_MASK        0x0F00
-
-#define UTF8_CHAR_SIZE_MAX  6           /**< Max bytes needed for UTF-8 char. */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -176,7 +175,6 @@ struct ad_value_expr {
 
     // Miscellaneous.
     ad_type_t     cast_type;
-    ad_expr_err_t err;
     ad_expr_err_t err;
   } as;
 };
