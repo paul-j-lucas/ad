@@ -667,7 +667,7 @@ void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
   expr->as.value.as.err = err;
 }
 
-void ad_expr_set_i( ad_expr_t *expr, long ival ) {
+void ad_expr_set_i( ad_expr_t *expr, int64_t ival ) {
   expr->expr_id = AD_EXPR_VALUE;
   expr->as.value.type = T_INT64;
   expr->as.value.as.i64 = ival;

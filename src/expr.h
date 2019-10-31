@@ -41,11 +41,11 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define AD_EXPR_UNARY       0x0100
-#define AD_EXPR_BINARY      0x0200
-#define AD_EXPR_TERNARY     0x0400
+#define AD_EXPR_UNARY       0x0100      /**< Unary expression.    */
+#define AD_EXPR_BINARY      0x0200      /**< Binary expression.   */
+#define AD_EXPR_TERNARY     0x0400      /**< Ternary expression.  */
 
-#define AD_EXPR_MASK        0x0F00
+#define AD_EXPR_MASK        0x0F00      ///< Expression type bitmask.
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -63,20 +63,20 @@ typedef enum ad_expr_err ad_expr_err_t;
  * The expression ID.
  */
 enum ad_expr_id {
-  AD_EXPR_NONE,
+  AD_EXPR_NONE,                         ///< No expression.
   AD_EXPR_ERROR,                        ///< Error expression.
 
   AD_EXPR_VALUE,                        ///< Constant value expression.
 
   // unary
-  AD_EXPR_DEREF   = AD_EXPR_UNARY + 1,  ///< Dereference expression.
+  AD_EXPR_BIT_COMP = AD_EXPR_UNARY + 1, ///< Bitwise-complement expression.
+  AD_EXPR_DEREF,                        ///< Dereference expression.
   AD_EXPR_MATH_NEG,                     ///< Negation expression.
 
   // binary
   AD_EXPR_CAST    = AD_EXPR_BINARY + 1, ///< Cast expression.
 
   AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
-  AD_EXPR_BIT_COMP,                     ///< Bitwise-complement expression.
   AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.
   AD_EXPR_BIT_SHIFT_LEFT,               ///< Bitwise-left-shift expression.
   AD_EXPR_BIT_SHIFT_RIGHT,              ///< Bitwise-right-shift expression.
@@ -288,7 +288,7 @@ void ad_expr_set_f( ad_expr_t *expr, double fval );
  * @param expr The expression to set.
  * @param ival The integer value.
  */
-void ad_expr_set_i( ad_expr_t *expr, long ival );
+void ad_expr_set_i( ad_expr_t *expr, int64_t ival );
 
 /**
  * Frees the memory associated with \a value.
