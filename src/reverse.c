@@ -70,7 +70,8 @@ static inline bool is_offset_delim( char c ) {
  * @return Returns \a c converted to an integer.
  */
 static inline unsigned xtoi( char c ) {
-  return isdigit( c ) ? c - '0' : 0xA + toupper( c ) - 'A';
+  return isdigit( c ) ?
+    (unsigned)(c - '0') : 0xAu + (unsigned)(toupper( c ) - 'A');
 }
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -130,7 +131,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   // parse offset
   char const *end = NULL;
   errno = 0;
-  *poffset = strtoull( buf, REINTERPRET_CAST(char**, &end), opt_offset_fmt );
+  *poffset = (off_t)strtoull( buf, REINTERPRET_CAST(char**, &end), (int)opt_offset_fmt );
   if ( unlikely( errno != 0 || (end[0] != '\0' && !is_offset_delim( *end )) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
@@ -138,7 +139,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     );
   if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
     return ROW_IGNORE;
-  col += end - buf;
+  col += (size_t)(end - buf);
 
   char const *p = end;
   end = buf + buf_len;
@@ -162,7 +163,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     // parse first nybble
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    uint8_t byte = xtoi( *p ) << 4;
+    uint8_t byte = (uint8_t)(xtoi( *p ) << 4);
 
     // parse second nybble
     ++col;
@@ -173,7 +174,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       );
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    byte |= xtoi( *p );
+    byte |= (uint8_t)xtoi( *p );
 
     bytes[ bytes_len++ ] = byte;
   } // while
@@ -193,7 +194,7 @@ expected_hex_digit:
 void reverse_dump_file( void ) {
   uint8_t bytes[ row_bytes ];
   size_t  bytes_len;
-  off_t   fout_offset = -row_bytes;
+  off_t   fout_offset = -(off_t)row_bytes;
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
@@ -221,7 +222,7 @@ void reverse_dump_file( void ) {
 
       case ROW_ELIDED:
         assert( bytes_len % row_bytes == 0 );
-        fout_offset += bytes_len / row_bytes;
+        fout_offset += (off_t)(bytes_len / row_bytes);
         for ( ; bytes_len > 0; bytes_len -= row_bytes )
           FWRITE( bytes, 1, row_bytes, fout );
         break;

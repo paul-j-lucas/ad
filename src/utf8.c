@@ -127,7 +127,7 @@ size_t utf8_encode( codepoint_t codepoint, char *p ) {
     *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
     *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
   }
-  return p - p0;
+  return (size_t)(p - p0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

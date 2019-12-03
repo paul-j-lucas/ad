@@ -252,7 +252,7 @@ size_t match_row( uint8_t *row_buf, size_t row_size, match_bits_t *match_bits,
     if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) )
       break;
     if ( matches )
-      *match_bits |= 1 << buf_len;
+      *match_bits |= 1u << buf_len;
   } // for
   return buf_len;
 }

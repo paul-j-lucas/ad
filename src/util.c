@@ -51,8 +51,8 @@ static slist_t free_later_list;         ///< List of stuff to free later.
  * @return Returns the value with the endianness flipped.
  */
 static inline uint16_t swap_16( uint16_t n ) {
-  return  (n >> 8)
-        | (n << 8);
+  return (uint16_t)((n >> 8)
+                  | (n << 8));
 }
 
 /**
@@ -210,7 +210,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   while ( bytes_to_skip > 0 && !feof( file ) ) {
     if ( bytes_to_read > bytes_to_skip )
       bytes_to_read = bytes_to_skip;
-    ssize_t const bytes_read = fread( buf, 1, bytes_to_read, file );
+    size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
       PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
@@ -260,14 +260,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
 
     case ENDIAN_LITTLE:
       switch ( bytes ) {
-        case 1: /* do nothing */    break;
-        case 2: *n = swap_16( *n ); break;
-        case 3: *n <<= 8;        // FALLTHROUGH
-        case 4: *n = swap_32( *n ); break;
-        case 5: *n <<= 8;        // FALLTHROUGH
-        case 6: *n <<= 8;        // FALLTHROUGH
-        case 7: *n <<= 8;        // FALLTHROUGH
-        case 8: *n = swap_64( *n ); break;
+        case 1: /* do nothing */              break;
+        case 2: *n = swap_16( (uint16_t)*n ); break;
+        case 3: *n <<= 8;                     // FALLTHROUGH
+        case 4: *n = swap_32( (uint32_t)*n ); break;
+        case 5: *n <<= 8;                     // FALLTHROUGH
+        case 6: *n <<= 8;                     // FALLTHROUGH
+        case 7: *n <<= 8;                     // FALLTHROUGH
+        case 8: *n = swap_64( *n );           break;
       } // switch
       // FALLTHROUGH
 
@@ -280,14 +280,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
 
     case ENDIAN_BIG:
       switch ( bytes ) {
-        case 1: /* do nothing */               break;
-        case 2: *n = swap_16( *n );            break;
-        case 3: *n = swap_32( *n ); *n >>=  8; break;
-        case 4: *n = swap_32( *n );            break;
-        case 5: *n = swap_64( *n ); *n >>= 24; break;
-        case 6: *n = swap_64( *n ); *n >>= 16; break;
-        case 7: *n = swap_64( *n ); *n >>=  8; break;
-        case 8: *n = swap_64( *n );            break;
+        case 1: /* do nothing */                          break;
+        case 2: *n = swap_16( (uint16_t)*n );             break;
+        case 3: *n = swap_32( (uint32_t)*n ); *n >>=  8;  break;
+        case 4: *n = swap_32( (uint32_t)*n );             break;
+        case 5: *n = swap_64( *n );           *n >>= 24;  break;
+        case 6: *n = swap_64( *n );           *n >>= 16;  break;
+        case 7: *n = swap_64( *n );           *n >>=  8;  break;
+        case 8: *n = swap_64( *n );                       break;
       } // switch
       break;
 
@@ -434,7 +434,7 @@ bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range ) {
 char* tolower_s( char *s ) {
   assert( s != NULL );
   for ( char *t = s; *t != '\0'; ++t )
-    *t = tolower( *t );
+    *t = (char)tolower( *t );
   return s;
 }
 
