@@ -42,9 +42,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define GAVE_OPTION(OPT)          (opts_given[ (unsigned char)(OPT) ])
-#define OPT_BUF_SIZE              32    /* used for format_opt() */
-#define SET_OPTION(OPT)           (opts_given[ (unsigned char)(OPT) ] = (OPT))
+#define GAVE_OPTION(OPT)    (opts_given[ (unsigned char)(OPT) ])
+#define OPT_BUF_SIZE        32          /* used for format_opt() */
+#define SET_OPTION(OPT)     (opts_given[ (unsigned char)(OPT) ] = (char)(OPT))
 
 // option extern variable definitions
 bool                opt_case_insensitive;
@@ -574,7 +574,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
                 // FALLTHROUGH
       case 'i': opt_case_insensitive = true;                            break;
-      case 'j': fin_offset += parse_offset( optarg );                   break;
+      case 'j': fin_offset += (off_t)parse_offset( optarg );            break;
       case 'L': max_lines = parse_ull( optarg );                        break;
       case 'm': opt_only_matching = true;                               break;
       case 'N': opt_max_bytes = parse_offset( optarg );                 break;
@@ -601,7 +601,7 @@ void parse_options( int argc, char *argv[] ) {
 
   // handle special case of +offset option
   if ( argc && *argv[1] == '+' ) {
-    fin_offset += parse_offset( argv[1] );
+    fin_offset += (off_t)parse_offset( argv[1] );
     --argc, ++argv;
   }
 
@@ -686,7 +686,7 @@ void parse_options( int argc, char *argv[] ) {
 
     case 0:
       if ( strcmp( fin_path, "-" ) == 0 )
-        fskip( fin_offset, stdin );
+        fskip( (size_t)fin_offset, stdin );
       else
         fin = check_fopen( fin_path, "r", fin_offset );
       break;

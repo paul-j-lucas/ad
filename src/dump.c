@@ -101,7 +101,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( cur->bytes[ buf_pos ] );
+  size_t const len = utf8_len( (char)cur->bytes[ buf_pos ] );
   if ( len > 1 ) {
     row_buf_t const *row = cur;
     *utf8_char++ = row->bytes[ buf_pos++ ];
@@ -149,7 +149,8 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    uint64_t const offset_delta = fin_offset - dumped_offset - row_bytes;
+    uint64_t const offset_delta =
+      (uint64_t)(fin_offset - dumped_offset - (off_t)row_bytes);
     if ( offset_delta > 0 && any_dumped ) {
       SGR_START_IF( sgr_elided );
       for ( size_t i = get_offset_width(); i > 0; --i )
@@ -179,7 +180,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
   // dump hex part
   prev_matches = false;
   for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-    bool const matches = (cur->match_bits & (1 << buf_pos)) != 0;
+    bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
     bool const matches_changed = matches != prev_matches;
 
     if ( buf_pos % opt_group_by == 0 ) {
@@ -213,7 +214,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
     FPUTS( "  " );
     prev_matches = false;
     for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-      bool const matches = (cur->match_bits & (1 << buf_pos)) != 0;
+      bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
       bool const matches_changed = matches != prev_matches;
       uint8_t const byte = cur->bytes[ buf_pos ];
 
@@ -233,7 +234,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         if ( utf8_count > 1 )
           FPUTS( REINTERPRET_CAST(char*, utf8_char) );
         else
-          FPUTC( ascii_is_print( byte ) ? byte : '.' );
+          FPUTC( ascii_is_print( (char)byte ) ? byte : '.' );
       }
 
       prev_matches = matches;
@@ -330,7 +331,7 @@ void dump_file( void ) {
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
     cur = next, next = temp;
 
-    fin_offset += row_bytes;
+    fin_offset += (off_t)row_bytes;
   } // while
 
   if ( opt_matches != MATCHES_NONE ) {
@@ -365,7 +366,7 @@ void dump_file_c( void ) {
     match_bits_t match_bits;            // not used when dumping in C
     row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
-    fin_offset += row_len;
+    fin_offset += (off_t)row_len;
     array_len += row_len;
   } while ( row_len == ROW_BYTES_C );
 

@@ -99,7 +99,7 @@ size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
  * sequence comprising an encoded character.
  */
 AD_UTF8_INLINE bool utf8_is_start( char c ) {
-  unsigned char const u = c;
+  unsigned char const u = (unsigned char)c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
 }
 
@@ -113,7 +113,7 @@ AD_UTF8_INLINE bool utf8_is_start( char c ) {
  * byte sequence comprising an encoded character.
  */
 AD_UTF8_INLINE bool utf8_is_cont( char c ) {
-  unsigned char const u = c;
+  unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
 }
 

@@ -125,7 +125,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * @return Returns \c true only if \c is an ASCII printable character.
  */
 AD_UTIL_INLINE bool ascii_is_print( char c ) {
-  unsigned char const u = c;
+  unsigned char const u = (unsigned char)c;
   return u >= ' ' && u <= '~';
 }
 
