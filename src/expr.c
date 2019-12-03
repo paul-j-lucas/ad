@@ -50,7 +50,7 @@
  *  3. If the evaluation fails, returns false.
  *
  * @param FIELD The expression field (`unary`, `binary`, or `ternary`).
- * @param VAR_PREFIX The prefix of the variable to create.
+ * @param VAR_PFX The prefix of the variable to create.
  */
 #define EVAL_EXPR(FIELD,VAR_PFX)                                          \
   ad_expr_t VAR_PFX##_expr;                                               \
