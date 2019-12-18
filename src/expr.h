@@ -291,6 +291,14 @@ void ad_expr_set_f( ad_expr_t *expr, double fval );
 void ad_expr_set_i( ad_expr_t *expr, int64_t ival );
 
 /**
+ * Sets the type of \a expr to #T_INT and its value to \a uval.
+ *
+ * @param expr The expression to set.
+ * @param uval The integer value.
+ */
+void ad_expr_set_u( ad_expr_t *expr, uint64_t ival );
+
+/**
  * Frees the memory associated with \a value.
  *
  * @param value The value to free.

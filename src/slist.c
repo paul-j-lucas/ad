@@ -49,7 +49,7 @@ int slist_cmp( slist_t const *list_i, slist_t const *list_j,
         node_i = node_i->next, node_j = node_j->next ) {
     int const cmp = data_cmp_fn != NULL ?
       (*data_cmp_fn)( node_i->data, node_j->data ) :
-      node_j->data - node_i->data;
+      (int)(node_j->data - node_i->data);
     if ( cmp != 0 )
       return cmp;
   } // for
@@ -82,11 +82,11 @@ void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
     if ( data_free_fn != NULL )
       (*data_free_fn)( list->data );
     for ( slist_node_t *p = list->head; p != NULL; ) {
-      slist_node_t *const node = p;
-      p = p->next;
       if ( node_data_free_fn != NULL )
-        (*node_data_free_fn)( node->data );
-      FREE( node );
+        (*node_data_free_fn)( p->data );
+      slist_node_t *const next = p->next;
+      FREE( p );
+      p = next;
     } // for
     slist_init( list );
   }

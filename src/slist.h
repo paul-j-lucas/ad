@@ -55,7 +55,6 @@ _GL_INLINE_HEADER_BEGIN
  * @param VAR_NAME The name for the temporary `slist` variable.
  * @param NODE_DATA A pointer to the node data.
  * @param LIST_DATA A pointer to the list data.
- * @hideinitializer
  */
 #define SLIST_TEMP_INIT_VAR(VAR_NAME,NODE_DATA,LIST_DATA)                     \
   slist_node_t VAR_NAME##_node = { NULL, CONST_CAST( void*, (NODE_DATA) ) };  \
@@ -129,7 +128,7 @@ struct slist {
  */
 struct slist_node {
   slist_node_t *next;                   ///< Pointer to next node or null.
-  void *data;                           ///< Pointer to user data.
+  void         *data;                   ///< Pointer to user data.
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -193,6 +192,9 @@ void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
  * @param list A pointer to the <code>\ref slist</code>.
  * @return Returns the data from the node at the head of \a list or null if \a
  * list is empty.
+ *
+ * @sa SLIST_HEAD()
+ * @sa slist_tail()
  */
 AD_SLIST_INLINE void* slist_head( slist_t const *list ) {
   return list->head != NULL ? list->head->data : NULL;
@@ -206,7 +208,9 @@ AD_SLIST_INLINE void* slist_head( slist_t const *list ) {
  * @param LIST A pointer to the <code>\ref slist</code>.
  * @return Returns the data from the head of \a LIST cast to \a DATA_TYPE or
  * null (or equivalent) if the <code>\ref slist</code> is empty.
- * @hideinitializer
+ *
+ * @sa slist_head()
+ * @sa SLIST_TAIL()
  */
 #define SLIST_HEAD(DATA_TYPE,LIST) \
   REINTERPRET_CAST( DATA_TYPE, slist_head( LIST ) )
@@ -238,6 +242,9 @@ AD_SLIST_INLINE size_t slist_len( slist_t const *list ) {
  * @param offset The offset (starting at 0) of the data to get.
  * @return Returns the data from the node at \a offset or null if \a offset
  * &gt;= slist_len().
+ *
+ * @sa SLIST_PEEK_AT()
+ * @sa slist_peek_atr()
  */
 void* slist_peek_at( slist_t const *list, size_t offset );
 
@@ -250,7 +257,9 @@ void* slist_peek_at( slist_t const *list, size_t offset );
  * @param OFFSET The offset (starting at 0) of the data to get.
  * @return Returns the data from the node at \a OFFSET cast to \a DATA_TYPE or
  * null (or equivalent) if \a OFFSET &gt;= slist_len().
- * @hideinitializer
+ *
+ * @sa slist_peek_at()
+ * @sa SLIST_PEEK_ATR()
  */
 #define SLIST_PEEK_AT(DATA_TYPE,LIST,OFFSET) \
   REINTERPRET_CAST( DATA_TYPE, slist_peek_at( (LIST), (OFFSET) ) )
@@ -262,6 +271,9 @@ void* slist_peek_at( slist_t const *list, size_t offset );
  * @param roffset The reverse offset (starting at 0) of the data to get.
  * @return Returns the data from the node at \a roffset or null if \a roffset
  * &gt;= slist_len().
+ *
+ * @sa slist_peek_at()
+ * @sa SLIST_PEEK_ATR()
  */
 AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
   return roffset < list->len ?
@@ -277,7 +289,9 @@ AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
  * @param ROFFSET The reverse offset (starting at 0) of the data to get.
  * @return Returns the data from the node at \a ROFFSET cast to \a DATA_TYPE or
  * null (or equivalent) if \a ROFFSET &gt;= slist_len().
- * @hideinitializer
+ *
+ * @sa SLIST_PEEK_AT()
+ * @sa slist_peek_atr()
  */
 #define SLIST_PEEK_ATR(DATA_TYPE,LIST,ROFFSET) \
   REINTERPRET_CAST( DATA_TYPE, slist_peek_atr( (LIST), (ROFFSET) ) )
@@ -288,6 +302,8 @@ AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
  * @param list The pointer to the <code>\ref slist</code>.
  * @return Returns the data from the head of \a list.  The caller is
  * responsible for deleting it (if necessary).
+ *
+ * @sa SLIST_POP_HEAD()
  */
 void* slist_pop_head( slist_t *list );
 
@@ -300,7 +316,8 @@ void* slist_pop_head( slist_t *list );
  * @return Returns the data from the head of \a LIST cast to \a DATA_TYPE or
  * null (or equivalent) if the <code>\ref slist</code> is empty.  The caller is
  * responsible for deleting it (if necessary).
- * @hideinitializer
+ *
+ * @sa slist_pop_head()
  */
 #define SLIST_POP_HEAD(DATA_TYPE,LIST) \
   REINTERPRET_CAST( DATA_TYPE, slist_pop_head( LIST ) )
@@ -310,6 +327,9 @@ void* slist_pop_head( slist_t *list );
  *
  * @param list A pointer to the <code>\ref slist</code>.
  * @param data The pointer to the data to add.
+ *
+ * @sa slist_push_list_head()
+ * @sa slist_push_tail()
  */
 void slist_push_head( slist_t *list, void *data );
 
@@ -318,6 +338,9 @@ void slist_push_head( slist_t *list, void *data );
  *
  * @param dst The <code>\ref slist</code> to push onto.
  * @param src The <code>\ref slist</code> to push.  It is made empty.
+ *
+ * @sa slist_push_head()
+ * @sa slist_push_list_tail()
  */
 void slist_push_list_head( slist_t *dst, slist_t *src );
 
@@ -326,6 +349,9 @@ void slist_push_list_head( slist_t *dst, slist_t *src );
  *
  * @param dst The <code>\ref slist</code> to push onto.
  * @param src The <code>\ref slist</code> to push.  It is made empty.
+ *
+ * @sa slist_push_list_head()
+ * @sa slist_push_tail()
  */
 void slist_push_list_tail( slist_t *dst, slist_t *src );
 
@@ -334,6 +360,9 @@ void slist_push_list_tail( slist_t *dst, slist_t *src );
  *
  * @param list The <code>\ref slist</code> to push onto.
  * @param data The data to pushed.
+ *
+ * @sa slist_push_head()
+ * @sa slist_push_list_tail()
  */
 void slist_push_tail( slist_t *list, void *data );
 
@@ -343,6 +372,9 @@ void slist_push_tail( slist_t *list, void *data );
  * @param list A pointer to the <code>\ref slist</code>.
  * @return Returns the data from the node at the tail of \a list or null if \a
  * list is empty.
+ *
+ * @sa slist_head()
+ * @sa SLIST_TAIL()
  */
 AD_SLIST_INLINE void* slist_tail( slist_t const *list ) {
   return list->tail != NULL ? list->tail->data : NULL;
@@ -356,7 +388,9 @@ AD_SLIST_INLINE void* slist_tail( slist_t const *list ) {
  * @param LIST A pointer to the <code>\ref slist</code>.
  * @return Returns the data from the tail of \a LIST cast to \a DATA_TYPE or
  * null (or equivalent) if the <code>\ref slist</code> is empty.
- * @hideinitializer
+ *
+ * @sa SLIST_HEAD()
+ * @sa slist_tail()
  */
 #define SLIST_TAIL(DATA_TYPE,LIST) \
   REINTERPRET_CAST( DATA_TYPE, slist_tail( LIST ) )
