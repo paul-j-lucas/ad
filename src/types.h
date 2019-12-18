@@ -119,6 +119,7 @@ typedef struct  ad_switch   ad_switch_t;
 typedef struct  slist       ad_switch_cases_t;
 typedef struct  ad_type     ad_type_t;
 typedef struct  ad_utf      ad_utf_t;
+typedef struct  ad_utf_0    ad_utf_0_t;
 typedef uint16_t            ad_type_id_t;
 typedef unsigned short      ad_type_size_t;
 typedef struct   slist      ad_type_list_t;
@@ -132,14 +133,14 @@ struct ad_float {
 };
 
 /**
- * Integer base.
+ * Integer base (for printing).
  */
 enum ad_int_base {
-  BASE_NONE,
-  BASE_BIN =  2,
-  BASE_OCT =  8,
-  BASE_DEC = 10,
-  BASE_HEX = 16
+  AD_BASE_NONE,                         ///< No base.
+  AD_BASE_BIN =  2,                     ///< Binary.
+  AD_BASE_OCT =  8,                     ///< Octal.
+  AD_BASE_DEC = 10,                     ///< Decimal.
+  AD_BASE_HEX = 16                      ///< Hexadecimal.
 };
 
 /**
@@ -175,11 +176,24 @@ struct ad_switch {
 };
 
 /**
- * UTF type.
+ * UTF character type.
  */
 struct ad_utf {
   ad_type_size_t  bits;
   ad_endian_t     endian;
+};
+
+/**
+ * UTF string type.
+ */
+struct ad_utf_0 {
+  ad_type_size_t  bits;
+  ad_endian_t     endian;
+  union {
+    char8_t      *u8;
+    char16_t     *u16;
+    char32_t     *u32;
+  } as;                                 ///< Union discriminator.
 };
 
 /**
@@ -191,9 +205,8 @@ struct ad_type {
 
   union {
     // nothing needed for T_BOOL
-    // nothing needed for T_ASCII
     ad_utf_t      ad_utf;
-    // nothing needed fot T_UTF8
+    ad_utf_0_t    ad_utf_0;
     ad_int_t      ad_int;
     ad_float_t    ad_float;
     ad_struct_t   ad_struct;
@@ -210,12 +223,17 @@ struct ad_type {
  */
 void ad_type_free( ad_type_t *type );
 
+/**
+ * Creates a new `ad_type`.
+ *
+ * @param tid The ID of the type to create.
+ */
 ad_type_t* ad_type_new( ad_type_id_t tid );
 
 /**
  * Gets the size (in bits) of the type represented by \a tid.
  *
- * @param tid The type to get the size of.
+ * @param tid The ID of the type to get the size of.
  * @return Returns said size.
  */
 AD_TYPES_INLINE size_t ad_type_size( ad_type_id_t tid ) {
