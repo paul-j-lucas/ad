@@ -156,7 +156,7 @@ struct ad_ternary_expr {
  * Constant value expression.
  */
 struct ad_value_expr {
-  ad_type_id_t    type;                 ///< The type of the value.
+  ad_type_t       type;                 ///< The type of the value.
   union {
     // Numeric.
     int64_t       i64;                  ///< i8, i16, i32, i64
@@ -237,7 +237,7 @@ ad_expr_t* ad_expr_new( ad_expr_id_t expr_id );
  * @sa ad_expr_get_base_type(ad_expr_t const*)
  */
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
-  return ad_expr_is_value( expr ) ? expr->as.value.type : T_NONE;
+  return ad_expr_is_value( expr ) ? expr->as.value.type.type_id : T_NONE;
 }
 
 /**

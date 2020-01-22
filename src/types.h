@@ -111,26 +111,15 @@ _GL_INLINE_HEADER_BEGIN
 
 typedef struct  ad_char     ad_char_t;
 typedef struct  ad_expr     ad_expr_t;
-typedef struct  ad_float    ad_float_t;
 typedef struct  ad_int      ad_int_t;
 typedef enum    ad_int_base ad_int_base_t;
 typedef struct  ad_struct   ad_struct_t;
 typedef struct  ad_switch   ad_switch_t;
 typedef struct  slist       ad_switch_cases_t;
 typedef struct  ad_type     ad_type_t;
-typedef struct  ad_utf      ad_utf_t;
-typedef struct  ad_utf_0    ad_utf_0_t;
 typedef uint16_t            ad_type_id_t;
 typedef unsigned short      ad_type_size_t;
 typedef struct   slist      ad_type_list_t;
-
-/**
- * Floating-point type.
- */
-struct ad_float {
-  ad_type_size_t  bits;
-  ad_endian_t     endian;
-};
 
 /**
  * Integer base (for printing).
@@ -147,7 +136,6 @@ enum ad_int_base {
  * Integer type.
  */
 struct ad_int {
-  ad_type_size_t  bits;
   ad_endian_t     endian;
   ad_int_base_t   base;
 };
@@ -176,27 +164,6 @@ struct ad_switch {
 };
 
 /**
- * UTF character type.
- */
-struct ad_utf {
-  ad_type_size_t  bits;
-  ad_endian_t     endian;
-};
-
-/**
- * UTF string type.
- */
-struct ad_utf_0 {
-  ad_type_size_t  bits;
-  ad_endian_t     endian;
-  union {
-    char8_t      *u8;
-    char16_t     *u16;
-    char32_t     *u32;
-  } as;                                 ///< Union discriminator.
-};
-
-/**
  * A type.  Every %ad_type at least has the ID that it's a type of and a size
  * in bits.
  */
@@ -204,11 +171,8 @@ struct ad_type {
   ad_type_id_t    type_id;
 
   union {
-    // nothing needed for T_BOOL
-    ad_utf_t      ad_utf;
-    ad_utf_0_t    ad_utf_0;
+    ad_endian_t   endian;
     ad_int_t      ad_int;
-    ad_float_t    ad_float;
     ad_struct_t   ad_struct;
     ad_switch_t   ad_switch;
   } as;                                 ///< Union discriminator.
