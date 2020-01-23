@@ -148,7 +148,8 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
 
   // parse hexadecimal bytes
   while ( bytes_len < row_bytes ) {
-    ++p, ++col;
+    ++p;
+    ++col;
 
     // handle whitespace
     if ( isspace( *p ) ) {
