@@ -597,12 +597,14 @@ void parse_options( int argc, char *argv[] ) {
       default : usage();
     } // switch
   } // for
-  argc -= optind, argv += optind - 1;
+  argc -= optind;
+  argv += optind - 1;
 
   // handle special case of +offset option
   if ( argc && *argv[1] == '+' ) {
     fin_offset += (off_t)parse_offset( argv[1] );
-    --argc, ++argv;
+    --argc;
+    ++argv;
   }
 
   // check for mutually exclusive options

@@ -329,7 +329,8 @@ void dump_file( void ) {
       any_matches = true;
 
     row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
-    cur = next, next = temp;
+    cur = next;
+    next = temp;
 
     fin_offset += (off_t)row_bytes;
   } // while
