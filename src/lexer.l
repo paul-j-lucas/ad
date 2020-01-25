@@ -304,38 +304,6 @@ static int yywrap( void ) {
   return 1 /* done */;
 }
 
-////////// extern functions ///////////////////////////////////////////////////
-
-char const* lexer_input_line( size_t *plen ) {
-  if ( plen != NULL )
-    *plen = input_len;
-  return input_buf;
-}
-
-void lexer_loc( int *pline, int *pcolumn ) {
-  assert( pline != NULL );
-  assert( pcolumn != NULL );
-
-  *pline = yylineno;
-
-  if ( column == 0 )
-    *pcolumn = column_newline;
-  else if ( lexer_token[0] == '\n' )
-    *pcolumn = column;
-  else
-    *pcolumn = column - strlen( lexer_token );
-}
-
-void lexer_reset( bool hard_reset ) {
-  if ( hard_reset ) {
-    is_eof = false;
-    yylineno = 0;
-  }
-  c_mode = MODE_ENGLISH_TO_GIBBERISH;
-  input_len = input_sent = 0;
-  newline();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /// @cond DOXYGEN_IGNORE
@@ -507,7 +475,7 @@ hex_int       0[xX]{H}+{int_suffix}?
 
 /// @endcond
 
-///////////////////////////////////////////////////////////////////////////////
+////////// local functions ////////////////////////////////////////////////////
 
 /**
  * Called by flex only when there's a fatal error.
@@ -535,6 +503,37 @@ static void lexer_update_loc( void ) {
   yylloc.first_column = column;
   yylloc.last_column  = column + yyleng - 1;
   column += yyleng;
+}
+
+////////// extern functions ///////////////////////////////////////////////////
+
+char const* lexer_input_line( size_t *plen ) {
+  if ( plen != NULL )
+    *plen = input_len;
+  return input_buf;
+}
+
+void lexer_loc( int *pline, int *pcolumn ) {
+  assert( pline != NULL );
+  assert( pcolumn != NULL );
+
+  *pline = yylineno;
+
+  if ( column == 0 )
+    *pcolumn = column_newline;
+  else if ( lexer_token[0] == '\n' )
+    *pcolumn = column;
+  else
+    *pcolumn = column - strlen( lexer_token );
+}
+
+void lexer_reset( bool hard_reset ) {
+  if ( hard_reset ) {
+    is_eof = false;
+    yylineno = 0;
+  }
+  input_len = input_sent = 0;
+  newline();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
