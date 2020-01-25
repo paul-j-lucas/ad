@@ -28,6 +28,7 @@
 
 // standard
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -69,7 +70,8 @@
   ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr )
 
 /**
- * Checks that ...
+ * Checks that a variable VAR_PFX_type is of type \a TYPE: if not, sets the
+ * implicit \a rv to \a ERR and returns `false`.
  *
  * @param VAR_PFX The prefix of the type variable to check.
  * @param TYPE The bitwise-or of types to check against.
@@ -78,6 +80,29 @@
   ENSURE_ELSE( (VAR_PFX##_type & (TYPE)) != T_NONE, BAD_OPERAND )
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Compares \a d1 to \a d2 for equality.
+ *
+ * @param d1 The first `double` to check.
+ * @param d2 The second `double` to check.
+ * @return Returns `true` if \a d1 is approximately equal to \a d2.
+ */
+static inline bool is_fequal( double d1, double d2 ) {
+  double const diff = fabs( d1 - d2 );
+  return  diff <= DBL_EPSILON ||
+          diff < fmax( fabs( d1 ), fabs( d2 ) ) * DBL_EPSILON;
+}
+
+/**
+ * Checks if a approximately `double` is zero.
+ *
+ * @param d The `double` to check.
+ * @return Returns `true` only if \a d is approximately zero.
+ */
+static inline bool is_fzero( double d ) {
+  return fabs( d ) <= DBL_EPSILON;
+}
 
 static void narrow( ad_expr_t *expr ) {
   ad_type_id_t const to_type = expr->as.value.type.type_id;
@@ -387,7 +412,7 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
   }
 
   assert( rhs_type == T_FLOAT );
-  ENSURE_ELSE( rhs_expr.as.value.as.f64 != 0, DIV_0 );
+  ENSURE_ELSE( !is_fzero( rhs_expr.as.value.as.f64 ), DIV_0 );
   ad_expr_set_f( rv,
     fmod( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
   );
@@ -470,13 +495,19 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
     if ( rhs_type == T_INT )
       ad_expr_set_b( rv, lhs_expr.as.value.as.i64 == rhs_expr.as.value.as.i64 );
     else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 == rhs_expr.as.value.as.f64 );
+      ad_expr_set_b( rv,
+        is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
+      );
   }
   else if ( lhs_type == T_FLOAT ) {
     if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 == rhs_expr.as.value.as.i64 );
+      ad_expr_set_b( rv,
+        is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
+      );
     else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 == rhs_expr.as.value.as.f64 );
+      ad_expr_set_b( rv,
+        is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
+      );
   }
 
   return true;
@@ -580,13 +611,19 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
     if ( rhs_type == T_INT )
       ad_expr_set_b( rv, lhs_expr.as.value.as.i64 != rhs_expr.as.value.as.i64 );
     else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 != rhs_expr.as.value.as.f64 );
+      ad_expr_set_b( rv,
+        !is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
+      );
   }
   else if ( lhs_type == T_FLOAT ) {
     if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 != rhs_expr.as.value.as.i64 );
+      ad_expr_set_b( rv,
+        !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
+      );
     else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 != rhs_expr.as.value.as.f64 );
+      ad_expr_set_b( rv,
+        !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
+      );
   }
 
   return true;
@@ -709,7 +746,7 @@ bool ad_expr_is_zero( ad_expr_t const *expr ) {
       case T_INT:
         return expr->as.value.as.u64 == 0;
       case T_FLOAT:
-        return expr->as.value.as.f64 == 0.0;
+        return is_fzero( expr->as.value.as.f64 );
     } // switch
   }
   return false;
