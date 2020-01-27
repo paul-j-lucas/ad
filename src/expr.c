@@ -429,8 +429,10 @@ static bool ad_expr_log_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
   switch ( lhs_type ) {
     case T_BOOL:
@@ -483,8 +485,10 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
   ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
@@ -536,8 +540,10 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
   ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
@@ -589,8 +595,10 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
   switch ( lhs_type ) {
     case T_BOOL:
@@ -640,6 +648,7 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( unary, sub );
   GET_BASE_TYPE( sub );
+  CHECK_TYPE( sub, T_BOOL | T_INT | T_FLOAT );
 
   switch ( sub_type ) {
     case T_BOOL:
@@ -649,8 +658,6 @@ static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
     case T_FLOAT:
       ad_expr_set_f( rv, -sub_expr.as.value.as.f64 );
       break;
-    default:
-      RETURN_ERR( BAD_OPERAND );
   } // switch
 
   return true;
@@ -666,34 +673,45 @@ static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
   switch ( lhs_type ) {
     case T_BOOL:
     case T_INT:
       switch ( rhs_type ) {
+        case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
             lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.i64
           );
-          return true;
+          break;
         case T_FLOAT:
           ad_expr_set_f( rv,
             lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.f64
           );
-          return true;
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 - rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 - rhs_expr.as.value.as.f64
+          );
+          break;
       } // switch
       break;
   } // switch
 
-  if ( rhs_type == T_INT ) {
-    ad_expr_set_f( rv, lhs_expr.as.value.as.f64 - rhs_expr.as.value.as.i64 );
-    return true;
-  }
-
-  assert( rhs_type == T_FLOAT );
-  ad_expr_set_f( rv, lhs_expr.as.value.as.f64 - rhs_expr.as.value.as.f64 );
   return true;
 }
 
