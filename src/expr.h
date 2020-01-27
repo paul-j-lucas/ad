@@ -158,13 +158,15 @@ struct ad_ternary_expr {
 struct ad_value_expr {
   ad_type_t       type;                 ///< The type of the value.
   union {
-    // Numeric.
+    // Integer.
     int64_t       i64;                  ///< i8, i16, i32, i64
     uint64_t      u64;                  ///< u8, u16, u32, u64
+
+    // Floating-point.
     double        f64;                  ///< f32, f64
 
     // UTF characters.
-    char8_t       c8[ UTF8_LEN_MAX ];   ///< UTF-8 character.
+    utf8_t        c8;                   ///< UTF-8 character.
     char16_t      c16;                  ///< UTF-16 character.
     char32_t      c32;                  ///< UTF-32 character.
 
@@ -241,10 +243,11 @@ AD_EXPR_INLINE ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
 }
 
 /**
- * Gets the base type of \a expr.
+ * Gets the base type of \a expr.  The base type of a type is the type without
+ * either the sign or size.
  *
  * @param expr The expression to get the base type of.
- * @rerurn Returns said base type.
+ * @return Returns said base type.
  */
 AD_EXPR_INLINE ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
   return ad_expr_get_type( expr ) & T_MASK_TYPE;

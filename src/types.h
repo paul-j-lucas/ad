@@ -49,10 +49,12 @@ _GL_INLINE_HEADER_BEGIN
 //
 // The bits are used as follows:
 //
-//    S-TT TTTT -ZZZ Z--N
+//    S-TT TTTT -ZZZ Z-EN
+//    F-DC BA98 -654 3-10
 //
 // where:
 //
+//    E = Error: 1 = error
 //    N = null terminated: 0 = no, 1 = yes
 //    S = sign: 0 = unsigned, 1 = signed
 //    T = type (at most one set)
@@ -69,6 +71,7 @@ _GL_INLINE_HEADER_BEGIN
 
 // types
 #define T_NONE                  0u                    /**< No type.           */
+#define T_ERROR                 0x0003u               /**< Error type.        */
 
 #define T_BOOL                  0x0100                /**< Boolean.           */
 #define T_BOOL8   (             T_BOOL  | T_08_BITS ) /**< `bool`             */
@@ -78,6 +81,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF16   (             T_UTF   | T_16_BITS ) /**< `char16_t`         */
 #define T_UTF32   (             T_UTF   | T_32_BITS ) /**< `char32_t`         */
 
+#define T_UTF_0   ( T_NULL    | T_UTF               ) /**< UTF string.        */
 #define T_UTF8_0  ( T_NULL    | T_UTF   | T_08_BITS ) /**< UTF-8 string.      */
 #define T_UTF16_0 ( T_NULL    | T_UTF   | T_16_BITS ) /**< `char16_t` string  */
 #define T_UTF32_0 ( T_NULL    | T_UTF   | T_32_BITS ) /**< `char32_t` string  */
@@ -105,7 +109,7 @@ _GL_INLINE_HEADER_BEGIN
 // bit masks
 #define T_MASK_SIGN             T_SIGNED              /**< Sign bitmask.      */
 #define T_MASK_SIZE             0x0078u               /**< Size bitmask.      */
-#define T_MASK_TYPE             0x3F01u               /**< Type bitmask.      */
+#define T_MASK_TYPE             0x3F03u               /**< Type bitmask.      */
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -55,7 +55,8 @@ typedef enum utf8_when utf8_when_t;
 
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
-typedef uint32_t codepoint_t;
+typedef uint32_t  codepoint_t;
+typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
 
 ///////////////////////////////////////////////////////////////////////////////
 
