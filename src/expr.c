@@ -177,10 +177,10 @@ static uint64_t widen_int( ad_expr_t const *expr ) {
 static bool ad_expr_bit_and( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT | T_UTF );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT | T_UTF );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_UTF );
   ad_expr_set_u( rv, lhs_expr.as.value.as.u64 & rhs_expr.as.value.as.u64 );
   return true;
 }
@@ -433,8 +433,10 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( rhs );
 
   switch ( lhs_type ) {
+    case T_BOOL:
     case T_INT:
       switch ( rhs_type ) {
+        case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
             lhs_expr.as.value.as.i64 + rhs_expr.as.value.as.i64
@@ -451,6 +453,7 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
     case T_FLOAT:
       switch ( rhs_type ) {
+        case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
             lhs_expr.as.value.as.f64 + rhs_expr.as.value.as.i64
