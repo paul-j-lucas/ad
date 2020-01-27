@@ -33,16 +33,14 @@
 #include <stdlib.h>
 
 /**
- * Ensures \a EXPR is `true`, otherwise sets the implicit \a rv to \a ERR.
+ * Ensures \a EXPR is `true`, otherwise sets the implicit \a rv to \a ERR and
+ * returns `false`.
  *
  * @param EXPR The expression to test.
  * @param ERR The error to set if \a EXPR is `false`.
  */
-#define ENSURE_ELSE(EXPR,ERR) BLOCK(      \
-  if ( !(EXPR) ) {                        \
-    ad_expr_set_err( rv, AD_ERR_##ERR );  \
-    return false;                         \
-  } )
+#define ENSURE_ELSE(EXPR,ERR) BLOCK( \
+  if ( !(EXPR) ) RETURN_ERR(ERR); )
 
 /**
  * Evalulates an expression by:
@@ -80,6 +78,15 @@
  */
 #define CHECK_TYPE(VAR_PFX,TYPE) \
   ENSURE_ELSE( (VAR_PFX##_type & (TYPE)) != T_NONE, BAD_OPERAND )
+
+/**
+ * Sets an error and returns `false`.
+ *
+ * @param ERR The error to set.
+ */
+#define RETURN_ERR(ERR) BLOCK(          \
+  ad_expr_set_err( rv, AD_ERR_##ERR );  \
+  return false; )
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -188,7 +195,7 @@ static bool ad_expr_bit_and( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_bit_comp( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( unary, sub );
   GET_BASE_TYPE( sub );
-  CHECK_TYPE( sub, T_INT | T_UTF );
+  CHECK_TYPE( sub, T_BOOL | T_INT | T_UTF );
   ad_expr_set_u( rv, ~sub_expr.as.value.as.u64 );
   return true;
 }
@@ -203,10 +210,10 @@ static bool ad_expr_bit_comp( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_bit_or( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT | T_UTF );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT | T_UTF );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_UTF );
   ad_expr_set_u( rv, lhs_expr.as.value.as.u64 | rhs_expr.as.value.as.u64 );
   return true;
 }
@@ -221,10 +228,10 @@ static bool ad_expr_bit_or( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_bit_shift_left( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT );
+  CHECK_TYPE( lhs, T_BOOL | T_INT );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT );
+  CHECK_TYPE( rhs, T_BOOL | T_INT );
   ad_expr_set_u( rv, lhs_expr.as.value.as.u64 << rhs_expr.as.value.as.u64 );
   return true;
 }
@@ -239,10 +246,10 @@ static bool ad_expr_bit_shift_left( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_bit_shift_right( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT );
+  CHECK_TYPE( lhs, T_BOOL | T_INT );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT );
+  CHECK_TYPE( rhs, T_BOOL | T_INT );
   ad_expr_set_u( rv, lhs_expr.as.value.as.u64 >> rhs_expr.as.value.as.u64 );
   return true;
 }
@@ -257,10 +264,10 @@ static bool ad_expr_bit_shift_right( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_bit_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_UTF );
   ad_expr_set_u( rv, lhs_expr.as.value.as.u64 ^ rhs_expr.as.value.as.u64 );
   return true;
 }
@@ -402,10 +409,10 @@ static bool ad_expr_log_or( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_log_xor( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
-  CHECK_TYPE( lhs, T_INT );
+  CHECK_TYPE( lhs, T_BOOL | T_INT | T_UTF );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
-  CHECK_TYPE( rhs, T_INT );
+  CHECK_TYPE( rhs, T_BOOL | T_INT | T_UTF );
   ad_expr_set_b( rv,
     !ad_expr_is_zero( &lhs_expr ) ^ !ad_expr_is_zero( &rhs_expr )
   );
@@ -476,28 +483,43 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT && rhs_type == T_INT ) {
-    ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
-    ad_expr_set_i( rv, lhs_expr.as.value.as.i64 / rhs_expr.as.value.as.i64 );
-    return true;
-  }
+  ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
-  if ( lhs_type == T_INT && rhs_type == T_FLOAT ) {
-    ENSURE_ELSE( rhs_expr.as.value.as.f64 != 0.0, DIV_0 );
-    ad_expr_set_f( rv, lhs_expr.as.value.as.i64 / rhs_expr.as.value.as.f64 );
-    return true;
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_i( rv,
+            lhs_expr.as.value.as.i64 / rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.i64 / rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 / rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 / rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+    default:
+      RETURN_ERR( BAD_OPERAND );
+  } // switch
 
-  assert( lhs_type == T_FLOAT );
-  if ( rhs_type == T_INT ) {
-    ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
-    ad_expr_set_f( rv, lhs_expr.as.value.as.f64 / rhs_expr.as.value.as.i64 );
-    return true;
-  }
-
-  assert( rhs_type == T_FLOAT );
-  ENSURE_ELSE( rhs_expr.as.value.as.f64 != 0.0, DIV_0 );
-  ad_expr_set_f( rv, lhs_expr.as.value.as.f64 / rhs_expr.as.value.as.f64 );
   return true;
 }
 
@@ -514,34 +536,43 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT && rhs_type == T_INT ) {
-    ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
-    ad_expr_set_i( rv, lhs_expr.as.value.as.i64 % rhs_expr.as.value.as.i64 );
-    return true;
-  }
+  ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
-  if ( lhs_type == T_INT && rhs_type == T_FLOAT ) {
-    ENSURE_ELSE( rhs_expr.as.value.as.f64 != 0.0, DIV_0 );
-    ad_expr_set_f( rv,
-      fmod( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
-    );
-    return true;
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_i( rv,
+            lhs_expr.as.value.as.i64 % rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            fmod( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_f( rv,
+            fmod( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            fmod( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
+    default:
+      RETURN_ERR( BAD_OPERAND );
+  } // switch
 
-  assert( lhs_type == T_FLOAT );
-  if ( rhs_type == T_INT ) {
-    ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
-    ad_expr_set_f( rv,
-      fmod( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
-    );
-    return true;
-  }
-
-  assert( rhs_type == T_FLOAT );
-  ENSURE_ELSE( !is_fzero( rhs_expr.as.value.as.f64 ), DIV_0 );
-  ad_expr_set_f( rv,
-    fmod( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
-  );
   return true;
 }
 
@@ -558,24 +589,41 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT && rhs_type == T_INT ) {
-    ad_expr_set_i( rv, lhs_expr.as.value.as.i64 * rhs_expr.as.value.as.i64 );
-    return true;
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_i( rv,
+            lhs_expr.as.value.as.i64 * rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.i64 * rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 * rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.f64 * rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+    default:
+      RETURN_ERR( BAD_OPERAND );
+  } // switch
 
-  if ( lhs_type == T_INT && rhs_type == T_FLOAT ) {
-    ad_expr_set_f( rv, lhs_expr.as.value.as.i64 * rhs_expr.as.value.as.f64 );
-    return true;
-  }
-
-  assert( lhs_type == T_FLOAT );
-  if ( rhs_type == T_INT ) {
-    ad_expr_set_f( rv, lhs_expr.as.value.as.f64 * rhs_expr.as.value.as.i64 );
-    return true;
-  }
-
-  assert( rhs_type == T_FLOAT );
-  ad_expr_set_f( rv, lhs_expr.as.value.as.f64 * rhs_expr.as.value.as.f64 );
   return true;
 }
 
@@ -588,13 +636,20 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
  */
 static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( unary, sub );
-  ad_type_id_t const t = ad_expr_get_base_type( &sub_expr );
-  if ( t == T_INT ) {
-    ad_expr_set_i( rv, -sub_expr.as.value.as.i64 );
-  } else {
-    assert( t == T_FLOAT );
-    ad_expr_set_f( rv, -sub_expr.as.value.as.f64 );
-  }
+  GET_BASE_TYPE( sub );
+
+  switch ( sub_type ) {
+    case T_BOOL:
+    case T_INT:
+      ad_expr_set_i( rv, -sub_expr.as.value.as.i64 );
+      break;
+    case T_FLOAT:
+      ad_expr_set_f( rv, -sub_expr.as.value.as.f64 );
+      break;
+    default:
+      RETURN_ERR( BAD_OPERAND );
+  } // switch
+
   return true;
 }
 
@@ -611,17 +666,24 @@ static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT && rhs_type == T_INT ) {
-    ad_expr_set_i( rv, lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.i64 );
-    return true;
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_INT:
+          ad_expr_set_i( rv,
+            lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.i64
+          );
+          return true;
+        case T_FLOAT:
+          ad_expr_set_f( rv,
+            lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.f64
+          );
+          return true;
+      } // switch
+      break;
+  } // switch
 
-  if ( lhs_type == T_INT && rhs_type == T_FLOAT ) {
-    ad_expr_set_f( rv, lhs_expr.as.value.as.i64 - rhs_expr.as.value.as.f64 );
-    return true;
-  }
-
-  assert( lhs_type == T_FLOAT );
   if ( rhs_type == T_INT ) {
     ad_expr_set_f( rv, lhs_expr.as.value.as.f64 - rhs_expr.as.value.as.i64 );
     return true;
@@ -645,24 +707,39 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 == rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv,
-        is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
-      );
-  }
-  else if ( lhs_type == T_FLOAT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv,
-        is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
-      );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv,
-        is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
-      );
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 == rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
+      break;
+  } // switch
 
   return true;
 }
@@ -680,18 +757,39 @@ static bool ad_expr_rel_greater( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 > rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 > rhs_expr.as.value.as.f64 );
-  }
-  else if ( lhs_type == T_FLOAT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 > rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 > rhs_expr.as.value.as.f64 );
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 > rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 > rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 > rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 > rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+  } // switch
 
   return true;
 }
@@ -709,18 +807,39 @@ static bool ad_expr_rel_greater_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 >= rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 >= rhs_expr.as.value.as.f64 );
-  }
-  else if ( lhs_type == T_FLOAT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 >= rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 >= rhs_expr.as.value.as.f64 );
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 >= rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 >= rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 >= rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 >= rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+  } // switch
 
   return true;
 }
@@ -738,18 +857,39 @@ static bool ad_expr_rel_less( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 < rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 < rhs_expr.as.value.as.f64 );
-  }
-  else if ( lhs_type == T_FLOAT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 < rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 < rhs_expr.as.value.as.f64 );
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 < rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 < rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 < rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 < rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+  } // switch
 
   return true;
 }
@@ -767,18 +907,39 @@ static bool ad_expr_rel_less_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  if ( lhs_type == T_INT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 <= rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.i64 <= rhs_expr.as.value.as.f64 );
-  }
-  else if ( lhs_type == T_FLOAT ) {
-    if ( rhs_type == T_INT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 <= rhs_expr.as.value.as.i64 );
-    else if ( rhs_type == T_FLOAT )
-      ad_expr_set_b( rv, lhs_expr.as.value.as.f64 <= rhs_expr.as.value.as.f64 );
-  }
+  switch ( lhs_type ) {
+    case T_BOOL:
+    case T_INT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 <= rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 <= rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+    case T_FLOAT:
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 <= rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.f64 <= rhs_expr.as.value.as.f64
+          );
+          break;
+      } // switch
+      break;
+  } // switch
 
   return true;
 }
@@ -797,25 +958,36 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( rhs );
 
   switch ( lhs_type ) {
+    case T_BOOL:
     case T_INT:
-      if ( rhs_type == T_INT )
-        ad_expr_set_b( rv,
-          lhs_expr.as.value.as.i64 != rhs_expr.as.value.as.i64
-        );
-      else if ( rhs_type == T_FLOAT )
-        ad_expr_set_b( rv,
-          !is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
-        );
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            lhs_expr.as.value.as.i64 != rhs_expr.as.value.as.i64
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            !is_fequal( lhs_expr.as.value.as.i64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
       break;
     case T_FLOAT:
-      if ( rhs_type == T_INT )
-        ad_expr_set_b( rv,
-          !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
-        );
-      else if ( rhs_type == T_FLOAT )
-        ad_expr_set_b( rv,
-          !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
-        );
+      switch ( rhs_type ) {
+        case T_BOOL:
+        case T_INT:
+          ad_expr_set_b( rv,
+            !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.i64 )
+          );
+          break;
+        case T_FLOAT:
+          ad_expr_set_b( rv,
+            !is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
+          );
+          break;
+      } // switch
       break;
   } // switch
 

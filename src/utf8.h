@@ -29,6 +29,7 @@
 #include <inttypes.h>                   /* for uint32_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
+#include <string.h>                     /* for memcmp(3) */
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTF8_INLINE
@@ -89,6 +90,17 @@ bool should_utf8( utf8_when_t when );
  * UTF-8.
  */
 size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
+
+/**
+ * Compares two UTF-8 characters for equality.
+ *
+ * @param u1 The first UTF-8 character.
+ * @param u2 The second UTF-8 character.
+ * @return Returns `true` only if \a u1 equals \a u2.
+ */
+AD_UTF8_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
+  return memcmp( u1, u2, u1[0] ) == 0;
+}
 
 /**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
