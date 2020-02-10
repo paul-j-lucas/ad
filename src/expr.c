@@ -97,8 +97,8 @@
  * @param j The second integer.
  * @return Returns -1 if \a i &lt; \a j, 0 if \a i = \a j, or \a i &gt; \a j.
  */
-static inline int int64_cmp( int64_t i, int64_t j ) {
-  int64_t const temp = i - j;
+static inline int int32_cmp( int32_t i, int32_t j ) {
+  int32_t const temp = i - j;
   return temp < 0 ? -1 : temp > 0 ? +1 : 0;
 }
 
@@ -118,15 +118,25 @@ static bool utf_decode( ad_expr_t const *expr, char32_t *cp ) {
 
 /**
  * Compares the two Unicode code-points of two UTF expressions.
+ *
+ * @param lhs_expr The left-hand-side expression.
+ * @param rhs_expr The right-hand-side expression.
+ * @return Returns -1 if \a lhs_expr &lt; \a rhs_expr, 0 if \a lhs_expr = \a
+ * rhs_expr, or \a lhs_expr &gt; \a rhs_expr.
  */
 static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
-  GET_BASE_TYPE( lhs );
-  GET_BASE_TYPE( rhs );
+  ad_type_id_t const lhs_type = ad_expr_get_type( lhs_expr );
+  ad_type_id_t const rhs_type = ad_expr_get_type( rhs_expr );
 
-  if ( lhs_type == rhs_type )
-    return int64_cmp(
-      (int64_t)lhs_expr->as.value.as.c32, (int64_t)rhs_expr->as.value.as.c32
+  if ( lhs_type == rhs_type ) {
+    //
+    // The Unicode encoding of the left- and right-hand sides matches so we can
+    // compare them directly.
+    //
+    return int32_cmp(
+      (int32_t)lhs_expr->as.value.as.c32, (int32_t)rhs_expr->as.value.as.c32
     );
+  }
 
   char32_t lhs_cp, rhs_cp;
   if ( unlikely( !utf_decode( lhs_expr, &lhs_cp ) ) )
@@ -134,7 +144,7 @@ static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
   if ( unlikely( !utf_decode( rhs_expr, &rhs_cp ) ) )
     /* TODO */;
 
-  return int64_cmp( (int64_t)lhs_cp, (int64_t)rhs_cp );
+  return int32_cmp( (int32_t)lhs_cp, (int32_t)rhs_cp );
 }
 
 /**

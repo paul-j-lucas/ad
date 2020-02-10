@@ -141,6 +141,20 @@ AD_UNICODE_INLINE char32_t utf8_decode( char const *s ) {
 size_t utf8_encode( char32_t cp, char *utf8_buf );
 
 /**
+ * Gets the length of a UTF-8 character.
+ *
+ * @param start The start byte of a UTF-8 byte sequence.
+ * @return Returns the number of bytes needed for the UTF-8 character in the
+ * range [1,6] or 0 if \a start is not a valid start byte.
+ */
+AD_UNICODE_INLINE size_t utf8_len( char start ) {
+  extern uint8_t const UTF8_LEN_TABLE[];
+  return STATIC_CAST(
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
+  );
+}
+
+/**
  * Compares two UTF-8 characters for equality.
  *
  * @param u1 The first UTF-8 character.
@@ -148,7 +162,8 @@ size_t utf8_encode( char32_t cp, char *utf8_buf );
  * @return Returns `true` only if \a u1 equals \a u2.
  */
 AD_UNICODE_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
-  return memcmp( u1, u2, u1[0] ) == 0;
+  extern uint8_t const UTF8_LEN_TABLE[];
+  return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
 }
 
 /**
@@ -177,20 +192,6 @@ AD_UNICODE_INLINE bool utf8_is_start( char c ) {
 AD_UNICODE_INLINE bool utf8_is_cont( char c ) {
   unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
-}
-
-/**
- * Gets the length of a UTF-8 character.
- *
- * @param start The start byte of a UTF-8 byte sequence.
- * @return Returns the number of bytes needed for the UTF-8 character in the
- * range [1,6] or 0 if \a start is not a valid start byte.
- */
-AD_UNICODE_INLINE size_t utf8_len( char start ) {
-  extern char const UTF8_LEN_TABLE[];
-  return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
-  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
