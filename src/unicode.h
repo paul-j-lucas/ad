@@ -109,7 +109,8 @@ bool should_utf8( utf8_when_t when );
  * @param u16 A pointer to the first byte of the UTF-16 encoded characters.
  * @param u16_size The number of UTF-16 characters.
  * @param u32 A pointer to receive the code-points.
- * @return Returns TODO
+ * @return Returns `true` only if the UTF-16 bytes were valid and decoded
+ * successfully.
  */
 bool utf16_decode( char16_t const *u16, size_t u16_size, ad_endian_t endian,
                    char32_t *u32 );
