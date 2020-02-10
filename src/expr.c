@@ -102,7 +102,7 @@ static inline int int64_cmp( int64_t i, int64_t j ) {
   return temp < 0 ? -1 : temp > 0 ? +1 : 0;
 }
 
-static bool utf_decode( ad_expr_t const *expr, codepoint_t *cp ) {
+static bool utf_decode( ad_expr_t const *expr, char32_t *cp ) {
   switch ( expr->as.value.type.type_id ) {
     case T_UTF8:
       *cp = utf8_decode( (char const*)&expr->as.value.as.c32 );
@@ -128,7 +128,7 @@ static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
       (int64_t)lhs_expr->as.value.as.c32, (int64_t)rhs_expr->as.value.as.c32
     );
 
-  codepoint_t lhs_cp, rhs_cp;
+  char32_t lhs_cp, rhs_cp;
   if ( unlikely( !utf_decode( lhs_expr, &lhs_cp ) ) )
     /* TODO */;
   if ( unlikely( !utf_decode( rhs_expr, &rhs_cp ) ) )

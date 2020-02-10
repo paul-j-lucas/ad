@@ -36,8 +36,8 @@ ad_SOURCES = \
 	reverse.c \
 	slist.c slist.h \
 	types.c types.h \
-	util.c util.h \
-	utf8.c utf8.h
+	unicode.c unicode.h \
+	util.c util.h
 
 parser.output: parser.y
 	bison -v --report=all $<

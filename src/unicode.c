@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/utf8.c
+**      src/unicode.c
 **
 **      Copyright (C) 2015-2018  Paul J. Lucas
 **
@@ -21,7 +21,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #define AD_UTF8_INLINE _GL_EXTERN_INLINE
-#include "utf8.h"
+#include "unicode.h"
 #include "util.h"
 
 // standard
@@ -64,15 +64,14 @@ static inline bool utf16_is_high_surrogate( char16_t u16 ) {
 }
 
 static inline bool utf16_is_low_surrogate( char16_t u16 ) {
-  return (u16 & 0xFFFFFC00u) == 0xDC00u;
+  return (u16 & 0xFFFFFC00u) == CP_SURROGATE_LOW_START;
 }
 
 static inline bool utf16_is_surrogate( char16_t u16 ) {
   return u16 - CP_SURROGATE_HIGH_START < 2048u;
 }
 
-static inline codepoint_t utf16_surrogate_to_utf32( char16_t high,
-                                                    char16_t low ) {
+static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
   return (high << 10u) + low - 0x35FDC00u;
 }
 
@@ -96,18 +95,18 @@ bool should_utf8( utf8_when_t when ) {
 }
 
 bool utf16_decode( char16_t const *p16, size_t size16, ad_endian_t endian,
-                   codepoint_t *p32 ) {
+                   char32_t *p32 ) {
   assert( p16 != NULL );
   assert( p32 != NULL );
 
-  char16_t const *const end = p16 + size16;
-  while ( p16 < end ) {
+  char16_t const *const end16 = p16 + size16;
+  while ( p16 < end16 ) {
     char16_t const c16 = xx16_to_uint16( *p16++, endian );
     if ( likely( !utf16_is_surrogate( c16 ) ) ) {
       *p32++ = c16;
     }
     else if ( utf16_is_high_surrogate( c16 ) &&
-              p16 < end && utf16_is_low_surrogate( *p16 ) ) {
+              p16 < end16 && utf16_is_low_surrogate( *p16 ) ) {
       *p32 = utf16_surrogate_to_utf32( c16, *p16++ );
     }
     else {
@@ -126,8 +125,6 @@ char32_t utf8_decode_impl( char const *s ) {
   uint8_t const *u = (uint8_t const*)s;
 
   switch ( len ) {
-    case 6: cp += *u++; cp <<= 6; // FALLTHROUGH
-    case 5: cp += *u++; cp <<= 6; // FALLTHROUGH
     case 4: cp += *u++; cp <<= 6; // FALLTHROUGH
     case 3: cp += *u++; cp <<= 6; // FALLTHROUGH
     case 2: cp += *u++; cp <<= 6; // FALLTHROUGH
@@ -142,43 +139,42 @@ char32_t utf8_decode_impl( char const *s ) {
   return cp_is_valid( cp ) ? cp : CP_INVALID;
 }
 
-size_t utf8_encode( codepoint_t codepoint, char *p ) {
-  assert( p != NULL );
+size_t utf8_encode( char32_t cp, char *s ) {
+  assert( s != NULL );
 
   static unsigned const Mask1 = 0x80;
   static unsigned const Mask2 = 0xC0;
   static unsigned const Mask3 = 0xE0;
   static unsigned const Mask4 = 0xF0;
 
-  unsigned const n = codepoint & 0xFFFFFFFF;
-  char *const p0 = p;
-  if ( n < 0x80 ) {
+  char *const s0 = s;
+  if ( cp < 0x80 ) {
     // 0xxxxxxx
-    *p++ = STATIC_CAST(char, n);
+    *s++ = STATIC_CAST(char, cp);
   }
-  else if ( n < 0x800 ) {
+  else if ( cp < 0x800 ) {
     // 110xxxxx 10xxxxxx
-    *p++ = STATIC_CAST(char, Mask2 |  (n >>  6)        );
-    *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
+    *s++ = STATIC_CAST(char, Mask2 |  (cp >>  6)        );
+    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
   }
-  else if ( n < 0x10000 ) {
+  else if ( cp < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST(char, Mask3 |  (n >> 12)        );
-    *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
+    *s++ = STATIC_CAST(char, Mask3 |  (cp >> 12)        );
+    *s++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
+    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
   }
-  else if ( n < 0x200000 ) {
+  else if ( cp < 0x200000 ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST(char, Mask4 |  (n >> 18)        );
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 12) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
+    *s++ = STATIC_CAST(char, Mask4 |  (cp >> 18)        );
+    *s++ = STATIC_CAST(char, Mask1 | ((cp >> 12) & 0x3F));
+    *s++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
+    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
   }
   else {
     return (size_t)-1;
   }
 
-  return (size_t)(p - p0);
+  return (size_t)(s - s0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

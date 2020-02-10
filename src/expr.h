@@ -24,7 +24,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "types.h"
-#include "utf8.h"
+#include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
 

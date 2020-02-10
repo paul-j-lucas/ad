@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/utf8.h
+**      src/unicode.h
 **
 **      Copyright (C) 2015-2018  Paul J. Lucas
 **
@@ -32,26 +32,28 @@
 #include <string.h>                     /* for memcmp(3) */
 
 #if !HAVE_CHAR8_T
-typedef uint8_t char8_t;
+typedef uint8_t char8_t;                /* borrowed from C++20 */
 #endif /* !HAVE_CHAR8_T */
 #if !HAVE_CHAR16_T
-typedef uint16_t char16_t;
+typedef uint16_t char16_t;              /* C11's char16_t */
 #endif /* !HAVE_CHAR16_T */
 #if !HAVE_CHAR32_T
-typedef uint32_t char32_t;
+typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTF8_INLINE
-# define AD_UTF8_INLINE _GL_INLINE
-#endif /* AD_UTF8_INLINE */
+#ifndef AD_UNICODE_INLINE
+# define AD_UNICODE_INLINE _GL_INLINE
+#endif /* AD_UNICODE_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CP_INVALID                0x1FFFFu
-#define CP_SURROGATE_HIGH_START   0x00D800
-#define CP_SURROGATE_LOW_END      0x00DFFF
-#define CP_VALID_MAX              0x10FFFF
+#define CP_INVALID                0x01FFFFu
+#define CP_SURROGATE_HIGH_START   0x00D800u
+#define CP_SURROGATE_HIGH_END     0x00DBFFu
+#define CP_SURROGATE_LOW_START    0x00DC00u
+#define CP_SURROGATE_LOW_END      0x00DFFFu
+#define CP_VALID_MAX              0x10FFFFu
 #define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
 #define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
 
@@ -67,7 +69,6 @@ typedef enum utf8_when utf8_when_t;
 
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
-typedef uint32_t  codepoint_t;
 typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,19 +79,19 @@ typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
  * @param cp The Unicode code-point to check.
  * @return Returns \c true only if \a cp is an ASCII character.
  */
-AD_UTF8_INLINE bool cp_is_ascii( char32_t cp ) {
+AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
   return cp <= 0x7F;
 }
 
 /**
  * Checks whether the given Unicode code-point is valid.
  *
- * @param codepoint The Unicode code-point to check.
- * @return Returns \c true only if \a codepoint is valid.
+ * @param cp The Unicode code-point to check.
+ * @return Returns \c true only if \a cp is valid.
  */
-AD_UTF8_INLINE bool cp_is_valid( uint64_t codepoint ) {
-  return  codepoint < CP_SURROGATE_HIGH_START
-      || (codepoint > CP_SURROGATE_LOW_END && codepoint <= CP_VALID_MAX);
+AD_UNICODE_INLINE bool cp_is_valid( uint64_t cp ) {
+  return  cp < CP_SURROGATE_HIGH_START
+      || (cp > CP_SURROGATE_LOW_END && cp <= CP_VALID_MAX);
 }
 
 /**
@@ -111,7 +112,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns TODO
  */
 bool utf16_decode( char16_t const *u16, size_t u16_size, ad_endian_t endian,
-                   codepoint_t *u32 );
+                   char32_t *u32 );
 
 /**
  * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
@@ -121,22 +122,22 @@ bool utf16_decode( char16_t const *u16, size_t u16_size, ad_endian_t endian,
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
  */
-AD_UTF8_INLINE codepoint_t utf8_decode( char const *s ) {
-  extern codepoint_t utf8_decode_impl( char const* );
-  codepoint_t const cp = (uint8_t)*s;
+AD_UNICODE_INLINE char32_t utf8_decode( char const *s ) {
+  extern char32_t utf8_decode_impl( char const* );
+  char32_t const cp = (uint8_t)*s;
   return cp_is_ascii( cp ) ? cp : utf8_decode_impl( s );
 }
 
 /**
  * Encodes a Unicode codepoint into UTF-8.
  *
- * @param codepoint The Unicode code-point to encode.
+ * @param cp The Unicode code-point to encode.
  * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
  * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
  * @return Returns the number of bytes comprising the codepoint encoded as
  * UTF-8.
  */
-size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
+size_t utf8_encode( char32_t cp, char *utf8_buf );
 
 /**
  * Compares two UTF-8 characters for equality.
@@ -145,7 +146,7 @@ size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
  * @param u2 The second UTF-8 character.
  * @return Returns `true` only if \a u1 equals \a u2.
  */
-AD_UTF8_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
+AD_UNICODE_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
   return memcmp( u1, u2, u1[0] ) == 0;
 }
 
@@ -158,7 +159,7 @@ AD_UTF8_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-AD_UTF8_INLINE bool utf8_is_start( char c ) {
+AD_UNICODE_INLINE bool utf8_is_start( char c ) {
   unsigned char const u = (unsigned char)c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
 }
@@ -172,7 +173,7 @@ AD_UTF8_INLINE bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-AD_UTF8_INLINE bool utf8_is_cont( char c ) {
+AD_UNICODE_INLINE bool utf8_is_cont( char c ) {
   unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
 }
@@ -184,7 +185,7 @@ AD_UTF8_INLINE bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-AD_UTF8_INLINE size_t utf8_len( char start ) {
+AD_UNICODE_INLINE size_t utf8_len( char start ) {
   extern char const UTF8_LEN_TABLE[];
   return STATIC_CAST(
     size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]

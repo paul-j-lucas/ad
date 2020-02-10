@@ -23,7 +23,7 @@
 #include "color.h"
 #include "common.h"
 #include "options.h"
-#include "utf8.h"
+#include "unicode.h"
 
 // standard
 #include <assert.h>
@@ -302,11 +302,11 @@ dup_format:
  * @return Returns the Unicode code-point value
  * or prints an error message and exits if \a s is invalid.
  */
-static codepoint_t parse_codepoint( char const *s ) {
+static char32_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
   if ( s[0] != '\0' && s[1] == '\0' )   // assume single-char ASCII
-    return STATIC_CAST(codepoint_t, s[0]);
+    return STATIC_CAST(char32_t, s[0]);
 
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
@@ -314,9 +314,9 @@ static codepoint_t parse_codepoint( char const *s ) {
     char *const t = (char*)free_later( check_strdup( s ) );
     s = (char*)memcpy( t, "0x", 2 );
   }
-  uint64_t const codepoint = parse_ull( s );
-  if ( cp_is_valid( codepoint ) )
-    return STATIC_CAST(codepoint_t, codepoint);
+  uint64_t const cp = parse_ull( s );
+  if ( cp_is_valid( cp ) )
+    return STATIC_CAST(char32_t, cp);
 
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
@@ -547,7 +547,7 @@ void parse_options( int argc, char *argv[] ) {
   size_t        max_lines = 0;
   bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
-  codepoint_t   utf8_pad = 0;
+  char32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
   me = basename( argv[0] );
