@@ -57,6 +57,25 @@ char const UTF8_LEN_TABLE[] = {
   /* F */ 4,4,4,4,4,4,4,4,5,5,5,5,6,6,0,0
 };
 
+////////// inline functions ///////////////////////////////////////////////////
+
+static inline bool utf16_is_high_surrogate( char16_t u16 ) {
+  return (u16 & 0xFFFFFC00u) == CP_SURROGATE_HIGH_START;
+}
+
+static inline bool utf16_is_low_surrogate( char16_t u16 ) {
+  return (u16 & 0xFFFFFC00u) == 0xDC00u;
+}
+
+static inline bool utf16_is_surrogate( char16_t u16 ) {
+  return u16 - CP_SURROGATE_HIGH_START < 2048u;
+}
+
+static inline codepoint_t utf16_surrogate_to_utf32( char16_t high,
+                                                    char16_t low ) {
+  return (high << 10u) + low - 0x35FDC00u;
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool should_utf8( utf8_when_t when ) {
@@ -76,6 +95,53 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
+bool utf16_decode( char16_t const *p16, size_t size16, ad_endian_t endian,
+                   codepoint_t *p32 ) {
+  assert( p16 != NULL );
+  assert( p32 != NULL );
+
+  char16_t const *const end = p16 + size16;
+  while ( p16 < end ) {
+    char16_t const c16 = xx16_to_uint16( *p16++, endian );
+    if ( likely( !utf16_is_surrogate( c16 ) ) ) {
+      *p32++ = c16;
+    }
+    else if ( utf16_is_high_surrogate( c16 ) &&
+              p16 < end && utf16_is_low_surrogate( *p16 ) ) {
+      *p32 = utf16_surrogate_to_utf32( c16, *p16++ );
+    }
+    else {
+      return false;
+    }
+  } // while
+  return true;
+}
+
+char32_t utf8_decode_impl( char const *s ) {
+  assert( s != NULL );
+  size_t const len = utf8_len( *s );
+  assert( len >= 1 );
+
+  char32_t cp = 0;
+  uint8_t const *u = (uint8_t const*)s;
+
+  switch ( len ) {
+    case 6: cp += *u++; cp <<= 6; // FALLTHROUGH
+    case 5: cp += *u++; cp <<= 6; // FALLTHROUGH
+    case 4: cp += *u++; cp <<= 6; // FALLTHROUGH
+    case 3: cp += *u++; cp <<= 6; // FALLTHROUGH
+    case 2: cp += *u++; cp <<= 6; // FALLTHROUGH
+    case 1: cp += *u;
+  } // switch
+
+  static char32_t const OFFSET_TABLE[] = {
+    0, // unused
+    0x0, 0x3080, 0xE2080, 0x3C82080, 0xFA082080, 0x82082080
+  };
+  cp -= OFFSET_TABLE[ len ];
+  return cp_is_valid( cp ) ? cp : CP_INVALID;
+}
+
 size_t utf8_encode( codepoint_t codepoint, char *p ) {
   assert( p != NULL );
 
@@ -83,8 +149,6 @@ size_t utf8_encode( codepoint_t codepoint, char *p ) {
   static unsigned const Mask2 = 0xC0;
   static unsigned const Mask3 = 0xE0;
   static unsigned const Mask4 = 0xF0;
-  static unsigned const Mask5 = 0xF8;
-  static unsigned const Mask6 = 0xFC;
 
   unsigned const n = codepoint & 0xFFFFFFFF;
   char *const p0 = p;
@@ -110,23 +174,10 @@ size_t utf8_encode( codepoint_t codepoint, char *p ) {
     *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
     *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
   }
-  else if ( n < 0x4000000 ) {
-    // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST(char, Mask5 |  (n >> 24)        );
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 18) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 12) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
+  else {
+    return (size_t)-1;
   }
-  else if ( n < 0x8000000 ) {
-    // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST(char, Mask6 |  (n >> 30)        );
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 24) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 18) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >> 12) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ((n >>  6) & 0x3F));
-    *p++ = STATIC_CAST(char, Mask1 | ( n        & 0x3F));
-  }
+
   return (size_t)(p - p0);
 }
 

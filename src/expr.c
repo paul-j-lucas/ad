@@ -51,10 +51,10 @@
  * @param FIELD The expression field (`unary`, `binary`, or `ternary`).
  * @param VAR_PFX The prefix of the variable to create.
  */
-#define EVAL_EXPR(FIELD,VAR_PFX)                                          \
-  ad_expr_t VAR_PFX##_expr;                                               \
-  if ( !ad_expr_eval( expr->as.FIELD.VAR_PFX##_expr, &VAR_PFX##_expr ) )  \
-    return false;                                                         \
+#define EVAL_EXPR(FIELD,VAR_PFX)                                            \
+  ad_expr_t VAR_PFX##_expr;                                                 \
+  if ( !ad_expr_eval( expr->as.FIELD.VAR_PFX##_expr, &(VAR_PFX##_expr) ) )  \
+    return false;                                                           \
   assert( ad_expr_is_value( &VAR_PFX##_expr ) )
 
 /**
@@ -65,7 +65,7 @@
  * @param VAR_PFX The prefix of the type variable to create.
  */
 #define GET_BASE_TYPE(VAR_PFX) \
-  ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &VAR_PFX##_expr ); \
+  ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &(VAR_PFX##_expr) ); \
   if ( VAR_PFX##_type == T_ERROR ) \
     return false
 
@@ -89,6 +89,53 @@
   return false; )
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Compares two signed integers and returns -1, 0, or +1.
+ *
+ * @param i The first integer.
+ * @param j The second integer.
+ * @return Returns -1 if \a i &lt; \a j, 0 if \a i = \a j, or \a i &gt; \a j.
+ */
+static inline int int64_cmp( int64_t i, int64_t j ) {
+  int64_t const temp = i - j;
+  return temp < 0 ? -1 : temp > 0 ? +1 : 0;
+}
+
+static bool utf_decode( ad_expr_t const *expr, codepoint_t *cp ) {
+  switch ( expr->as.value.type.type_id ) {
+    case T_UTF8:
+      *cp = utf8_decode( (char const*)&expr->as.value.as.c32 );
+      break;
+    case T_UTF16:
+      return utf16_decode( &expr->as.value.as.c16, 1, ENDIAN_BIG, cp );
+    case T_UTF32:
+      *cp = expr->as.value.as.c32;
+      break;
+  } // switch
+  return true;
+}
+
+/**
+ * Compares the two Unicode code-points of two UTF expressions.
+ */
+static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
+  GET_BASE_TYPE( lhs );
+  GET_BASE_TYPE( rhs );
+
+  if ( lhs_type == rhs_type )
+    return int64_cmp(
+      (int64_t)lhs_expr->as.value.as.c32, (int64_t)rhs_expr->as.value.as.c32
+    );
+
+  codepoint_t lhs_cp, rhs_cp;
+  if ( unlikely( !utf_decode( lhs_expr, &lhs_cp ) ) )
+    /* TODO */;
+  if ( unlikely( !utf_decode( rhs_expr, &rhs_cp ) ) )
+    /* TODO */;
+
+  return int64_cmp( (int64_t)lhs_cp, (int64_t)rhs_cp );
+}
 
 /**
  * Compares \a d1 to \a d2 for equality.
@@ -757,6 +804,13 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
           ad_expr_set_b( rv,
             is_fequal( lhs_expr.as.value.as.f64, rhs_expr.as.value.as.f64 )
           );
+          break;
+      } // switch
+      break;
+    case T_UTF:
+      switch ( rhs_type ) {
+        case T_UTF:
+          ad_expr_set_b( rv, utf_cmp( &lhs_expr, &rhs_expr ) == 0 );
           break;
       } // switch
       break;

@@ -42,49 +42,6 @@ extern char const  *me;
 // local variable definitions
 static slist_t free_later_list;         ///< List of stuff to free later.
 
-/////////// inline functions //////////////////////////////////////////////////
-
-/**
- * Swaps the endianness of the given 16-bit value.
- *
- * @param n The 16-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-static inline uint16_t swap_16( uint16_t n ) {
-  return (uint16_t)((n >> 8)
-                  | (n << 8));
-}
-
-/**
- * Swaps the endianness of the given 32-bit value.
- *
- * @param n The 32-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-static inline uint32_t swap_32( uint32_t n ) {
-  return  ( n                >> 24)
-        | ((n & 0x00FF0000u) >>  8)
-        | ((n & 0x0000FF00u) <<  8)
-        | ( n                << 24);
-}
-
-/**
- * Swaps the endianness of the given 64-bit value.
- *
- * @param n The 64-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-static inline uint64_t swap_64( uint64_t n ) {
-  return  ( n                          >> 56)
-        | ((n & 0x00FF000000000000ull) >> 40)
-        | ((n & 0x0000FF0000000000ull) >> 24)
-        | ((n & 0x000000FF00000000ull) >>  8)
-        | ((n & 0x00000000FF000000ull) <<  8)
-        | ((n & 0x0000000000FF0000ull) << 24)
-        | ((n & 0x000000000000FF00ull) << 40)
-        | ( n                          << 56);
-}
-
 ////////// local functions ////////////////////////////////////////////////////
 
 /**

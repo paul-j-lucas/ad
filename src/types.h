@@ -29,16 +29,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if !HAVE_CHAR8_T
-typedef uint8_t char8_t;
-#endif /* !HAVE_CHAR8_T */
-#if !HAVE_CHAR16_T
-typedef uint16_t char16_t;
-#endif /* !HAVE_CHAR16_T */
-#if !HAVE_CHAR32_T
-typedef uint32_t char32_t;
-#endif /* !HAVE_CHAR32_T */
-
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_TYPES_INLINE
 # define AD_TYPES_INLINE _GL_INLINE

@@ -370,6 +370,143 @@ AD_UTIL_INLINE void regex_free( regex_t *re ) {
 bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
 
 /**
+ * Swaps the endianness of the given 16-bit value.
+ *
+ * @param n The 16-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+AD_UTIL_INLINE uint16_t swap_16( uint16_t n ) {
+  return (uint16_t)((n >> 8)
+                  | (n << 8));
+}
+
+/**
+ * Swaps the endianness of the given 32-bit value.
+ *
+ * @param n The 32-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+AD_UTIL_INLINE uint32_t swap_32( uint32_t n ) {
+  return  ( n                >> 24)
+        | ((n & 0x00FF0000u) >>  8)
+        | ((n & 0x0000FF00u) <<  8)
+        | ( n                << 24);
+}
+
+/**
+ * Swaps the endianness of the given 64-bit value.
+ *
+ * @param n The 64-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+AD_UTIL_INLINE uint64_t swap_64( uint64_t n ) {
+  return  ( n                          >> 56)
+        | ((n & 0x00FF000000000000ull) >> 40)
+        | ((n & 0x0000FF0000000000ull) >> 24)
+        | ((n & 0x000000FF00000000ull) >>  8)
+        | ((n & 0x00000000FF000000ull) <<  8)
+        | ((n & 0x0000000000FF0000ull) << 24)
+        | ((n & 0x000000000000FF00ull) << 40)
+        | ( n                          << 56);
+}
+
+/**
+ * Converts a big-endian 16-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint16_t be16_to_uint16( uint16_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return n;
+#else /* machine words are little endian */
+  return swap_16( n );
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a big-endian 32-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint32_t be32_to_uint32( uint32_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return n;
+#else /* machine words are little endian */
+  return swap_32( n );
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a big-endian 64-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint64_t be64_to_uint64( uint64_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return n;
+#else /* machine words are little endian */
+  return swap_64( n );
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a little-endian 16-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint16_t le16_to_uint16( uint16_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return swap_16( n );
+#else /* machine words are little endian */
+  return n;
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a little-endian 32-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint32_t le32_to_uint32( uint32_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return swap_32( n );
+#else /* machine words are little endian */
+  return n;
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a little-endian 64-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint64_t le64_to_uint64( uint64_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return swap_64( n );
+#else /* machine words are little endian */
+  return n;
+#endif /* WORDS_BIGENDIAN */
+}
+
+AD_UTIL_INLINE uint16_t xx16_to_uint16( uint16_t n, ad_endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? le16_to_uint16( n ) : be16_to_uint16( n );
+}
+
+AD_UTIL_INLINE uint32_t xx32_to_uint32( uint32_t n, ad_endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? le32_to_uint32( n ) : be32_to_uint32( n );
+}
+
+AD_UTIL_INLINE uint64_t xx64_to_uint64( uint64_t n, ad_endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? le64_to_uint64( n ) : be64_to_uint64( n );
+}
+
+/**
  * Converts a string to lower-case in-place.
  *
  * @param s The NULL-terminated string to convert.

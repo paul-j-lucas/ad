@@ -31,6 +31,16 @@
 #include <stddef.h>                     /* for size_t */
 #include <string.h>                     /* for memcmp(3) */
 
+#if !HAVE_CHAR8_T
+typedef uint8_t char8_t;
+#endif /* !HAVE_CHAR8_T */
+#if !HAVE_CHAR16_T
+typedef uint16_t char16_t;
+#endif /* !HAVE_CHAR16_T */
+#if !HAVE_CHAR32_T
+typedef uint32_t char32_t;
+#endif /* !HAVE_CHAR32_T */
+
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTF8_INLINE
 # define AD_UTF8_INLINE _GL_INLINE
@@ -38,10 +48,11 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define CP_INVALID                0x1FFFFu
 #define CP_SURROGATE_HIGH_START   0x00D800
 #define CP_SURROGATE_LOW_END      0x00DFFF
 #define CP_VALID_MAX              0x10FFFF
-#define UTF8_LEN_MAX              6       /* max bytes needed for UTF-8 char */
+#define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
 #define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
 
 /**
@@ -62,6 +73,16 @@ typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Checks whether \a cp is an ASCII character.
+ *
+ * @param cp The Unicode code-point to check.
+ * @return Returns \c true only if \a cp is an ASCII character.
+ */
+AD_UTF8_INLINE bool cp_is_ascii( char32_t cp ) {
+  return cp <= 0x7F;
+}
+
+/**
  * Checks whether the given Unicode code-point is valid.
  *
  * @param codepoint The Unicode code-point to check.
@@ -79,6 +100,32 @@ AD_UTF8_INLINE bool cp_is_valid( uint64_t codepoint ) {
  * @return Returns \c true only if we should do UTF-8.
  */
 bool should_utf8( utf8_when_t when );
+
+/**
+ * Decodes UTF-16 encoded characters into their corresponding Unicode code-
+ * points.
+ *
+ * @param u16 A pointer to the first byte of the UTF-16 encoded characters.
+ * @param u16_size The number of UTF-16 characters.
+ * @param u32 A pointer to receive the code-points.
+ * @return Returns TODO
+ */
+bool utf16_decode( char16_t const *u16, size_t u16_size, ad_endian_t endian,
+                   codepoint_t *u32 );
+
+/**
+ * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
+ * (This inline version is optimized for the common case of ASCII.)
+ *
+ * @param s A pointer to the first byte of the UTF-8 encoded character.
+ * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
+ * is invalid.
+ */
+AD_UTF8_INLINE codepoint_t utf8_decode( char const *s ) {
+  extern codepoint_t utf8_decode_impl( char const* );
+  codepoint_t const cp = (uint8_t)*s;
+  return cp_is_ascii( cp ) ? cp : utf8_decode_impl( s );
+}
 
 /**
  * Encodes a Unicode codepoint into UTF-8.
