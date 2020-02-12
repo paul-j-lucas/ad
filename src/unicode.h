@@ -112,22 +112,8 @@ bool should_utf8( utf8_when_t when );
  * @return Returns `true` only if the UTF-16 bytes were valid and decoded
  * successfully.
  */
-bool utf16_decode( char16_t const *u16, size_t u16_size, ad_endian_t endian,
-                   char32_t *u32 );
-
-/**
- * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
- * (This inline version is optimized for the common case of ASCII.)
- *
- * @param s A pointer to the first byte of the UTF-8 encoded character.
- * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
- * is invalid.
- */
-AD_UNICODE_INLINE char32_t utf8_decode( char const *s ) {
-  extern char32_t utf8_decode_impl( char const* );
-  char32_t const cp = (uint8_t)*s;
-  return cp_is_ascii( cp ) ? cp : utf8_decode_impl( s );
-}
+bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
+               char32_t *u32 );
 
 /**
  * Encodes a Unicode codepoint into UTF-8.
@@ -138,7 +124,21 @@ AD_UNICODE_INLINE char32_t utf8_decode( char const *s ) {
  * @return Returns the number of bytes comprising the codepoint encoded as
  * UTF-8.
  */
-size_t utf8_encode( char32_t cp, char *utf8_buf );
+size_t utf32_8( char32_t cp, char *utf8_buf );
+
+/**
+ * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
+ * (This inline version is optimized for the common case of ASCII.)
+ *
+ * @param s A pointer to the first byte of the UTF-8 encoded character.
+ * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
+ * is invalid.
+ */
+AD_UNICODE_INLINE char32_t utf8_32( char const *s ) {
+  extern char32_t utf8_32_impl( char const* );
+  char32_t const cp = (uint8_t)*s;
+  return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
+}
 
 /**
  * Gets the length of a UTF-8 character.

@@ -709,7 +709,7 @@ void parse_options( int argc, char *argv[] ) {
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
     static char utf8_pad_buf[ UTF8_LEN_MAX + 1 /*NULL*/ ];
-    utf8_encode( utf8_pad, utf8_pad_buf );
+    (void)utf32_8( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }
 }

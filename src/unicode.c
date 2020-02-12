@@ -94,14 +94,14 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
-bool utf16_decode( char16_t const *p16, size_t size16, ad_endian_t endian,
-                   char32_t *p32 ) {
+bool utf16_32( char16_t const *p16, size_t size16, ad_endian_t endian,
+               char32_t *p32 ) {
   assert( p16 != NULL );
   assert( p32 != NULL );
 
   char16_t const *const end16 = p16 + size16;
   while ( p16 < end16 ) {
-    char16_t const c16 = xx16_to_uint16( *p16++, endian );
+    char16_t const c16 = xx16_uint16( *p16++, endian );
     if ( likely( !utf16_is_surrogate( c16 ) ) ) {
       *p32++ = c16;
     }
@@ -116,7 +116,45 @@ bool utf16_decode( char16_t const *p16, size_t size16, ad_endian_t endian,
   return true;
 }
 
-char32_t utf8_decode_impl( char const *s ) {
+size_t utf32_8( char32_t cp, char *utf8_buf ) {
+  assert( utf8_buf != NULL );
+
+  static unsigned const Mask1 = 0x80;
+  static unsigned const Mask2 = 0xC0;
+  static unsigned const Mask3 = 0xE0;
+  static unsigned const Mask4 = 0xF0;
+
+  char *const buf_orig = utf8_buf;
+  if ( cp < 0x80 ) {
+    // 0xxxxxxx
+    *utf8_buf++ = STATIC_CAST(char, cp);
+  }
+  else if ( cp < 0x800 ) {
+    // 110xxxxx 10xxxxxx
+    *utf8_buf++ = STATIC_CAST(char, Mask2 |  (cp >>  6)        );
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+  }
+  else if ( cp < 0x10000 ) {
+    // 1110xxxx 10xxxxxx 10xxxxxx
+    *utf8_buf++ = STATIC_CAST(char, Mask3 |  (cp >> 12)        );
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+  }
+  else if ( cp < 0x200000 ) {
+    // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+    *utf8_buf++ = STATIC_CAST(char, Mask4 |  (cp >> 18)        );
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >> 12) & 0x3F));
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
+    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+  }
+  else {
+    return (size_t)-1;
+  }
+
+  return (size_t)(utf8_buf - buf_orig);
+}
+
+char32_t utf8_32_impl( char const *s ) {
   assert( s != NULL );
   size_t const len = utf8_len( *s );
   assert( len >= 1 );
@@ -137,44 +175,6 @@ char32_t utf8_decode_impl( char const *s ) {
   };
   cp -= OFFSET_TABLE[ len ];
   return cp_is_valid( cp ) ? cp : CP_INVALID;
-}
-
-size_t utf8_encode( char32_t cp, char *s ) {
-  assert( s != NULL );
-
-  static unsigned const Mask1 = 0x80;
-  static unsigned const Mask2 = 0xC0;
-  static unsigned const Mask3 = 0xE0;
-  static unsigned const Mask4 = 0xF0;
-
-  char *const s0 = s;
-  if ( cp < 0x80 ) {
-    // 0xxxxxxx
-    *s++ = STATIC_CAST(char, cp);
-  }
-  else if ( cp < 0x800 ) {
-    // 110xxxxx 10xxxxxx
-    *s++ = STATIC_CAST(char, Mask2 |  (cp >>  6)        );
-    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
-  }
-  else if ( cp < 0x10000 ) {
-    // 1110xxxx 10xxxxxx 10xxxxxx
-    *s++ = STATIC_CAST(char, Mask3 |  (cp >> 12)        );
-    *s++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
-    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
-  }
-  else if ( cp < 0x200000 ) {
-    // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *s++ = STATIC_CAST(char, Mask4 |  (cp >> 18)        );
-    *s++ = STATIC_CAST(char, Mask1 | ((cp >> 12) & 0x3F));
-    *s++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
-    *s++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
-  }
-  else {
-    return (size_t)-1;
-  }
-
-  return (size_t)(s - s0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -102,15 +102,49 @@ static inline int int32_cmp( int32_t i, int32_t j ) {
   return temp < 0 ? -1 : temp > 0 ? +1 : 0;
 }
 
-static bool utf_decode( ad_expr_t const *expr, char32_t *cp ) {
+/**
+ * Decodes a single Unicode code-point.
+ *
+ * @param expr The expression whose Unicode code-point to decode.
+ * @param cp A pointer to the code-point to be set.
+ * @return Returns the Unicode code-point or #CP_INVALID.
+ */
+static char32_t ad_expr_utf_decode( ad_expr_t const *expr ) {
+  char32_t cp;
+
   switch ( expr->as.value.type.type_id ) {
     case T_UTF8:
-      *cp = utf8_decode( (char const*)&expr->as.value.as.c32 );
+      return utf8_32( (char const*)&expr->as.value.as.c32 );
+    case T_UTF16_BE:
+      return utf16_32( &expr->as.value.as.c16, 1, ENDIAN_BIG, &cp ) ? cp : CP_INVALID;
+    case T_UTF16_LE:
+      return utf16_32( &expr->as.value.as.c16, 1, ENDIAN_LITTLE, &cp ) ? cp : CP_INVALID;
+    case T_UTF32_BE:
+    case T_UTF32_LE:
+      return expr->as.value.as.c32;
+    default:
+      return CP_INVALID;
+  } // switch
+}
+
+/**
+ * Decodes a null-terminated Unicode string into a null-terminated UTF-8
+ * string.
+ *
+ * @param ps8 A pointer to the pointer to receive the UTF-8 string.
+ * @return Returns `true` only if the entire Unicode string
+ */
+static bool ad_expr_utf_0_decode( ad_expr_t const *expr, char8_t **ps8 ) {
+  switch ( expr->as.value.type.type_id ) {
+    case T_UTF8_0:
+      *ps8 = expr->as.value.as.s8;
       break;
-    case T_UTF16:
-      return utf16_decode( &expr->as.value.as.c16, 1, ENDIAN_BIG, cp );
-    case T_UTF32:
-      *cp = expr->as.value.as.c32;
+    case T_UTF16_BE_0:
+    case T_UTF16_LE_0:
+      break;
+    case T_UTF32_BE_0:
+    case T_UTF32_LE_0:
+      // TODO: *ps8 = expr->as.value.as.s32;
       break;
   } // switch
   return true;
@@ -124,7 +158,8 @@ static bool utf_decode( ad_expr_t const *expr, char32_t *cp ) {
  * @return Returns -1 if \a lhs_expr &lt; \a rhs_expr, 0 if \a lhs_expr = \a
  * rhs_expr, or \a lhs_expr &gt; \a rhs_expr.
  */
-static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
+static int ad_expr_utf_cmp( ad_expr_t const *lhs_expr,
+                            ad_expr_t const *rhs_expr ) {
   ad_type_id_t const lhs_type = ad_expr_get_type( lhs_expr );
   ad_type_id_t const rhs_type = ad_expr_get_type( rhs_expr );
 
@@ -139,10 +174,11 @@ static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
   }
 
   char32_t lhs_cp, rhs_cp;
-  if ( unlikely( !utf_decode( lhs_expr, &lhs_cp ) ) )
-    /* TODO */;
-  if ( unlikely( !utf_decode( rhs_expr, &rhs_cp ) ) )
-    /* TODO */;
+  if ( unlikely( (lhs_cp = ad_expr_utf_decode( lhs_expr )) == CP_INVALID ) ||
+       unlikely( (rhs_cp = ad_expr_utf_decode( rhs_expr )) == CP_INVALID ) ) {
+    // TODO
+    return 0;
+  }
 
   return int32_cmp( (int32_t)lhs_cp, (int32_t)rhs_cp );
 }
@@ -152,7 +188,7 @@ static int utf_cmp( ad_expr_t const *lhs_expr, ad_expr_t const *rhs_expr ) {
  *
  * @param d1 The first `double` to check.
  * @param d2 The second `double` to check.
- * @return Returns `true` if \a d1 is approximately equal to \a d2.
+ * @return Returns `true` only if \a d1 is approximately equal to \a d2.
  */
 static inline bool is_fequal( double d1, double d2 ) {
   double const diff = fabs( d1 - d2 );
@@ -205,7 +241,8 @@ static void narrow( ad_expr_t *expr ) {
     case T_UINT64:
       expr->as.value.as.u64 = (uint64_t)expr->as.value.as.u64;
       break;
-    case T_UTF16:
+    case T_UTF16_BE:
+    case T_UTF16_LE:
       expr->as.value.as.u64 = (char16_t)expr->as.value.as.u64;
       break;
   } // switch
@@ -820,7 +857,7 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
     case T_UTF:
       switch ( rhs_type ) {
         case T_UTF:
-          ad_expr_set_b( rv, utf_cmp( &lhs_expr, &rhs_expr ) == 0 );
+          ad_expr_set_b( rv, ad_expr_utf_cmp( &lhs_expr, &rhs_expr ) == 0 );
           break;
       } // switch
       break;
