@@ -72,7 +72,7 @@ static inline bool utf16_is_surrogate( char16_t u16 ) {
 }
 
 static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
-  return (high << 10u) + low - 0x35FDC00u;
+  return (unsigned)(high << 10u) + low - 0x35FDC00u;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -101,7 +101,7 @@ bool utf16_32( char16_t const *p16, size_t size16, ad_endian_t endian,
 
   char16_t const *const end16 = p16 + size16;
   while ( p16 < end16 ) {
-    char16_t const c16 = xx16_uint16( *p16++, endian );
+    char16_t const c16 = uint16xx_host16( *p16++, endian );
     if ( likely( !utf16_is_surrogate( c16 ) ) ) {
       *p32++ = c16;
     }

@@ -103,13 +103,13 @@ static inline int int32_cmp( int32_t i, int32_t j ) {
 }
 
 /**
- * Decodes a single Unicode code-point.
+ * Decodes a single Unicode code-point to UTF-32.
  *
  * @param expr The expression whose Unicode code-point to decode.
  * @param cp A pointer to the code-point to be set.
  * @return Returns the Unicode code-point or #CP_INVALID.
  */
-static char32_t ad_expr_utf_decode( ad_expr_t const *expr ) {
+static char32_t ad_expr_utfxx_host32( ad_expr_t const *expr ) {
   char32_t cp;
 
   switch ( expr->as.value.type.type_id ) {
@@ -134,7 +134,7 @@ static char32_t ad_expr_utf_decode( ad_expr_t const *expr ) {
  * @param ps8 A pointer to the pointer to receive the UTF-8 string.
  * @return Returns `true` only if the entire Unicode string
  */
-static bool ad_expr_utf_0_decode( ad_expr_t const *expr, char8_t **ps8 ) {
+static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
   switch ( expr->as.value.type.type_id ) {
     case T_UTF8_0:
       *ps8 = expr->as.value.as.s8;
@@ -158,8 +158,8 @@ static bool ad_expr_utf_0_decode( ad_expr_t const *expr, char8_t **ps8 ) {
  * @return Returns -1 if \a lhs_expr &lt; \a rhs_expr, 0 if \a lhs_expr = \a
  * rhs_expr, or \a lhs_expr &gt; \a rhs_expr.
  */
-static int ad_expr_utf_cmp( ad_expr_t const *lhs_expr,
-                            ad_expr_t const *rhs_expr ) {
+static int ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
+                              ad_expr_t const *rhs_expr ) {
   ad_type_id_t const lhs_type = ad_expr_get_type( lhs_expr );
   ad_type_id_t const rhs_type = ad_expr_get_type( rhs_expr );
 
@@ -174,8 +174,8 @@ static int ad_expr_utf_cmp( ad_expr_t const *lhs_expr,
   }
 
   char32_t lhs_cp, rhs_cp;
-  if ( unlikely( (lhs_cp = ad_expr_utf_decode( lhs_expr )) == CP_INVALID ) ||
-       unlikely( (rhs_cp = ad_expr_utf_decode( rhs_expr )) == CP_INVALID ) ) {
+  if ( unlikely( (lhs_cp = ad_expr_utfxx_host32( lhs_expr )) == CP_INVALID ) ||
+       unlikely( (rhs_cp = ad_expr_utfxx_host32( rhs_expr )) == CP_INVALID ) ) {
     // TODO
     return 0;
   }
@@ -857,7 +857,7 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
     case T_UTF:
       switch ( rhs_type ) {
         case T_UTF:
-          ad_expr_set_b( rv, ad_expr_utf_cmp( &lhs_expr, &rhs_expr ) == 0 );
+          ad_expr_set_b( rv, ad_expr_utfxx_cmp( &lhs_expr, &rhs_expr ) == 0 );
           break;
       } // switch
       break;

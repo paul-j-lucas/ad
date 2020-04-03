@@ -416,39 +416,11 @@ AD_UTIL_INLINE uint64_t swap_64( uint64_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t be16_uint16( uint16_t n ) {
+AD_UTIL_INLINE uint16_t uint16be_host16( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return n;
 #else /* machine words are little endian */
   return swap_16( n );
-#endif /* WORDS_BIGENDIAN */
-}
-
-/**
- * Converts a big-endian 32-bit integer to the host's representation.
- *
- * @param n The integer to convert.
- * @return Returns \a n converted to the host's representation.
- */
-AD_UTIL_INLINE uint32_t be32_uint32( uint32_t n ) {
-#ifdef WORDS_BIGENDIAN
-  return n;
-#else /* machine words are little endian */
-  return swap_32( n );
-#endif /* WORDS_BIGENDIAN */
-}
-
-/**
- * Converts a big-endian 64-bit integer to the host's representation.
- *
- * @param n The integer to convert.
- * @return Returns \a n converted to the host's representation.
- */
-AD_UTIL_INLINE uint64_t be64_uint64( uint64_t n ) {
-#ifdef WORDS_BIGENDIAN
-  return n;
-#else /* machine words are little endian */
-  return swap_64( n );
 #endif /* WORDS_BIGENDIAN */
 }
 
@@ -458,37 +430,9 @@ AD_UTIL_INLINE uint64_t be64_uint64( uint64_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t le16_uint16( uint16_t n ) {
+AD_UTIL_INLINE uint16_t uint16le_host16( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return swap_16( n );
-#else /* machine words are little endian */
-  return n;
-#endif /* WORDS_BIGENDIAN */
-}
-
-/**
- * Converts a little-endian 32-bit integer to the host's representation.
- *
- * @param n The integer to convert.
- * @return Returns \a n converted to the host's representation.
- */
-AD_UTIL_INLINE uint32_t le32_uint32( uint32_t n ) {
-#ifdef WORDS_BIGENDIAN
-  return swap_32( n );
-#else /* machine words are little endian */
-  return n;
-#endif /* WORDS_BIGENDIAN */
-}
-
-/**
- * Converts a little-endian 64-bit integer to the host's representation.
- *
- * @param n The integer to convert.
- * @return Returns \a n converted to the host's representation.
- */
-AD_UTIL_INLINE uint64_t le64_uint64( uint64_t n ) {
-#ifdef WORDS_BIGENDIAN
-  return swap_64( n );
 #else /* machine words are little endian */
   return n;
 #endif /* WORDS_BIGENDIAN */
@@ -501,8 +445,36 @@ AD_UTIL_INLINE uint64_t le64_uint64( uint64_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t xx16_uint16( uint16_t n, ad_endian_t endian ) {
-  return endian == ENDIAN_LITTLE ? le16_uint16( n ) : be16_uint16( n );
+AD_UTIL_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? uint16le_host16( n ) : uint16be_host16( n );
+}
+
+/**
+ * Converts a big-endian 32-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint32_t uint32be_host32( uint32_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return n;
+#else /* machine words are little endian */
+  return swap_32( n );
+#endif /* WORDS_BIGENDIAN */
+}
+
+/**
+ * Converts a little-endian 32-bit integer to the host's representation.
+ *
+ * @param n The integer to convert.
+ * @return Returns \a n converted to the host's representation.
+ */
+AD_UTIL_INLINE uint32_t uint32le_host32( uint32_t n ) {
+#ifdef WORDS_BIGENDIAN
+  return swap_32( n );
+#else /* machine words are little endian */
+  return n;
+#endif /* WORDS_BIGENDIAN */
 }
 
 /**
@@ -512,19 +484,8 @@ AD_UTIL_INLINE uint16_t xx16_uint16( uint16_t n, ad_endian_t endian ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint32_t xx32_uint32( uint32_t n, ad_endian_t endian ) {
-  return endian == ENDIAN_LITTLE ? le32_uint32( n ) : be32_uint32( n );
-}
-
-/**
- * Converts a specified endian 64-bit integer to the host's representation.
- *
- * @param n The integer to convert.
- * @param endian The endianness of \a n.
- * @Returns \a n converted to the host's representation.
- */
-AD_UTIL_INLINE uint64_t xx64_uint64( uint64_t n, ad_endian_t endian ) {
-  return endian == ENDIAN_LITTLE ? le64_uint64( n ) : be64_uint64( n );
+AD_UTIL_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? uint32le_host32( n ) : uint32be_host32( n );
 }
 
 /**
