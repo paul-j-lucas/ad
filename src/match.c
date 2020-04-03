@@ -50,6 +50,7 @@ static void         unget_byte( uint8_t );
  * @param pbyte A pointer to the byte to receive the newly read byte.
  * @return Returns \c true if a byte was read successfully.
  */
+AD_WARN_UNUSED_RESULT
 static bool get_byte( uint8_t *pbyte ) {
   if ( likely( total_bytes_read < opt_max_bytes ) ) {
     int const c = getc( fin );
@@ -77,6 +78,7 @@ static bool get_byte( uint8_t *pbyte ) {
  * It must be at least as large as the search buffer.
  * @return Returns \c true if a byte was read successfully.
  */
+AD_WARN_UNUSED_RESULT
 static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
                         uint8_t *match_buf ) {
   enum state {

@@ -65,7 +65,8 @@ typedef uint32_t codepoint_t;
  * @param codepoint The Unicode code-point to check.
  * @return Returns \c true only if \a codepoint is valid.
  */
-AD_UTF8_INLINE bool is_codepoint_valid( uint64_t codepoint ) {
+AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+bool is_codepoint_valid( uint64_t codepoint ) {
   return  codepoint < CP_SURROGATE_HIGH_START
       || (codepoint > CP_SURROGATE_LOW_END && codepoint <= CP_VALID_MAX);
 }
@@ -76,6 +77,7 @@ AD_UTF8_INLINE bool is_codepoint_valid( uint64_t codepoint ) {
  * @param when The UTF-8 when value.
  * @return Returns \c true only if we should do UTF-8.
  */
+AD_WARN_UNUSED_RESULT
 bool should_utf8( utf8_when_t when );
 
 /**
@@ -87,6 +89,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns the number of bytes comprising the codepoint encoded as
  * UTF-8.
  */
+AD_NOWARN_UNUSED_RESULT
 size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
 
 /**
@@ -98,7 +101,8 @@ size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-AD_UTF8_INLINE bool utf8_is_start( char c ) {
+AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+bool utf8_is_start( char c ) {
   unsigned char const u = (unsigned char)c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
 }
@@ -112,7 +116,8 @@ AD_UTF8_INLINE bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-AD_UTF8_INLINE bool utf8_is_cont( char c ) {
+AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+bool utf8_is_cont( char c ) {
   unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
 }
@@ -124,7 +129,8 @@ AD_UTF8_INLINE bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-AD_UTF8_INLINE size_t utf8_len( char start ) {
+AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+size_t utf8_len( char start ) {
   extern char const UTF8_LEN_TABLE[];
   return STATIC_CAST(
     size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]

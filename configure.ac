@@ -61,6 +61,7 @@ AC_TYPE_UINT8_T
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
+PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute((unused)) = 1;])
 
 # Checks for library functions.
 AC_FUNC_FSEEKO
@@ -69,6 +70,9 @@ AC_CHECK_FUNCS([basename fgetln getline nl_langinfo setlocale strdup strerror st
 
 # Miscellaneous.
 AC_LANG(C)
+AX_C___ATTRIBUTE__
+
+# Compiler warnings.
 AX_CFLAGS_WARN_ALL
 AX_CFLAGS_GCC_OPTION([-Wcast-align])
 AX_CFLAGS_GCC_OPTION([-Wcomma])

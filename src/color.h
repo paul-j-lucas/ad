@@ -88,6 +88,7 @@ extern char const  *sgr_ascii_match;    // ASCII match color
  * @param sgr_color An SGR color to parse.
  * @return Returns \c true only if the value was parsed successfully.
  */
+AD_WARN_UNUSED_RESULT
 bool parse_grep_color( char const *sgr_color );
 
 /**
@@ -97,6 +98,7 @@ bool parse_grep_color( char const *sgr_color );
  * @return Returns \c true only if at least one capability was parsed
  * successfully.
  */
+AD_WARN_UNUSED_RESULT
 bool parse_grep_colors( char const *capabilities );
 
 /**
@@ -105,6 +107,7 @@ bool parse_grep_colors( char const *capabilities );
  * @param c The color_when value.
  * @return Returns \c true only if we should do color.
  */
+AD_WARN_UNUSED_RESULT
 bool should_colorize( color_when_t c );
 
 ///////////////////////////////////////////////////////////////////////////////

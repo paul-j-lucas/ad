@@ -60,6 +60,7 @@ static free_node_t *free_head;          // linked list of stuff to free
  * @param n The 16-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
+AD_WARN_UNUSED_RESULT
 static inline uint16_t swap_16( uint16_t n ) {
   return (uint16_t)((n >> 8)
                   | (n << 8));
@@ -71,6 +72,7 @@ static inline uint16_t swap_16( uint16_t n ) {
  * @param n The 32-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
+AD_WARN_UNUSED_RESULT
 static inline uint32_t swap_32( uint32_t n ) {
   return  ( n                >> 24)
         | ((n & 0x00FF0000u) >>  8)
@@ -84,6 +86,7 @@ static inline uint32_t swap_32( uint32_t n ) {
  * @param n The 64-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
+AD_WARN_UNUSED_RESULT
 static inline uint64_t swap_64( uint64_t n ) {
   return  ( n                          >> 56)
         | ((n & 0x00FF000000000000ull) >> 40)
@@ -105,6 +108,7 @@ static inline uint64_t swap_64( uint64_t n ) {
  * character or pointing to the NULL byte if either \a s was all whitespace or
  * empty.
  */
+AD_WARN_UNUSED_RESULT
 static char const* skip_ws( char const *s ) {
   assert( s != NULL );
   while ( isspace( *s ) )
