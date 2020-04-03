@@ -66,6 +66,7 @@ static char const* regex_error( regex_t *re, int err_code ) {
  * character or pointing to the NULL byte if either \a s was all whitespace or
  * empty.
  */
+AD_WARN_UNUSED_RESULT
 static char const* skip_ws( char const *s ) {
   assert( s != NULL );
   while ( isspace( *s ) )

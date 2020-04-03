@@ -89,7 +89,8 @@ AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
  * @param cp The Unicode code-point to check.
  * @return Returns \c true only if \a cp is valid.
  */
-AD_UNICODE_INLINE bool cp_is_valid( uint64_t cp ) {
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+bool cp_is_valid( uint64_t cp ) {
   return  cp < CP_SURROGATE_HIGH_START
       || (cp > CP_SURROGATE_LOW_END && cp <= CP_VALID_MAX);
 }
@@ -100,6 +101,7 @@ AD_UNICODE_INLINE bool cp_is_valid( uint64_t cp ) {
  * @param when The UTF-8 when value.
  * @return Returns \c true only if we should do UTF-8.
  */
+AD_WARN_UNUSED_RESULT
 bool should_utf8( utf8_when_t when );
 
 /**
@@ -141,20 +143,6 @@ AD_UNICODE_INLINE char32_t utf8_32( char const *s ) {
 }
 
 /**
- * Gets the length of a UTF-8 character.
- *
- * @param start The start byte of a UTF-8 byte sequence.
- * @return Returns the number of bytes needed for the UTF-8 character in the
- * range [1,6] or 0 if \a start is not a valid start byte.
- */
-AD_UNICODE_INLINE size_t utf8_len( char start ) {
-  extern uint8_t const UTF8_LEN_TABLE[];
-  return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
-  );
-}
-
-/**
  * Compares two UTF-8 characters for equality.
  *
  * @param u1 The first UTF-8 character.
@@ -175,7 +163,8 @@ AD_UNICODE_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-AD_UNICODE_INLINE bool utf8_is_start( char c ) {
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+bool utf8_is_start( char c ) {
   unsigned char const u = (unsigned char)c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
 }
@@ -189,9 +178,25 @@ AD_UNICODE_INLINE bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-AD_UNICODE_INLINE bool utf8_is_cont( char c ) {
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+bool utf8_is_cont( char c ) {
   unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
+}
+
+/**
+ * Gets the length of a UTF-8 character.
+ *
+ * @param start The start byte of a UTF-8 byte sequence.
+ * @return Returns the number of bytes needed for the UTF-8 character in the
+ * range [1,6] or 0 if \a start is not a valid start byte.
+ */
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+size_t utf8_len( char start ) {
+  extern uint8_t const UTF8_LEN_TABLE[];
+  return STATIC_CAST(
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
+  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

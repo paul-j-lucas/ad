@@ -74,6 +74,7 @@ PJL_CHECK_TYPEDEF(char32_t,[uchar.h],
   AC_DEFINE([HAVE_CHAR32_T], [1], [Define to 1 if `char32_t' is supported.]),
   AC_DEFINE([HAVE_CHAR32_T], [0], [Define to 1 if `char32_t' is supported.])
 )
+PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute((unused)) = 1;])
 
 # Checks for library functions.
 AC_FUNC_FSEEKO
@@ -82,6 +83,9 @@ AC_CHECK_FUNCS([basename fgetln getline nl_langinfo setlocale strdup strerror st
 
 # Miscellaneous.
 AC_LANG(C)
+AX_C___ATTRIBUTE__
+
+# Compiler warnings.
 AX_CFLAGS_WARN_ALL
 AX_CFLAGS_GCC_OPTION([-Wcast-align])
 AX_CFLAGS_GCC_OPTION([-Wcomma])

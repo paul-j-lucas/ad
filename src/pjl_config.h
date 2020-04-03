@@ -27,6 +27,8 @@
  * `#include` this file rather than `config.h` directly.
  */
 
+///////////////////////////////////////////////////////////////////////////////
+
 /// @cond DOXYGEN_IGNORE
 
 #ifdef __APPLE__
@@ -62,6 +64,51 @@
 
 // local
 #include "config.h"                     /* must go first */
+
+////////// compiler attributes ////////////////////////////////////////////////
+
+#ifdef HAVE___ATTRIBUTE__
+
+/**
+ * Denote that a function does not return.
+ */
+#define AD_NORETURN               __attribute__ ((noreturn))
+
+/**
+ * Denote that a function's return value should never be ignored.
+ *
+ * @sa #AD_NOWARN_UNUSED_RESULT
+ */
+#define AD_WARN_UNUSED_RESULT     __attribute__ ((warn_unused_result))
+
+#else
+#define AD_NORETURN               /* nothing */
+#define AD_WARN_UNUSED_RESULT     /* nothing */
+#endif /* HAVE___ATTRIBUTE__ */
+
+/**
+ * Denote that a function's return value may be ignored without warning.
+ *
+ * @note
+ * There is no compiler attribute for this.  It's just a visual cue in code
+ * that #C_WARN_UNUSED_RESULT wasn't forgotten.
+ */
+#define AD_NOWARN_UNUSED_RESULT   /* nothing */
+
+#ifdef HAVE___TYPEOF__
+/**
+ * Ignore the return value of a function even if it was declared with
+ * #C_WARN_UNUSED_RESULT.
+ *
+ * @param FN_CALL The function call.
+ */
+#define AD_IGNORE_RV(FN_CALL) \
+  do { __typeof__(FN_CALL) _rv __attribute__((unused)) = (FN_CALL); } while (0)
+#else
+#define AD_IGNORE_RV(FN_CALL)     do { (void)(FN_CALL); } while (0)
+#endif /* HAVE___TYPEOF__ */
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif /* pjl_config_H */
 /* vim:set et sw=2 ts=2: */

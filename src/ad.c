@@ -51,9 +51,9 @@ size_t row_bytes = ROW_BYTES_DEFAULT;
 static void clean_up( void ) {
   free_now();
   if ( fin != NULL )
-    fclose( fin );
+    (void)fclose( fin );
   if ( fout != NULL )
-    fclose( fout );
+    (void)fclose( fout );
 }
 
 /**
