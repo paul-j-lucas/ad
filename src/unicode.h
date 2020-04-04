@@ -114,6 +114,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns `true` only if the UTF-16 bytes were valid and decoded
  * successfully.
  */
+AD_WARN_UNUSED_RESULT
 bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
                char32_t *u32 );
 
@@ -126,6 +127,7 @@ bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
  * @return Returns the number of bytes comprising the codepoint encoded as
  * UTF-8.
  */
+AD_WARN_UNUSED_RESULT
 size_t utf32_8( char32_t cp, char *utf8_buf );
 
 /**
@@ -136,7 +138,8 @@ size_t utf32_8( char32_t cp, char *utf8_buf );
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
  */
-AD_UNICODE_INLINE char32_t utf8_32( char const *s ) {
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
   char32_t const cp = (uint8_t)*s;
   return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
@@ -149,7 +152,8 @@ AD_UNICODE_INLINE char32_t utf8_32( char const *s ) {
  * @param u2 The second UTF-8 character.
  * @return Returns `true` only if \a u1 equals \a u2.
  */
-AD_UNICODE_INLINE bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
   extern uint8_t const UTF8_LEN_TABLE[];
   return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
 }
