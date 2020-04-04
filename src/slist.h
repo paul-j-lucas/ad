@@ -144,6 +144,7 @@ struct slist_node {
  * @return Returns a number less than 0, 0, or greater than 0 if \a list_i is
  * less than, equal to, or greater than \a list_j, respectively.
  */
+AD_WARN_UNUSED_RESULT
 int slist_cmp( slist_t const *list_i, slist_t const *list_j,
                slist_node_data_cmp_fn_t data_cmp_fn );
 
@@ -159,6 +160,7 @@ int slist_cmp( slist_t const *list_i, slist_t const *list_j,
  * will be done).
  * @return Returns a duplicate of \a src.
  */
+AD_WARN_UNUSED_RESULT
 slist_t slist_dup( slist_t const *src, ssize_t n,
                    slist_data_dup_fn_t data_dup_fn,
                    slist_node_data_dup_fn_t node_data_dup_fn );
@@ -169,7 +171,8 @@ slist_t slist_dup( slist_t const *src, ssize_t n,
  * @param list A pointer to the <code>\ref slist</code> to check.
  * @return Returns `true` only if \a list is empty.
  */
-AD_SLIST_INLINE bool slist_empty( slist_t const *list ) {
+AD_WARN_UNUSED_RESULT AD_SLIST_INLINE
+bool slist_empty( slist_t const *list ) {
   return list->head == NULL;
 }
 
@@ -196,7 +199,8 @@ void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
  * @sa SLIST_HEAD()
  * @sa slist_tail()
  */
-AD_SLIST_INLINE void* slist_head( slist_t const *list ) {
+AD_WARN_UNUSED_RESULT AD_SLIST_INLINE
+void* slist_head( slist_t const *list ) {
   return list->head != NULL ? list->head->data : NULL;
 }
 
@@ -221,7 +225,8 @@ AD_SLIST_INLINE void* slist_head( slist_t const *list ) {
  *
  * @param list A pointer to the <code>\ref slist</code> to initialize.
  */
-AD_SLIST_INLINE void slist_init( slist_t *list ) {
+AD_SLIST_INLINE
+void slist_init( slist_t *list ) {
   MEM_ZERO( list );
 }
 
@@ -231,7 +236,8 @@ AD_SLIST_INLINE void slist_init( slist_t *list ) {
  * @param list A pointer to the <code>\ref slist</code> to get the length of.
  * @return Returns said length.
  */
-AD_SLIST_INLINE size_t slist_len( slist_t const *list ) {
+AD_WARN_UNUSED_RESULT AD_SLIST_INLINE
+size_t slist_len( slist_t const *list ) {
   return list->len;
 }
 
@@ -246,6 +252,7 @@ AD_SLIST_INLINE size_t slist_len( slist_t const *list ) {
  * @sa SLIST_PEEK_AT()
  * @sa slist_peek_atr()
  */
+AD_WARN_UNUSED_RESULT
 void* slist_peek_at( slist_t const *list, size_t offset );
 
 /**
@@ -275,7 +282,8 @@ void* slist_peek_at( slist_t const *list, size_t offset );
  * @sa slist_peek_at()
  * @sa SLIST_PEEK_ATR()
  */
-AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
+AD_WARN_UNUSED_RESULT AD_SLIST_INLINE
+void* slist_peek_atr( slist_t const *list, size_t roffset ) {
   return roffset < list->len ?
     slist_peek_at( list, list->len - (roffset + 1) ) : NULL;
 }
@@ -305,6 +313,7 @@ AD_SLIST_INLINE void* slist_peek_atr( slist_t const *list, size_t roffset ) {
  *
  * @sa SLIST_POP_HEAD()
  */
+AD_WARN_UNUSED_RESULT
 void* slist_pop_head( slist_t *list );
 
 /**
@@ -376,7 +385,8 @@ void slist_push_tail( slist_t *list, void *data );
  * @sa slist_head()
  * @sa SLIST_TAIL()
  */
-AD_SLIST_INLINE void* slist_tail( slist_t const *list ) {
+AD_WARN_UNUSED_RESULT AD_SLIST_INLINE
+void* slist_tail( slist_t const *list ) {
   return list->tail != NULL ? list->tail->data : NULL;
 }
 
