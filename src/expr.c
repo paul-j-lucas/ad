@@ -132,7 +132,7 @@ static char32_t ad_expr_utfxx_host32( ad_expr_t const *expr ) {
  * string.
  *
  * @param ps8 A pointer to the pointer to receive the UTF-8 string.
- * @return Returns `true` only if the entire Unicode string
+ * @return Returns `true` only if the entire Unicode string TODO.
  */
 static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
   switch ( expr->as.value.type.type_id ) {
@@ -155,11 +155,13 @@ static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
  *
  * @param lhs_expr The left-hand-side expression.
  * @param rhs_expr The right-hand-side expression.
- * @return Returns -1 if \a lhs_expr &lt; \a rhs_expr, 0 if \a lhs_expr = \a
+ * @param cmp Set to -1 if \a lhs_expr &lt; \a rhs_expr, 0 if \a lhs_expr = \a
  * rhs_expr, or \a lhs_expr &gt; \a rhs_expr.
+ * @return Returns `true` only if there was no error during UTF-8 decoding.
  */
-static int ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
-                              ad_expr_t const *rhs_expr ) {
+static bool ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
+                               ad_expr_t const *rhs_expr,
+                               int *cmp ) {
   ad_type_id_t const lhs_type = ad_expr_get_type( lhs_expr );
   ad_type_id_t const rhs_type = ad_expr_get_type( rhs_expr );
 
@@ -168,19 +170,20 @@ static int ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
     // The Unicode encoding of the left- and right-hand sides matches so we can
     // compare them directly.
     //
-    return int32_cmp(
+    *cmp = int32_cmp(
       (int32_t)lhs_expr->as.value.as.c32, (int32_t)rhs_expr->as.value.as.c32
     );
+    return true;
   }
 
   char32_t lhs_cp, rhs_cp;
   if ( unlikely( (lhs_cp = ad_expr_utfxx_host32( lhs_expr )) == CP_INVALID ) ||
        unlikely( (rhs_cp = ad_expr_utfxx_host32( rhs_expr )) == CP_INVALID ) ) {
-    // TODO
-    return 0;
+    return false;
   }
 
-  return int32_cmp( (int32_t)lhs_cp, (int32_t)rhs_cp );
+  *cmp = int32_cmp( (int32_t)lhs_cp, (int32_t)rhs_cp );
+  return true;
 }
 
 /**
@@ -856,9 +859,13 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
     case T_UTF:
       switch ( rhs_type ) {
-        case T_UTF:
-          ad_expr_set_b( rv, ad_expr_utfxx_cmp( &lhs_expr, &rhs_expr ) == 0 );
+        case T_UTF: {
+          int cmp;
+          if ( !ad_expr_utfxx_cmp( &lhs_expr, &rhs_expr, &cmp ) )
+            RETURN_ERR( BAD_OPERAND );
+          ad_expr_set_b( rv, cmp == 0 );
           break;
+        }
       } // switch
       break;
   } // switch
