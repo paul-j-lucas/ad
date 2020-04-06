@@ -91,7 +91,7 @@
  *
  * @note
  * There is no compiler attribute for this.  It's just a visual cue in code
- * that #C_WARN_UNUSED_RESULT wasn't forgotten.
+ * that #AD_WARN_UNUSED_RESULT wasn't forgotten.
  */
 #define AD_NOWARN_UNUSED_RESULT   /* nothing */
 
