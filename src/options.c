@@ -581,7 +581,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
-                // FALLTHROUGH
+                AD_FALLTHROUGH;
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += (off_t)parse_offset( optarg );            break;
       case 'L': max_lines = parse_ull( optarg );                        break;
@@ -689,11 +689,11 @@ void parse_options( int argc, char *argv[] ) {
         //
         fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
       }
-      // FALLTHROUGH
+      AD_FALLTHROUGH;
 
     case 1:                             // infile only
       fin_path = argv[1];
-      // FALLTHROUGH
+      AD_FALLTHROUGH;
 
     case 0:
       if ( strcmp( fin_path, "-" ) == 0 )

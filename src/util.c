@@ -271,14 +271,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
       switch ( bytes ) {
         case 1: /* do nothing */              break;
         case 2: *n = swap_16( (uint16_t)*n ); break;
-        case 3: *n <<= 8;                     // FALLTHROUGH
+        case 3: *n <<= 8;                     AD_FALLTHROUGH;
         case 4: *n = swap_32( (uint32_t)*n ); break;
-        case 5: *n <<= 8;                     // FALLTHROUGH
-        case 6: *n <<= 8;                     // FALLTHROUGH
-        case 7: *n <<= 8;                     // FALLTHROUGH
+        case 5: *n <<= 8;                     AD_FALLTHROUGH;
+        case 6: *n <<= 8;                     AD_FALLTHROUGH;
+        case 7: *n <<= 8;                     AD_FALLTHROUGH;
         case 8: *n = swap_64( *n );           break;
       } // switch
-      // FALLTHROUGH
+      AD_FALLTHROUGH;
 
     case ENDIAN_BIG:
       // move bytes to start of buffer
