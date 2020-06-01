@@ -35,7 +35,7 @@
 //
 // From config.h:
 //
-//    Suppress extern inline (with or without __attribute__ ((__gnu_inline__)))
+//    Suppress extern inline (with or without __attribute__((__gnu_inline__)))
 //    on configurations that mistakenly use 'static inline' to implement
 //    functions or macros in standard C headers like <ctype.h>.  For example,
 //    if isdigit is mistakenly implemented via a static inline function, a
@@ -65,26 +65,53 @@
 // local
 #include "config.h"                     /* must go first */
 
+#ifndef __has_attribute
+# define __has_attribute(X)       0
+#endif
+
+#if defined(__GNUC__) && !(defined(__clang__) || defined(__INTEL_COMPILER))
+# define GCC_AT_LEAST_VERSION(MAJOR,MINOR) \
+    (__GNUC__ > (MAJOR) || (__GNUC__ == (MAJOR) && __GNUC_MINOR__ >= (MINOR)))
+#else
+# define GCC_AT_LEAST_VERSION(MAJOR,MINOR) 0
+#endif
+
 ////////// compiler attributes ////////////////////////////////////////////////
 
 #ifdef HAVE___ATTRIBUTE__
 
 /**
+ * Intentionally fall through to the next `switch` `case`.
+ */
+#if __has_attribute(fallthrough) || GCC_AT_LEAST_VERSION(7,0)
+#define AD_FALLTHROUGH            __attribute__((fallthrough))
+#endif
+
+/**
  * Denote that a function does not return.
  */
-#define AD_NORETURN               __attribute__ ((noreturn))
+#define AD_NORETURN               __attribute__((noreturn))
 
 /**
  * Denote that a function's return value should never be ignored.
  *
  * @sa #AD_NOWARN_UNUSED_RESULT
  */
-#define AD_WARN_UNUSED_RESULT     __attribute__ ((warn_unused_result))
+#define AD_WARN_UNUSED_RESULT     __attribute__((warn_unused_result))
 
-#else
-#define AD_NORETURN               /* nothing */
-#define AD_WARN_UNUSED_RESULT     /* nothing */
 #endif /* HAVE___ATTRIBUTE__ */
+
+#ifndef AD_FALLTHROUGH
+# define AD_FALLTHROUGH           ((void)0)
+#endif /* AD_FALLTHROUGH */
+
+#ifndef AD_NORETURN
+# define AD_NORETURN              /* nothing */
+#endif /* AD_NORETURN */
+
+#ifndef AD_WARN_UNUSED_RESULT
+# define AD_WARN_UNUSED_RESULT    /* nothing */
+#endif /* AD_WARN_UNUSED_RESULT */
 
 /**
  * Denote that a function's return value may be ignored without warning.
