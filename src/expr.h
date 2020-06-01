@@ -202,7 +202,7 @@ struct ad_expr {
  *
  * @param expr The expression to evaluate.
  * @param rv The evaluated expression's value.
- * @return Returns `true` only i the evaluation succeeded.
+ * @return Returns `true` only if the evaluation succeeded.
  */
 AD_WARN_UNUSED_RESULT
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv );
