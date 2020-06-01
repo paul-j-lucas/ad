@@ -129,17 +129,18 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct  ad_char     ad_char_t;
-typedef struct  ad_expr     ad_expr_t;
-typedef struct  ad_int      ad_int_t;
-typedef enum    ad_int_base ad_int_base_t;
-typedef struct  ad_struct   ad_struct_t;
-typedef struct  ad_switch   ad_switch_t;
-typedef struct  slist       ad_switch_cases_t;
-typedef struct  ad_type     ad_type_t;
-typedef uint16_t            ad_type_id_t;
-typedef unsigned short      ad_type_size_t;
-typedef struct   slist      ad_type_list_t;
+typedef struct  ad_char       ad_char_t;
+typedef struct  ad_expr       ad_expr_t;
+typedef struct  ad_int        ad_int_t;
+typedef enum    ad_int_base   ad_int_base_t;
+typedef enum    ad_rep_times  ad_rep_times_t;
+typedef struct  ad_struct     ad_struct_t;
+typedef struct  ad_switch     ad_switch_t;
+typedef struct  slist         ad_switch_cases_t;
+typedef struct  ad_type       ad_type_t;
+typedef uint16_t              ad_type_id_t;
+typedef unsigned short        ad_type_size_t;
+typedef struct   slist        ad_type_list_t;
 
 /**
  * Integer base (for printing).
@@ -196,6 +197,18 @@ struct ad_type {
     ad_struct_t   ad_struct;
     ad_switch_t   ad_switch;
   } as;                                 ///< Union discriminator.
+};
+
+enum ad_rep_times {
+  AD_REPETITION_EXPR,
+  AD_REPETITION_0_1,
+  AD_REPETITION_0_MORE,
+  AD_REPETITION_1_MORE
+};
+
+struct ad_rep {
+  ad_rep_times_t  times;
+  ad_expr_t       expr;                 ///< Used only if times == AD_REPETITION_EXPR
 };
 
 ////////// extern functions ///////////////////////////////////////////////////

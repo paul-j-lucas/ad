@@ -241,8 +241,8 @@ static void yyerror( char const *msg ) {
   unsigned            bitmask;    /* multipurpose bitmask (used by show) */
   char const         *literal;    /* token literal (for new-style casts) */
   char               *name;       /* name being declared or explained */
+  ad_repitition_t     repetition;
   int                 number;     /* for array sizes */
-  c_oper_id_t         oper_id;    /* overloaded operator ID */
   ad_type_id_t        type_id;    /* built-ins, storage classes, & qualifiers */
 }
 
@@ -428,8 +428,8 @@ declaration
   | typedef_decl
   ;
 
-labeled_statement
-  : Y_CASE constant_expr colon_expected statement
+switch_case_statement
+  : Y_CASE constant_expr_expected colon_expected statement
   | Y_DEFAULT colon_expected statement
   ;
 
@@ -463,28 +463,33 @@ enumerator
 /*****************************************************************************/
 
 field_decl
-  : repetition type field_name array_opt equal_value_opt
-  ;
-
-repetition
-  : '1'
-    {
-    }
-  | '?'
-    {
-    }
-  | '*'
-    {
-    }
-  | '+'
-    {
-    }
+  : type_expected field_name_expected array_opt equal_value_opt
   ;
 
 array_opt
   : /* empty */
+    {
+    }
   | '[' ']' "==" literal
+    {
+    }
+  | '[' '?' ']'
+    {
+      $$.times = AD_REPETITION_0_1;
+    }
+  | '[' '*' ']'
+    {
+      $$.times = AD_REPETITION_0_MORE;
+    }
+  | '[' '+' ']'
+    {
+      $$.times = AD_REPETITION_1_MORE;
+    }
   | '[' expr ']'
+    {
+      $$.times = AD_REPETITION_EXPR;
+      $$.expr = $1;
+    }
   ;
 
 equal_value_opt
@@ -1497,11 +1502,11 @@ name_opt
   | Y_NAME
   ;
 
-of_expected
-  : Y_OF
+number_expected
+  : Y_NUMBER
   | error
     {
-      ELABORATE_ERROR( "\"%s\" expected", L_OF );
+      ELABORATE_ERROR( "number expected" );
     }
   ;
 
