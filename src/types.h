@@ -199,18 +199,6 @@ struct ad_type {
   } as;                                 ///< Union discriminator.
 };
 
-enum ad_rep_times {
-  AD_REPETITION_EXPR,
-  AD_REPETITION_0_1,
-  AD_REPETITION_0_MORE,
-  AD_REPETITION_1_MORE
-};
-
-struct ad_rep {
-  ad_rep_times_t  times;
-  ad_expr_t       expr;                 ///< Used only if times == AD_REPETITION_EXPR
-};
-
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**

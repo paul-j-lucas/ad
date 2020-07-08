@@ -192,7 +192,26 @@ struct ad_expr {
     ad_binary_expr_t  binary;
     ad_ternary_expr_t ternary;
     ad_value_expr_t   value;
-  } as;
+  } as;                                 ///< Union discriminator.
+};
+
+/**
+ * Repetition values.
+ */
+enum ad_rep_times {
+  AD_REPETITION_1,                      ///< Repeats once (no repetition).
+  AD_REPETITION_EXPR,                   ///< Repeats _expr_ times.
+  AD_REPETITION_0_1,                    ///< Repeats 0 or 1 times (optional).
+  AD_REPETITION_0_MORE,                 ///< Repeats 0 or more times.
+  AD_REPETITION_1_MORE                  ///< Repeats 1 or more times.
+};
+
+/**
+ * Repetition.
+ */
+struct ad_rep {
+  ad_rep_times_t  times;
+  ad_expr_t       expr;                 ///< Used only if times == AD_REPETITION_EXPR
 };
 
 ///////////////////////////////////////////////////////////////////////////////

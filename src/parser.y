@@ -332,7 +332,6 @@ static void yyerror( char const *msg ) {
 %type   <ast_pair>  func_cast_c_ast
 %type   <ast_pair>  nested_cast_c_ast
 %type   <ast_pair>  pointer_cast_c_ast
-%type   <ast_pair>  pointer_to_member_cast_c_ast
 %type   <type_id>   pure_virtual_c_type_opt
 
 %type   <ast_pair>  decl_c_ast decl2_c_ast
@@ -343,14 +342,11 @@ static void yyerror( char const *msg ) {
 %type   <ast_pair>  func_trailing_return_type_c_ast_opt
 %type   <ast_pair>  nested_decl_c_ast
 %type   <ast_pair>  pointer_decl_c_ast
-%type   <ast_pair>  pointer_to_member_decl_c_ast
-%type   <ast_pair>  pointer_to_member_type_c_ast
 %type   <ast_pair>  pointer_type_c_ast
 %type   <ast_pair>  unmodified_type_c_ast
 
 %type   <ast_pair>  builtin_type_c_ast
 %type   <ast_pair>  enum_class_struct_union_ast
-%type   <ast_pair>  name_or_typedef_type_c_ast
 %type   <ast_pair>  placeholder_c_ast
 %type   <ast_pair>  type_c_ast
 %type   <ast_pair>  typedef_type_c_ast
@@ -463,28 +459,17 @@ enumerator
 /*****************************************************************************/
 
 field_decl
-  : type_expected field_name_expected array_opt equal_value_opt
+  : type_expected field_name_expected array_opt
   ;
 
 array_opt
-  : /* empty */
+  : /* empty */                   { $$.times = AD_REPETITION_1; }
+  | '[' ']' eqeq_expected literal
     {
     }
-  | '[' ']' "==" literal
-    {
-    }
-  | '[' '?' ']'
-    {
-      $$.times = AD_REPETITION_0_1;
-    }
-  | '[' '*' ']'
-    {
-      $$.times = AD_REPETITION_0_MORE;
-    }
-  | '[' '+' ']'
-    {
-      $$.times = AD_REPETITION_1_MORE;
-    }
+  | '[' '?' rbracket_expected     { $$.times = AD_REPETITION_0_1; }
+  | '[' '*' rbracket_expected     { $$.times = AD_REPETITION_0_MORE; }
+  | '[' '+' rbracket_expected     { $$.times = AD_REPETITION_1_MORE; }
   | '[' expr ']'
     {
       $$.times = AD_REPETITION_EXPR;
@@ -492,17 +477,12 @@ array_opt
     }
   ;
 
-equal_value_opt
-  : /* empty */
-  | '=' value
-  ;
-
 /*****************************************************************************/
 /*  struct declaration                                                       */
 /*****************************************************************************/
 
 struct_decl
-  : Y_STRUCT name_expected lbrace_expected statement_list rbracket_expected
+  : Y_STRUCT name_expected lbrace_expected statement_list rbrace_expected
     {
     }
   ;
@@ -820,107 +800,12 @@ default_case_opt
   ;
 
 /*****************************************************************************/
-/*  using                                                                    */
-/*****************************************************************************/
-
-using_declaration_c
-  : Y_USING
-    {
-      // see the comment in "explain"
-      c_mode = MODE_GIBBERISH_TO_ENGLISH;
-    }
-    name_or_typedef_type_c_ast equals_expected type_c_ast
-    {
-      // see the comment in "define_english" about T_TYPEDEF
-      C_TYPE_ADD( &$5.ast->type_id, T_TYPEDEF, @5 );
-      type_push( $5.ast );
-    }
-    cast_c_ast_opt
-    {
-      type_pop();
-
-      //
-      // Using declarations are supported only in C++11 and later.  (However,
-      // we always allow them in configuration files.)
-      //
-      // This check has to be done now in the parser rather than later in the
-      // AST because using declarations are treated like typedef declarations
-      // and the AST has no "memory" that such a declaration was a using
-      // declaration.
-      //
-      if ( c_init >= INIT_READ_CONF && opt_lang < LANG_CPP_11 ) {
-        print_error( &@1,
-          "\"%s\" not supported in %s", L_USING, C_LANG_NAME()
-        );
-        PARSE_ABORT();
-      }
-
-      DUMP_START( "using_declaration_c", "USING NAME = decl_c_ast" );
-      DUMP_AST( "name_or_typedef_type_c_ast", $3.ast );
-      DUMP_AST( "type_c_ast", $5.ast );
-      DUMP_AST( "cast_c_ast_opt", $7.ast );
-
-      c_ast_t *const ast = c_ast_patch_placeholder( $5.ast, $7.ast );
-
-      c_sname_t sname = $3.ast->kind == K_TYPEDEF ?
-        c_ast_sname_dup( $3.ast->as.c_typedef->ast ) :
-        c_ast_take_name( $3.ast );
-      c_ast_sname_set_sname( ast, &sname );
-
-      if ( c_ast_sname_count( ast ) > 1 ) {
-        print_error( &@5,
-          "%s names can not be scoped; use: %s %s { %s ... }",
-          L_USING, L_NAMESPACE, c_ast_sname_scope_c( ast ), L_USING
-        );
-        PARSE_ABORT();
-      }
-
-      c_sname_t temp_sname = c_sname_dup( &in_attr.current_scope );
-      c_ast_sname_set_type( ast, c_sname_type( &in_attr.current_scope ) );
-      c_ast_sname_prepend_sname( ast, &temp_sname );
-
-      DUMP_AST( "using_declaration_c", ast );
-      DUMP_END();
-
-      C_AST_CHECK( ast, CHECK_DECL );
-      // see the comment in "define_english" about T_TYPEDEF
-      (void)c_ast_take_typedef( ast );
-
-      switch ( c_typedef_add( ast ) ) {
-        case TD_ADD_ADDED:
-          // See the comment in "define_english" about ast_typedef_list.
-          slist_push_list_tail( &ast_typedef_list, &ast_gc_list );
-          break;
-        case TD_ADD_DIFF:
-          print_error( &@5,
-            "\"%s\": \"%s\" redefinition with different type",
-            c_ast_sname_full_c( ast ), L_USING
-          );
-          PARSE_ABORT();
-        case TD_ADD_EQUIV:
-          // Do nothing.
-          break;
-      } // switch
-    }
-  ;
-
-name_or_typedef_type_c_ast
-  : name_ast
-  | typedef_type_c_ast
-  | error
-    {
-      ELABORATE_ERROR( "type name expected" );
-    }
-  ;
-
-/*****************************************************************************/
 /*  declaration gibberish productions                                        */
 /*****************************************************************************/
 
 decl_c_ast
   : decl2_c_ast
   | pointer_decl_c_ast
-  | pointer_to_member_decl_c_ast
   ;
 
 decl2_c_ast
@@ -1138,117 +1023,6 @@ pointer_type_c_ast
     }
   ;
 
-pointer_to_member_decl_c_ast
-  : pointer_to_member_type_c_ast { type_push( $1.ast ); } decl_c_ast
-    {
-      type_pop();
-
-      DUMP_START( "pointer_to_member_decl_c_ast",
-                  "pointer_to_member_type_c_ast decl_c_ast" );
-      DUMP_AST( "pointer_to_member_type_c_ast", $1.ast );
-      DUMP_AST( "decl_c_ast", $3.ast );
-
-      $$ = $3;
-
-      DUMP_AST( "pointer_to_member_decl_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-pointer_to_member_type_c_ast
-  : /* type_c_ast */ typedef_type_sname Y_COLON2_STAR
-    {
-      DUMP_START( "pointer_to_member_type_c_ast",
-                  "sname ::*" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_STR( "sname", c_sname_full_c( &$1 ) );
-
-      $$.ast = C_AST_NEW( K_POINTER_TO_MEMBER, &@$ );
-      $$.target_ast = NULL;
-
-      //
-      // If the scoped name has a class, namespace, struct, or union scoped
-      // type, adopt that type for the AST's type; otherwise default to
-      // T_CLASS.
-      //
-      c_type_id_t sn_type = c_sname_type( &$1 );
-
-      $$.ast->type_id = sn_type | $3;
-      $$.ast->as.ptr_mbr.class_sname = $1;
-      c_ast_set_parent( type_peek(), $$.ast );
-
-      DUMP_AST( "pointer_to_member_type_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-/*****************************************************************************/
-/*  function argument gibberish productions                                  */
-/*****************************************************************************/
-
-arg_list_c_ast_opt
-  : /* empty */                   { slist_init( &$$ ); }
-  | arg_list_c_ast
-  ;
-
-arg_list_c_ast
-  : arg_list_c_ast comma_expected arg_c_ast
-    {
-      DUMP_START( "arg_list_c_ast", "arg_list_c_ast ',' arg_c_ast" );
-      DUMP_AST_LIST( "arg_list_c_ast", $1 );
-      DUMP_AST( "arg_c_ast", $3.ast );
-
-      $$ = $1;
-      (void)slist_push_tail( &$$, $3.ast );
-
-      DUMP_AST_LIST( "arg_list_c_ast", $$ );
-      DUMP_END();
-    }
-
-  | arg_c_ast
-    {
-      DUMP_START( "arg_list_c_ast", "arg_c_ast" );
-      DUMP_AST( "arg_c_ast", $1.ast );
-
-      slist_init( &$$ );
-      (void)slist_push_tail( &$$, $1.ast );
-
-      DUMP_AST_LIST( "arg_list_c_ast", $$ );
-      DUMP_END();
-    }
-  ;
-
-arg_c_ast
-  : type_c_ast { type_push( $1.ast ); } cast_c_ast_opt
-    {
-      type_pop();
-
-      DUMP_START( "arg_c_ast", "type_c_ast cast_c_ast_opt" );
-      DUMP_AST( "type_c_ast", $1.ast );
-      DUMP_AST( "cast_c_ast_opt", $3.ast );
-
-      $$ = $3.ast != NULL ? $3 : $1;
-      if ( c_ast_sname_empty( $$.ast ) )
-        $$.ast->sname = c_sname_dup( c_ast_find_name( $$.ast, V_DOWN ) );
-
-      DUMP_AST( "arg_c_ast", $$.ast );
-      DUMP_END();
-    }
-
-  | name_ast                            /* K&R C type-less argument */
-
-  | "..."
-    {
-      DUMP_START( "argc", "..." );
-
-      $$.ast = C_AST_NEW( K_VARIADIC, &@$ );
-      $$.target_ast = NULL;
-
-      DUMP_AST( "arg_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
 /*****************************************************************************/
 /*  type                                                                     */
 /*****************************************************************************/
@@ -1282,7 +1056,6 @@ cast_c_ast_opt
 cast_c_ast
   : cast2_c_ast
   | pointer_cast_c_ast
-  | pointer_to_member_cast_c_ast
   ;
 
 cast2_c_ast
@@ -1403,24 +1176,6 @@ pointer_cast_c_ast
     }
   ;
 
-pointer_to_member_cast_c_ast
-  : pointer_to_member_type_c_ast { type_push( $1.ast ); } cast_c_ast_opt
-    {
-      type_pop();
-
-      DUMP_START( "pointer_to_member_cast_c_ast",
-                  "pointer_to_member_type_c_ast cast_c_ast_opt" );
-      DUMP_AST( "pointer_to_member_type_c_ast", $1.ast );
-      DUMP_AST( "cast_c_ast_opt", $3.ast );
-
-      $$.ast = c_ast_patch_placeholder( $1.ast, $3.ast );
-      $$.target_ast = NULL;
-
-      DUMP_AST( "pointer_to_member_cast_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
 /*****************************************************************************/
 /*  miscellaneous productions                                                */
 /*****************************************************************************/
@@ -1430,6 +1185,14 @@ comma_expected
   | error
     {
       ELABORATE_ERROR( "',' expected" );
+    }
+  ;
+
+eqeq_expected
+  : "=="
+  | error
+    {
+      ELABORATE_ERROR( "\"==\" expected" );
     }
   ;
 
