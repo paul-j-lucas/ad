@@ -43,6 +43,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
   # Code from module absolute-header:
+  # Code from module c99:
   # Code from module errno:
   # Code from module extensions:
   # Code from module extern-inline:
@@ -62,6 +63,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
+  # Code from module std-gnu11:
   # Code from module stdbool:
   # Code from module stddef:
   # Code from module stdint:
@@ -137,7 +139,7 @@ AC_DEFUN([gl_INIT],
   gl_STDIO_H
   gl_STDLIB_H
   gl_FUNC_STRDUP_POSIX
-  if test $ac_cv_func_strdup = no || test $REPLACE_STRDUP = 1; then
+  if test $REPLACE_STRDUP = 1; then
     AC_LIBOBJ([strdup])
     gl_PREREQ_STRDUP
   fi
@@ -356,7 +358,9 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/multiarch.m4
   m4/nocrash.m4
   m4/off_t.m4
+  m4/pid_t.m4
   m4/ssize_t.m4
+  m4/std-gnu11.m4
   m4/stdbool.m4
   m4/stddef_h.m4
   m4/stdint.m4
