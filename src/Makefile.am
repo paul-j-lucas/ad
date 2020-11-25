@@ -31,7 +31,7 @@ ad_SOURCES = \
 	match.c match.h \
 	options.c options.h \
 	reverse.c \
-	util.c util.h \
-	utf8.c utf8.h
+	unicode.c unicode.h \
+	util.c util.h
 
 # vim:set noet sw=8 ts=8:

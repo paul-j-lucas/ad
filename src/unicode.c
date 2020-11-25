@@ -21,7 +21,7 @@
 // local
 #include "ad.h"                         /* must go first */
 #define AD_UTF8_INLINE _GL_EXTERN_INLINE
-#include "utf8.h"
+#include "unicode.h"
 #include "util.h"
 
 // standard

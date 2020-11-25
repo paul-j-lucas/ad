@@ -24,7 +24,7 @@
 #include "common.h"
 #include "match.h"
 #include "options.h"
-#include "utf8.h"
+#include "unicode.h"
 #include "util.h"
 
 // standard

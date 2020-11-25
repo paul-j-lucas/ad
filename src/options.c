@@ -23,7 +23,7 @@
 #include "color.h"
 #include "common.h"
 #include "options.h"
-#include "utf8.h"
+#include "unicode.h"
 
 // standard
 #include <assert.h>
