@@ -620,6 +620,7 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
           );
           break;
       } // switch
+      break;
     default:
       RETURN_ERR( BAD_OPERAND );
   } // switch
@@ -675,6 +676,7 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
           );
           break;
       } // switch
+      break;
     default:
       RETURN_ERR( BAD_OPERAND );
   } // switch
@@ -728,6 +730,7 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
           );
           break;
       } // switch
+      break;
     default:
       RETURN_ERR( BAD_OPERAND );
   } // switch
@@ -1217,10 +1220,10 @@ void ad_expr_free( ad_expr_t *expr ) {
   switch ( expr->expr_id & AD_EXPR_MASK ) {
     case AD_EXPR_TERNARY:
       ad_expr_free( expr->as.ternary.false_expr );
-      // FALLTHROUGH
+      AD_FALLTHROUGH;
     case AD_EXPR_BINARY:
       ad_expr_free( expr->as.binary.rhs_expr );
-      // FALLTHROUGH
+      AD_FALLTHROUGH;
     case AD_EXPR_UNARY:
       ad_expr_free( expr->as.unary.sub_expr );
       break;
