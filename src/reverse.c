@@ -21,6 +21,7 @@
 // local
 #include "ad.h"                         /* must go first */
 #include "options.h"
+#include "unicode.h"
 #include "util.h"
 
 // standard
@@ -108,7 +109,7 @@ static size_t parse_elided_separator( char const *buf, size_t buf_len ) {
  */
 AD_WARN_UNUSED_RESULT
 static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
-                             off_t *poffset, uint8_t *bytes,
+                             off_t *poffset, char8_t *bytes,
                              size_t *pbytes_len ) {
   assert( buf != NULL );
   assert( poffset != NULL );
@@ -167,7 +168,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     // parse first nybble
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    uint8_t byte = (uint8_t)(xtoi( *p ) << 4);
+    char8_t byte = (char8_t)(xtoi( *p ) << 4);
 
     // parse second nybble
     ++col;
@@ -178,7 +179,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       );
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    byte |= (uint8_t)xtoi( *p );
+    byte |= (char8_t)xtoi( *p );
 
     bytes[ bytes_len++ ] = byte;
   } // while
@@ -196,7 +197,7 @@ expected_hex_digit:
 ////////// extern functions ///////////////////////////////////////////////////
 
 void reverse_dump_file( void ) {
-  uint8_t bytes[ row_bytes ];
+  char8_t bytes[ row_bytes ];
   size_t  bytes_len;
   off_t   fout_offset = -(off_t)row_bytes;
   size_t  line = 0;

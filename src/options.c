@@ -307,11 +307,11 @@ dup_format:
  * or prints an error message and exits if \a s is invalid.
  */
 AD_WARN_UNUSED_RESULT
-static codepoint_t parse_codepoint( char const *s ) {
+static char32_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
   if ( s[0] != '\0' && s[1] == '\0' )   // assume single-char ASCII
-    return STATIC_CAST(codepoint_t, s[0]);
+    return STATIC_CAST(char32_t, s[0]);
 
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
@@ -321,7 +321,7 @@ static codepoint_t parse_codepoint( char const *s ) {
   }
   unsigned long long const cp_candidate = parse_ull( s );
   if ( cp_is_valid( cp_candidate ) )
-    return STATIC_CAST(codepoint_t, cp_candidate);
+    return STATIC_CAST(char32_t, cp_candidate);
 
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
@@ -556,7 +556,7 @@ void parse_options( int argc, char *argv[] ) {
   size_t        max_lines = 0;
   bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
-  codepoint_t   utf8_pad = 0;
+  char32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
   me = basename( argv[0] );

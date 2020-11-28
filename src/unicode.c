@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/utf8.c
+**      src/unicode.c
 **
 **      Copyright (C) 2015-2018  Paul J. Lucas
 **
@@ -20,7 +20,7 @@
 
 // local
 #include "ad.h"                         /* must go first */
-#define AD_UTF8_INLINE _GL_EXTERN_INLINE
+#define AD_UNICODE_INLINE _GL_EXTERN_INLINE
 #include "unicode.h"
 #include "util.h"
 
@@ -76,7 +76,7 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
-size_t utf8_encode( codepoint_t codepoint, char *p ) {
+size_t utf8_encode( char32_t codepoint, char *p ) {
   assert( p != NULL );
 
   static unsigned const Mask1 = 0x80;

@@ -30,17 +30,24 @@
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 
+#if !HAVE_CHAR8_T
+typedef uint8_t char8_t;                /* borrowed from C++20 */
+#endif /* !HAVE_CHAR8_T */
+#if !HAVE_CHAR32_T
+typedef uint32_t char32_t;              /* C11's char32_t */
+#endif /* !HAVE_CHAR32_T */
+
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTF8_INLINE
-# define AD_UTF8_INLINE _GL_INLINE
-#endif /* AD_UTF8_INLINE */
+#ifndef AD_UNICODE_INLINE
+# define AD_UNICODE_INLINE _GL_INLINE
+#endif /* AD_UNICODE_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CP_SURROGATE_HIGH_START   0x00D800
-#define CP_SURROGATE_LOW_END      0x00DFFF
-#define CP_VALID_MAX              0x10FFFF
-#define UTF8_LEN_MAX              6       /* max bytes needed for UTF-8 char */
+#define CP_SURROGATE_HIGH_START   0x00D800u
+#define CP_SURROGATE_LOW_END      0x00DFFFu
+#define CP_VALID_MAX              0x10FFFFu
+#define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
 #define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
 
 /**
@@ -55,8 +62,6 @@ typedef enum utf8_when utf8_when_t;
 
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
-typedef uint32_t codepoint_t;           // Unicode code-point.
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -65,7 +70,7 @@ typedef uint32_t codepoint_t;           // Unicode code-point.
  * @param cp_candidate The Unicode code-point candidate value to check.
  * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
-AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
@@ -90,7 +95,7 @@ bool should_utf8( utf8_when_t when );
  * UTF-8.
  */
 AD_NOWARN_UNUSED_RESULT
-size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
+size_t utf8_encode( char32_t codepoint, char *utf8_buf );
 
 /**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
@@ -101,7 +106,7 @@ size_t utf8_encode( codepoint_t codepoint, char *utf8_buf );
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
   unsigned char const u = (unsigned char)c;
   return u < 0x80 || (u >= 0xC2 && u < 0xFE);
@@ -116,7 +121,7 @@ bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
   unsigned char const u = (unsigned char)c;
   return u >= 0x80 && u < 0xC0;
@@ -129,7 +134,7 @@ bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
+AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
   extern char const UTF8_LEN_TABLE[];
   return STATIC_CAST(

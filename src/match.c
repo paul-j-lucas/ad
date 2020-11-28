@@ -40,7 +40,7 @@ unsigned long       total_matches;
 static size_t       total_bytes_read;
 
 // local functions
-static void         unget_byte( uint8_t );
+static void         unget_byte( char8_t );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -51,13 +51,13 @@ static void         unget_byte( uint8_t );
  * @return Returns \c true if a byte was read successfully.
  */
 AD_WARN_UNUSED_RESULT
-static bool get_byte( uint8_t *pbyte ) {
+static bool get_byte( char8_t *pbyte ) {
   if ( likely( total_bytes_read < opt_max_bytes ) ) {
     int const c = getc( fin );
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;
       assert( pbyte != NULL );
-      *pbyte = STATIC_CAST(uint8_t, c);
+      *pbyte = STATIC_CAST(char8_t, c);
       return true;
     }
     if ( unlikely( ferror( fin ) ) )
@@ -79,8 +79,8 @@ static bool get_byte( uint8_t *pbyte ) {
  * @return Returns \c true if a byte was read successfully.
  */
 AD_WARN_UNUSED_RESULT
-static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
-                        uint8_t *match_buf ) {
+static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
+                        char8_t *match_buf ) {
   enum state {
     S_READING,                          // just reading; not matching
     S_MATCHING,                         // matching search bytes
@@ -96,7 +96,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
   static kmp_t kmp;
   static state_t state = S_READING;
 
-  uint8_t byte;
+  char8_t byte;
 
   assert( pbyte != NULL );
   assert( matches != NULL );
@@ -112,7 +112,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
 
 #define MAYBE_NO_CASE(BYTE)                                       \
   ( opt_case_insensitive ?                                        \
-    STATIC_CAST(uint8_t, tolower( STATIC_CAST(char, (BYTE)) )) :  \
+    STATIC_CAST(char8_t, tolower( STATIC_CAST(char, (BYTE)) )) :  \
     (BYTE) )
 
       case S_READING:
@@ -120,7 +120,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( S_DONE );
         if ( search_len == 0 )          // user isn't searching for anything
           RETURN( byte );
-        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(uint8_t, search_buf[0]) )
+        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(char8_t, search_buf[0]) )
           RETURN( byte );               // searching, but no match yet
         //
         // The read byte matches the first byte of the search buffer: start
@@ -157,7 +157,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( S_NOT_MATCHED );
         }
         if ( MAYBE_NO_CASE( byte )
-             == STATIC_CAST(uint8_t, search_buf[ buf_pos ]) ) {
+             == STATIC_CAST(char8_t, search_buf[ buf_pos ]) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -212,7 +212,7 @@ static bool match_byte( uint8_t *pbyte, bool *matches, kmp_t const *kmps,
  *
  * @param byte The byte to unget.
  */
-static void unget_byte( uint8_t byte ) {
+static void unget_byte( char8_t byte ) {
   if ( unlikely( ungetc( byte, fin ) == EOF ) )
     PMESSAGE_EXIT( EX_IOERR,
       "\"%s\": unget byte failed: %s\n", fin_path, STRERROR
@@ -241,8 +241,8 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   return kmps;
 }
 
-size_t match_row( uint8_t *row_buf, size_t row_size, match_bits_t *match_bits,
-                  kmp_t const *kmps, uint8_t *match_buf ) {
+size_t match_row( char8_t *row_buf, size_t row_size, match_bits_t *match_bits,
+                  kmp_t const *kmps, char8_t *match_buf ) {
   assert( row_buf != NULL );
   assert( row_size <= row_bytes );
   assert( match_bits != NULL );
