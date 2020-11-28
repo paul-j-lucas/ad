@@ -1,5 +1,9 @@
 2020-11-27  Paul J. Lucas <paul@lucasmail.org>
 
+   * pjl_config.h: Added #ifdef ad_config_H.
+   * src/Makefile.am, ad.c, color.c, color.h, dump.c, match.c, match.h,
+     options.c, options.h, reverse.c, unicode.c, unicode.h, util.c, util.h:
+     s/ad.h/pjl_config.h/
    * configure.ac, ax_check_typedef.m4, pjl_check_typedef.m4, dump.c, match.c,
      match.h, options.c, reverse.c, unicode.c, unicode.h: Now using char8_t and
      char32_t.
