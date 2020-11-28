@@ -86,13 +86,13 @@ AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
 /**
  * Checks whether the given Unicode code-point is valid.
  *
- * @param cp The Unicode code-point to check.
- * @return Returns \c true only if \a cp is valid.
+ * @param cp_candidate The Unicode code-point candidate value to check.
+ * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
 AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
-bool cp_is_valid( uint64_t cp ) {
-  return  cp < CP_SURROGATE_HIGH_START
-      || (cp > CP_SURROGATE_LOW_END && cp <= CP_VALID_MAX);
+bool cp_is_valid( unsigned long long cp_candidate ) {
+  return  cp_candidate < CP_SURROGATE_HIGH_START
+      || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
 }
 
 /**
@@ -119,12 +119,12 @@ bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
                char32_t *u32 );
 
 /**
- * Encodes a Unicode codepoint into UTF-8.
+ * Encodes a Unicode code-point into UTF-8.
  *
  * @param cp The Unicode code-point to encode.
  * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
  * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
- * @return Returns the number of bytes comprising the codepoint encoded as
+ * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
 AD_WARN_UNUSED_RESULT

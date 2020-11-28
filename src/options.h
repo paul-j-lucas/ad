@@ -62,9 +62,9 @@ typedef unsigned c_fmt_t;               // for the bitwise-or of c_fmt options
  * Whether to print the total number of matches.
  */
 enum matches {
-  MATCHES_NONE,                         // don't print
-  MATCHES_PRINT,                        // additionally print
-  MATCHES_ONLY                          // only print
+  MATCHES_NO_PRINT,                     // don't print
+  MATCHES_ALSO_PRINT,                   // additionally print
+  MATCHES_ONLY_PRINT                    // only print
 };
 typedef enum matches matches_t;
 

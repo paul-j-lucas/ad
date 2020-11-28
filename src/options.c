@@ -319,9 +319,9 @@ static char32_t parse_codepoint( char const *s ) {
     char *const t = (char*)free_later( check_strdup( s ) );
     s = (char*)memcpy( t, "0x", 2 );
   }
-  uint64_t const cp = parse_ull( s );
-  if ( cp_is_valid( cp ) )
-    return STATIC_CAST(char32_t, cp);
+  unsigned long long const cp_candidate = parse_ull( s );
+  if ( cp_is_valid( cp_candidate ) )
+    return STATIC_CAST(char32_t, cp_candidate);
 
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
@@ -394,7 +394,7 @@ static color_when_t parse_color_when( char const *when ) {
  */
 AD_WARN_UNUSED_RESULT
 static unsigned parse_group_by( char const *s ) {
-  uint64_t const group_by = parse_ull( s );
+  unsigned long long const group_by = parse_ull( s );
   switch ( group_by ) {
     case 1:
     case 2:
@@ -597,8 +597,8 @@ void parse_options( int argc, char *argv[] ) {
       case 'r': opt_reverse = true;                                     break;
       case 's': search_buf = (char*)free_later( check_strdup( optarg ) );
                                                                         break;
-      case 't': opt_matches = MATCHES_PRINT;                            break;
-      case 'T': opt_matches = MATCHES_ONLY;                             break;
+      case 't': opt_matches = MATCHES_ALSO_PRINT;                       break;
+      case 'T': opt_matches = MATCHES_ONLY_PRINT;                       break;
       case 'u': utf8_when = parse_utf8_when( optarg );                  break;
       case 'U': utf8_pad = parse_codepoint( optarg );                   break;
       case 'v': opt_verbose = true;                                     break;
