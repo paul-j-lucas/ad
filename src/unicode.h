@@ -22,7 +22,7 @@
 #define ad_unicode_H
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 #include "util.h"
 
 // standard

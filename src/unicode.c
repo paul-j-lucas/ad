@@ -19,7 +19,7 @@
 */
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 #define AD_UNICODE_INLINE _GL_EXTERN_INLINE
 #include "unicode.h"
 #include "util.h"

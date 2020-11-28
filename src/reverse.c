@@ -19,7 +19,7 @@
 */
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 #include "options.h"
 #include "unicode.h"
 #include "util.h"
