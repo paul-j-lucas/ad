@@ -20,7 +20,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#define AD_UTF8_INLINE _GL_EXTERN_INLINE
+#define AD_UNICODE_INLINE _GL_EXTERN_INLINE
 #include "unicode.h"
 #include "util.h"
 

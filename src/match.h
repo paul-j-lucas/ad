@@ -23,9 +23,10 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "unicode.h"
 
 // standard
-#include <inttypes.h>                   /* for uint8_t, uint32_t */
+#include <inttypes.h>                   /* for uint32_t */
 #include <stddef.h>                     /* for size_t */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,8 +70,8 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * \a row_size.
  */
 AD_WARN_UNUSED_RESULT
-size_t match_row( uint8_t *row_buf, size_t row_size, match_bits_t *match_bits,
-                  kmp_t const *kmps, uint8_t *match_buf );
+size_t match_row( char8_t *row_buf, size_t row_size, match_bits_t *match_bits,
+                  kmp_t const *kmps, char8_t *match_buf );
 
 ///////////////////////////////////////////////////////////////////////////////
 

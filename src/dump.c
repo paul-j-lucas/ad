@@ -65,7 +65,7 @@
   BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
 
 struct row_buf {
-  uint8_t       bytes[ ROW_BYTES_MAX ]; // bytes in buffer, left-to-right
+  char8_t       bytes[ ROW_BYTES_MAX ]; // bytes in buffer, left-to-right
   size_t        len;                    // length of buffer
   match_bits_t  match_bits;             // which bytes match, right-to-left
 };
@@ -98,7 +98,7 @@ static inline bool print_readability_space( size_t byte_pos ) {
  */
 AD_WARN_UNUSED_RESULT
 static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
-                            row_buf_t const *next, uint8_t *utf8_char ) {
+                            row_buf_t const *next, char8_t *utf8_char ) {
   assert( cur != NULL );
   assert( next != NULL );
   assert( utf8_char != NULL );
@@ -116,7 +116,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
         buf_pos = 0;
       }
 
-      uint8_t const byte = row->bytes[ buf_pos ];
+      char8_t const byte = row->bytes[ buf_pos ];
       if ( unlikely( !utf8_is_cont( STATIC_CAST(char, byte) ) ) )
         return 0;
       *utf8_char++ = byte;
@@ -218,7 +218,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
     for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
       bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
       bool const matches_changed = matches != prev_matches;
-      uint8_t const byte = cur->bytes[ buf_pos ];
+      char8_t const byte = cur->bytes[ buf_pos ];
 
       if ( matches )
         SGR_ASCII_START_IF( matches_changed );
@@ -230,7 +230,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         FPUTS( opt_utf8_pad );
         --utf8_count;
       } else {
-        uint8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+        char8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
         utf8_count = opt_utf8 ?
           utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )
@@ -257,7 +257,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
  * @param buf A pointer to the current set of bytes to dump.
  * @param buf_len The number of bytes pointed to by \a buf.
  */
-static void dump_row_c( char const *off_fmt, uint8_t const *buf,
+static void dump_row_c( char const *off_fmt, char8_t const *buf,
                         size_t buf_len ) {
   assert( off_fmt != NULL );
   assert( buf != NULL );
@@ -268,7 +268,7 @@ static void dump_row_c( char const *off_fmt, uint8_t const *buf,
   FPUTS( " */" );
 
   // dump hex part
-  uint8_t const *const end = buf + buf_len;
+  char8_t const *const end = buf + buf_len;
   while ( buf < end )
     FPRINTF( " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
   FPUTC( '\n' );
@@ -281,12 +281,12 @@ void dump_file( void ) {
   row_buf_t   buf[2], *cur = buf, *next = buf + 1;
   bool        is_same_row = false;      // current row same as previous?
   kmp_t      *kmps = NULL;              // used only by match_byte()
-  uint8_t    *match_buf = NULL;         // used only by match_byte()
+  char8_t    *match_buf = NULL;         // used only by match_byte()
   char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len > 0 ) {               // searching for anything?
     kmps = (kmp_t*)free_later( kmp_init( search_buf, search_len ) );
-    match_buf = (uint8_t*)free_later( MALLOC( uint8_t, search_len ) );
+    match_buf = (char8_t*)free_later( MALLOC( char8_t, search_len ) );
   }
 
   // prime the pump by reading the first row
@@ -365,7 +365,7 @@ void dump_file_c( void ) {
   );
 
   do {
-    uint8_t  bytes[ ROW_BYTES_C ];      // bytes in buffer
+    char8_t  bytes[ ROW_BYTES_C ];      // bytes in buffer
     match_bits_t match_bits;            // not used when dumping in C
     row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
