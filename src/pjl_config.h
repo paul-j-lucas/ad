@@ -27,6 +27,10 @@
  * `#include` this file rather than `config.h` directly.
  */
 
+#ifdef ad_config_H
+#error "Must #include pjl_config.h instead."
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /// @cond DOXYGEN_IGNORE
