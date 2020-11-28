@@ -41,13 +41,6 @@ typedef uint16_t char16_t;              /* C11's char16_t */
 typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
 
-#if !HAVE_CHAR8_T
-typedef uint8_t char8_t;                /* borrowed from C++20 */
-#endif /* !HAVE_CHAR8_T */
-#if !HAVE_CHAR32_T
-typedef uint32_t char32_t;              /* C11's char32_t */
-#endif /* !HAVE_CHAR32_T */
-
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UNICODE_INLINE
 # define AD_UNICODE_INLINE _GL_INLINE
