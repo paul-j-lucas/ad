@@ -48,19 +48,43 @@ _GL_INLINE_HEADER_BEGIN
 # define FSEEK_FN fseek
 #endif /* HAVE_FSEEKO */
 
-/** Embeds the given statements into a compount statement block. */
+/**
+ * Embeds the given statements into a compound statement block.
+ *
+ * @param ... The statement(s) to embed.
+ */
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 
-/** Shorthand for printing to standard error. */
+/**
+ * Shorthand for printing to standard error.
+ *
+ * @param ... The `printf()` arguments.
+ */
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 
-/** Explicit C version of C++'s `reinterpret_cast`. */
+/**
+ * Explicit C version of C++'s `reinterpret_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @sa STATIC_CAST
+ */
 #define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
 
-/** Explicit C version of C++'s `static_cast`. */
+/**
+ * Explicit C version of C++'s `static_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @sa REINTERPRET_CAST
+ */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
 
-/** Shorthand for calling **strerror**(3). */
+/**
+ * Shorthand for calling **strerror**(3).
+ */
 #define STRERROR                  strerror( errno )
 
 #ifdef __GNUC__
@@ -127,8 +151,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  */
 AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
 bool ascii_is_print( char c ) {
-  unsigned char const u = (unsigned char)c;
-  return u >= ' ' && u <= '~';
+  return c >= ' ' && c <= '~';
 }
 
 /**
