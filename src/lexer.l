@@ -386,7 +386,6 @@ hex_int       0[xX]{H}+{int_suffix}?
 "->"          { SET_TOKEN; return Y_ARROW           ; }
 "->*"         { SET_TOKEN; return Y_ARROW_STAR      ; }
 ".*"          { SET_TOKEN; return Y_DOT_STAR        ; }
-"..."         { SET_TOKEN; return Y_ELLIPSIS        ; }
 "/="          { SET_TOKEN; return Y_SLASH_EQ        ; }
 "<<"          { SET_TOKEN; return Y_LESS2           ; }
 "<<="         { SET_TOKEN; return Y_LESS2_EQ        ; }
@@ -398,8 +397,6 @@ hex_int       0[xX]{H}+{int_suffix}?
 ">>="         { SET_TOKEN; return Y_GREATER2_EQ     ; }
 "?"           { SET_TOKEN; return Y_HELP            ; }
 "?:"          { SET_TOKEN; return Y_QMARK_COLON     ; }
-"[["          { SET_TOKEN; return Y_LBRACKET2       ; }
-"]]"          { SET_TOKEN; return Y_RBRACKET2       ; }
 "^="          { SET_TOKEN; return Y_CIRC_EQ         ; }
 "|="          { SET_TOKEN; return Y_PIPE_EQ         ; }
 "||"          { SET_TOKEN; return Y_PIPE2           ; }
@@ -507,6 +504,7 @@ static void lexer_update_loc( void ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+AD_WARN_UNUSED_RESULT
 char const* lexer_input_line( size_t *plen ) {
   if ( plen != NULL )
     *plen = input_len;

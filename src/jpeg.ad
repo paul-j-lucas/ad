@@ -75,9 +75,9 @@ enum endian {
 
         switch ( thumb_fmt ) {
           case THUMB_JPEG:
-            SOI;
-            SOF[+];
-            EOI;
+            SOI soi;
+            SOF sof[+];
+            EOI eoi;
             break;
           case THUMB_1BPP:
             uint<8> x_thumb;
@@ -98,10 +98,16 @@ enum endian {
       uint<16,BE> marker == 0xFFD9;
     };
 
+    union body {
+      COM;
+      DHT;
+      SOF;
+    };
+
     SOI;
     APP0;
     extension_APP0[?];
-    (COM | DHT | SOF)[*];
+    body x[*];
     SOS;
     EOI;
 
