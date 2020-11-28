@@ -55,20 +55,20 @@ typedef enum utf8_when utf8_when_t;
 
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
-typedef uint32_t codepoint_t;
+typedef uint32_t codepoint_t;           // Unicode code-point.
 
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Checks whether the given Unicode code-point is valid.
  *
- * @param codepoint The Unicode code-point to check.
- * @return Returns \c true only if \a codepoint is valid.
+ * @param cp_candidate The Unicode code-point candidate value to check.
+ * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
 AD_WARN_UNUSED_RESULT AD_UTF8_INLINE
-bool is_codepoint_valid( uint64_t codepoint ) {
-  return  codepoint < CP_SURROGATE_HIGH_START
-      || (codepoint > CP_SURROGATE_LOW_END && codepoint <= CP_VALID_MAX);
+bool cp_is_valid( unsigned long long cp_candidate ) {
+  return  cp_candidate < CP_SURROGATE_HIGH_START
+      || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
 }
 
 /**
@@ -81,12 +81,12 @@ AD_WARN_UNUSED_RESULT
 bool should_utf8( utf8_when_t when );
 
 /**
- * Encodes a Unicode codepoint into UTF-8.
+ * Encodes a Unicode code-point into UTF-8.
  *
  * @param codepoint The Unicode code-point to encode.
  * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
  * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
- * @return Returns the number of bytes comprising the codepoint encoded as
+ * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
 AD_NOWARN_UNUSED_RESULT

@@ -278,7 +278,7 @@ bool is_file( int fd );
  * prints an error message and exits if there was an error.
  */
 AD_WARN_UNUSED_RESULT
-uint64_t parse_offset( char const *s );
+unsigned long long parse_offset( char const *s );
 
 /**
  * Parses an SGR (Select Graphic Rendition) value that matches the regular
@@ -294,7 +294,7 @@ AD_WARN_UNUSED_RESULT
 bool parse_sgr( char const *sgr_color );
 
 /**
- * Parses a string into a \c uint64_t.
+ * Parses a string into an <code>unsigned long long</code>.
  * Unlike \c strtoull(3), insists that \a s is entirely a non-negative number.
  *
  * @param s The NULL-terminated string to parse.
@@ -303,7 +303,7 @@ bool parse_sgr( char const *sgr_color );
  * number or prints an error message and exits if there was an error.
  */
 AD_WARN_UNUSED_RESULT
-uint64_t parse_ull( char const *s );
+unsigned long long parse_ull( char const *s );
 
 /**
  * Prints an error message for \c errno to standard error and exits.

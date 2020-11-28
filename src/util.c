@@ -317,7 +317,7 @@ bool is_file( int fd ) {
   return S_ISREG( fd_stat.st_mode );
 }
 
-uint64_t parse_offset( char const *s ) {
+unsigned long long parse_offset( char const *s ) {
   s = skip_ws( s );
   if ( unlikely( s[0] == '\0' || s[0] == '-' ) )
     goto error;                         // strtoull(3) wrongly allows '-'
@@ -325,7 +325,7 @@ uint64_t parse_offset( char const *s ) {
   { // local scope
     char *end = NULL;
     errno = 0;
-    uint64_t n = strtoull( s, &end, 0 );
+    unsigned long long n = strtoull( s, &end, 0 );
     if ( unlikely( errno != 0 || end == s ) )
       goto error;
     if ( end[0] != '\0' ) {             // possibly 'b', 'k', or 'm'
@@ -353,7 +353,7 @@ bool parse_sgr( char const *sgr_color ) {
       return false;
     char *end;
     errno = 0;
-    uint64_t const n = strtoull( sgr_color, &end, 10 );
+    unsigned long long const n = strtoull( sgr_color, &end, 10 );
     if ( unlikely( errno != 0 || n > 255 ) )
       return false;
     switch ( end[0] ) {
@@ -368,12 +368,12 @@ bool parse_sgr( char const *sgr_color ) {
   } // for
 }
 
-uint64_t parse_ull( char const *s ) {
+unsigned long long parse_ull( char const *s ) {
   s = skip_ws( s );
   if ( likely( s[0] != '\0' || s[0] != '-' ) ) {
     char *end = NULL;
     errno = 0;
-    uint64_t const n = strtoull( s, &end, 0 );
+    unsigned long long const n = strtoull( s, &end, 0 );
     if ( likely( errno == 0 && *end == '\0' ) )
       return n;
   }

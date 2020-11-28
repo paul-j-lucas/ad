@@ -304,7 +304,7 @@ void dump_file( void ) {
     next->len = cur->len < row_bytes ? 0 :
       match_row( next->bytes, row_bytes, &next->match_bits, kmps, match_buf );
 
-    if ( opt_matches != MATCHES_ONLY ) {
+    if ( opt_matches != MATCHES_ONLY_PRINT ) {
       bool const is_last_row = next->len == 0;
 
       if ( cur->match_bits != 0 || (    // always dump matching rows
@@ -337,7 +337,7 @@ void dump_file( void ) {
     fin_offset += (off_t)row_bytes;
   } // while
 
-  if ( opt_matches != MATCHES_NONE ) {
+  if ( opt_matches != MATCHES_NO_PRINT ) {
     FFLUSH( fout );
     PRINT_ERR( "%lu\n", total_matches );
   }
