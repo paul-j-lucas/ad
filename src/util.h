@@ -48,28 +48,74 @@ _GL_INLINE_HEADER_BEGIN
 # define FSEEK_FN fseek
 #endif /* HAVE_FSEEKO */
 
-/** Embeds the given statements into a compount statement block. */
+/**
+ * Embeds the given statements into a compound statement block.
+ *
+ * @param ... The statement(s) to embed.
+ */
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 
-/** Explicit C version of C++'s `const_cast`. */
+/**
+ * Explicit C version of C++'s `const_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @sa REINTERPRET_CAST
+ * @sa STATIC_CAST
+ */
 #define CONST_CAST(T,EXPR)        ((T)(uintptr_t)(EXPR))
 
-/** Frees the given memory. */
+/**
+ * Frees the given memory.
+ *
+ * @param PTR The pointer to the memory to free.
+ *
+ * @remarks
+ * This macro exists since free'ing a pointer-to const generates a warning.
+ */
 #define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
 
-/** Zeros the memory. */
+/**
+ * Zeros the memory pointed to by \a PTR.
+ *
+ * @param PTR The pointer to the memory to zero.  The number of bytes to zero
+ * is given by `sizeof *(PTR)`.
+ */
 #define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
 
-/** Shorthand for printing to standard error. */
+/**
+ * Shorthand for printing to standard error.
+ *
+ * @param ... The `printf()` arguments.
+ */
 #define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 
-/** Explicit C version of C++'s `reinterpret_cast`. */
-#define REINTERPRET_CAST(T,EXPR)  ((T)(uintptr_t)(EXPR))
+/**
+ * Explicit C version of C++'s `reinterpret_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @sa CONST_CAST
+ * @sa STATIC_CAST
+ */
+#define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
 
-/** Explicit C version of C++'s `static_cast`. */
+/**
+ * Explicit C version of C++'s `static_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @sa CONST_CAST
+ * @sa REINTERPRET_CAST
+ */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
 
-/** Shorthand for calling **strerror**(3). */
+/**
+ * Shorthand for calling **strerror**(3).
+ */
 #define STRERROR                  strerror( errno )
 
 #ifdef __GNUC__
@@ -148,8 +194,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  */
 AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
 bool ascii_is_print( char c ) {
-  unsigned char const u = (unsigned char)c;
-  return u >= ' ' && u <= '~';
+  return c >= ' ' && c <= '~';
 }
 
 /**

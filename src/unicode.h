@@ -170,8 +170,8 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  */
 AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
-  unsigned char const u = (unsigned char)c;
-  return u < 0x80 || (u >= 0xC2 && u < 0xFE);
+  char8_t const c8 = (char8_t)c;
+  return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
 }
 
 /**
@@ -185,8 +185,8 @@ bool utf8_is_start( char c ) {
  */
 AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
-  unsigned char const u = (unsigned char)c;
-  return u >= 0x80 && u < 0xC0;
+  char8_t const c8 = (char8_t)c;
+  return c8 >= 0x80 && c8 < 0xC0;
 }
 
 /**
@@ -198,9 +198,9 @@ bool utf8_is_cont( char c ) {
  */
 AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
-  extern uint8_t const UTF8_LEN_TABLE[];
+  extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST(unsigned char, start) ]
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST(char8_t, start) ]
   );
 }
 
