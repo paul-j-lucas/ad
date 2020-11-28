@@ -1,3 +1,80 @@
+2020-11-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, options.c, options.h, unicode.h, util.c, util.h: Clean-up.
+   * util.c: Added "bytes >= 1" to assert.
+
+2020-11-25  Paul J. Lucas <paul@lucasmail.org>
+
+   * src/Makefile.am, dump.c, options.c: s/utf8/unicode/
+
+2020-11-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, c++defs.h, getopt-cdefs.in.h,
+     getopt-pfx-core.h, getopt.c, intprops.h, limits.in.h, stddef.in.h,
+     stdint.in.h, stdio.in.h, stdlib.in.h, string.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, 00gnulib.m4, absolute-header.m4, extensions.m4,
+     getdelim.m4, gnulib-common.m4, gnulib-comp.m4, include_next.m4, malloc.m4,
+     multiarch.m4, pid_t.m4, std-gnu11.m4, stddef_h.m4, stdint.m4, stdio_h.m4,
+     stdlib_h.m4, strdup.m4, string_h.m4, sys_socket_h.m4, sys_types_h.m4,
+     unistd_h.m4, warn-on-use.m4, wint_t.m4: Updated Gnulib.
+
+2020-06-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.h, match.c, options.c, util.c: Now using AD_FALLTHROUGH.
+   * configure.ac: Added -Wno-unknown-warning-option.
+
+2020-04-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.h: s/C_/AD_/
+
+2020-04-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, ax_c___attribute__.m4, pjl_compile.m4, ad.c, ad.h, color.c,
+     color.h, dump.c, match.c, match.h, options.c, options.h, reverse.c,
+     utf8.h, util.c, util.h: Added compiler attributes.
+
+2020-01-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, c++defs.h, errno.in.h,
+     getdelim.c, getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, 00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, malloc.m4, multiarch.m4, nocrash.m4, off_t.m4, ssize_t.m4,
+     stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4, stdlib_h.m4, strdup.m4,
+     strerror.m4, string_h.m4, strsep.m4, sys_socket_h.m4, sys_types_h.m4,
+     sysexits.m4, unistd_h.m4, warn-on-use.m4, wchar_t.m4, wint_t.m4,
+     zzgnulib.m4: Updated GNUlib.
+   * configure.ac, dump.c, options.c, reverse.c, util.c: Added more warnings.
+
+2019-12-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, dump.c, match.c, options.c, reverse.c, utf8.c, utf8.h,
+     util.c, util.h: Added more -W gcc options and fixed warnings.
+   * _Noreturn.h, intprops.h, stdint.in.h, stdio.in.h, stdlib.in.h,
+     string.in.h, unistd.in.h, verify.h, gnulib-common.m4: Updated GNUlib.
+
+2019-09-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, intprops.h, stddef.in.h, stdint.in.h, stdlib.in.h,
+     string.in.h, unistd.in.h, verify.h, extern-inline.m4, getdelim.m4,
+     getline.m4, getopt.m4, gnulib-common.m4, malloc.m4, nocrash.m4,
+     strerror.m4, sys_socket_h.m4, unistd_h.m4: Updated GNUlib.
+
+2019-07-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Suppress warning.
+
+2019-07-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Now printing help to stdout.
+   * options.c: Reworked help message.
+
 2019-04-07  Paul J. Lucas <paul@lucasmail.org>
 
    * _Noreturn.h: Updated Gnulib.
