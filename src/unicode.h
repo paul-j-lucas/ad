@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_utf8_H
-#define ad_utf8_H
+#ifndef ad_unicode_H
+#define ad_unicode_H
 
 // local
 #include "pjl_config.h"                 /* must go first */
@@ -208,5 +208,5 @@ size_t utf8_len( char start ) {
 
 _GL_INLINE_HEADER_END
 
-#endif /* ad_utf8_H */
+#endif /* ad_unicode_H */
 /* vim:set et sw=2 ts=2: */
