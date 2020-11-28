@@ -26,7 +26,7 @@
 #include "util.h"
 
 // standard
-#include <inttypes.h>                   /* for uint32_t */
+#include <inttypes.h>                   /* for uint*_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <string.h>                     /* for memcmp(3) */
