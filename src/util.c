@@ -262,7 +262,7 @@ size_t int_len( uint64_t n ) {
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
   assert( n != NULL );
-  assert( bytes <= 8 );
+  assert( bytes >= 1 && bytes <= 8 );
 
   switch ( endian ) {
 #ifdef WORDS_BIGENDIAN
