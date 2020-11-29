@@ -40,7 +40,7 @@
  * @param N The number of `0xF`s of the literal in the range [1,16].
  * @return Returns said literal.
  */
-#define NF(N)                     (0xFFFFFFFFFFFFFFFFull >> ((16u - (N)) << 2))
+#define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
 
 ///////////////////////////////////////////////////////////////////////////////
 
