@@ -29,6 +29,9 @@
 #include <inttypes.h>                   /* for uint*_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
+#if HAVE_CHAR8_T || HAVE_CHAR32_T
+#include <uchar.h>
+#endif /* HAVE_CHAR8_T || HAVE_CHAR32_T */
 
 #if !HAVE_CHAR8_T
 typedef uint8_t char8_t;                /* borrowed from C++20 */
