@@ -88,43 +88,43 @@
  * Intentionally fall through to the next `switch` `case`.
  */
 #if __has_attribute(fallthrough) || GCC_AT_LEAST_VERSION(7,0)
-#define AD_FALLTHROUGH            __attribute__((fallthrough))
+#define PJL_FALLTHROUGH           __attribute__((fallthrough))
 #endif
 
 /**
  * Denote that a function does not return.
  */
-#define AD_NORETURN               __attribute__((noreturn))
+#define PJL_NORETURN              __attribute__((noreturn))
 
 /**
  * Denote that a function's return value should never be ignored.
  *
- * @sa #AD_NOWARN_UNUSED_RESULT
+ * @sa #PJL_NOWARN_UNUSED_RESULT
  */
-#define AD_WARN_UNUSED_RESULT     __attribute__((warn_unused_result))
+#define PJL_WARN_UNUSED_RESULT    __attribute__((warn_unused_result))
 
 #endif /* HAVE___ATTRIBUTE__ */
 
-#ifndef AD_FALLTHROUGH
-# define AD_FALLTHROUGH           ((void)0)
-#endif /* AD_FALLTHROUGH */
+#ifndef PJL_FALLTHROUGH
+# define PJL_FALLTHROUGH          ((void)0)
+#endif /* PJL_FALLTHROUGH */
 
-#ifndef AD_NORETURN
-# define AD_NORETURN              /* nothing */
-#endif /* AD_NORETURN */
+#ifndef PJL_NORETURN
+# define PJL_NORETURN             /* nothing */
+#endif /* PJL_NORETURN */
 
-#ifndef AD_WARN_UNUSED_RESULT
-# define AD_WARN_UNUSED_RESULT    /* nothing */
-#endif /* AD_WARN_UNUSED_RESULT */
+#ifndef PJL_WARN_UNUSED_RESULT
+# define PJL_WARN_UNUSED_RESULT   /* nothing */
+#endif /* PJL_WARN_UNUSED_RESULT */
 
 /**
  * Denote that a function's return value may be ignored without warning.
  *
  * @note
  * There is no compiler attribute for this.  It's just a visual cue in code
- * that #AD_WARN_UNUSED_RESULT wasn't forgotten.
+ * that #PJL_WARN_UNUSED_RESULT wasn't forgotten.
  */
-#define AD_NOWARN_UNUSED_RESULT   /* nothing */
+#define PJL_NOWARN_UNUSED_RESULT  /* nothing */
 
 #ifdef HAVE___TYPEOF__
 /**
@@ -133,10 +133,10 @@
  *
  * @param FN_CALL The function call.
  */
-#define AD_IGNORE_RV(FN_CALL) \
+#define PJL_IGNORE_RV(FN_CALL) \
   do { __typeof__(FN_CALL) _rv __attribute__((unused)) = (FN_CALL); } while (0)
 #else
-#define AD_IGNORE_RV(FN_CALL)     do { (void)(FN_CALL); } while (0)
+#define PJL_IGNORE_RV(FN_CALL)    do { (void)(FN_CALL); } while (0)
 #endif /* HAVE___TYPEOF__ */
 
 ///////////////////////////////////////////////////////////////////////////////

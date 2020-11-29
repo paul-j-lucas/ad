@@ -68,7 +68,7 @@ char const *sgr_ascii_match;
  * @param sgr_color The SGR color to set; or null or empty to unset.
  * @return Returns \c true only if \a sgr_color is valid.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   assert( cap != NULL );
   assert( cap->cap_var_to_set != NULL || cap->cap_func != NULL );
