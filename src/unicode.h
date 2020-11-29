@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/unicode.h
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -30,6 +30,9 @@
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <string.h>                     /* for memcmp(3) */
+#if HAVE_CHAR8_T || HAVE_CHAR32_T
+#include <uchar.h>
+#endif /* HAVE_CHAR8_T || HAVE_CHAR32_T */
 
 #if !HAVE_CHAR8_T
 typedef uint8_t char8_t;                /* borrowed from C++20 */
@@ -90,7 +93,7 @@ AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
  * @param cp_candidate The Unicode code-point candidate value to check.
  * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
@@ -102,7 +105,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * @param when The UTF-8 when value.
  * @return Returns \c true only if we should do UTF-8.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 bool should_utf8( utf8_when_t when );
 
 /**
@@ -115,7 +118,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns `true` only if the UTF-16 bytes were valid and decoded
  * successfully.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
                char32_t *u32 );
 
@@ -128,7 +131,7 @@ bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 size_t utf32_8( char32_t cp, char *utf8_buf );
 
 /**
@@ -139,7 +142,7 @@ size_t utf32_8( char32_t cp, char *utf8_buf );
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
   char32_t const cp = (uint8_t)*s;
@@ -153,7 +156,7 @@ char32_t utf8_32( char const *s ) {
  * @param u2 The second UTF-8 character.
  * @return Returns `true` only if \a u1 equals \a u2.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
   extern uint8_t const UTF8_LEN_TABLE[];
   return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
@@ -168,7 +171,7 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
   char8_t const c8 = (char8_t)c;
   return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
@@ -183,7 +186,7 @@ bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
   char8_t const c8 = (char8_t)c;
   return c8 >= 0x80 && c8 < 0xC0;
@@ -196,7 +199,7 @@ bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-AD_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(

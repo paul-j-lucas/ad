@@ -1220,10 +1220,10 @@ void ad_expr_free( ad_expr_t *expr ) {
   switch ( expr->expr_id & AD_EXPR_MASK ) {
     case AD_EXPR_TERNARY:
       ad_expr_free( expr->as.ternary.false_expr );
-      AD_FALLTHROUGH;
+      PJL_FALLTHROUGH;
     case AD_EXPR_BINARY:
       ad_expr_free( expr->as.binary.rhs_expr );
-      AD_FALLTHROUGH;
+      PJL_FALLTHROUGH;
     case AD_EXPR_UNARY:
       ad_expr_free( expr->as.unary.sub_expr );
       break;

@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/unicode.c
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -163,9 +163,9 @@ char32_t utf8_32_impl( char const *s ) {
   uint8_t const *u = (uint8_t const*)s;
 
   switch ( len ) {
-    case 4: cp += *u++; cp <<= 6; AD_FALLTHROUGH;
-    case 3: cp += *u++; cp <<= 6; AD_FALLTHROUGH;
-    case 2: cp += *u++; cp <<= 6; AD_FALLTHROUGH;
+    case 4: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
+    case 3: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
+    case 2: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
     case 1: cp += *u;
   } // switch
 

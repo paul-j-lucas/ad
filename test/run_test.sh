@@ -3,7 +3,7 @@
 #       ad -- ASCII dump
 #       test/run_test.sh
 #
-#       Copyright (C) 2015-2017  Paul J. Lucas
+#       Copyright (C) 2015-2020  Paul J. Lucas
 #
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by

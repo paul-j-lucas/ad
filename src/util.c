@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/util.c
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
  * @param N The number of `0xF`s of the literal in the range [1,16].
  * @return Returns said literal.
  */
-#define NF(N)                     (0xFFFFFFFFFFFFFFFFull >> ((16u - (N)) << 2))
+#define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ static char const* regex_error( regex_t *re, int err_code ) {
  * character or pointing to the NULL byte if either \a s was all whitespace or
  * empty.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 static char const* skip_ws( char const *s ) {
   assert( s != NULL );
   while ( isspace( *s ) )
@@ -227,14 +227,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
       switch ( bytes ) {
         case 1: /* do nothing */              break;
         case 2: *n = swap_16( (uint16_t)*n ); break;
-        case 3: *n <<= 8;                     AD_FALLTHROUGH;
+        case 3: *n <<= 8;                     PJL_FALLTHROUGH;
         case 4: *n = swap_32( (uint32_t)*n ); break;
-        case 5: *n <<= 8;                     AD_FALLTHROUGH;
-        case 6: *n <<= 8;                     AD_FALLTHROUGH;
-        case 7: *n <<= 8;                     AD_FALLTHROUGH;
+        case 5: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 6: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 7: *n <<= 8;                     PJL_FALLTHROUGH;
         case 8: *n = swap_64( *n );           break;
       } // switch
-      AD_FALLTHROUGH;
+      PJL_FALLTHROUGH;
 
     case ENDIAN_BIG:
       // move bytes to start of buffer

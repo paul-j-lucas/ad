@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/match.h
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ extern unsigned long total_matches;
  * @return Returns an array containing the values comprising the partial-match
  * table.  The caller is responsible for freeing the array.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 kmp_t* kmp_init( char const *pattern, size_t pattern_len );
 
 /**
@@ -69,7 +69,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * \a row_size except on the last row in which case it will be less than
  * \a row_size.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 size_t match_row( char8_t *row_buf, size_t row_size, match_bits_t *match_bits,
                   kmp_t const *kmps, char8_t *match_buf );
 

@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/util.h
 **
-**      Copyright (C) 2015-2018  Paul J. Lucas
+**      Copyright (C) 2015-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ typedef enum ad_endian ad_endian_t;
  * @param s_len The number of characters to check.
  * @return Returns \c true only if there is at least one printable character.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 bool ascii_any_printable( char const *s, size_t s_len );
 
 /**
@@ -192,7 +192,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * @param c The characther to check.
  * @return Returns \c true only if \c is an ASCII printable character.
  */
-AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
+PJL_WARN_UNUSED_RESULT AD_UTIL_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
@@ -206,7 +206,7 @@ bool ascii_is_print( char c ) {
  * @param offset The number of bytes to skip, if any.
  * @return Returns the corresponding \c FILE.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 FILE* check_fopen( char const *path, char const *mode, off_t offset );
 
 /**
@@ -218,7 +218,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset );
  * @param offset The number of bytes to skip, if any.
  * @return Returns the corresponding file descriptor.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 int check_open( char const *path, int oflag, off_t offset );
 
 /**
@@ -229,7 +229,7 @@ int check_open( char const *path, int oflag, off_t offset );
  * @param size The number of bytes to allocate.
  * @return Returns a pointer to the allocated memory.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 void* check_realloc( void *p, size_t size );
 
 /**
@@ -239,7 +239,7 @@ void* check_realloc( void *p, size_t size );
  * @param s The NULL-terminated string to duplicate.
  * @return Returns a copy of \a s.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 char* check_strdup( char const *s );
 
 #ifndef HAVE_FGETLN
@@ -252,7 +252,7 @@ char* check_strdup( char const *s );
  * @return Returns a pointer to the line that is \e not NULL-terminated;
  * or NULL upon EOF or error.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 char* fgetln( FILE *f, size_t *len );
 #endif /* HAVE_FGETLN */
 
@@ -262,7 +262,7 @@ char* fgetln( FILE *f, size_t *len );
  * @param p The pointer to add.
  * @return Returns \a p.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 void* free_later( void *p );
 
 /**
@@ -290,7 +290,7 @@ void fskip( size_t bytes_to_skip, FILE *file );
  * @return Returns \a s converted to a valid identifier in C.
  * The caller is responsible for freeing the string.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 char* identify( char const *s );
 
 /**
@@ -301,7 +301,7 @@ char* identify( char const *s );
  * @return Returns the minimum number of bytes required to contain \a n
  * in the range [1,8].
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 size_t int_len( uint64_t n );
 
 /**
@@ -329,7 +329,7 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian );
  * @param fd The file descriptor to check.
  * @return Returns \c true only if \a fd refers to a regular file.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 bool is_file( int fd );
 
 /**
@@ -343,7 +343,7 @@ bool is_file( int fd );
  * @return Returns the parsed offset only if \a s is a non-negative number or
  * prints an error message and exits if there was an error.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 unsigned long long parse_offset( char const *s );
 
 /**
@@ -356,7 +356,7 @@ unsigned long long parse_offset( char const *s );
  * @param sgr_color The NULL-terminated allegedly SGR string to parse.
  * @return Returns \c true only only if \a s contains a valid SGR value.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 bool parse_sgr( char const *sgr_color );
 
 /**
@@ -368,7 +368,7 @@ bool parse_sgr( char const *sgr_color );
  * @return Returns the parsed number only if \a s is entirely a non-negative
  * number or prints an error message and exits if there was an error.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 unsigned long long parse_ull( char const *s );
 
 /**
@@ -395,7 +395,7 @@ void perror_exit( int status );
  * calls will overwrite the returned value.  As such, this function is not
  * thread-safe.
  */
-AD_WARN_UNUSED_RESULT
+PJL_WARN_UNUSED_RESULT
 char const* printable_char( char c );
 
 /**
@@ -411,7 +411,8 @@ void regex_compile( regex_t *re, char const *pattern );
  *
  * @param re A pointer to the wregex_t to free.
  */
-AD_UTIL_INLINE void regex_free( regex_t *re ) {
+AD_UTIL_INLINE
+void regex_free( regex_t *re ) {
   regfree( re );
 }
 
@@ -435,7 +436,7 @@ bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
  * @param n The 16-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
+PJL_WARN_UNUSED_RESULT AD_UTIL_INLINE
 uint16_t swap_16( uint16_t n ) {
   return (uint16_t)((n >> 8)
                   | (n << 8));
@@ -447,7 +448,7 @@ uint16_t swap_16( uint16_t n ) {
  * @param n The 32-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
+PJL_WARN_UNUSED_RESULT AD_UTIL_INLINE
 uint32_t swap_32( uint32_t n ) {
   return  ( n                >> 24)
         | ((n & 0x00FF0000u) >>  8)
@@ -461,7 +462,7 @@ uint32_t swap_32( uint32_t n ) {
  * @param n The 64-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-AD_WARN_UNUSED_RESULT AD_UTIL_INLINE
+PJL_WARN_UNUSED_RESULT AD_UTIL_INLINE
 uint64_t swap_64( uint64_t n ) {
   return  ( n                          >> 56)
         | ((n & 0x00FF000000000000ull) >> 40)
@@ -557,7 +558,7 @@ AD_UTIL_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
  * @param s The NULL-terminated string to convert.
  * @return Returns \a s.
  */
-AD_NOWARN_UNUSED_RESULT
+PJL_NOWARN_UNUSED_RESULT
 char* tolower_s( char *s );
 
 ///////////////////////////////////////////////////////////////////////////////
