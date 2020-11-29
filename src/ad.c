@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/ad.c
 **
-**      Copyright (C) 1996-2018  Paul J. Lucas
+**      Copyright (C) 1996-2020  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
