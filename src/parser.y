@@ -491,11 +491,6 @@ declaration
   | typedef_decl
   ;
 
-switch_case_statement
-  : Y_CASE constant_expr_exp colon_exp statement
-  | Y_DEFAULT colon_exp statement
-  ;
-
 /*****************************************************************************/
 /*  enum declaration                                                         */
 /*****************************************************************************/
@@ -539,7 +534,7 @@ array_opt
   | '[' expr ']'
     {
       $$.times = AD_REPETITION_EXPR;
-      $$.expr = $1;
+      $$.expr = $2;
     }
   ;
 
@@ -554,33 +549,46 @@ struct_decl
   ;
 
 /*****************************************************************************/
+/*  switch statement                                                         */
+/*****************************************************************************/
+
+switch_statement
+  : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp
+  ;
+
+switch_case_statement_list_opt
+  : /* empty */
+  | switch_case_statement_list_opt switch_case_statement
+  ;
+
+switch_case_statement
+  : Y_CASE constant_expr_exp colon_exp statement
+  | Y_DEFAULT colon_exp statement
+  ;
+
+/*****************************************************************************/
 /*  typedef declaration                                                      */
 /*****************************************************************************/
 
 typedef_declaration_c
-  : Y_TYPEDEF
-    {
-      // see the comment in "explain"
-      c_mode = MODE_GIBBERISH_TO_ENGLISH;
-    }
-    type_c_ast
+  : Y_TYPEDEF type_c_ast
     {
       // see the comment in define_english about T_TYPEDEF
-      C_TYPE_ADD( &$3.ast->type_id, T_TYPEDEF, @3 );
-      type_push( $3.ast );
+      C_TYPE_ADD( &$2.ast->type_id, T_TYPEDEF, @2 );
+      type_push( $2.ast );
     }
     decl_c_ast
     {
       type_pop();
 
       DUMP_START( "typedef_declaration_c", "TYPEDEF type_c_ast decl_c_ast" );
-      DUMP_AST( "type_c_ast", $3.ast );
-      DUMP_AST( "decl_c_ast", $5.ast );
+      DUMP_AST( "type_c_ast", $2.ast );
+      DUMP_AST( "decl_c_ast", $4.ast );
 
       c_ast_t *ast;
       c_sname_t temp_sname;
 
-      if ( $3.ast->kind == K_TYPEDEF && $5.ast->kind == K_TYPEDEF ) {
+      if ( $2.ast->kind == K_TYPEDEF && $4.ast->kind == K_TYPEDEF ) {
         //
         // This is for a case like:
         //
@@ -588,9 +596,9 @@ typedef_declaration_c
         //
         // that is: an existing typedef name followed by a new name.
         //
-        ast = $3.ast;
+        ast = $2.ast;
       }
-      else if ( $5.ast->kind == K_TYPEDEF ) {
+      else if ( $4.ast->kind == K_TYPEDEF ) {
         //
         // This is for a case like:
         //
@@ -599,8 +607,8 @@ typedef_declaration_c
         // that is: a type followed by an existing typedef name, i.e.,
         // redefining an existing typedef name to be the same type.
         //
-        ast = $3.ast;
-        temp_sname = c_ast_sname_dup( $5.ast->as.c_typedef->ast );
+        ast = $2.ast;
+        temp_sname = c_ast_sname_dup( $4.ast->as.c_typedef->ast );
         c_ast_sname_set_sname( ast, &temp_sname );
       }
       else {
@@ -611,8 +619,8 @@ typedef_declaration_c
         //
         // that is: a type followed by a new name.
         //
-        ast = c_ast_patch_placeholder( $3.ast, $5.ast );
-        temp_sname = c_ast_take_name( $5.ast );
+        ast = c_ast_patch_placeholder( $2.ast, $4.ast );
+        temp_sname = c_ast_take_name( $4.ast );
         c_ast_sname_set_sname( ast, &temp_sname );
       }
 
@@ -621,7 +629,7 @@ typedef_declaration_c
       (void)c_ast_take_typedef( ast );
 
       if ( c_ast_sname_count( ast ) > 1 ) {
-        print_error( &@5,
+        print_error( &@4,
           "%s names can not be scoped; use: %s %s { %s ... }",
           L_TYPEDEF, L_NAMESPACE, c_ast_sname_scope_c( ast ), L_TYPEDEF
         );
@@ -641,7 +649,7 @@ typedef_declaration_c
           slist_push_list_tail( &ast_typedef_list, &ast_gc_list );
           break;
         case TD_ADD_DIFF:
-          print_error( &@5,
+          print_error( &@4,
             "\"%s\": \"%s\" redefinition with different type",
             c_ast_sname_full_c( ast ), L_TYPEDEF
           );

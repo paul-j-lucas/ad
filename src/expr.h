@@ -57,7 +57,6 @@ enum ad_expr_err {
   AD_ERR_BAD_OPERAND,                   ///< Bad operand, e.g., & for double.
   AD_ERR_DIV_0,                         ///< Divide by 0.
 };
-typedef enum ad_expr_err ad_expr_err_t;
 
 /**
  * The expression ID.
@@ -108,6 +107,7 @@ enum ad_expr_id {
 
 typedef struct ad_binary_expr   ad_binary_expr_t;
 typedef struct ad_expr          ad_expr_t;
+typedef enum   ad_expr_err      ad_expr_err_t;
 typedef enum   ad_expr_id       ad_expr_id_t;
 typedef struct ad_ternary_expr  ad_ternary_expr_t;
 typedef struct ad_unary_expr    ad_unary_expr_t;
