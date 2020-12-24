@@ -85,24 +85,80 @@
 #define DTRACE                    NO_OP
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @defgroup parser-dump-group Debugging Macros
+ * Macros that are used to dump a trace during parsing when `opt_cdecl_debug`
+ * is `true`.
+ * @ingroup parser-group
+ * @{
+ */
+
+/**
+ * Dumps a comma followed by a newline the _second_ and subsequent times it's
+ * called.  It's used to separate items being dumped.
+ */
 #define DUMP_COMMA \
   BLOCK( if ( true_or_set( &debug_comma ) ) PUTS_OUT( ",\n" ); )
 
+/**
+ * Dumps an AST.
+ *
+ * @param KEY The key name to print.
+ * @param AST The AST to dump.
+ */
 #define DUMP_AST(KEY,AST) \
   IF_DEBUG( DUMP_COMMA; c_ast_debug( (AST), 1, (KEY), stdout ); )
 
+/**
+ * Dumps an `s_list` of AST.
+ *
+ * @param KEY The key name to print.
+ * @param AST_LIST The `s_list` of AST to dump.
+ */
 #define DUMP_AST_LIST(KEY,AST_LIST) IF_DEBUG( \
   DUMP_COMMA; PUTS_OUT( "  " KEY " = " );     \
   c_ast_list_debug( &(AST_LIST), 1, stdout ); )
 
+/**
+ * Dumps a `bool`.
+ *
+ * @param KEY The key name to print.
+ * @param BOOL The `bool` to dump.
+ */
+#define DUMP_BOOL(KEY,BOOL)  IF_DEBUG(  \
+  DUMP_COMMA;                           \
+  FPRINTF( stdout, "  " KEY " = %s", ((BOOL) ? "true" : "false") ); )
+
+/**
+ * Dumps an integer.
+ *
+ * @param KEY The key name to print.
+ * @param NUM The integer to dump.
+ */
 #define DUMP_NUM(KEY,NUM) \
   IF_DEBUG( DUMP_COMMA; printf( "  " KEY " = %d", (NUM) ); )
 
+/**
+ * Dumps a C string.
+ *
+ * @param KEY The key name to print.
+ * @param STR The C string to dump.
+ */
 #define DUMP_STR(KEY,NAME) IF_DEBUG(  \
   DUMP_COMMA; PUTS_OUT( "  " );       \
   print_kv( (KEY), (NAME), stdout ); )
 
 #ifdef ENABLE_AD_DEBUG
+/**
+ * Starts a dump block.
+ *
+ * @param NAME The grammar production name.
+ * @param PROD The grammar production rule.
+ *
+ * @sa DUMP_END
+ */
 #define DUMP_START(NAME,PROD) \
   bool debug_comma = false;   \
   IF_DEBUG( PUTS_OUT( "\n" NAME " ::= " PROD " = {\n" ); )
@@ -110,19 +166,24 @@
 #define DUMP_START(NAME,PROD)     /* nothing */
 #endif
 
+/**
+ * Ends a dump block.
+ *
+ * @sa DUMP_START
+ */
 #define DUMP_END()                IF_DEBUG( PUTS_OUT( "\n}\n" ); )
 
 #define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
   DUMP_COMMA; PUTS_OUT( "  " KEY " = " ); c_type_debug( TYPE, stdout ); )
 
-#define ELABORATE_ERROR(...) \
-  BLOCK( elaborate_error( __VA_ARGS__ ); PARSE_ABORT(); )
+/** @} */
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define elaborate_error(...) \
+  BLOCK( fl_elaborate_error( __FILE__, __LINE__, __VA_ARGS__ ); PARSE_ABORT(); )
 
 #define PARSE_ABORT()             BLOCK( parse_cleanup( true ); YYABORT; )
-
-#define SHOW_ALL_TYPES            (~0u)
-#define SHOW_PREDEFINED_TYPES     0x01u
-#define SHOW_USER_TYPES           0x02u
 
 /// @endcond
 
@@ -142,8 +203,13 @@ static bool           error_newlined = true;
  *
  * @return Returns said string.
  */
+PJL_WARN_UNUSED_RESULT
 static inline char const* printable_token( void ) {
-  return lexer_token[0] == '\n' ? "\\n" : lexer_token;
+  switch ( lexer_token[0] ) {
+    case '\0': return NULL;
+    case '\n': return "\\n";
+    default  : return lexer_token;
+  } // switch
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -163,10 +229,11 @@ void parser_cleanup( void ) {
  *
  * @param format A `printf()` style format string.
  */
-static void elaborate_error( char const *format, ... ) {
+static void fl_elaborate_error( char const *format, ... ) {
   if ( !error_newlined ) {
     PUTS_ERR( ": " );
-    if ( lexer_token[0] != '\0' )
+    char const *const error_token = printable_token();
+    if ( error_token != NULL )
       PRINT_ERR( "\"%s\": ", printable_token() );
     va_list args;
     va_start( args, format );
@@ -324,8 +391,8 @@ static void yyerror( char const *msg ) {
                      *      + <number>: "_num" is appended.
                      *      + <sname>: "_sname" is appended.
                      *      + <type_id>: "_type" is appended.
-                     *  4. Is expected, "_expected" is appended; is optional,
-                     *     "_opt" is appended.
+                     *  4. Is expected, "_exp" is appended; is optional, "_opt"
+                     *     is appended.
                      */
 %type   <ast_pair>  cast_c_ast cast_c_ast_opt cast2_c_ast
 %type   <ast_pair>  array_cast_c_ast
@@ -365,11 +432,11 @@ static void yyerror( char const *msg ) {
 %type   <type_id>   class_struct_union_type
 %type   <oper_id>   c_operator
 %type   <ast_pair>  name_ast
-%type   <name>      name_expected name_opt
+%type   <name>      name_exp name_opt
 %type   <type_id>   namespace_type
-%type   <sname>     sname_c sname_c_expected sname_c_opt
+%type   <sname>     sname_c sname_c_exp sname_c_opt
 %type   <ast_pair>  sname_c_ast
-%type   <sname>     typedef_type_sname typedef_type_sname_expected
+%type   <sname>     typedef_type_sname typedef_type_sname_exp
 %type   <type_id>   static_type_opt
 
 /*
@@ -380,16 +447,16 @@ static void yyerror( char const *msg ) {
  */
 
 /* name */
-%destructor { DTRACE; FREE( $$ ); } name_expected
+%destructor { DTRACE; FREE( $$ ); } name_exp
 %destructor { DTRACE; FREE( $$ ); } name_opt
 %destructor { DTRACE; FREE( $$ ); } Y_NAME
 
 /* sname */
 %destructor { DTRACE; c_sname_free( &$$ ); } sname_c
-%destructor { DTRACE; c_sname_free( &$$ ); } sname_c_expected
+%destructor { DTRACE; c_sname_free( &$$ ); } sname_c_exp
 %destructor { DTRACE; c_sname_free( &$$ ); } sname_c_opt
 %destructor { DTRACE; c_sname_free( &$$ ); } typedef_type_sname
-%destructor { DTRACE; c_sname_free( &$$ ); } typedef_type_sname_expected
+%destructor { DTRACE; c_sname_free( &$$ ); } typedef_type_sname_exp
 
 /*****************************************************************************/
 %%
@@ -405,10 +472,10 @@ statement
   | switch_statement
   | error
     {
-      if ( lexer_token[0] != '\0' )
-        ELABORATE_ERROR( "unexpected token" );
+      if ( printable_token() != NULL )
+        elaborate_error( "unexpected token" );
       else
-        ELABORATE_ERROR( "unexpected end of statement" );
+        elaborate_error( "unexpected end of statement" );
     }
   ;
 
@@ -425,8 +492,8 @@ declaration
   ;
 
 switch_case_statement
-  : Y_CASE constant_expr_expected colon_expected statement
-  | Y_DEFAULT colon_expected statement
+  : Y_CASE constant_expr_exp colon_exp statement
+  | Y_DEFAULT colon_exp statement
   ;
 
 /*****************************************************************************/
@@ -434,8 +501,7 @@ switch_case_statement
 /*****************************************************************************/
 
 enum_decl
-  : Y_ENUM name_expected colon_expected type_expected
-    lbrace_expected enumerator_list '}'
+  : Y_ENUM name_exp colon_exp type_exp lbrace_exp enumerator_list '}'
   ;
 
 enumerator_list
@@ -447,7 +513,7 @@ enumerator_list
   ;
 
 enumerator
-  : Y_NAME equals_expected number_expected
+  : Y_NAME equals_exp number_exp
     {
       $$.name = $1;
       $$.value = $3;
@@ -459,17 +525,17 @@ enumerator
 /*****************************************************************************/
 
 field_decl
-  : type_expected field_name_expected array_opt
+  : type_exp field_name_exp array_opt
   ;
 
 array_opt
   : /* empty */                   { $$.times = AD_REPETITION_1; }
-  | '[' ']' eqeq_expected literal
+  | '[' ']' eqeq_exp literal
     {
     }
-  | '[' '?' rbracket_expected     { $$.times = AD_REPETITION_0_1; }
-  | '[' '*' rbracket_expected     { $$.times = AD_REPETITION_0_MORE; }
-  | '[' '+' rbracket_expected     { $$.times = AD_REPETITION_1_MORE; }
+  | '[' '?' rbracket_exp          { $$.times = AD_REPETITION_0_1; }
+  | '[' '*' rbracket_exp          { $$.times = AD_REPETITION_0_MORE; }
+  | '[' '+' rbracket_exp          { $$.times = AD_REPETITION_1_MORE; }
   | '[' expr ']'
     {
       $$.times = AD_REPETITION_EXPR;
@@ -482,7 +548,7 @@ array_opt
 /*****************************************************************************/
 
 struct_decl
-  : Y_STRUCT name_expected lbrace_expected statement_list rbrace_expected
+  : Y_STRUCT name_exp lbrace_exp statement_list rbrace_exp
     {
     }
   ;
@@ -783,20 +849,20 @@ unary_op
 /*****************************************************************************/
 
 switch_statement
-  : Y_SWITCH lparen_expected expr rparen_expected compound_statement
+  : Y_SWITCH lparen_exp expr rparen_exp compound_statement
     {
     }
   ;
 
 case_clause
-  : Y_CASE expr colon_expected statement_list
+  : Y_CASE expr colon_exp statement_list
     {
     }
   ;
 
 default_case_opt
   : /* empty */
-  | Y_DEFAULT colon_expected statement_list
+  | Y_DEFAULT colon_exp statement_list
   ;
 
 /*****************************************************************************/
@@ -848,7 +914,7 @@ array_size_c_num
   | '[' Y_NUMBER ']'              { $$ = $2; }
   | '[' error ']'
     {
-      ELABORATE_ERROR( "integer expected for array size" );
+      elaborate_error( "integer expected for array size" );
     }
   ;
 
@@ -1028,7 +1094,7 @@ pointer_type_c_ast
 /*****************************************************************************/
 
 type
-  : builtin_type lt_expected expr type_endian_opt '>'
+  : builtin_type lt_exp expr type_endian_opt '>'
   | Y_TYPEDEF_TYPE
   ;
 
@@ -1180,59 +1246,59 @@ pointer_cast_c_ast
 /*  miscellaneous productions                                                */
 /*****************************************************************************/
 
-comma_expected
+comma_exp
   : ','
   | error
     {
-      ELABORATE_ERROR( "',' expected" );
+      elaborate_error( "',' expected" );
     }
   ;
 
-eqeq_expected
+eqeq_exp
   : "=="
   | error
     {
-      ELABORATE_ERROR( "\"==\" expected" );
+      elaborate_error( "\"==\" expected" );
     }
   ;
 
-equals_expected
+equals_exp
   : '='
   | error
     {
-      ELABORATE_ERROR( "'=' expected" );
+      elaborate_error( "'=' expected" );
     }
   ;
 
-gt_expected
+gt_exp
   : '>'
   | error
     {
-      ELABORATE_ERROR( "'>' expected" );
+      elaborate_error( "'>' expected" );
     }
   ;
 
-lbrace_expected
+lbrace_exp
   : '{'
   | error
     {
-      ELABORATE_ERROR( "'{' expected" );
+      elaborate_error( "'{' expected" );
     }
   ;
 
-lparen_expected
+lparen_exp
   : '('
   | error
     {
-      ELABORATE_ERROR( "'(' expected" );
+      elaborate_error( "'(' expected" );
     }
   ;
 
-lt_expected
+lt_exp
   : '<'
   | error
     {
-      ELABORATE_ERROR( "'<' expected" );
+      elaborate_error( "'<' expected" );
     }
   ;
 
@@ -1251,12 +1317,12 @@ name_ast
     }
   ;
 
-name_expected
+name_exp
   : Y_NAME
   | error
     {
       $$ = NULL;
-      ELABORATE_ERROR( "name expected" );
+      elaborate_error( "name expected" );
     }
   ;
 
@@ -1265,43 +1331,43 @@ name_opt
   | Y_NAME
   ;
 
-number_expected
+number_exp
   : Y_NUMBER
   | error
     {
-      ELABORATE_ERROR( "number expected" );
+      elaborate_error( "number expected" );
     }
   ;
 
-rbrace_expected
+rbrace_exp
   : '}'
   | error
     {
-      ELABORATE_ERROR( "'}' expected" );
+      elaborate_error( "'}' expected" );
     }
   ;
 
-rbracket_expected
+rbracket_exp
   : ']'
   | error
     {
-      ELABORATE_ERROR( "']' expected" );
+      elaborate_error( "']' expected" );
     }
   ;
 
-rparen_expected
+rparen_exp
   : ')'
   | error
     {
-      ELABORATE_ERROR( "')' expected" );
+      elaborate_error( "')' expected" );
     }
   ;
 
-semi_expected
+semi_exp
   : ';'
   | error
     {
-      ELABORATE_ERROR( "';' expected" );
+      elaborate_error( "';' expected" );
     }
   ;
 
