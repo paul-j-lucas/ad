@@ -554,6 +554,7 @@ struct_decl
 
 switch_statement
   : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp
+    switch_case_statement_list_opt '}'
   ;
 
 switch_case_statement_list_opt
@@ -562,8 +563,8 @@ switch_case_statement_list_opt
   ;
 
 switch_case_statement
-  : Y_CASE constant_expr_exp colon_exp statement
-  | Y_DEFAULT colon_exp statement
+  : Y_CASE constant_expr_exp colon_exp statement_list
+  | Y_DEFAULT colon_exp statement_list
   ;
 
 /*****************************************************************************/
@@ -573,7 +574,16 @@ switch_case_statement
 typedef_declaration_c
   : Y_TYPEDEF type_c_ast
     {
-      // see the comment in define_english about T_TYPEDEF
+      //
+      // Explicitly add T_TYPEDEF to prohibit cases like:
+      //
+      //      typedef extern int eint
+      //      typedef register int rint
+      //      typedef static int sint
+      //      ...
+      //
+      //  i.e., a defined type with a storage class.
+      //
       C_TYPE_ADD( &$2.ast->type_id, T_TYPEDEF, @2 );
       type_push( $2.ast );
     }
@@ -668,6 +678,9 @@ typedef_declaration_c
 expr
   : assign_expr
   | expr ',' assign_expr
+    {
+      $$ = $3;
+    }
   ;
 
 additive_expr
@@ -850,27 +863,6 @@ unary_op
   | '-'
   | '~'
   | '!'
-  ;
-
-/*****************************************************************************/
-/*  switch statement                                                         */
-/*****************************************************************************/
-
-switch_statement
-  : Y_SWITCH lparen_exp expr rparen_exp compound_statement
-    {
-    }
-  ;
-
-case_clause
-  : Y_CASE expr colon_exp statement_list
-    {
-    }
-  ;
-
-default_case_opt
-  : /* empty */
-  | Y_DEFAULT colon_exp statement_list
   ;
 
 /*****************************************************************************/

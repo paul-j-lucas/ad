@@ -1,28 +1,26 @@
-// Leading = means "match at current offset."
-
 typedef int<32>   st_time_t;
 typedef uint<32>  st_addr_t;
 
 struct tsidx_header {
-  = utf<8>    magic[8] /= R"Splunk\d{2}";
-  = uint<32>  num_values;         // Number of events.
-  = uint<32>  num_postings;       // Sum: number of events for each term.
-  = uint<32>  num_terms;          // Number of terms (tokens).
-  = uint<32>  et_array_size;      // Event-type array size.
-  = uint<32>  s_array_size;       // Source array size.
-  = uint<32>  st_array_size;      // Source-type array size.
-  = uint<32>  h_array_size;       // Host array size.
-  = uint<32>  d_array_size;       // Delete array size.
-  = uint<32>  et_nbits;           // Event-type number of bits.
-  = uint<32>  s_nbits;            // Source number of bits.
-  = uint<32>  st_nbits;           // Source-type number of bits.
-  = uint<32>  h_nbits;            // Host number of bits.
-  = uint<32>  d_nbits;            // Delete number of bits.
-  = st_time_t earliest;           // Earliest event time.
-  = st_time_t latest;             // Latest event time.
-  = uint<64>  w_flags;            // Format flags.
-  = st_addr_t lowest_addr;        // Lowest seek address.
-  = st_addr_t highest_addr;       // Highest seek address.
+  utf<8>    magic[8] /= R"Splunk\d{2}";
+  uint<32>  num_values;           // Number of events.
+  uint<32>  num_postings;         // Sum: number of events for each term.
+  uint<32>  num_terms;            // Number of terms (tokens).
+  uint<32>  et_array_size;        // Event-type array size.
+  uint<32>  s_array_size;         // Source array size.
+  uint<32>  st_array_size;        // Source-type array size.
+  uint<32>  h_array_size;         // Host array size.
+  uint<32>  d_array_size;         // Delete array size.
+  uint<32>  et_nbits;             // Event-type number of bits.
+  uint<32>  s_nbits;              // Source number of bits.
+  uint<32>  st_nbits;             // Source-type number of bits.
+  uint<32>  h_nbits;              // Host number of bits.
+  uint<32>  d_nbits;              // Delete number of bits.
+  st_time_t earliest;             // Earliest event time.
+  st_time_t latest;               // Latest event time.
+  uint<64>  w_flags;              // Format flags.
+  st_addr_t lowest_addr;          // Lowest seek address.
+  st_addr_t highest_addr;         // Highest seek address.
 };
 
 struct st_tsval_encoded {
