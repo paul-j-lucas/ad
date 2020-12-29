@@ -339,7 +339,7 @@ void dump_file( void ) {
 
   if ( opt_matches != MATCHES_NO_PRINT ) {
     FFLUSH( fout );
-    PRINT_ERR( "%lu\n", total_matches );
+    EPRINTF( "%lu\n", total_matches );
   }
 
   exit( search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );

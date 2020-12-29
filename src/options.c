@@ -651,7 +651,7 @@ void parse_options( int argc, char *argv[] ) {
   check_required( "U", "u" );
 
   if ( print_version ) {
-    PRINT_ERR( "%s\n", PACKAGE_STRING );
+    EPRINTF( "%s\n", PACKAGE_STRING );
     exit( EX_OK );
   }
 

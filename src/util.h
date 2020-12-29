@@ -67,6 +67,13 @@ _GL_INLINE_HEADER_BEGIN
 #define CONST_CAST(T,EXPR)        ((T)(uintptr_t)(EXPR))
 
 /**
+ * Shorthand for printing to standard error.
+ *
+ * @param ... The `printf()` arguments.
+ */
+#define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
+
+/**
  * Frees the given memory.
  *
  * @param PTR The pointer to the memory to free.
@@ -91,13 +98,6 @@ _GL_INLINE_HEADER_BEGIN
 #else
 #define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
 #endif /* HAVE___TYPEOF__ */
-
-/**
- * Shorthand for printing to standard error.
- *
- * @param ... The `printf()` arguments.
- */
-#define PRINT_ERR(...)            fprintf( stderr, __VA_ARGS__ )
 
 /**
  * Explicit C version of C++'s `reinterpret_cast`.
@@ -156,17 +156,44 @@ _GL_INLINE_HEADER_BEGIN
 #define FSEEK(STREAM,OFFSET,WHENCE) BLOCK( \
 	if ( unlikely( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
 
+/**
+ * Calls **fstat**(3), checks for an error, and exits if there was one.
+ *
+ * @param FD The file descriptor to stat.
+ * @param STAT A pointer to a `struct stat` to receive the result.
+ */
 #define FSTAT(FD,STAT) BLOCK( \
 	if ( unlikely( fstat( (FD), (STAT) ) < 0 ) ) perror_exit( EX_IOERR ); )
 
+/**
+ * Calls **lseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param FD The file descriptor to seek.
+ * @param OFFSET The file offset to seek to.
+ * @param WHENCE Where \a OFFSET is relative to.
+ */
 #define LSEEK(FD,OFFSET,WHENCE) BLOCK( \
 	if ( unlikely( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
 
+/**
+ * Calls **malloc**(3) and casts the result to \a TYPE.
+ *
+ * @param TYPE The type to allocate.
+ * @param N The number of objects of \a TYPE to allocate.
+ * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
+ */
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
+/**
+ * Prints an error message to standard error and exits with \a STATUS code.
+ *
+ * @param STATUS The status code to **exit**(3) with.
+ * @param FORMAT The `printf()` format to use.
+ * @param ... The `printf()` arguments.
+ */
 #define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( PRINT_ERR( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
+  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
 
 ///////////////////////////////////////////////////////////////////////////////
 
