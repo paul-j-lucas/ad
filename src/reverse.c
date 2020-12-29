@@ -244,7 +244,7 @@ backwards_offset:
     "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
     get_offset_fmt_format(), get_offset_fmt_english()
   );
-  PRINT_ERR( msg_fmt, fin_path, line, new_offset );
+  EPRINTF( msg_fmt, fin_path, line, new_offset );
   exit( EX_DATAERR );
 }
 
