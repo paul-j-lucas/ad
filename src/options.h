@@ -88,6 +88,9 @@ extern FILE          *fout;             // file to write to
 extern char const    *fout_path;        // path name of output file
 extern char const    *me;               // executable name from argv[0]
 
+#ifdef ENABLE_AD_DEBUG
+extern bool           opt_ad_debug;
+#endif /* ENABLE_AD_DEBUG */
 extern bool           opt_case_insensitive;
 extern unsigned       opt_c_fmt;
 extern unsigned       opt_group_by;

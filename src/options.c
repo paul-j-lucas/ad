@@ -47,6 +47,9 @@
 #define SET_OPTION(OPT)     (opts_given[ (char8_t)(OPT) ] = (char)(OPT))
 
 // option extern variable definitions
+#ifdef ENABLE_AD_DEBUG
+bool                opt_ad_debug;
+#endif /* ENABLE_AD_DEBUG */
 bool                opt_case_insensitive;
 c_fmt_t             opt_c_fmt;
 unsigned            opt_group_by = GROUP_BY_DEFAULT;
@@ -79,6 +82,9 @@ static struct option const LONG_OPTS[] = {
   { "bytes",              required_argument,  NULL, 'B' },
   { "color",              required_argument,  NULL, 'c' },
   { "c-array",            optional_argument,  NULL, 'C' },
+#ifdef ENABLE_AD_DEBUG
+  { "debug",              no_argument,        NULL, 'D' },
+#endif /* ENABLE_AD_DEBUG */
   { "decimal",            no_argument,        NULL, 'd' },
   { "little-endian",      required_argument,  NULL, 'e' },
   { "big-endian",         required_argument,  NULL, 'E' },
@@ -107,7 +113,11 @@ static struct option const LONG_OPTS[] = {
   { "version",            no_argument,        NULL, 'V' },
   { NULL,                 0,                  NULL, 0   }
 };
-static char const SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOpPrs:S:tTu:U:vV";
+static char const SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOpPrs:S:tTu:U:vV"
+#ifdef ENABLE_AD_DEBUG
+  "D"
+#endif /* ENABLE_AD_DEBUG */
+  ;
 
 // local variable definitions
 static char         opts_given[ 128 ];
@@ -480,6 +490,9 @@ static void usage( void ) {
 "  --bytes=NUM              (-B)  Number size in bytes: 1-8 [default: auto].\n"
 "  --c-array=FMT            (-C)  Dump bytes as a C array.\n"
 "  --color=WHEN             (-c)  When to colorize output [default: not_file].\n"
+#ifdef ENABLE_AD_DEBUG
+"  --debug                  (-D)  Enable debug output.\n"
+#endif /* ENABLE_AD_DEBUG */
 "  --decimal                (-d)  Print offsets in decimal.\n"
 "  --group-by=NUM           (-g)  Group bytes by 1/2/4/8/16/32 [default: %u].\n"
 "  --help                   (-H)  Print this help and exit.\n"
@@ -574,6 +587,9 @@ void parse_options( int argc, char *argv[] ) {
       case 'c': color_when = parse_color_when( optarg );                break;
       case 'C': opt_c_fmt = parse_c_fmt( optarg );                      break;
       case 'd': opt_offset_fmt = OFMT_DEC;                              break;
+#ifdef ENABLE_AD_DEBUG
+      case 'D': opt_ad_debug = true;                                    break;
+#endif /* ENABLE_AD_DEBUG */
       case 'e':
       case 'E': search_number = parse_ull( optarg );
                 search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
@@ -626,7 +642,7 @@ void parse_options( int argc, char *argv[] ) {
   check_mutually_exclusive( "mp", "v" );
   check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOpPrsStTuUv" );
+  check_mutually_exclusive( "V", "AbBcCdDeEghHijmLNoOpPrsStTuUv" );
 
   // check for options that require other options
   check_required( "bB", "eE" );

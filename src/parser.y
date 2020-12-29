@@ -227,18 +227,30 @@ void parser_cleanup( void ) {
  * Prints an additional parsing error message to standard error that continues
  * from where `yyerror()` left off.
  *
+ * @param file The name of the file where this function was called from.
+ * @param line The line number within \a file where this function was called
+ * from.
  * @param format A `printf()` style format string.
+ * @param ... Arguments to print.
  */
-static void fl_elaborate_error( char const *format, ... ) {
+static void fl_elaborate_error( char const *file, int line, char const *format,
+                                ... ) {
   if ( !error_newlined ) {
     PUTS_ERR( ": " );
     char const *const error_token = printable_token();
     if ( error_token != NULL )
       PRINT_ERR( "\"%s\": ", printable_token() );
+
     va_list args;
     va_start( args, format );
     vfprintf( stderr, format, args );
     va_end( args );
+
+#ifdef ENABLE_AD_DEBUG
+    if ( opt_ad_debug )
+      PRINTF_ERR( " (%s:%d)", file, line );
+#endif /* ENABLE_AD_DEBUG */
+
     PUTC_ERR( '\n' );
     error_newlined = true;
   }
