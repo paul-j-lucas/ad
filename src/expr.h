@@ -68,14 +68,17 @@ enum ad_expr_id {
   AD_EXPR_VALUE,                        ///< Constant value expression.
 
   // unary
-  AD_EXPR_BIT_COMP = AD_EXPR_UNARY + 1, ///< Bitwise-complement expression.
+  AD_EXPR_ADDR     = AD_EXPR_UNARY + 1, ///< Address-of expression.
+  AD_EXPR_BIT_COMP,                     ///< Bitwise-complement expression.
   AD_EXPR_DEREF,                        ///< Dereference expression.
   AD_EXPR_MATH_NEG,                     ///< Negation expression.
 
   // binary
-  AD_EXPR_CAST    = AD_EXPR_BINARY + 1, ///< Cast expression.
+  AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
+  AD_EXPR_CAST,                         ///< Cast expression.
 
   AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
+  AD_EXPR_BIT_COMPL,                    ///< Bitwise-complement expression.
   AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.
   AD_EXPR_BIT_SHIFT_LEFT,               ///< Bitwise-left-shift expression.
   AD_EXPR_BIT_SHIFT_RIGHT,              ///< Bitwise-right-shift expression.
