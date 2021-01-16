@@ -25,7 +25,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
-AC_PROG_CC_C99
+AC_LANG(C)
+AC_PROG_CC
 gl_EARLY
 AC_PROG_INSTALL
 AC_PROG_RANLIB
@@ -92,7 +93,6 @@ AS_IF([test x$enable_ad_debug = xyes],
 AM_CONDITIONAL([ENABLE_AD_DEBUG],   [test x$enable_ad_debug = xyes])
 
 # Miscellaneous.
-AC_LANG(C)
 AX_C___ATTRIBUTE__
 
 # Compiler warnings.
