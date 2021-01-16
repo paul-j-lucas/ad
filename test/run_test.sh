@@ -24,6 +24,16 @@
 
 ########## Functions ##########################################################
 
+error() {
+  exit_status=$1; shift
+  echo $ME: $*
+  exit $exit_status
+}
+
+assert_exists() {
+  [ -e "$1" ] || error 66 $1: file not found
+}
+
 local_basename() {
   ##
   # Autoconf, 11.15:
@@ -62,11 +72,12 @@ print_result() {
 usage() {
   [ "$1" ] && { echo "$ME: $*" >&2; usage; }
   cat >&2 <<END
-usage: $ME --test-name=NAME --log-file=PATH --trs-file=PATH [options] TEST-COMMAND
+usage: $ME --log-file=PATH --trs-file=PATH [options] TEST-FILE
 options:
   --color-tests={yes|no}
   --enable-hard-errors={yes|no}
   --expect-failure={yes|no}
+  --test-name=NAME
 END
   exit 1
 }
@@ -138,15 +149,17 @@ do
   shift
 done
 
-[ "$TEST_NAME" ] || usage "required --test-name not given"
+TEST=$1
+[ "$TEST_NAME" ] || TEST_NAME=$TEST
 [ "$LOG_FILE"  ] || usage "required --log-file not given"
 [ "$TRS_FILE"  ] || usage "required --trs-file not given"
-[ $# -ge 1     ] || usage "required test-command not given"
-TEST=$1
+[ $# -ge 1     ] || usage "required test-file not given"
+
+TEST_NAME=`local_basename "$TEST_NAME"`
 
 ########## Initialize #########################################################
 
-if [ "$COLOR_TESTS" = yes ]
+if [ "$COLOR_TESTS" = yes -a -t 1 ]
 then
   COLOR_BLUE="[1;34m"
   COLOR_GREEN="[0;32m"
@@ -176,13 +189,12 @@ esac
 
 DATA_DIR=$srcdir/data
 EXPECTED_DIR=$srcdir/expected
-TEST_NAME=`local_basename "$TEST_NAME"`
-OUTPUT=/tmp/ad_test_output_$$_
+ACTUAL_OUTPUT=/tmp/ad_test_output_$$_
 
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST $OUTPUT $LOG_FILE
+  if $TEST $ACTUAL_OUTPUT $LOG_FILE
   then pass
   else fail
   fi
@@ -200,9 +212,9 @@ run_test_file() {
 
   > $LOG_FILE
   case "$OUTFILE" in
-  outfile) $COMMAND $OPTIONS $INPUT $OUTPUT >> $LOG_FILE 2>&1 ;;
-   stderr) $COMMAND $OPTIONS $INPUT > $OUTPUT 2>&1 ;;
-        *) $COMMAND $OPTIONS $INPUT > $OUTPUT 2>> $LOG_FILE ;;
+  outfile) $COMMAND $OPTIONS $INPUT $ACTUAL_OUTPUT >> $LOG_FILE 2>&1 ;;
+   stderr) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>&1 ;;
+        *) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>> $LOG_FILE ;;
   esac
   ACTUAL_EXIT=$?
 
@@ -216,8 +228,8 @@ run_test_file() {
       then EXPECTED_OUTPUT=$EXPECTED_TXT
       else EXPECTED_OUTPUT=$EXPECTED_BIN
       fi
-      if diff $EXPECTED_OUTPUT $OUTPUT >> $LOG_FILE
-      then pass; mv $OUTPUT $LOG_FILE
+      if diff $EXPECTED_OUTPUT $ACTUAL_OUTPUT >> $LOG_FILE
+      then pass; mv $ACTUAL_OUTPUT $LOG_FILE
       else fail
       fi
     else
@@ -243,6 +255,7 @@ unset AD_COLORS GREP_COLOR GREP_COLORS
 
 trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
+assert_exists $TEST
 case $TEST in
 *.sh)   run_sh_file ;;
 *.test) run_test_file ;;
