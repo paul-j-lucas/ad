@@ -25,7 +25,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 # Checks for programs.
-AC_PROG_CC_C99
+AC_LANG(C)
+AC_PROG_CC
 gl_EARLY
 AC_PROG_INSTALL
 AC_PROG_RANLIB
@@ -77,7 +78,6 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([basename fgetln getline nl_langinfo setlocale strdup strerror strsep])
 
 # Miscellaneous.
-AC_LANG(C)
 AX_C___ATTRIBUTE__
 
 # Compiler warnings.
