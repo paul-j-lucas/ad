@@ -131,6 +131,7 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([malloc])
   fi
   gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  gl_MODULE_INDICATOR([malloc-posix])
   gl_MULTIARCH
   gt_TYPE_SSIZE_T
   AM_STDBOOL_H
