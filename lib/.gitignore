@@ -11,3 +11,4 @@
 /sys
 /sysexits.h
 /unistd.h
+/xalloc-oversized.h
