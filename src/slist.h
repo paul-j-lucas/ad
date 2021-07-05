@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/slist.h
 **
-**      Copyright (C) 2017-2019  Paul J. Lucas, et al.
+**      Copyright (C) 2017-2021  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -33,12 +33,13 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
-#include <stddef.h>                     /* for NULL */
+#include <stdbool.h>
+#include <stddef.h>                     /* for NULL, size_t */
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_SLIST_INLINE
-# define AD_SLIST_INLINE _GL_INLINE
-#endif /* AD_SLIST_INLINE */
+#ifndef SLIST_INLINE
+# define SLIST_INLINE _GL_INLINE
+#endif /* SLIST_INLINE */
 
 /// @endcond
 
@@ -49,16 +50,25 @@ _GL_INLINE_HEADER_BEGIN
  */
 
 /**
- * Creates a temporary `slist` on the stack having a single node with
- * \a NODE_DATA.
+ * Convenience macro for iterating over the nodes of an `slist`.
  *
- * @param VAR_NAME The name for the temporary `slist` variable.
- * @param NODE_DATA A pointer to the node data.
- * @param LIST_DATA A pointer to the list data.
+ * @param VAR The `slist_node` loop variable.
+ * @param SLIST A pointer to the `slist` to iterate over.
+ * @param END A pointer to the node to end before; may be NULL.
  */
-#define SLIST_TEMP_INIT_VAR(VAR_NAME,NODE_DATA,LIST_DATA)                     \
-  slist_node_t VAR_NAME##_node = { NULL, CONST_CAST( void*, (NODE_DATA) ) };  \
-  slist_t VAR_NAME = { &VAR_NAME##_node, &VAR_NAME##_node, 1, (LIST_DATA) }
+#define FOREACH_SLIST(VAR,SLIST,END) \
+  for ( slist_node_t *VAR = CONST_CAST( slist_t*, SLIST )->head; VAR != (END); VAR = VAR->next )
+
+/**
+ * Creates a single-node `slist` on the stack with \a NODE_DATA.
+ *
+ * @param VAR The name for the `slist` variable.
+ * @param LIST_DATA A pointer to the list data, if any.
+ * @param NODE_DATA A pointer to the node data.
+ */
+#define SLIST_VAR_INIT(VAR,LIST_DATA,NODE_DATA)                       \
+  slist_node_t VAR##_node = { NULL, CONST_CAST(void*, (NODE_DATA)) }; \
+  slist_t VAR = { &VAR##_node, &VAR##_node, 1, CONST_CAST(void*, (LIST_DATA)) }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -71,6 +81,8 @@ typedef struct slist_node slist_node_t;
  *
  * @param data A pointer to the data to duplicate.
  * @return Returns a duplicate of \a data.
+ *
+ * @sa slist_node_data_dup_fn_t
  */
 typedef void* (*slist_data_dup_fn_t)( void const *data );
 
@@ -79,6 +91,8 @@ typedef void* (*slist_data_dup_fn_t)( void const *data );
  * associated with the list, if any.
  *
  * @param data A pointer to the data to free.
+ *
+ * @sa slist_node_data_free_fn_t
  */
 typedef void (*slist_data_free_fn_t)( void *data );
 
@@ -86,13 +100,13 @@ typedef void (*slist_data_free_fn_t)( void *data );
  * The signature for a function passed to `slist_cmp()` used to compare data
  * associated with each node (if necessary).
  *
- * @param data_i A pointer to the first data to compare.
- * @param data_j A pointer to the second data to compare.
- * @return Returns a number less than 0, 0, or greater than 0 if \a data_i is
- * less than, equal to, or greater than \a data_j, respectively.
+ * @param i_data A pointer to the first data to compare.
+ * @param j_data A pointer to the second data to compare.
+ * @return Returns a number less than 0, 0, or greater than 0 if \a i_data is
+ * less than, equal to, or greater than \a j_data, respectively.
  */
-typedef int (*slist_node_data_cmp_fn_t)( void const *data_i,
-                                         void const *data_j );
+typedef int (*slist_node_data_cmp_fn_t)( void const *i_data,
+                                         void const *j_data );
 
 /**
  * The signature for a function passed to `slist_dup()` used to duplicate data
@@ -100,6 +114,8 @@ typedef int (*slist_node_data_cmp_fn_t)( void const *data_i,
  *
  * @param data A pointer to the data to duplicate.
  * @return Returns a duplicate of \a data.
+ *
+ * @sa slist_data_dup_fn_t
  */
 typedef void* (*slist_node_data_dup_fn_t)( void const *data );
 
@@ -108,6 +124,8 @@ typedef void* (*slist_node_data_dup_fn_t)( void const *data );
  * associated with each node (if necessary).
  *
  * @param data A pointer to the data to free.
+ *
+ * @sa slist_data_free_fn_t
  */
 typedef void (*slist_node_data_free_fn_t)( void *data );
 
@@ -127,7 +145,7 @@ struct slist {
  * Singly-linked-list node.
  */
 struct slist_node {
-  slist_node_t *next;                   ///< Pointer to next node or null.
+  slist_node_t *next;                   ///< Pointer to next node or NULL.
   void         *data;                   ///< Pointer to user data.
 };
 
@@ -136,32 +154,32 @@ struct slist_node {
 /**
  * Compares two lists.
  *
- * @param list_i The first list.
- * @param list_j The second list.
+ * @param i_list The first list.
+ * @param j_list The second list.
  * @param data_cmp_fn A pointer to a function to use to compare data at each
- * node of \a list_i and \a list_j or null if none is required (hence the data
+ * node of \a i_list and \a j_list or NULL if none is required (hence the data
  * will be compared directly).
- * @return Returns a number less than 0, 0, or greater than 0 if \a list_i is
- * less than, equal to, or greater than \a list_j, respectively.
+ * @return Returns a number less than 0, 0, or greater than 0 if \a i_list is
+ * less than, equal to, or greater than \a j_list, respectively.
  */
 PJL_WARN_UNUSED_RESULT
-int slist_cmp( slist_t const *list_i, slist_t const *list_j,
+int slist_cmp( slist_t const *i_list, slist_t const *j_list,
                slist_node_data_cmp_fn_t data_cmp_fn );
 
 /**
- * Duplicates \a src and all of its nodes.
+ * Duplicates \a src_list and all of its nodes.
  *
- * @param src The <code>\ref slist</code> to duplicate.  It may ne null.
- * @param n The number of nodes to duplicate; -1 is equivalent to `slist_len()`.
+ * @param src_list The <code>\ref slist</code> to duplicate; may ne NULL.
+ * @param n The number of nodes to duplicate; -1 is equivalent to slist_len().
  * @param data_dup_fn A pointer to a function to use to duplicate the data of
- * \a src or null if none is required (hence a shallow copy will be done).
+ * \a src_list or NULL if none is required (hence a shallow copy will be done).
  * @param node_data_dup_fn A pointer to a function to use to duplicate the data
- * at each node of \a src or null if none is required (hence a shallow copy
- * will be done).
- * @return Returns a duplicate of \a src.
+ * at each node of \a src_list or NULL if none is required (hence a shallow
+ * copy will be done).
+ * @return Returns a duplicate of \a src_list.
  */
 PJL_WARN_UNUSED_RESULT
-slist_t slist_dup( slist_t const *src, ssize_t n,
+slist_t slist_dup( slist_t const *src_list, ssize_t n,
                    slist_data_dup_fn_t data_dup_fn,
                    slist_node_data_dup_fn_t node_data_dup_fn );
 
@@ -170,62 +188,40 @@ slist_t slist_dup( slist_t const *src, ssize_t n,
  *
  * @param list A pointer to the <code>\ref slist</code> to check.
  * @return Returns `true` only if \a list is empty.
+ *
+ * @note This is an O(1) operation.
+ *
+ * @sa slist_len()
  */
-PJL_WARN_UNUSED_RESULT AD_SLIST_INLINE
+SLIST_INLINE PJL_WARN_UNUSED_RESULT
 bool slist_empty( slist_t const *list ) {
   return list->head == NULL;
 }
 
 /**
- * Frees all memory associated with \a list.
+ * Frees all memory associated with \a list but _not_ \a list itself.
  *
- * @param list A pointer to the <code>\ref slist</code>.  If null, does
- * nothing; otherwise, reinitializes it upon completion.
+ * @param list A pointer to the list to free.  If NULL, does nothing;
+ * otherwise, reinitializes \a list upon completion.
  * @param data_free_fn A pointer to a function to use to free the data
- * associated with \a list or null if none is required.
+ * associated with \a list or NULL if none is required.
  * @param node_data_free_fn A pointer to a function to use to free the data at
- * each node of \a list or null if none is required.
+ * each node of \a list or NULL if none is required.
+ *
+ * @sa slist_init()
  */
 void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
                  slist_node_data_free_fn_t node_data_free_fn );
-
-/**
- * Peeks at the data at the head of \a list.
- *
- * @param list A pointer to the <code>\ref slist</code>.
- * @return Returns the data from the node at the head of \a list or null if \a
- * list is empty.
- *
- * @sa SLIST_HEAD()
- * @sa slist_tail()
- */
-PJL_WARN_UNUSED_RESULT AD_SLIST_INLINE
-void* slist_head( slist_t const *list ) {
-  return list->head != NULL ? list->head->data : NULL;
-}
-
-/**
- * Convenience macro that peeks at the data at the head of \a LIST and casts it
- * to the requested type.
- *
- * @param DATA_TYPE The type of the data.
- * @param LIST A pointer to the <code>\ref slist</code>.
- * @return Returns the data from the head of \a LIST cast to \a DATA_TYPE or
- * null (or equivalent) if the <code>\ref slist</code> is empty.
- *
- * @sa slist_head()
- * @sa SLIST_TAIL()
- */
-#define SLIST_HEAD(DATA_TYPE,LIST) \
-  REINTERPRET_CAST( DATA_TYPE, slist_head( LIST ) )
 
 /**
  * Initializes \a list.  This is not necessary for either global or `static`
  * lists.
  *
  * @param list A pointer to the <code>\ref slist</code> to initialize.
+ *
+ * @sa slist_free()
  */
-AD_SLIST_INLINE
+SLIST_INLINE
 void slist_init( slist_t *list ) {
   MEM_ZERO( list );
 }
@@ -235,8 +231,12 @@ void slist_init( slist_t *list ) {
  *
  * @param list A pointer to the <code>\ref slist</code> to get the length of.
  * @return Returns said length.
+ *
+ * @note This is an O(1) operation.
+ *
+ * @sa slist_empty()
  */
-PJL_WARN_UNUSED_RESULT AD_SLIST_INLINE
+SLIST_INLINE PJL_WARN_UNUSED_RESULT
 size_t slist_len( slist_t const *list ) {
   return list->len;
 }
@@ -246,90 +246,85 @@ size_t slist_len( slist_t const *list ) {
  *
  * @param list A pointer to the <code>\ref slist</code>.
  * @param offset The offset (starting at 0) of the data to get.
- * @return Returns the data from the node at \a offset or null if \a offset
+ * @return Returns the data from the node at \a offset or NULL if \a offset
  * &gt;= slist_len().
  *
- * @sa SLIST_PEEK_AT()
+ * @note This is an O(n) operation.
+ *
  * @sa slist_peek_atr()
+ * @sa slist_peek_head()
+ * @sa slist_peek_tail()
  */
 PJL_WARN_UNUSED_RESULT
 void* slist_peek_at( slist_t const *list, size_t offset );
-
-/**
- * Convenience macro that peeks at the data at \a OFFSET of \a LIST and casts
- * it to the requested type.
- *
- * @param DATA_TYPE The type of the data.
- * @param LIST A pointer to the <code>\ref slist</code>.
- * @param OFFSET The offset (starting at 0) of the data to get.
- * @return Returns the data from the node at \a OFFSET cast to \a DATA_TYPE or
- * null (or equivalent) if \a OFFSET &gt;= slist_len().
- *
- * @sa slist_peek_at()
- * @sa SLIST_PEEK_ATR()
- */
-#define SLIST_PEEK_AT(DATA_TYPE,LIST,OFFSET) \
-  REINTERPRET_CAST( DATA_TYPE, slist_peek_at( (LIST), (OFFSET) ) )
 
 /**
  * Peeks at the data at \a roffset from the tail of \a list.
  *
  * @param list A pointer to the <code>\ref slist</code>.
  * @param roffset The reverse offset (starting at 0) of the data to get.
- * @return Returns the data from the node at \a roffset or null if \a roffset
+ * @return Returns the data from the node at \a roffset or NULL if \a roffset
  * &gt;= slist_len().
  *
+ * @note This is an O(n) operation.
+ *
  * @sa slist_peek_at()
- * @sa SLIST_PEEK_ATR()
+ * @sa slist_peek_head()
+ * @sa slist_peek_tail()
  */
-PJL_WARN_UNUSED_RESULT AD_SLIST_INLINE
+SLIST_INLINE PJL_WARN_UNUSED_RESULT
 void* slist_peek_atr( slist_t const *list, size_t roffset ) {
   return roffset < list->len ?
     slist_peek_at( list, list->len - (roffset + 1) ) : NULL;
 }
 
 /**
- * Convenience macro that peeks at the data at \a ROFFSET of \a LIST and casts
- * it to the requested type.
+ * Peeks at the data at the head of \a list.
  *
- * @param DATA_TYPE The type of the data.
- * @param LIST A pointer to the <code>\ref slist</code>.
- * @param ROFFSET The reverse offset (starting at 0) of the data to get.
- * @return Returns the data from the node at \a ROFFSET cast to \a DATA_TYPE or
- * null (or equivalent) if \a ROFFSET &gt;= slist_len().
+ * @param list A pointer to the <code>\ref slist</code>.
+ * @return Returns the data from the node at the head of \a list or NULL if \a
+ * list is empty.
  *
- * @sa SLIST_PEEK_AT()
+ * @note This is an O(1) operation.
+ *
+ * @sa slist_peek_at()
  * @sa slist_peek_atr()
+ * @sa slist_peek_tail()
  */
-#define SLIST_PEEK_ATR(DATA_TYPE,LIST,ROFFSET) \
-  REINTERPRET_CAST( DATA_TYPE, slist_peek_atr( (LIST), (ROFFSET) ) )
+SLIST_INLINE PJL_WARN_UNUSED_RESULT
+void* slist_peek_head( slist_t const *list ) {
+  return list->head != NULL ? list->head->data : NULL;
+}
+
+/**
+ * Peeks at the data at the tail of \a list.
+ *
+ * @param list A pointer to the <code>\ref slist</code>.
+ * @return Returns the data from the node at the tail of \a list or NULL if \a
+ * list is empty.
+ *
+ * @note This is an O(1) operation.
+ *
+ * @sa slist_peek_at()
+ * @sa slist_peek_atr()
+ * @sa slist_peek_head()
+ */
+SLIST_INLINE PJL_WARN_UNUSED_RESULT
+void* slist_peek_tail( slist_t const *list ) {
+  return list->tail != NULL ? list->tail->data : NULL;
+}
 
 /**
  * Pops data from the head of \a list.
  *
  * @param list The pointer to the <code>\ref slist</code>.
  * @return Returns the data from the head of \a list.  The caller is
- * responsible for deleting it (if necessary).
+ * responsible for freeing it (if necessary).
  *
- * @sa SLIST_POP_HEAD()
+ * @note This is an O(1) operation.
  */
 PJL_WARN_UNUSED_RESULT
 void* slist_pop_head( slist_t *list );
-
-/**
- * Convenience macro that pops data from the head of \a LIST and casts it to
- * the requested type.
- *
- * @param DATA_TYPE The type of the data to cast to.
- * @param LIST A pointer to the <code>\ref slist</code>.
- * @return Returns the data from the head of \a LIST cast to \a DATA_TYPE or
- * null (or equivalent) if the <code>\ref slist</code> is empty.  The caller is
- * responsible for deleting it (if necessary).
- *
- * @sa slist_pop_head()
- */
-#define SLIST_POP_HEAD(DATA_TYPE,LIST) \
-  REINTERPRET_CAST( DATA_TYPE, slist_pop_head( LIST ) )
 
 /**
  * Pushes a node onto the head of \a list.
@@ -337,32 +332,38 @@ void* slist_pop_head( slist_t *list );
  * @param list A pointer to the <code>\ref slist</code>.
  * @param data The pointer to the data to add.
  *
+ * @note This is an O(1) operation.
+ *
  * @sa slist_push_list_head()
  * @sa slist_push_tail()
  */
 void slist_push_head( slist_t *list, void *data );
 
 /**
- * Pushes \a src onto the head of \a dst.
+ * Pushes \a src_list onto the head of \a dst_list.
  *
- * @param dst The <code>\ref slist</code> to push onto.
- * @param src The <code>\ref slist</code> to push.  It is made empty.
+ * @param dst_list The <code>\ref slist</code> to push onto.
+ * @param src_list The <code>\ref slist</code> to push.  It is made empty.
+ *
+ * @note This is an O(1) operation.
  *
  * @sa slist_push_head()
  * @sa slist_push_list_tail()
  */
-void slist_push_list_head( slist_t *dst, slist_t *src );
+void slist_push_list_head( slist_t *dst_list, slist_t *src_list );
 
 /**
- * Pushes \a src onto the tail of \a dst.
+ * Pushes \a src_list onto the tail of \a dst_list.
  *
- * @param dst The <code>\ref slist</code> to push onto.
- * @param src The <code>\ref slist</code> to push.  It is made empty.
+ * @param dst_list The <code>\ref slist</code> to push onto.
+ * @param src_list The <code>\ref slist</code> to push.  It is made empty.
+ *
+ * @note This is an O(1) operation.
  *
  * @sa slist_push_list_head()
  * @sa slist_push_tail()
  */
-void slist_push_list_tail( slist_t *dst, slist_t *src );
+void slist_push_list_tail( slist_t *dst_list, slist_t *src_list );
 
 /**
  * Appends \a data onto the tail of \a list.
@@ -370,40 +371,12 @@ void slist_push_list_tail( slist_t *dst, slist_t *src );
  * @param list The <code>\ref slist</code> to push onto.
  * @param data The data to pushed.
  *
+ * @note This is an O(1) operation.
+ *
  * @sa slist_push_head()
  * @sa slist_push_list_tail()
  */
 void slist_push_tail( slist_t *list, void *data );
-
-/**
- * Peeks at the data at the tail of \a list.
- *
- * @param list A pointer to the <code>\ref slist</code>.
- * @return Returns the data from the node at the tail of \a list or null if \a
- * list is empty.
- *
- * @sa slist_head()
- * @sa SLIST_TAIL()
- */
-PJL_WARN_UNUSED_RESULT AD_SLIST_INLINE
-void* slist_tail( slist_t const *list ) {
-  return list->tail != NULL ? list->tail->data : NULL;
-}
-
-/**
- * Convenience macro that peeks at the data at the tail of \a LIST and casts it
- * to the requested type.
- *
- * @param DATA_TYPE The type of the data.
- * @param LIST A pointer to the <code>\ref slist</code>.
- * @return Returns the data from the tail of \a LIST cast to \a DATA_TYPE or
- * null (or equivalent) if the <code>\ref slist</code> is empty.
- *
- * @sa SLIST_HEAD()
- * @sa slist_tail()
- */
-#define SLIST_TAIL(DATA_TYPE,LIST) \
-  REINTERPRET_CAST( DATA_TYPE, slist_tail( LIST ) )
 
 ///////////////////////////////////////////////////////////////////////////////
 

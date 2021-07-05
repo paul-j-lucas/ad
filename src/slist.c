@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/slist.c
 **
-**      Copyright (C) 2017-2019  Paul J. Lucas, et al.
+**      Copyright (C) 2017-2021  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -34,46 +34,49 @@
 
 // standard
 #include <assert.h>
+#include <stdint.h>
 
 /// @endcond
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-int slist_cmp( slist_t const *list_i, slist_t const *list_j,
+int slist_cmp( slist_t const *i_list, slist_t const *j_list,
                slist_node_data_cmp_fn_t data_cmp_fn ) {
-  assert( list_i != NULL );
-  assert( list_j != NULL );
+  assert( i_list != NULL );
+  assert( j_list != NULL );
 
-  slist_node_t const *node_i = list_i->head, *node_j = list_j->head;
-  for ( ; node_i != NULL && node_j != NULL;
-        node_i = node_i->next, node_j = node_j->next ) {
+  slist_node_t const *i_node = i_list->head, *j_node = j_list->head;
+  for ( ; i_node != NULL && j_node != NULL;
+        i_node = i_node->next, j_node = j_node->next ) {
     int const cmp = data_cmp_fn != NULL ?
-      (*data_cmp_fn)( node_i->data, node_j->data ) :
-      (int)(node_j->data - node_i->data);
+      (*data_cmp_fn)( i_node->data, j_node->data ) :
+      (int)((intptr_t)i_node->data - (intptr_t)j_node->data);
     if ( cmp != 0 )
       return cmp;
   } // for
-  return node_i == NULL ? (node_j == NULL ? 0 : -1) : 1;
+  return i_node == NULL ? (j_node == NULL ? 0 : -1) : 1;
 }
 
-slist_t slist_dup( slist_t const *src, ssize_t n,
+slist_t slist_dup( slist_t const *src_list, ssize_t n,
                    slist_data_dup_fn_t data_dup_fn,
                    slist_node_data_dup_fn_t node_data_dup_fn ) {
-  slist_t dst;
-  slist_init( &dst );
+  slist_t dst_list;
+  slist_init( &dst_list );
 
-  if ( src != NULL && n != 0 ) {
+  if ( src_list != NULL && n != 0 ) {
     size_t un = (size_t)n;
-    dst.data = data_dup_fn != NULL ? (*data_dup_fn)( src->data ) : src->data;
-    for ( slist_node_t *src_node = src->head; src_node != NULL && un-- > 0;
-          src_node = src_node->next ) {
+    dst_list.data = data_dup_fn != NULL ?
+      (*data_dup_fn)( src_list->data ) : src_list->data;
+    FOREACH_SLIST( src_node, src_list, NULL ) {
+      if ( un-- == 0 )
+        break;
       void *const dst_data = node_data_dup_fn != NULL ?
         (*node_data_dup_fn)( src_node->data ) : src_node->data;
-      slist_push_tail( &dst, dst_data );
+      slist_push_tail( &dst_list, dst_data );
     } // for
   }
 
-  return dst;
+  return dst_list;
 }
 
 void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
@@ -114,9 +117,9 @@ void* slist_pop_head( slist_t *list ) {
   assert( list != NULL );
   if ( list->head != NULL ) {
     void *const data = list->head->data;
-    slist_node_t *const next = list->head->next;
+    slist_node_t *const next_node = list->head->next;
     FREE( list->head );
-    list->head = next;
+    list->head = next_node;
     if ( list->head == NULL )
       list->tail = NULL;
     --list->len;
@@ -127,65 +130,65 @@ void* slist_pop_head( slist_t *list ) {
 
 void slist_push_head( slist_t *list, void *data ) {
   assert( list != NULL );
-  slist_node_t *const new_head = MALLOC( slist_node_t, 1 );
-  new_head->data = data;
-  new_head->next = list->head;
-  list->head = new_head;
+  slist_node_t *const new_head_node = MALLOC( slist_node_t, 1 );
+  new_head_node->data = data;
+  new_head_node->next = list->head;
+  list->head = new_head_node;
   if ( list->tail == NULL )
-    list->tail = new_head;
+    list->tail = new_head_node;
   ++list->len;
 }
 
-void slist_push_list_head( slist_t *dst, slist_t *src ) {
-  assert( dst != NULL );
-  assert( src != NULL );
-  if ( dst->head == NULL ) {
-    assert( dst->tail == NULL );
-    dst->head = src->head;
-    dst->tail = src->tail;
+void slist_push_list_head( slist_t *dst_list, slist_t *src_list ) {
+  assert( dst_list != NULL );
+  assert( src_list != NULL );
+  if ( dst_list->head == NULL ) {
+    assert( dst_list->tail == NULL );
+    dst_list->head = src_list->head;
+    dst_list->tail = src_list->tail;
   }
-  else if ( src->head != NULL ) {
-    assert( src->tail != NULL );
-    src->tail->next = dst->head;
-    dst->head = src->head;
+  else if ( src_list->head != NULL ) {
+    assert( src_list->tail != NULL );
+    src_list->tail->next = dst_list->head;
+    dst_list->head = src_list->head;
   }
-  dst->len += src->len;
-  slist_init( src );
+  dst_list->len += src_list->len;
+  slist_init( src_list );
 }
 
-void slist_push_list_tail( slist_t *dst, slist_t *src ) {
-  assert( dst != NULL );
-  assert( src != NULL );
-  if ( dst->head == NULL ) {
-    assert( dst->tail == NULL );
-    dst->head = src->head;
-    dst->tail = src->tail;
+void slist_push_list_tail( slist_t *dst_list, slist_t *src_list ) {
+  assert( dst_list != NULL );
+  assert( src_list != NULL );
+  if ( dst_list->head == NULL ) {
+    assert( dst_list->tail == NULL );
+    dst_list->head = src_list->head;
+    dst_list->tail = src_list->tail;
   }
-  else if ( src->head != NULL ) {
-    assert( src->tail != NULL );
-    assert( dst->tail->next == NULL );
-    dst->tail->next = src->head;
-    dst->tail = src->tail;
+  else if ( src_list->head != NULL ) {
+    assert( src_list->tail != NULL );
+    assert( dst_list->tail->next == NULL );
+    dst_list->tail->next = src_list->head;
+    dst_list->tail = src_list->tail;
   }
-  dst->len += src->len;
-  slist_init( src );
+  dst_list->len += src_list->len;
+  slist_init( src_list );
 }
 
 void slist_push_tail( slist_t *list, void *data ) {
   assert( list != NULL );
-  slist_node_t *const new_tail = MALLOC( slist_node_t, 1 );
-  new_tail->data = data;
-  new_tail->next = NULL;
+  slist_node_t *const new_tail_node = MALLOC( slist_node_t, 1 );
+  new_tail_node->data = data;
+  new_tail_node->next = NULL;
 
   if ( list->head == NULL ) {
     assert( list->tail == NULL );
-    list->head = new_tail;
+    list->head = new_tail_node;
   } else {
     assert( list->tail != NULL );
     assert( list->tail->next == NULL );
-    list->tail->next = new_tail;
+    list->tail->next = new_tail_node;
   }
-  list->tail = new_tail;
+  list->tail = new_tail_node;
   ++list->len;
 }
 
