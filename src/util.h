@@ -201,9 +201,9 @@ _GL_INLINE_HEADER_BEGIN
  * Endian-ness.
  */
 enum ad_endian {
-  ENDIAN_NONE,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE
+  AD_ENDIAN_NONE,
+  AD_ENDIAN_LITTLE,
+  AD_ENDIAN_BIG
 };
 typedef enum ad_endian ad_endian_t;
 
@@ -545,7 +545,8 @@ AD_UTIL_INLINE uint16_t uint16le_host16( uint16_t n ) {
  * @Returns \a n converted to the host's representation.
  */
 AD_UTIL_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
-  return endian == ENDIAN_LITTLE ? uint16le_host16( n ) : uint16be_host16( n );
+  return endian == AD_ENDIAN_LITTLE ?
+    uint16le_host16( n ) : uint16be_host16( n );
 }
 
 /**
@@ -584,7 +585,8 @@ AD_UTIL_INLINE uint32_t uint32le_host32( uint32_t n ) {
  * @Returns \a n converted to the host's representation.
  */
 AD_UTIL_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
-  return endian == ENDIAN_LITTLE ? uint32le_host32( n ) : uint32be_host32( n );
+  return endian == AD_ENDIAN_LITTLE ?
+    uint32le_host32( n ) : uint32be_host32( n );
 }
 
 /**

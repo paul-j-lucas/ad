@@ -223,7 +223,7 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
   switch ( endian ) {
 #ifdef WORDS_BIGENDIAN
 
-    case ENDIAN_LITTLE:
+    case AD_ENDIAN_LITTLE:
       switch ( bytes ) {
         case 1: /* do nothing */              break;
         case 2: *n = swap_16( (uint16_t)*n ); break;
@@ -236,14 +236,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
       } // switch
       PJL_FALLTHROUGH;
 
-    case ENDIAN_BIG:
+    case AD_ENDIAN_BIG:
       // move bytes to start of buffer
       *n <<= (sizeof( uint64_t ) - bytes) * 8;
       break;
 
 #else /* machine words are little endian */
 
-    case ENDIAN_BIG:
+    case AD_ENDIAN_BIG:
       switch ( bytes ) {
         case 1: /* do nothing */                          break;
         case 2: *n = swap_16( (uint16_t)*n );             break;
@@ -256,7 +256,7 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
       } // switch
       break;
 
-    case ENDIAN_LITTLE:
+    case AD_ENDIAN_LITTLE:
       // do nothing
       break;
 
