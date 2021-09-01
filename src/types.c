@@ -25,8 +25,26 @@
 /// @endcond
 #include "types.h"
 
-// This file exists only so functions declared `inline` in types.h have a place
-// to be `extern inline`d.
+////////// extern functions ///////////////////////////////////////////////////
+
+void ad_type_free( ad_type_t *type ) {
+  switch ( type->type_id & T_MASK_TYPE ) {
+    case T_STRUCT:
+      break;
+    case T_SWITCH:
+      break;
+    case T_BOOL:
+    case T_ERROR:
+    case T_FLOAT:
+    case T_INT:
+    case T_UTF:
+      // nothing to do
+      break;
+  } // switch
+}
+
+ad_type_t ad_type_new( ad_type_id_t tid ) {
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */

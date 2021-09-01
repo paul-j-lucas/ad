@@ -129,7 +129,10 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef unsigned              ad_bits_t;
 typedef struct  ad_char       ad_char_t;
+typedef struct  ad_enum       ad_enum_t;
+typedef struct  ad_enum_value ad_enum_value_t;
 typedef struct  ad_expr       ad_expr_t;
 typedef struct  ad_int        ad_int_t;
 typedef enum    ad_int_base   ad_int_base_t;
@@ -140,7 +143,17 @@ typedef struct  slist         ad_switch_cases_t;
 typedef struct  ad_type       ad_type_t;
 typedef uint16_t              ad_type_id_t;
 typedef unsigned short        ad_type_size_t;
-typedef struct   slist        ad_type_list_t;
+typedef struct  slist         ad_type_list_t;
+
+/**
+ * Enumeration value.
+ *
+ * @sa ad_enum
+ */
+struct ad_enum_value {
+  char const *name;
+  int64_t     value;
+};
 
 /**
  * Integer base (for printing).
@@ -154,11 +167,22 @@ enum ad_int_base {
 };
 
 /**
+ * Enumeration type.
+ */
+struct ad_enum {
+  ad_bits_t       bits;                 ///< Value number of bits.
+  ad_endian_t     endian;               ///< Endianness of values.
+  ad_int_base_t   base;                 ///< Base of values.
+  slist_t         values;               ///< Values.
+};
+
+/**
  * Integer type.
  */
 struct ad_int {
-  ad_endian_t     endian;
-  ad_int_base_t   base;
+  ad_bits_t       bits;                 ///< Value number of bits.
+  ad_endian_t     endian;               ///< Endianness of value.
+  ad_int_base_t   base;                 ///< Base of value.
 };
 
 /**
@@ -185,6 +209,14 @@ struct ad_switch {
 };
 
 /**
+ * TODO
+ *
+ * @param VAR The `slist_node` loop variable.
+ */
+#define FOREACH_CASE(VAR,SWITCH) \
+  FOREACH_SLIST( VAR, (SWITCH)->cases, NULL )
+
+/**
  * A type.  Every %ad_type at least has the ID that it's a type of and a size
  * in bits.
  */
@@ -192,8 +224,8 @@ struct ad_type {
   ad_type_id_t    type_id;
 
   union {
-    ad_endian_t   endian;
     ad_int_t      ad_int;
+    ad_enum_t     ad_enum;
     ad_struct_t   ad_struct;
     ad_switch_t   ad_switch;
   } as;                                 ///< Union discriminator.

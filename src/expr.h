@@ -30,7 +30,6 @@
 
 // standard
 #include <stdbool.h>
-#include <time.h>
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_EXPR_INLINE
@@ -181,7 +180,7 @@ struct ad_value_expr {
     // Miscellaneous.
     ad_type_t     cast_type;
     ad_expr_err_t err;
-  } as;
+  } as;                                 ///< Union discriminator.
 };
 
 /**
