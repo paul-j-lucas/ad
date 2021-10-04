@@ -406,7 +406,7 @@ static unsigned parse_group_by( char const *s ) {
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
   PMESSAGE_EXIT( EX_USAGE,
-    "\"%" PRIu64 "\": invalid value for %s;"
+    "\"%llu\": invalid value for %s;"
     " must be one of: 1, 2, 4, 8, 16, or 32\n",
     group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
   );
