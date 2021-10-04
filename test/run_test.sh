@@ -53,9 +53,11 @@ pass() {
 }
 
 fail() {
-  print_result FAIL $TEST_NAME
+  RESULT=$1
+  [ "$RESULT" ] || RESULT=FAIL
+  print_result $RESULT $TEST_NAME
   {
-    echo ":test-result: FAIL"
+    echo ":test-result: $RESULT"
     echo ":copy-in-global-log: yes"
   } > $TRS_FILE
 }
@@ -237,8 +239,13 @@ run_test_file() {
     fi
   else                                  # failure: expected exit status?
     if [ $ACTUAL_EXIT -eq $EXPECTED_EXIT ]
-    then pass
-    else fail
+    then
+      pass
+    else
+      case $ACTUAL_EXIT in
+      0|1)  fail ;;
+      *)    fail ERROR ;;
+      esac
     fi
   fi
 }
