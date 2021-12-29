@@ -1,5 +1,118 @@
+2021-12-28  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, getopt.c, gettext.h, intprops.h,
+     limits.in.h, stdio.in.h, stdlib.in.h, string.in.h, verify.h,
+     extern-inline.m4, gnulib-common.m4, gnulib-comp.m4, limits-h.m4,
+     string_h.m4, vararrays.m4: Updated Gnulib.
+
+2021-10-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Fixed format specifier.
+
+2021-08-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: Now distinguishing failed from error.
+
+2021-07-02  Paul J. Lucas <paul@lucasmail.org>
+
+   * stdio.in.h, strerror-override.c, strerror-override.h, unistd.in.h: Updated
+     GnuLib.
+
+2021-06-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, c++defs.h, errno.in.h,
+     getdelim.c, getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.c, unistd.in.h, verify.h,
+     warn-on-use.h, gnulib-common.m4, gnulib-comp.m4, malloc.m4, unistd_h.m4:
+     Updated GnuLib.
+
+2021-05-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, malloc.c, stdlib.in.h, stdlib_h.m4: Updated Gnulib.
+
+2021-04-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, malloc.c, stdint.in.h, stdlib.in.h, gnulib-common.m4,
+     gnulib-comp.m4, malloc.m4, stddef_h.m4, stdint.m4, stdio_h.m4,
+     stdlib_h.m4, strdup.m4, strerror.m4, string_h.m4, strsep.m4,
+     sys_socket_h.m4, sys_types_h.m4, unistd_h.m4, wint_t.m4: Updated Gnulib.
+
+2021-03-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * intprops.h, stddef.in.h, sysexits.in.h, malloc.m4: Updated Gnulib.
+
+2021-02-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Upddated version.
+   * malloc.c, stddef.in.h, gnulib-common.m4, gnulib-comp.m4: Updated Gnulib.
+   * configure.ac, ax_check_compile_flag.m4: Now using AX_CHECK_COMPILE_FLAG
+     instead of AX_CFLAGS_GCC_OPTION.
+
+2021-01-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * Makefile.am, configure.ac, pjl_compile.m4, man/Makefile.am,
+     man/man1/Makefile.am, ad.1, src/Makefile.am, ad.c, color.c, color.h,
+     common.h, dump.c, match.c, match.h, options.c, options.h, pjl_config.h,
+     reverse.c, unicode.c, unicode.h, util.c, util.h, test/Makefile.am,
+     run_test.sh: Updated copyright year.
+
+2021-01-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: s/AC_PROG_CC_C99/AC_PROG_CC/; moved AC_LANG(C) earlier.
+   * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, c++defs.h, errno.in.h,
+     getdelim.c, getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strdup.c,
+     strerror-override.c, strerror-override.h, strerror.c, string.in.h,
+     strsep.c, sys_types.in.h, sysexits.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, 00gnulib.m4, absolute-header.m4, errno_h.m4, extensions.m4,
+     extern-inline.m4, getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, malloc.m4, multiarch.m4, nocrash.m4, off_t.m4, pid_t.m4,
+     ssize_t.m4, std-gnu11.m4, stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4,
+     stdlib_h.m4, strdup.m4, strerror.m4, string_h.m4, strsep.m4,
+     sys_socket_h.m4, sys_types_h.m4, sysexits.m4, unistd_h.m4, warn-on-use.m4,
+     wchar_t.m4, wint_t.m4, zzgnulib.m4: Updated Gnulib.
+   * run_test.sh: Made --test-name optional.
+
+2020-12-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, options.c, reverse.c, util.h: Renaming and comments.
+
+2020-12-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, c++defs.h, intprops.h, stdint.in.h, stdio.in.h,
+     stdlib.in.h, string.in.h, unistd.in.h, extensions.m4, gnulib-common.m4,
+     pid_t.m4, std-gnu11.m4, stdint.m4, stdio_h.m4, stdlib_h.m4,
+     sys_types_h.m4, unistd_h.m4, wint_t.m4: Updated Gnulib.
+   * Makefile.am: Added update-gnulib target.
+
+2020-12-02  Paul J. Lucas <paul@lucasmail.org>
+
+   * pjl_config.h: Removed do { ... } while (0)
+
+2020-11-28  Paul J. Lucas <paul@lucasmail.org>
+
+   * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am, ad.1,
+     src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
+     match.h, options.c, options.h, reverse.c, unicode.c, unicode.h, util.c,
+     util.h, test/Makefile.am, run_test.sh: Updated copyright year.
+   * color.c, color.h, dump.c, match.c, match.h, options.c, options.h,
+     pjl_config.h, reverse.c, unicode.h, util.c, util.h: s/AD_/PJL_/ for
+     pjl_config.h macros.
+   * unicode.h: Now #include <uchar.h>.
+   * util.c: Simplified NF().
+   * util.c: Added NF(N).
+   * options.c, unicode.c, unicode.h: s/unsigned char/char8_t/
+
 2020-11-27  Paul J. Lucas <paul@lucasmail.org>
 
+   * unicode.h: Fixed comment.
    * pjl_config.h: Added #ifdef ad_config_H.
    * src/Makefile.am, ad.c, color.c, color.h, dump.c, match.c, match.h,
      options.c, options.h, reverse.c, unicode.c, unicode.h, util.c, util.h:
@@ -7,7 +120,6 @@
    * configure.ac, ax_check_typedef.m4, pjl_check_typedef.m4, dump.c, match.c,
      match.h, options.c, reverse.c, unicode.c, unicode.h: Now using char8_t and
      char32_t.
-   * dump.c, options.c, options.h, unicode.h, util.c, util.h: Clean-up.
    * util.c: Added "bytes >= 1" to assert.
 
 2020-11-25  Paul J. Lucas <paul@lucasmail.org>
@@ -333,8 +445,6 @@
 
 2017-01-21  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c, color.c, color.h, common.h, dump.c, match.c, match.h, options.c,
-     options.h, reverse.c, utf8.h, util.c, util.h: Clean-up.
    * lib/Makefile.am, gnulib-cache.m4: Added extern-inline.
    * lib/Makefile.am, errno.in.h, getdelim.c, getline.c, getopt.c, getopt.in.h,
      getopt1.c, getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c,
@@ -383,10 +493,6 @@
      snippet/arg-nonnull.h, snippet/c++defs.h, snippet/warn-on-use.h,
      options.c: Fixed build on Solaris.
 
-2016-11-13  Paul J. Lucas <paul@lucasmail.org>
-
-   * utf8.h: Tweaked is_codepoint_valid().
-
 2016-11-12  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, utf8.h: Renamed to is_codepoint_valid().
@@ -422,10 +528,6 @@
 
    * utf8.h, util.h: Added _GL_INLINE_HEADER_BEGIN, _GL_INLINE_HEADER_END.
    * utf8.h: Added _GL_INLINE_HEADER_END.
-
-2016-04-25  Paul J. Lucas <paul@lucasmail.org>
-
-   * ad.1: Tweaked formatting.
 
 2016-04-20  Paul J. Lucas <paul@lucasmail.org>
 
@@ -634,8 +736,6 @@
 
 2015-08-02  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c, color.c, dump.c, match.c, match.h, options.c, options.h, reverse.c,
-     utf8.h, util.c, util.h: Comment change.
    * ad-T_02.test, ad-t_01.test: Removed -x.
    * ad.1, dump.c, match.c, match.h, options.c, options.h, test/Makefile.am,
      ad-T_02.txt, ad-t_01.txt, run_test.sh, ad-T_02.test, ad-t_01.test: Added
@@ -645,7 +745,6 @@
    * run_test.sh, ad-r_02.sh: Shell tests now take LOG_FILE as 2nd argument.
    * options.c: Added more mutually-exclusive option checking.
    * options.c: Added missing -C option to help.
-   * ad.c, dump.c, reverse.c: Clean-up.
 
 2015-08-01  Paul J. Lucas <paul@lucasmail.org>
 
@@ -755,7 +854,6 @@
    * ad.c: Moved get_offset_fmt_*() functions.
    * ad.c: Now using get_offset_fmt_format() in dump_file().
    * ad.c, match.c, util.c, util.h: s/ERROR_STR/STRERROR/g
-   * options.c: Clean-up.
    * run_test.sh: Now redirecting .sh test stderr to log file.
    * test/Makefile.am, gap_patch-1.txt, ad-r_07.bin, ad-r_07.test: New test.
 
@@ -776,7 +874,6 @@
 
 2015-06-25  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Clean-up.
    * ad.c: Fixed overuse of row_len.
    * ad.c, test/Makefile.am, endian.txt, ad-no_options-out.txt, ad-r_01.bin,
      run_test.sh, ad-B1-e257.test, ad-B16-e1.test, ad-B2-E1-m_02.test,
@@ -811,15 +908,12 @@
      big-endian machines.
    * ad.1: Added mention of xxd(1).
    * ad.c: Moved dumping code into separate function.
-   * match.c: Clean-up + comments.
    * src/Makefile.am, ad.c, color.c, color.h, common.h, match.c, match.h,
      options.c, options.h, util.c, util.h: Split ad.c into more .c files.
    * ad.1: Added explanation of last row dumping.
-   * ad.c: Clean-up.
 
 2015-06-21  Paul J. Lucas <paul@lucasmail.org>
 
-   * util.c, util.h: Clean-up.
    * ad.c: Dumping condition simplification; more comments.
    * common.h, util.c, util.h: Trailing whitespace removal.
    * ad.1, ad.c, test/Makefile.am, ad-v.txt, ad+16+X.test, ad-b8-B1.test,
@@ -855,7 +949,6 @@
    * test/Makefile.am: Renamed tests.
    * test/Makefile.am, ad-B2-E1-m.txt, ad-B4-E1-m.txt, ad-B2-E1-m.test,
      ad-B4-E1-m.test: More endian tests.
-   * ad.c: Clean-up.
    * ad.c: Fixed kmp_values[0].
    * ad.c, util.h: Added PRINT_ERROR().
    * test/Makefile.am, ad-E0x0102-m_02.txt, ad-E0x01020304-m_02.txt,
@@ -930,7 +1023,6 @@
 2015-06-05  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c: Fixed assert() placement.
-   * ad.c: Clean-up.
 
 2015-06-03  Paul J. Lucas <paul@lucasmail.org>
 
@@ -962,7 +1054,6 @@
 
 2015-05-29  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c, util.c, util.h: Clean-up.
    * test/Makefile.am, ad-N14+02.txt, ad-N17+02.txt, ad-N14+02.test,
      ad-N17+02.test: Offset tests.
    * test/Makefile.am, ad-N00.txt, ad-N01.txt, ad-N02.txt, ad-N03.txt,
