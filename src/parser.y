@@ -180,9 +180,52 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Calls #elaborate_error_dym() with a \ref dym_kind_t of #DYM_NONE.
+ *
+ * @param ... Arguments passed to fl_elaborate_error().
+ *
+ * @note This must be used _only_ after an `error` token, e.g.:
+ * @code
+ *  | Y_DEFINE error
+ *    {
+ *      elaborate_error( "name expected" );
+ *    }
+ * @endcode
+ *
+ * @sa elaborate_error_dym()
+ * @sa keyword_expected()
+ * @sa punct_expected()
+ */
 #define elaborate_error(...) \
-  BLOCK( fl_elaborate_error( __FILE__, __LINE__, __VA_ARGS__ ); PARSE_ABORT(); )
+  elaborate_error_dym( DYM_NONE, __VA_ARGS__ )
 
+/**
+ * Calls fl_elaborate_error() followed by #PARSE_ABORT().
+ *
+ * @param DYM_KINDS The bitwise-or of the kind(s) of things possibly meant.
+ * @param ... Arguments passed to fl_elaborate_error().
+ *
+ * @note
+ * This must be used _only_ after an `error` token, e.g.:
+ * @code
+ *  | error
+ *    {
+ *      elaborate_error_dym( DYM_COMMANDS, "unexpected token" );
+ *    }
+ * @endcode
+ *
+ * @sa elaborate_error()
+ * @sa keyword_expected()
+ * @sa punct_expected()
+ */
+#define elaborate_error_dym(DYM_KINDS,...) BLOCK( \
+  fl_elaborate_error( __FILE__, __LINE__, (DYM_KINDS), __VA_ARGS__ ); PARSE_ABORT(); )
+
+/**
+ * Aborts the current parse (presumably after an error message has been
+ * printed).
+ */
 #define PARSE_ABORT()             BLOCK( parse_cleanup( true ); YYABORT; )
 
 /// @endcond
@@ -194,7 +237,6 @@ extern int            yylex( void );
 
 // local variables
 static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
-static bool           error_newlined = true;
 
 ////////// inline functions ///////////////////////////////////////////////////
 
@@ -226,25 +268,24 @@ static inline char const* printable_token( void ) {
  */
 static void fl_elaborate_error( char const *file, int line, char const *format,
                                 ... ) {
-  if ( !error_newlined ) {
-    PUTS_ERR( ": " );
-    char const *const error_token = printable_token();
-    if ( error_token != NULL )
-      EPRINTF( "\"%s\": ", printable_token() );
+  assert( format != NULL );
 
-    va_list args;
-    va_start( args, format );
-    vfprintf( stderr, format, args );
-    va_end( args );
+  PUTS_ERR( ": " );
+  char const *const error_token = printable_token();
+  if ( error_token != NULL )
+    EPRINTF( "\"%s\": ", printable_token() );
+
+  va_list args;
+  va_start( args, format );
+  vfprintf( stderr, format, args );
+  va_end( args );
 
 #ifdef ENABLE_AD_DEBUG
-    if ( opt_ad_debug )
-      PRINTF_ERR( " (%s:%d)", file, line );
+  if ( opt_ad_debug )
+    PRINTF_ERR( " (%s:%d)", file, line );
 #endif /* ENABLE_AD_DEBUG */
 
-    PUTC_ERR( '\n' );
-    error_newlined = true;
-  }
+  PUTC_ERR( '\n' );
 }
 
 /**
@@ -253,6 +294,8 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
  * @param hard_reset If `true`, does a "hard" reset that currently resets the
  * EOF flag of the lexer.  This should be `true` if an error occurs and
  * `YYABORT` is called.
+ *
+ * @sa parse_init()
  */
 static void parse_cleanup( bool hard_reset ) {
   lexer_reset( hard_reset );
@@ -261,12 +304,11 @@ static void parse_cleanup( bool hard_reset ) {
 
 /**
  * Gets ready to parse a statement.
+ *
+ * @sa parse_cleanup()
  */
 static void parse_init( void ) {
-  if ( !error_newlined ) {
-    FPUTC( '\n', fout );
-    error_newlined = true;
-  }
+  // TODO
 }
 
 /**
@@ -557,6 +599,9 @@ array_opt
 struct_decl
   : Y_STRUCT name_exp lbrace_exp statement_list rbrace_exp
     {
+      $$ = MALLOC( ad_struct, 1 );
+      $$->name = $2;
+      // TODO
     }
   ;
 
@@ -579,7 +624,7 @@ switch_case_statement
 
 /// typedef declaration ///////////////////////////////////////////////////////
 
-typedef_declaration_c
+typedef_decl
   : Y_TYPEDEF type_c_ast
     {
       //
@@ -599,7 +644,7 @@ typedef_declaration_c
     {
       type_pop();
 
-      DUMP_START( "typedef_declaration_c", "TYPEDEF type_c_ast decl_c_ast" );
+      DUMP_START( "typedef_decl", "TYPEDEF type_c_ast decl_c_ast" );
       DUMP_AST( "type_c_ast", $2.ast );
       DUMP_AST( "decl_c_ast", $4.ast );
 
@@ -654,7 +699,7 @@ typedef_declaration_c
         PARSE_ABORT();
       }
 
-      DUMP_AST( "typedef_declaration_c", ast );
+      DUMP_AST( "typedef_decl", ast );
       DUMP_END();
 
       temp_sname = c_sname_dup( &in_attr.current_scope );
@@ -1148,138 +1193,6 @@ builtin_type
 type_endian_opt
   : /* empty */                   { $$ = 0; }
   | ',' expr                      { $$ = $2; }
-  ;
-
-/*****************************************************************************/
-/*  cast productions                                                         */
-/*****************************************************************************/
-
-cast_c_ast_opt
-  : /* empty */                   { $$.ast = $$.target_ast = NULL; }
-  | cast_c_ast
-  ;
-
-cast_c_ast
-  : cast2_c_ast
-  | pointer_cast_c_ast
-  ;
-
-cast2_c_ast
-  : array_cast_c_ast
-  | func_cast_c_ast
-  | nested_cast_c_ast
-  | sname_c_ast
-  ;
-
-array_cast_c_ast
-  : /* type */ cast_c_ast_opt arg_array_size_c_ast
-    {
-      DUMP_START( "array_cast_c_ast", "cast_c_ast_opt array_size_c_num" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_AST( "cast_c_ast_opt", $1.ast );
-      if ( $1.target_ast != NULL )
-        DUMP_AST( "target_ast", $1.target_ast );
-      DUMP_AST( "arg_array_size_c_ast", $2 );
-
-      c_ast_set_parent( C_AST_NEW( K_PLACEHOLDER, &@1 ), $2 );
-
-      if ( $1.target_ast != NULL ) {    // array-of or function-ret type
-        $$.ast = $1.ast;
-        $$.target_ast = c_ast_add_array( $1.target_ast, $2 );
-      } else {
-        c_ast_t *const ast = $1.ast != NULL ? $1.ast : type_peek();
-        $$.ast = c_ast_add_array( ast, $2 );
-        $$.target_ast = NULL;
-      }
-
-      DUMP_AST( "array_cast_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-arg_array_size_c_ast
-  : array_size_c_num
-    {
-      $$ = C_AST_NEW( K_ARRAY, &@$ );
-      $$->as.array.size = $1;
-    }
-  ;
-
-func_cast_c_ast
-  : /* type_c_ast */ cast2_c_ast '(' arg_list_c_ast_opt ')'
-    func_qualifier_list_c_type_opt func_trailing_return_type_c_ast_opt
-    {
-      DUMP_START( "func_cast_c_ast",
-                  "cast2_c_ast '(' arg_list_c_ast_opt ')' "
-                  "func_qualifier_list_c_type_opt "
-                  "func_trailing_return_type_c_ast_opt" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_AST( "cast2_c_ast", $1.ast );
-      DUMP_AST_LIST( "arg_list_c_ast_opt", $3 );
-      DUMP_TYPE( "func_qualifier_list_c_type_opt", $5 );
-      DUMP_AST( "func_trailing_return_type_c_ast_opt", $6.ast );
-      if ( $1.target_ast != NULL )
-        DUMP_AST( "target_ast", $1.target_ast );
-
-      c_ast_t *const func = C_AST_NEW( K_FUNCTION, &@$ );
-      func->type_id = $5;
-      func->as.func.args = $3;
-
-      if ( $6.ast != NULL ) {
-        $$.ast = c_ast_add_func( $1.ast, $6.ast, func );
-      }
-      else if ( $1.target_ast != NULL ) {
-        $$.ast = $1.ast;
-        (void)c_ast_add_func( $1.target_ast, type_peek(), func );
-      }
-      else {
-        $$.ast = c_ast_add_func( $1.ast, type_peek(), func );
-      }
-      $$.target_ast = func->as.func.ret_ast;
-
-      DUMP_AST( "func_cast_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-nested_cast_c_ast
-  : '(' placeholder_c_ast
-    {
-      type_push( $2.ast );
-      ++ast_depth;
-    }
-    cast_c_ast_opt ')'
-    {
-      type_pop();
-      --ast_depth;
-
-      DUMP_START( "nested_cast_c_ast",
-                  "'(' placeholder_c_ast cast_c_ast_opt ')'" );
-      DUMP_AST( "placeholder_c_ast", $2.ast );
-      DUMP_AST( "cast_c_ast_opt", $4.ast );
-
-      $$ = $4;
-
-      DUMP_AST( "nested_cast_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-pointer_cast_c_ast
-  : pointer_type_c_ast { type_push( $1.ast ); } cast_c_ast_opt
-    {
-      type_pop();
-
-      DUMP_START( "pointer_cast_c_ast", "pointer_type_c_ast cast_c_ast_opt" );
-      DUMP_AST( "pointer_type_c_ast", $1.ast );
-      DUMP_AST( "cast_c_ast_opt", $3.ast );
-
-      $$.ast = c_ast_patch_placeholder( $1.ast, $3.ast );
-      $$.target_ast = NULL;
-
-      DUMP_AST( "pointer_cast_c_ast", $$.ast );
-      DUMP_END();
-    }
   ;
 
 ///////////////////////////////////////////////////////////////////////////////

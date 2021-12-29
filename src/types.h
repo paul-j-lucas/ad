@@ -189,6 +189,7 @@ struct ad_int {
  * struct type.
  */
 struct ad_struct {
+  char           *name;
   ad_type_list_t  members;              ///< Structure members.
 };
 
