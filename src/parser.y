@@ -212,15 +212,6 @@ static inline char const* printable_token( void ) {
   } // switch
 }
 
-////////// extern functions ///////////////////////////////////////////////////
-
-/**
- * Cleans up parser data at program termination.
- */
-void parser_cleanup( void ) {
-  // do nothing
-}
-
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -390,22 +381,31 @@ static void yyerror( char const *msg ) {
 %token  <name>      Y_NAME
 %token  <number>    Y_NUMBER
 
-                    /*
-                     * Grammar rules are named according to the following
-                     * conventions.  In order, if a rule:
-                     *
-                     *  1. Is a list, "_list" is appended.
-                     *  2. Is specific to C/C++, "_c" is appended; is specific
-                     *     to English, "_english" is appended.
-                     *  3. Is of type:
-                     *      + <ast> or <ast_pair>: "_ast" is appended.
-                     *      + <name>: "_name" is appended.
-                     *      + <number>: "_num" is appended.
-                     *      + <sname>: "_sname" is appended.
-                     *      + <type_id>: "_type" is appended.
-                     *  4. Is expected, "_exp" is appended; is optional, "_opt"
-                     *     is appended.
-                     */
+                    //
+                    // When the lexer returns Y_LEXER_ERROR, it means that
+                    // there was a lexical error and that it's already printed
+                    // an error message so the parser should NOT print an error
+                    // message and just call PARSE_ABORT().
+                    ///
+%token              Y_LEXER_ERROR
+
+//
+// Grammar rules are named according to the following conventions.  In order,
+// if a rule:
+//
+//  1. Is a list, "_list" is appended.
+//  2. Is specific to C/C++, "_c" is appended; is specific to English,
+//     "_english" is appended.
+//  3. Is of type:
+//      + <ast> or <ast_pair>: "_ast" is appended.
+//      + <name>: "_name" is appended.
+//      + <number>: "_num" is appended.
+//      + <sname>: "_sname" is appended.
+//      + <type_id>: "_type" is appended.
+//  4. Is expected, "_exp" is appended; is optional, "_opt" is appended.
+//
+// Sort using: sort -bdk3
+
 %type   <ast_pair>  cast_c_ast cast_c_ast_opt cast2_c_ast
 %type   <ast_pair>  array_cast_c_ast
 %type   <ast_pair>  func_cast_c_ast
@@ -503,9 +503,7 @@ declaration
   | typedef_decl
   ;
 
-/*****************************************************************************/
-/*  enum declaration                                                         */
-/*****************************************************************************/
+/// enum declaration //////////////////////////////////////////////////////////
 
 enum_decl
   : Y_ENUM name_exp colon_exp type_exp lbrace_exp enumerator_list '}'
@@ -527,9 +525,7 @@ enumerator
     }
   ;
 
-/*****************************************************************************/
-/*  field declaration                                                        */
-/*****************************************************************************/
+/// field declaration /////////////////////////////////////////////////////////
 
 field_decl
   : type_exp field_name_exp array_opt
@@ -556,9 +552,7 @@ array_opt
     }
   ;
 
-/*****************************************************************************/
-/*  struct declaration                                                       */
-/*****************************************************************************/
+/// struct declaration ////////////////////////////////////////////////////////
 
 struct_decl
   : Y_STRUCT name_exp lbrace_exp statement_list rbrace_exp
@@ -566,9 +560,7 @@ struct_decl
     }
   ;
 
-/*****************************************************************************/
-/*  switch statement                                                         */
-/*****************************************************************************/
+/// switch statement //////////////////////////////////////////////////////////
 
 switch_statement
   : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp
@@ -585,9 +577,7 @@ switch_case_statement
   | Y_DEFAULT colon_exp statement_list
   ;
 
-/*****************************************************************************/
-/*  typedef declaration                                                      */
-/*****************************************************************************/
+/// typedef declaration ///////////////////////////////////////////////////////
 
 typedef_declaration_c
   : Y_TYPEDEF type_c_ast
@@ -689,9 +679,7 @@ typedef_declaration_c
     }
   ;
 
-/*****************************************************************************/
-/*  expressions                                                              */
-/*****************************************************************************/
+/// expressions ///////////////////////////////////////////////////////////////
 
 expr
   : assign_expr
@@ -1143,9 +1131,7 @@ pointer_type_c_ast
     }
   ;
 
-/*****************************************************************************/
-/*  type                                                                     */
-/*****************************************************************************/
+/// type //////////////////////////////////////////////////////////////////////
 
 type
   : builtin_type lt_exp expr type_endian_opt '>'
@@ -1296,9 +1282,9 @@ pointer_cast_c_ast
     }
   ;
 
-/*****************************************************************************/
-/*  miscellaneous productions                                                */
-/*****************************************************************************/
+///////////////////////////////////////////////////////////////////////////////
+//  MISCELLANEOUS                                                            //
+///////////////////////////////////////////////////////////////////////////////
 
 comma_exp
   : ','
@@ -1455,6 +1441,15 @@ typedef_type_sname
 %%
 
 /// @endcond
+
+////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Cleans up global parser data at program termination.
+ */
+void parser_cleanup( void ) {
+  // do nothing
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */

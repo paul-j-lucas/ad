@@ -49,6 +49,20 @@
 #include <stdlib.h>                     /* for strtol(3) */
 #include <string.h>
 
+#ifdef __GNUC__
+// Silence these warnings for Flex-generated code.
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif /* __GNUC__ */
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wimplicit-int-conversion"
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#endif /* __clang__ */
+
 /// @endcond
 
 /**
@@ -133,7 +147,7 @@
  * @hideinitializer
  */
 #define YY_USER_ACTION_UNDO_FOR_REJECT \
-  column -= (int)yyleng
+  token_column -= (int)yyleng
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -170,18 +184,22 @@ static keyword_t const AD_KEYWORDS[] = {
 
 // extern variables
 static char const lexer_token_init_buf; ///< So lexer_token is never null.
-/** Guaranteed pointer of `yytext`. */
+
+// A separate pointer for the current token allows it:
+//  + To be `const`.
+//  + To be assigned to either other `const` strings or string literals.
 char const       *lexer_token = &lexer_token_init_buf;
 
 // local variables
-static int        column;               ///< Column position of current token.
-static int        column_newline;       ///< Column position of newline.
 static char      *input_buf;            ///< Entire current input line.
 static size_t     input_len;            ///< Length of line in `input_buf`.
 static size_t     input_sent;           ///< How many bytes returned to flex.
 static bool       is_eof;               ///< Encountered EOF?
+static int        newline_column;       ///< Column position of newline.
+static int        token_column;         ///< Column position of current token.
 
 // local functions
+noreturn
 static void       lexer_fatal( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -227,7 +245,7 @@ static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
   // 8192, it's unlikely that this will ever be true and that we'll have to
   // return the input line in chunks; but might as well code for the case.
   //
-  if ( input_avail > buf_capacity )
+  if ( unlikely( input_avail > buf_capacity ) )
     input_avail = buf_capacity;
   memcpy( buf, input_buf + input_sent, input_avail );
   input_sent += input_avail;
@@ -238,8 +256,8 @@ static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
  * Resets the column position upon encountering a newline.
  */
 static inline void newline( void ) {
-  column_newline = column;
-  column = 0;
+  newline_column = token_column;
+  token_column = 0;
 }
 
 /**
@@ -317,20 +335,20 @@ static int yywrap( void ) {
 
 %}
 
-letter        [A-Za-z_]
+L             [A-Za-z_]
 B             [01]
 O             [0-7]
 D             [0-9]
 H             [0-9A-Fa-f]
 S             [ \f\r\t\v]
 
-identifier    {letter}({letter}|{D})*
-int_suffix    ([lL][lL]?[uU]?)|([uU][lL]?[lL]?)
+identifier    {L}({L}|{D})*
+int_sfx       [lL][lL]?[uU]?|[uU]([lL][lL]?|[zZ])?|[zZ][uU]?
 
-bin_int       0[bB]{B}+{int_suffix}?
-oct_int       0{O}*{int_suffix}?
-dec_int       [1-9]{D}*{int_suffix}?
-hex_int       0[xX]{H}+{int_suffix}?
+bin_int       0[bB]{B}+{int_sfx}?
+oct_int       0{O}*{int_sfx}?
+dec_int       [1-9]{D}*{int_sfx}?
+hex_int       0[xX]{H}+{int_sfx}?
 
 %%
 
@@ -432,12 +450,11 @@ hex_int       0[xX]{H}+{int_suffix}?
 "~"           { SET_TOKEN; return lexer_token[0]; }
 
 "/*"          {                         /* ignore C-style comments */
-                for ( int c = input(), prev_c = '\0'; ;
-                      prev_c = c, c = input() ) {
+                for ( int c = input(), prev = '\0'; ; prev = c, c = input() ) {
                   if ( c == '\0' || c == EOF )
-                    return Y_ERROR;
-                  ++column;
-                  if ( c == '/' && prev_c == '*' )
+                    return Y_LEXER_ERROR;
+                  ++token_column;
+                  if ( c == '/' && prev == '*' )
                     break;
                   if ( c == '\n' )
                     newline();
@@ -504,9 +521,9 @@ static void lexer_fatal( char const *msg ) {
  */
 static void lexer_update_loc( void ) {
   yylloc.first_line   = yylloc.last_line = yylineno;
-  yylloc.first_column = column;
-  yylloc.last_column  = column + yyleng - 1;
-  column += yyleng;
+  yylloc.first_column = token_column;
+  yylloc.last_column  = token_column + yyleng - 1;
+  token_column += yyleng;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -524,12 +541,12 @@ void lexer_loc( int *pline, int *pcolumn ) {
 
   *pline = yylineno;
 
-  if ( column == 0 )
-    *pcolumn = column_newline;
+  if ( token_column == 0 )
+    *pcolumn = newline_column;
   else if ( lexer_token[0] == '\n' )
-    *pcolumn = column;
+    *pcolumn = token_column;
   else
-    *pcolumn = column - strlen( lexer_token );
+    *pcolumn = token_column - strlen( lexer_token );
 }
 
 void lexer_reset( bool hard_reset ) {
