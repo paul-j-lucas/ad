@@ -592,7 +592,9 @@ void parse_options( int argc, char *argv[] ) {
 #endif /* ENABLE_AD_DEBUG */
       case 'e':
       case 'E': search_number = parse_ull( optarg );
-                search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
+                search_endian = opt == 'E' ?
+                  AD_ENDIAN_BIG: AD_ENDIAN_LITTLE;
+                break;
       case 'g': opt_group_by = parse_group_by( optarg );                break;
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this

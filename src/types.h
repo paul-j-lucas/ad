@@ -37,10 +37,10 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 //
-// The bits are used as follows:
+// The bits (right to left) are used as follows:
 //
-//    S-TT TTTT EZZZ ZDDN
 //    F-DC BA98 7654 3210
+//    S-TT TTTT EZZZ ZDDN
 //
 // where:
 //
@@ -58,7 +58,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_64_BITS               0x0040u               /**< 64-bit type.       */
 
 #define T_SIGNED                0x8000u               /**< Signed type.       */
-#define T_END_HOST              0x0000u               /**< Host endian.*      */
+#define T_END_HOST              0x0000u               /**< Host endian.       */
 #define T_END_LITTLE            0x0020u               /**< Little-endian.     */
 #define T_END_BIG               0x0040u               /**< Big-endian.        */
 #define T_NULL                  0x0001u               /**< Null-terminated.   */
@@ -68,19 +68,19 @@ _GL_INLINE_HEADER_BEGIN
 #define T_ERROR                 0x0080u               /**< Error type.        */
 
 #define T_BOOL                  0x0100                /**< Boolean.           */
-#define T_BOOL8   (             T_BOOL  | T_08_BITS) /**< `bool`             */
+#define T_BOOL8   (             T_BOOL  | T_08_BITS)  /**< `bool`             */
 
-#define T_UTF                   0x0200               /**< Unicode.           */
-#define T_UTF8     (            T_UTF   | T_08_BITS) /**< UTF-8 (multibyte). */
-#define T_UTF16_H  (            T_UTF   | T_16_BITS) /**< UTF-16 host.       */
-#define T_UTF16_BE (T_END_BIG | T_UTF   | T_16_BITS) /**< UTF-16 big.        */
-#define T_UTF16_LE (T_END_LITTLE | T_UTF| T_16_BITS) /**< UTF-16 little.  */
-#define T_UTF32_H  (            T_UTF   | T_32_BITS) /**< UTF-32 host.       */
-#define T_UTF32_BE (T_END_BIG | T_UTF   | T_32_BITS) /**< UTF-32 big.        */
-#define T_UTF32_LE (T_END_LITTLE | T_UTF| T_32_BITS) /**< UTF-32 little.  */
+#define T_UTF                   0x0200                /**< Unicode.           */
+#define T_UTF8     (            T_UTF   | T_08_BITS)  /**< UTF-8 (multibyte). */
+#define T_UTF16_HE (            T_UTF   | T_16_BITS)  /**< UTF-16 host.       */
+#define T_UTF16_BE (T_END_BIG | T_UTF   | T_16_BITS)  /**< UTF-16 big.        */
+#define T_UTF16_LE (T_END_LITTLE | T_UTF| T_16_BITS)  /**< UTF-16 little.     */
+#define T_UTF32_HE (            T_UTF   | T_32_BITS)  /**< UTF-32 host.       */
+#define T_UTF32_BE (T_END_BIG | T_UTF   | T_32_BITS)  /**< UTF-32 big.        */
+#define T_UTF32_LE (T_END_LITTLE | T_UTF| T_32_BITS)  /**< UTF-32 little.     */
 
-#define T_UTF_0    (T_NULL    | T_UTF              ) /**< UTF string.        */
-#define T_UTF8_0   (T_NULL    | T_UTF   | T_08_BITS) /**< UTF-8 string.      */
+#define T_UTF_0    (T_NULL    | T_UTF              )  /**< UTF string.        */
+#define T_UTF8_0   (T_NULL    | T_UTF   | T_08_BITS)  /**< UTF-8 string.      */
 
 /** UTF-16, big-endian, null-terminated string. */
 #define T_UTF16_H_0               (T_NULL | T_UTF | T_16_BITS)
@@ -92,7 +92,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF16_LE_0              (T_END_LITTLE | T_NULL | T_UTF | T_16_BITS)
 
 /**< UTF-32 host-endian, null-terminated string. */
-#define T_UTF32_H_0               (T_NULL | T_UTF | T_32_BITS)
+#define T_UTF32_HE_0              (T_NULL | T_UTF | T_32_BITS)
 
 /**< UTF-32 big-endian null-terminated string. */
 #define T_UTF32_BE_0              (T_END_BIG | T_NULL | T_UTF | T_32_BITS)

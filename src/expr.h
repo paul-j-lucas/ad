@@ -77,7 +77,6 @@ enum ad_expr_id {
   AD_EXPR_CAST,                         ///< Cast expression.
 
   AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
-  AD_EXPR_BIT_COMPL,                    ///< Bitwise-complement expression.
   AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.
   AD_EXPR_BIT_SHIFT_LEFT,               ///< Bitwise-left-shift expression.
   AD_EXPR_BIT_SHIFT_RIGHT,              ///< Bitwise-right-shift expression.

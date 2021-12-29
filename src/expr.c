@@ -116,9 +116,9 @@ static char32_t ad_expr_utfxx_host32( ad_expr_t const *expr ) {
     case T_UTF8:
       return utf8_32( (char const*)&expr->as.value.as.c32 );
     case T_UTF16_BE:
-      return utf16_32( &expr->as.value.as.c16, 1, ENDIAN_BIG, &cp ) ? cp : CP_INVALID;
+      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_BIG, &cp ) ? cp : CP_INVALID;
     case T_UTF16_LE:
-      return utf16_32( &expr->as.value.as.c16, 1, ENDIAN_LITTLE, &cp ) ? cp : CP_INVALID;
+      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_LITTLE, &cp ) ? cp : CP_INVALID;
     case T_UTF32_BE:
     case T_UTF32_LE:
       return expr->as.value.as.c32;
@@ -1137,20 +1137,17 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       *rv = *expr;
       break;
 
-    case AD_EXPR_IF_ELSE:
-      return ad_expr_if_else( expr, rv );
+    case AD_EXPR_BIT_AND:
+      return ad_expr_bit_and( expr, rv );
+
+    case AD_EXPR_BIT_COMP:
+      return ad_expr_bit_comp( expr, rv );
 
     case AD_EXPR_BIT_SHIFT_LEFT:
       return ad_expr_bit_shift_left( expr, rv );
 
     case AD_EXPR_BIT_SHIFT_RIGHT:
       return ad_expr_bit_shift_right( expr, rv );
-
-    case AD_EXPR_BIT_AND:
-      return ad_expr_bit_and( expr, rv );
-
-    case AD_EXPR_BIT_COMP:
-      return ad_expr_bit_comp( expr, rv );
 
     case AD_EXPR_BIT_OR:
       return ad_expr_bit_or( expr, rv );
@@ -1164,6 +1161,9 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_DEREF:
       // TODO
       return true;
+
+    case AD_EXPR_IF_ELSE:
+      return ad_expr_if_else( expr, rv );
 
     case AD_EXPR_LOG_AND:
       return ad_expr_log_and( expr, rv );

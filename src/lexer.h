@@ -69,6 +69,16 @@ void lexer_loc( int *pline, int *pcolumn );
  */
 void lexer_reset( bool hard_reset );
 
+/**
+ * Gets the next token ID.
+ *
+ * @note The definition is provided by Flex.
+ *
+ * @return Returns the token ID.
+ */
+PJL_WARN_UNUSED_RESULT
+int yylex( void );
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif /* ad_lexer_H */

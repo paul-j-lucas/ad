@@ -25,6 +25,9 @@
 /// @endcond
 #include "types.h"
 
+// standard
+#include <assert.h>
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 void ad_type_free( ad_type_t *type ) {
@@ -43,7 +46,13 @@ void ad_type_free( ad_type_t *type ) {
   } // switch
 }
 
-ad_type_t ad_type_new( ad_type_id_t tid ) {
+ad_type_t* ad_type_new( ad_type_id_t tid ) {
+  assert( tid != T_NONE );
+
+  ad_type_t *const type = MALLOC( ad_type_t, 1 );
+  MEM_ZERO( type );
+
+  return type;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
