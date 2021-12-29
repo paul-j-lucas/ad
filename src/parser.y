@@ -533,6 +533,8 @@ enumerator
 
 field_decl
   : type_exp field_name_exp array_opt
+    {
+    }
   ;
 
 array_opt

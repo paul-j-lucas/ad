@@ -7,108 +7,108 @@ enum endian {
 
 % option:endian = BE
 
-    struct SOI {
-      uint<16,BE> marker == 0xFFD8;
-    };
+struct SOI {
+  uint<16,BE> marker == 0xFFD8;
+};
 
-    struct APP0 {
-      enum units_t : uint<8> {
-        NONE      = 0,
-        DOTS_INCH = 1,
-        DOTS_CM   = 2
-      };
+struct APP0 {
+  enum units_t : uint<8> {
+    NONE      = 0,
+    DOTS_INCH = 1,
+    DOTS_CM   = 2
+  };
 
-      uint<16,BE> marker == 0xFFE0;
-      uint<16,BE> size;                     %u
-      utf<8>      jfif[] == "JFIF";
-      uint<8>     major;
-      uint<8>     minor;
-      units_t     units;
+  uint<16,BE> marker == 0xFFE0;
+  uint<16,BE> size;                     %u
+  utf<8>      jfif[] == "JFIF";
+  uint<8>     major;
+  uint<8>     minor;
+  units_t     units;
 
-      switch ( units ) {
-        case NONE:
-          uint<8> thumbnail_x;
-          uint<8> thumbnail_y;
-          break;
-        case DOTS_INCH:
-          uint<8> x_in;
-          uint<8> y_in;
-          break;
-        case DOTS_CM:
-          uint<8> x_cm;
-          uint<8> y_cm;
-          break;
-        default:
-          WARN( "\"%u\": invalid units\n", units );
-          units = NONE;
-      } // switch
+  switch ( units ) {
+    case NONE:
+      uint<8> thumbnail_x;
+      uint<8> thumbnail_y;
+      break;
+    case DOTS_INCH:
+      uint<8> x_in;
+      uint<8> y_in;
+      break;
+    case DOTS_CM:
+      uint<8> x_cm;
+      uint<8> y_cm;
+      break;
+    default:
+      WARN( "\"%u\": invalid units\n", units );
+      units = NONE;
+  } // switch
 
-      uint<8> thumbnail[ size ];
-    };
+  uint<8> thumbnail[ size ];
+};
 
-    struct COM {
-    };
+struct COM {
+};
 
-    struct DHT {
-    };
+struct DHT {
+};
 
-    struct SOF {
-    };
+struct SOF {
+};
 
-    struct rgb {
-      uint<8> r;
-      uint<8> g;
-      uint<8> b;
-    };
+struct rgb {
+  uint<8> r;
+  uint<8> g;
+  uint<8> b;
+};
 
-    struct extension_APP0 {
-      enum thumbnail_format : uint<8> {
-        THUMB_JPEG  = 0x10,
-        THUMB_1BPP  = 0x11,
-        THUMB_3BPP  = 0x13
-      };
+struct extension_APP0 {
+  enum thumbnail_format : uint<8> {
+    THUMB_JPEG  = 0x10,
+    THUMB_1BPP  = 0x11,
+    THUMB_3BPP  = 0x13
+  };
 
-      uint<16,BE> marker == 0xFFE0;
-      uint<16,BE> size;                     %u
-      utf<8>      jfxx[] == "JFXX";
-      thumbnail_format thumb_fmt;
+  uint<16,BE> marker == 0xFFE0;
+  uint<16,BE> size;                     %u
+  utf<8>      jfxx[] == "JFXX";
+  thumbnail_format thumb_fmt;
 
-        switch ( thumb_fmt ) {
-          case THUMB_JPEG:
-            SOI soi;
-            SOF sof[+];
-            EOI eoi;
-            break;
-          case THUMB_1BPP:
-            uint<8> x_thumb;
-            uint<8> y_thumb;
-            rgb     palette[ 256 ];
-            uint<8> pixel[ x_thumb * y_thumb ];
-            break;
-          case THUMB_3BPP:
-            break;
-        }
-    };
+    switch ( thumb_fmt ) {
+      case THUMB_JPEG:
+        SOI soi;
+        SOF sof[+];
+        EOI eoi;
+        break;
+      case THUMB_1BPP:
+        uint<8> x_thumb;
+        uint<8> y_thumb;
+        rgb     palette[ 256 ];
+        uint<8> pixel[ x_thumb * y_thumb ];
+        break;
+      case THUMB_3BPP:
+        break;
+    }
+};
 
-    struct SOS {
-      uint<16,BE> marker == 0xFFDA;
-    };
+struct SOS {
+  uint<16,BE> marker == 0xFFDA;
+};
 
-    struct EOI {
-      uint<16,BE> marker == 0xFFD9;
-    };
+struct EOI {
+  uint<16,BE> marker == 0xFFD9;
+};
 
-    union body {
-      COM;
-      DHT;
-      SOF;
-    };
+union body {
+  COM;
+  DHT;
+  SOF;
+};
 
-    SOI;
-    APP0;
-    extension_APP0[?];
-    body x[*];
-    SOS;
-    EOI;
+SOI;
+APP0;
+extension_APP0[?];
+body x[*];
+SOS;
+EOI;
 
 /* vim:set syntax=c et sw=2 ts=2: */

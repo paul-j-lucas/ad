@@ -148,16 +148,23 @@ typedef struct keyword keyword_t;
 
 /**
  * All ad keywords.
- *
- * @hideinitializer
  */
 static keyword_t const AD_KEYWORDS[] = {
-  { L_DECLARE,        Y_DECLARE   },
-  { L_DEFINE,         Y_DEFINE    },
+  { L_BOOL,           Y_BOOL      },
+  { L_BREAK,          Y_BREAK     },
+  { L_CASE,           Y_CASE      },
+  { L_DEFAULT,        Y_DEFAULT   },
+  { L_ENUM,           Y_ENUM      },
+  { L_FALSE,          Y_FALSE     },
+  { L_FLOAT,          Y_FLOAT     },
+  { L_INT,            Y_INT       },
+  { L_OFFSETOF,       Y_OFFSETOF  },
+  { L_SIZEOF,         Y_SIZEOF    },
   { L_STRUCT,         Y_STRUCT    },
-  { L_FUNC,           Y_FUNCTION  },
-  { L_LEN,            Y_LENGTH    },
-  { L_VAR,            Y_VARIABLE  },
+  { L_SWITCH,         Y_SWITCH    },
+  { L_TRUE,           Y_TRUE      },
+  { L_TYPEDEF,        Y_TYPEDEF   },
+  { L_UINT,           Y_UINT      },
   { NULL,             0           }
 };
 
