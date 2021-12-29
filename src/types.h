@@ -110,9 +110,9 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UINT32    (            T_INT   | T_32_BITS) /**< `unsigned int32`   */
 #define T_UINT64    (            T_INT   | T_64_BITS) /**< `unsigned int64`   */
 
-#define T_FLOAT                 0x0800               /**< Floating point.    */
-#define T_FLOAT32  (T_SIGNED |  T_FLOAT | T_32_BITS) /**< `float32`          */
-#define T_FLOAT64  (T_SIGNED |  T_FLOAT | T_64_BITS) /**< `float64`          */
+#define T_FLOAT                 0x0800                /**< Floating point.    */
+#define T_FLOAT32  (T_SIGNED |  T_FLOAT | T_32_BITS)  /**< `float32`          */
+#define T_FLOAT64  (T_SIGNED |  T_FLOAT | T_64_BITS)  /**< `float64`          */
 
 #define T_STRUCT                0x1000                /**< `struct`           */
 #define T_SWITCH                0x2000                /**< `switch`           */
