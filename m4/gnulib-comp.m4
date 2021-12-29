@@ -77,6 +77,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module sys_types:
   # Code from module sysexits:
   # Code from module unistd:
+  # Code from module vararrays:
   # Code from module verify:
   # Code from module xalloc-oversized:
 ])
@@ -199,6 +200,7 @@ AC_DEFUN([gl_INIT],
   gl_SYSEXITS
   gl_UNISTD_H
   gl_UNISTD_H_REQUIRE_DEFAULTS
+  AC_C_VARARRAYS
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -413,6 +415,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/sys_types_h.m4
   m4/sysexits.m4
   m4/unistd_h.m4
+  m4/vararrays.m4
   m4/warn-on-use.m4
   m4/wchar_t.m4
   m4/wint_t.m4
