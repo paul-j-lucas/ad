@@ -103,13 +103,13 @@ static inline int int32_cmp( int32_t i, int32_t j ) {
 }
 
 /**
- * Decodes a single Unicode code-point to UTF-32.
+ * Decodes a single Unicode code-point to host-endian UTF-32.
  *
  * @param expr The expression whose Unicode code-point to decode.
  * @param cp A pointer to the code-point to be set.
  * @return Returns the Unicode code-point or #CP_INVALID.
  */
-static char32_t ad_expr_utfxx_host32( ad_expr_t const *expr ) {
+static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
   char32_t cp;
 
   switch ( expr->as.value.type.type_id ) {
@@ -177,8 +177,8 @@ static bool ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
   }
 
   char32_t lhs_cp, rhs_cp;
-  if ( unlikely( (lhs_cp = ad_expr_utfxx_host32( lhs_expr )) == CP_INVALID ) ||
-       unlikely( (rhs_cp = ad_expr_utfxx_host32( rhs_expr )) == CP_INVALID ) ) {
+  if ( unlikely( (lhs_cp = ad_expr_utfxx_he32( lhs_expr )) == CP_INVALID ) ||
+       unlikely( (rhs_cp = ad_expr_utfxx_he32( rhs_expr )) == CP_INVALID ) ) {
     return false;
   }
 
