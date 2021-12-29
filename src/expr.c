@@ -116,9 +116,11 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
     case T_UTF8:
       return utf8_32( (char const*)&expr->as.value.as.c32 );
     case T_UTF16_BE:
-      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_BIG, &cp ) ? cp : CP_INVALID;
+      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_BIG, &cp ) ?
+        cp : CP_INVALID;
     case T_UTF16_LE:
-      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_LITTLE, &cp ) ? cp : CP_INVALID;
+      return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_LITTLE, &cp ) ?
+        cp : CP_INVALID;
     case T_UTF32_BE:
     case T_UTF32_LE:
       return expr->as.value.as.c32;
