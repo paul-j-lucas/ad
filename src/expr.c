@@ -115,14 +115,14 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
   switch ( expr->as.value.type.type_id ) {
     case T_UTF8:
       return utf8_32( (char const*)&expr->as.value.as.c32 );
-    case T_UTF16_BE:
+    case T_UTF16BE:
       return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_BIG, &cp ) ?
         cp : CP_INVALID;
-    case T_UTF16_LE:
+    case T_UTF16LE:
       return utf16_32( &expr->as.value.as.c16, 1, AD_ENDIAN_LITTLE, &cp ) ?
         cp : CP_INVALID;
-    case T_UTF32_BE:
-    case T_UTF32_LE:
+    case T_UTF32BE:
+    case T_UTF32LE:
       return expr->as.value.as.c32;
     default:
       return CP_INVALID;
@@ -141,11 +141,11 @@ static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
     case T_UTF8_0:
       *ps8 = expr->as.value.as.s8;
       break;
-    case T_UTF16_BE_0:
-    case T_UTF16_LE_0:
+    case T_UTF16BE_0:
+    case T_UTF16LE_0:
       break;
-    case T_UTF32_BE_0:
-    case T_UTF32_LE_0:
+    case T_UTF32BE_0:
+    case T_UTF32LE_0:
       // TODO: *ps8 = expr->as.value.as.s32;
       break;
   } // switch
@@ -246,8 +246,8 @@ static void narrow( ad_expr_t *expr ) {
     case T_UINT64:
       expr->as.value.as.u64 = (uint64_t)expr->as.value.as.u64;
       break;
-    case T_UTF16_BE:
-    case T_UTF16_LE:
+    case T_UTF16BE:
+    case T_UTF16LE:
       expr->as.value.as.u64 = (char16_t)expr->as.value.as.u64;
       break;
   } // switch

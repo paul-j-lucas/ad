@@ -52,53 +52,53 @@ _GL_INLINE_HEADER_BEGIN
 //    Z = size in bits (at most one set)
 //
 
-#define T_08_BITS               0x0008u               /**< 8-bit type.        */
-#define T_16_BITS               0x0010u               /**< 16-bit type.       */
-#define T_32_BITS               0x0020u               /**< 32-bit type.       */
-#define T_64_BITS               0x0040u               /**< 64-bit type.       */
+#define T_08_BITS                0x0008u              /**< 8-bit type.        */
+#define T_16_BITS                0x0010u              /**< 16-bit type.       */
+#define T_32_BITS                0x0020u              /**< 32-bit type.       */
+#define T_64_BITS                0x0040u              /**< 64-bit type.       */
 
-#define T_SIGNED                0x8000u               /**< Signed type.       */
-#define T_END_HOST              0x0000u               /**< Host endian.       */
-#define T_END_LITTLE            0x0020u               /**< Little-endian.     */
-#define T_END_BIG               0x0040u               /**< Big-endian.        */
-#define T_NULL                  0x0001u               /**< Null-terminated.   */
+#define T_SIGNED                 0x8000u              /**< Signed type.       */
+#define T_END_HOST               0x0000u              /**< Host endian.       */
+#define T_END_LIT                0x0020u              /**< Little-endian.     */
+#define T_END_BIG                0x0040u              /**< Big-endian.        */
+#define T_NULL                   0x0001u              /**< Null-terminated.   */
 
 // types
-#define T_NONE                  0u                    /**< No type.           */
-#define T_ERROR                 0x0080u               /**< Error type.        */
+#define T_NONE                   0u                   /**< No type.           */
+#define T_ERROR                  0x0080u              /**< Error type.        */
 
-#define T_BOOL                  0x0100                /**< Boolean.           */
-#define T_BOOL8   (             T_BOOL  | T_08_BITS)  /**< `bool`             */
+#define T_BOOL                   0x0100               /**< Boolean.           */
+#define T_BOOL8     (            T_BOOL | T_08_BITS)  /**< `bool`             */
 
-#define T_UTF                   0x0200                /**< Unicode.           */
-#define T_UTF8     (            T_UTF   | T_08_BITS)  /**< UTF-8 (multibyte). */
-#define T_UTF16_HE (            T_UTF   | T_16_BITS)  /**< UTF-16 host.       */
-#define T_UTF16_BE (T_END_BIG | T_UTF   | T_16_BITS)  /**< UTF-16 big.        */
-#define T_UTF16_LE (T_END_LITTLE | T_UTF| T_16_BITS)  /**< UTF-16 little.     */
-#define T_UTF32_HE (            T_UTF   | T_32_BITS)  /**< UTF-32 host.       */
-#define T_UTF32_BE (T_END_BIG | T_UTF   | T_32_BITS)  /**< UTF-32 big.        */
-#define T_UTF32_LE (T_END_LITTLE | T_UTF| T_32_BITS)  /**< UTF-32 little.     */
+#define T_UTF                    0x0200               /**< Unicode.           */
+#define T_UTF8      (            T_UTF  | T_08_BITS)  /**< UTF-8 (multibyte). */
+#define T_UTF16HE   (            T_UTF  | T_16_BITS)  /**< UTF-16 host.       */
+#define T_UTF16BE   (T_END_BIG | T_UTF  | T_16_BITS)  /**< UTF-16 big.        */
+#define T_UTF16LE   (T_END_LIT | T_UTF  | T_16_BITS)  /**< UTF-16 little.     */
+#define T_UTF32HE   (            T_UTF  | T_32_BITS)  /**< UTF-32 host.       */
+#define T_UTF32BE   (T_END_BIG | T_UTF  | T_32_BITS)  /**< UTF-32 big.        */
+#define T_UTF32LE   (T_END_LIT | T_UTF  | T_32_BITS)  /**< UTF-32 little.     */
 
-#define T_UTF_0    (T_NULL    | T_UTF              )  /**< UTF string.        */
-#define T_UTF8_0   (T_NULL    | T_UTF   | T_08_BITS)  /**< UTF-8 string.      */
+#define T_UTF_0     (T_NULL    | T_UTF             )  /**< UTF string.       */
+#define T_UTF8_0    (T_NULL    | T_UTF  | T_08_BITS)  /**< UTF-8 string.      */
 
 /** UTF-16 host-endian, null-terminated string. */
-#define T_UTF16_HE_0              (T_NULL | T_UTF | T_16_BITS)
+#define T_UTF16HE_0 (T_NULL    | T_UTF  | T_16_BITS)
 
 /** UTF-16 big-endian, null-terminated string. */
-#define T_UTF16_BE_0              (T_END_BIG | T_NULL | T_UTF | T_16_BITS)
+#define T_UTF16BE_0 (T_END_BIG | T_UTF  | T_16_BITS | T_NULL)
 
 /** UTF-16 little-endian, null-terminated string. */
-#define T_UTF16_LE_0              (T_END_LITTLE | T_NULL | T_UTF | T_16_BITS)
+#define T_UTF16LE_0 (T_END_LIT | T_UTF  | T_16_BITS | T_NULL)
 
 /**< UTF-32 host-endian, null-terminated string. */
-#define T_UTF32_HE_0              (T_NULL | T_UTF | T_32_BITS)
+#define T_UTF32HE_0 (T_NULL    | T_UTF  | T_32_BITS)
 
 /**< UTF-32 big-endian null-terminated string. */
-#define T_UTF32_BE_0              (T_END_BIG | T_NULL | T_UTF | T_32_BITS)
+#define T_UTF32BE_0 (T_END_BIG | T_UTF  | T_32_BITS | T_NULL)
 
 /** UTF-32 little-endian, null-terminated string. */
-#define T_UTF32_LE_0              (T_END_LITTLE | T_NULL | T_UTF | T_32_BITS)
+#define T_UTF32LE_0 (T_END_LIT | T_UTF  | T_32_BITS | T_NULL)
 
 #define T_INT       (            0x0400             ) /**< Integer.           */
 #define T_INT8      (T_SIGNED  | T_INT   | T_08_BITS) /**< `signed int8`      */
@@ -110,22 +110,22 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UINT32    (            T_INT   | T_32_BITS) /**< `unsigned int32`   */
 #define T_UINT64    (            T_INT   | T_64_BITS) /**< `unsigned int64`   */
 
-#define T_FLOAT                 0x0800                /**< Floating point.    */
-#define T_FLOAT32  (T_SIGNED |  T_FLOAT | T_32_BITS)  /**< `float32`          */
-#define T_FLOAT64  (T_SIGNED |  T_FLOAT | T_64_BITS)  /**< `float64`          */
+#define T_FLOAT                  0x0800               /**< Floating point.    */
+#define T_FLOAT32   (T_SIGNED  | T_FLOAT | T_32_BITS) /**< `float32`          */
+#define T_FLOAT64   (T_SIGNED  | T_FLOAT | T_64_BITS) /**< `float64`          */
 
-#define T_STRUCT                0x1000                /**< `struct`           */
-#define T_SWITCH                0x2000                /**< `switch`           */
+#define T_STRUCT                 0x1000               /**< `struct`           */
+#define T_SWITCH                 0x2000               /**< `switch`           */
 
 #define T_INT_LIKE  (T_BOOL | T_INT)
 #define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)
 
 // bit masks
-#define T_MASK_ENDIAN           0x0006u               /**< Endian bitmask.    */
-#define T_MASK_NULL             T_NULL                /**< Null bitmask.      */
-#define T_MASK_SIGN             T_SIGNED              /**< Sign bitmask.      */
-#define T_MASK_SIZE             0x0078u               /**< Size bitmask.      */
-#define T_MASK_TYPE             0x3F00u               /**< Type bitmask.      */
+#define T_MASK_ENDIAN            0x0006u              /**< Endian bitmask.    */
+#define T_MASK_NULL              T_NULL               /**< Null bitmask.      */
+#define T_MASK_SIGN              T_SIGNED             /**< Sign bitmask.      */
+#define T_MASK_SIZE              0x0078u              /**< Size bitmask.      */
+#define T_MASK_TYPE              0x3F00u              /**< Type bitmask.      */
 
 ///////////////////////////////////////////////////////////////////////////////
 
