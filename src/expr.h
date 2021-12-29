@@ -60,7 +60,7 @@ enum ad_expr_err {
 /**
  * The expression ID.
  */
-enum ad_expr_id {
+enum ad_expr_kind {
   AD_EXPR_NONE,                         ///< No expression.
   AD_EXPR_ERROR,                        ///< Error expression.
 
@@ -109,7 +109,7 @@ enum ad_expr_id {
 typedef struct ad_binary_expr   ad_binary_expr_t;
 typedef struct ad_expr          ad_expr_t;
 typedef enum   ad_expr_err      ad_expr_err_t;
-typedef enum   ad_expr_id       ad_expr_id_t;
+typedef enum   ad_expr_kind     ad_expr_kind_t;
 typedef struct ad_ternary_expr  ad_ternary_expr_t;
 typedef struct ad_unary_expr    ad_unary_expr_t;
 typedef struct ad_value_expr    ad_value_expr_t;
@@ -186,13 +186,13 @@ struct ad_value_expr {
  * An expression.
  */
 struct ad_expr {
-  ad_expr_id_t  expr_id;
+  ad_expr_kind_t  expr_kind;            ///< Expression kind.
 
   union {
-    ad_unary_expr_t   unary;
-    ad_binary_expr_t  binary;
-    ad_ternary_expr_t ternary;
-    ad_value_expr_t   value;
+    ad_unary_expr_t   unary;            ///< Unary expression.
+    ad_binary_expr_t  binary;           ///< Binary expression.
+    ad_ternary_expr_t ternary;          ///< Ternary expression.
+    ad_value_expr_t   value;            ///< Value expression.
   } as;                                 ///< Union discriminator.
 };
 
@@ -200,11 +200,11 @@ struct ad_expr {
  * Repetition values.
  */
 enum ad_rep_times {
-  AD_REPETITION_1,                      ///< Repeats once (no repetition).
-  AD_REPETITION_EXPR,                   ///< Repeats _expr_ times.
-  AD_REPETITION_0_1,                    ///< Repeats 0 or 1 times (optional).
-  AD_REPETITION_0_MORE,                 ///< Repeats 0 or more times.
-  AD_REPETITION_1_MORE                  ///< Repeats 1 or more times.
+  AD_REP_1,                             ///< Repeats once (no repetition).
+  AD_REP_EXPR,                          ///< Repeats _expr_ times.
+  AD_REP_0_1,                           ///< Repeats 0 or 1 times (optional).
+  AD_REP_0_MORE,                        ///< Repeats 0 or more times.
+  AD_REP_1_MORE                         ///< Repeats 1 or more times.
 };
 
 /**
@@ -212,7 +212,7 @@ enum ad_rep_times {
  */
 struct ad_rep {
   ad_rep_times_t  times;
-  ad_expr_t       expr;                 ///< Used only if times == AD_REPETITION_EXPR
+  ad_expr_t       expr;                 ///< Used only if times == AD_REP_EXPR
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -242,17 +242,17 @@ void ad_expr_free( ad_expr_t *expr );
  */
 PJL_WARN_UNUSED_RESULT AD_EXPR_INLINE
 bool ad_expr_is_value( ad_expr_t const *expr ) {
-  return expr->expr_id == AD_EXPR_VALUE;
+  return expr->expr_kind == AD_EXPR_VALUE;
 }
 
 /**
  * Creates a new `ad_expr`.
  *
- * @param expr_id The ID of the expression to create.
+ * @param expr_kind The kind of the expression to create.
  * @return Returns a pointer to a new `ad_expr`.
  */
 PJL_WARN_UNUSED_RESULT
-ad_expr_t* ad_expr_new( ad_expr_id_t expr_id );
+ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
 
 /**
  * Gets the type of \a expr.

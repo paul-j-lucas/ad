@@ -534,16 +534,16 @@ field_decl
   ;
 
 array_opt
-  : /* empty */                   { $$.times = AD_REPETITION_1; }
+  : /* empty */                   { $$.times = AD_REP_1; }
   | '[' ']' eqeq_exp literal
     {
     }
-  | '[' '?' rbracket_exp          { $$.times = AD_REPETITION_0_1; }
-  | '[' '*' rbracket_exp          { $$.times = AD_REPETITION_0_MORE; }
-  | '[' '+' rbracket_exp          { $$.times = AD_REPETITION_1_MORE; }
+  | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
+  | '[' '*' rbracket_exp          { $$.times = AD_REP_0_MORE; }
+  | '[' '+' rbracket_exp          { $$.times = AD_REP_1_MORE; }
   | '[' expr ']'
     {
-      $$.times = AD_REPETITION_EXPR;
+      $$.times = AD_REP_EXPR;
       $$.expr = $2;
     }
   | '[' error ']'

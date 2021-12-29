@@ -384,7 +384,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
   ad_expr_t *const cast_expr = expr->as.binary.rhs_expr;
-  assert( cast_expr->expr_id == AD_EXPR_CAST );
+  assert( cast_expr->expr_kind == AD_EXPR_CAST );
   ad_type_id_t const cast_type_id = ad_expr_get_type( cast_expr );
 
   switch ( cast_type_id & T_MASK_TYPE ) {
@@ -1131,7 +1131,7 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
-  switch ( expr->expr_id ) {
+  switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
       break;
     case AD_EXPR_ERROR:
@@ -1219,7 +1219,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 void ad_expr_free( ad_expr_t *expr ) {
-  switch ( expr->expr_id & AD_EXPR_MASK ) {
+  switch ( expr->expr_kind & AD_EXPR_MASK ) {
     case AD_EXPR_TERNARY:
       ad_expr_free( expr->as.ternary.false_expr );
       PJL_FALLTHROUGH;
@@ -1252,39 +1252,39 @@ bool ad_expr_is_zero( ad_expr_t const *expr ) {
   return false;
 }
 
-ad_expr_t* ad_expr_new( ad_expr_id_t expr_id ) {
+ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind ) {
   ad_expr_t *const e = MALLOC( ad_expr_t, 1 );
   MEM_ZERO( e );
-  e->expr_id = expr_id;
+  e->expr_kind = expr_kind;
   return e;
 }
 
 void ad_expr_set_b( ad_expr_t *expr, bool bval ) {
-  expr->expr_id = AD_EXPR_VALUE;
+  expr->expr_kind = AD_EXPR_VALUE;
   expr->as.value.type.type_id = T_BOOL8;
   expr->as.value.as.u64 = bval;
 }
 
 void ad_expr_set_f( ad_expr_t *expr, double dval ) {
-  expr->expr_id = AD_EXPR_VALUE;
+  expr->expr_kind = AD_EXPR_VALUE;
   expr->as.value.type.type_id = T_FLOAT64;
   expr->as.value.as.f64 = dval;
 }
 
 void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
-  expr->expr_id = AD_EXPR_ERROR;
+  expr->expr_kind = AD_EXPR_ERROR;
   expr->as.value.type.type_id = T_ERROR;
   expr->as.value.as.err = err;
 }
 
 void ad_expr_set_i( ad_expr_t *expr, int64_t ival ) {
-  expr->expr_id = AD_EXPR_VALUE;
+  expr->expr_kind = AD_EXPR_VALUE;
   expr->as.value.type.type_id = T_INT64;
   expr->as.value.as.i64 = ival;
 }
 
 void ad_expr_set_u( ad_expr_t *expr, uint64_t uval ) {
-  expr->expr_id = AD_EXPR_VALUE;
+  expr->expr_kind = AD_EXPR_VALUE;
   expr->as.value.type.type_id = T_UINT64;
   expr->as.value.as.u64 = uval;
 }
