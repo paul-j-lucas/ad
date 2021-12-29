@@ -535,18 +535,20 @@ char const* lexer_input_line( size_t *plen ) {
   return input_buf;
 }
 
-void lexer_loc( int *pline, int *pcolumn ) {
-  assert( pline != NULL );
-  assert( pcolumn != NULL );
-
-  *pline = yylineno;
+c_loc_t lexer_loc( void ) {
+  ad_loc_t rv_loc;
+  rv_loc.first_line = yylineno;
 
   if ( token_column == 0 )
-    *pcolumn = newline_column;
+    rv_loc.first_column = newline_column;
   else if ( lexer_token[0] == '\n' )
-    *pcolumn = token_column;
+    rv_loc.first_column = token_column;
   else
-    *pcolumn = token_column - strlen( lexer_token );
+    rv_loc.first_column = token_column - (int)strlen( lexer_token );
+
+  rv_loc.last_line = rv_loc.first_line;
+  rv_loc.last_column = rv_loc.first_column;
+  return rv_loc;
 }
 
 void lexer_reset( bool hard_reset ) {

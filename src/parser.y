@@ -270,7 +270,7 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
                                 ... ) {
   assert( format != NULL );
 
-  PUTS_ERR( ": " );
+  EPUTS( ": " );
   char const *const error_token = printable_token();
   if ( error_token != NULL )
     EPRINTF( "\"%s\": ", printable_token() );
@@ -329,13 +329,13 @@ static void parse_init( void ) {
  * @param msg The error message to print.
  */
 static void yyerror( char const *msg ) {
-  c_loc_t loc;
-  STRUCT_ZERO( &loc );
-  lexer_loc( &loc.first_line, &loc.first_column );
+  assert( msg != NULL );
+
+  c_loc_t loc = lexer_loc();
   print_loc( &loc );
 
   SGR_START_COLOR( stderr, error );
-  PUTS_ERR( msg );                      // no newline
+  EPUTS( msg );                         // no newline
   SGR_END_COLOR( stderr );
   error_newlined = false;
 

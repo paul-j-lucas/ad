@@ -82,8 +82,8 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF_0    (T_NULL    | T_UTF              )  /**< UTF string.        */
 #define T_UTF8_0   (T_NULL    | T_UTF   | T_08_BITS)  /**< UTF-8 string.      */
 
-/** UTF-16, big-endian, null-terminated string. */
-#define T_UTF16_H_0               (T_NULL | T_UTF | T_16_BITS)
+/** UTF-16 host-endian, null-terminated string. */
+#define T_UTF16_HE_0              (T_NULL | T_UTF | T_16_BITS)
 
 /** UTF-16 big-endian, null-terminated string. */
 #define T_UTF16_BE_0              (T_END_BIG | T_NULL | T_UTF | T_16_BITS)
@@ -136,6 +136,7 @@ typedef struct  ad_enum_value ad_enum_value_t;
 typedef struct  ad_expr       ad_expr_t;
 typedef struct  ad_int        ad_int_t;
 typedef enum    ad_int_base   ad_int_base_t;
+typedef struct  ad_loc        ad_loc_t;
 typedef enum    ad_rep_times  ad_rep_times_t;
 typedef struct  ad_struct     ad_struct_t;
 typedef struct  ad_switch     ad_switch_t;
@@ -183,6 +184,24 @@ struct ad_int {
   ad_bits_t       bits;                 ///< Value number of bits.
   ad_endian_t     endian;               ///< Endianness of value.
   ad_int_base_t   base;                 ///< Base of value.
+};
+
+/**
+ * The source location used by Bison.
+ */
+struct ad_loc {
+  //
+  // These should be either unsigned or size_t, but Bison generates code that
+  // tests these for >= 0 which is always true for unsigned types so it
+  // generates warnings; hence these are kept as int to eliminate the warnings.
+  //
+  int first_line;                       ///< First line of location range.
+  int first_column;                     ///< First column of location range.
+  //
+  // Cdecl doesn't use either of these.
+  //
+  int last_line;                        ///< Last line of location range.
+  int last_column;                      ///< Last column of location range.
 };
 
 /**
