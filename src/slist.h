@@ -50,19 +50,33 @@ _GL_INLINE_HEADER_BEGIN
  */
 
 /**
- * Convenience macro for iterating over the nodes of an `slist`.
+ * Convenience macro for iterating over all the nodes of \a SLIST.
  *
- * @param VAR The `slist_node` loop variable.
- * @param SLIST A pointer to the `slist` to iterate over.
- * @param END A pointer to the node to end before; may be NULL.
+ * @param VAR The slist_node loop variable.
+ * @param SLIST A pointer to the \ref slist to iterate over.
+ *
+ * @sa #FOREACH_SLIST_NODE_UNTIL()
  */
-#define FOREACH_SLIST(VAR,SLIST,END) \
+#define FOREACH_SLIST_NODE(VAR,SLIST) \
+  FOREACH_SLIST_NODE_UNTIL( VAR, SLIST, /*END=*/NULL )
+
+/**
+ * Convenience macro for iterating over the nodes of \a SLIST up to but not
+ * including \a END.
+ *
+ * @param VAR The slist_node loop variable.
+ * @param SLIST A pointer to the \ref slist to iterate over.
+ * @param END A pointer to the node to end before; may be NULL.
+ *
+ * @sa #FOREACH_SLIST_NODE()
+ */
+#define FOREACH_SLIST_NODE_UNTIL(VAR,SLIST,END) \
   for ( slist_node_t *VAR = CONST_CAST( slist_t*, SLIST )->head; VAR != (END); VAR = VAR->next )
 
 /**
  * Creates a single-node `slist` on the stack with \a NODE_DATA.
  *
- * @param VAR The name for the `slist` variable.
+ * @param VAR The name for the \ref slist variable.
  * @param LIST_DATA A pointer to the list data, if any.
  * @param NODE_DATA A pointer to the node data.
  */
@@ -76,27 +90,6 @@ typedef struct slist      slist_t;
 typedef struct slist_node slist_node_t;
 
 /**
- * The signature for a function passed to `slist_dup()` used to duplicate data
- * associated with the list, if any.
- *
- * @param data A pointer to the data to duplicate.
- * @return Returns a duplicate of \a data.
- *
- * @sa slist_node_data_dup_fn_t
- */
-typedef void* (*slist_data_dup_fn_t)( void const *data );
-
-/**
- * The signature for a function passed to `slist_free()` used to free data
- * associated with the list, if any.
- *
- * @param data A pointer to the data to free.
- *
- * @sa slist_node_data_free_fn_t
- */
-typedef void (*slist_data_free_fn_t)( void *data );
-
-/**
  * The signature for a function passed to `slist_cmp()` used to compare data
  * associated with each node (if necessary).
  *
@@ -105,8 +98,7 @@ typedef void (*slist_data_free_fn_t)( void *data );
  * @return Returns a number less than 0, 0, or greater than 0 if \a i_data is
  * less than, equal to, or greater than \a j_data, respectively.
  */
-typedef int (*slist_node_data_cmp_fn_t)( void const *i_data,
-                                         void const *j_data );
+typedef int (*slist_cmp_fn_t)( void const *i_data, void const *j_data );
 
 /**
  * The signature for a function passed to `slist_dup()` used to duplicate data
@@ -117,17 +109,15 @@ typedef int (*slist_node_data_cmp_fn_t)( void const *i_data,
  *
  * @sa slist_data_dup_fn_t
  */
-typedef void* (*slist_node_data_dup_fn_t)( void const *data );
+typedef void* (*slist_dup_fn_t)( void const *data );
 
 /**
- * The signature for a function passed to `slist_free()` used to free data
+ * The signature for a function passed to `slist_cleanup()` used to free data
  * associated with each node (if necessary).
  *
  * @param data A pointer to the data to free.
- *
- * @sa slist_data_free_fn_t
  */
-typedef void (*slist_node_data_free_fn_t)( void *data );
+typedef void (*slist_free_fn_t)( void *data );
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -138,7 +128,6 @@ struct slist {
   slist_node_t *head;                   ///< Pointer to list head.
   slist_node_t *tail;                   ///< Pointer to list tail.
   size_t        len;                    ///< Length of list.
-  void         *data;                   ///< Pointer to user data, if any.
 };
 
 /**
@@ -150,6 +139,18 @@ struct slist_node {
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Frees all memory associated with \a list but _not_ \a list itself.
+ *
+ * @param list A pointer to the list to free.  If NULL, does nothing;
+ * otherwise, reinitializes \a list upon completion.
+ * @param free_fn A pointer to a function to use to free the data at each node
+ * of \a list or NULL if none is required.
+ *
+ * @sa slist_init()
+ */
+void slist_cleanup( slist_t *list, slist_free_fn_t free_fn );
 
 /**
  * Compares two lists.
@@ -164,7 +165,7 @@ struct slist_node {
  */
 PJL_WARN_UNUSED_RESULT
 int slist_cmp( slist_t const *i_list, slist_t const *j_list,
-               slist_node_data_cmp_fn_t data_cmp_fn );
+               slist_cmp_fn_t cmp_fn );
 
 /**
  * Duplicates \a src_list and all of its nodes.
@@ -173,15 +174,13 @@ int slist_cmp( slist_t const *i_list, slist_t const *j_list,
  * @param n The number of nodes to duplicate; -1 is equivalent to slist_len().
  * @param data_dup_fn A pointer to a function to use to duplicate the data of
  * \a src_list or NULL if none is required (hence a shallow copy will be done).
- * @param node_data_dup_fn A pointer to a function to use to duplicate the data
- * at each node of \a src_list or NULL if none is required (hence a shallow
- * copy will be done).
+ * @param dup_fn A pointer to a function to use to duplicate the data at each
+ * node of \a src_list or NULL if none is required (hence a shallow copy will
+ * be done).
  * @return Returns a duplicate of \a src_list.
  */
 PJL_WARN_UNUSED_RESULT
-slist_t slist_dup( slist_t const *src_list, ssize_t n,
-                   slist_data_dup_fn_t data_dup_fn,
-                   slist_node_data_dup_fn_t node_data_dup_fn );
+slist_t slist_dup( slist_t const *src_list, ssize_t n, slist_dup_fn_t dup_fn );
 
 /**
  * Gets whether \a list is empty.
@@ -199,27 +198,12 @@ bool slist_empty( slist_t const *list ) {
 }
 
 /**
- * Frees all memory associated with \a list but _not_ \a list itself.
- *
- * @param list A pointer to the list to free.  If NULL, does nothing;
- * otherwise, reinitializes \a list upon completion.
- * @param data_free_fn A pointer to a function to use to free the data
- * associated with \a list or NULL if none is required.
- * @param node_data_free_fn A pointer to a function to use to free the data at
- * each node of \a list or NULL if none is required.
- *
- * @sa slist_init()
- */
-void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
-                 slist_node_data_free_fn_t node_data_free_fn );
-
-/**
  * Initializes \a list.  This is not necessary for either global or `static`
  * lists.
  *
  * @param list A pointer to the <code>\ref slist</code> to initialize.
  *
- * @sa slist_free()
+ * @sa slist_cleanup()
  */
 SLIST_INLINE
 void slist_init( slist_t *list ) {

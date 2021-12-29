@@ -164,7 +164,7 @@ void* free_later( void *p ) {
 }
 
 void free_now( void ) {
-  slist_free( &free_later_list, NULL, &free );
+  slist_cleanup( &free_later_list, &free );
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {

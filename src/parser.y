@@ -265,7 +265,7 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
  */
 static void parse_cleanup( bool hard_reset ) {
   lexer_reset( hard_reset );
-  slist_free( &expr_gc_list, NULL, (slist_node_data_free_fn_t)&ad_expr_free );
+  slist_cleanup( &expr_gc_list, NULL, (slist_free_fn_t)&ad_expr_free );
 }
 
 /**

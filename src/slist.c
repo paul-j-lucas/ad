@@ -40,59 +40,86 @@
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+void slist_cleanup( slist_t *list, slist_free_fn_t free_fn ) {
+  if ( list != NULL ) {
+    slist_node_t *curr = list->head, *next;
+
+    if ( free_fn == NULL ) {            // avoid repeated check in loop
+      for ( ; curr != NULL; curr = next ) {
+        next = curr->next;
+        free( curr );
+      } // for
+    }
+    else {
+      for ( ; curr != NULL; curr = next ) {
+        (*free_fn)( curr->data );
+        next = curr->next;
+        free( curr );
+      } // for
+    }
+
+    slist_init( list );
+  }
+}
+
 int slist_cmp( slist_t const *i_list, slist_t const *j_list,
-               slist_node_data_cmp_fn_t data_cmp_fn ) {
+               slist_cmp_fn_t cmp_fn ) {
   assert( i_list != NULL );
   assert( j_list != NULL );
 
+  if ( i_list == j_list )
+    return 0;
+
   slist_node_t const *i_node = i_list->head, *j_node = j_list->head;
-  for ( ; i_node != NULL && j_node != NULL;
-        i_node = i_node->next, j_node = j_node->next ) {
-    int const cmp = data_cmp_fn != NULL ?
-      (*data_cmp_fn)( i_node->data, j_node->data ) :
-      (int)((intptr_t)i_node->data - (intptr_t)j_node->data);
-    if ( cmp != 0 )
-      return cmp;
-  } // for
+
+  if ( cmp_fn == NULL ) {               // avoid repeated check in loop
+    for ( ; i_node != NULL && j_node != NULL;
+          i_node = i_node->next, j_node = j_node->next ) {
+      int const cmp = STATIC_CAST( int,
+        REINTERPRET_CAST( intptr_t, i_node->data ) -
+        REINTERPRET_CAST( intptr_t, j_node->data )
+      );
+      if ( cmp != 0 )
+        return cmp;
+    } // for
+  }
+  else {
+    for ( ; i_node != NULL && j_node != NULL;
+          i_node = i_node->next, j_node = j_node->next ) {
+      int const cmp = (*cmp_fn)( i_node->data, j_node->data );
+      if ( cmp != 0 )
+        return cmp;
+    } // for
+  }
+
   return i_node == NULL ? (j_node == NULL ? 0 : -1) : 1;
 }
 
 slist_t slist_dup( slist_t const *src_list, ssize_t n,
-                   slist_data_dup_fn_t data_dup_fn,
-                   slist_node_data_dup_fn_t node_data_dup_fn ) {
+                   slist_dup_fn_t dup_fn ) {
   slist_t dst_list;
   slist_init( &dst_list );
 
   if ( src_list != NULL && n != 0 ) {
-    size_t un = (size_t)n;
-    dst_list.data = data_dup_fn != NULL ?
-      (*data_dup_fn)( src_list->data ) : src_list->data;
-    FOREACH_SLIST( src_node, src_list, NULL ) {
-      if ( un-- == 0 )
-        break;
-      void *const dst_data = node_data_dup_fn != NULL ?
-        (*node_data_dup_fn)( src_node->data ) : src_node->data;
-      slist_push_tail( &dst_list, dst_data );
-    } // for
+    size_t un = STATIC_CAST( size_t, n );
+    if ( dup_fn == NULL ) {             // avoid repeated check in loop
+      FOREACH_SLIST_NODE( src_node, src_list ) {
+        if ( un-- == 0 )
+          break;
+        slist_push_tail( &dst_list, src_node->data );
+      } // for
+    }
+    else {
+      FOREACH_SLIST_NODE( src_node, src_list ) {
+        if ( un-- == 0 )
+          break;
+        void *const dst_data = (*dup_fn)( src_node->data );
+        slist_push_tail( &dst_list, dst_data );
+      } // for
+    }
   }
 
   return dst_list;
-}
-
-void slist_free( slist_t *list, slist_data_free_fn_t data_free_fn,
-                 slist_node_data_free_fn_t node_data_free_fn ) {
-  if ( list != NULL ) {
-    if ( data_free_fn != NULL )
-      (*data_free_fn)( list->data );
-    for ( slist_node_t *p = list->head; p != NULL; ) {
-      if ( node_data_free_fn != NULL )
-        (*node_data_free_fn)( p->data );
-      slist_node_t *const next = p->next;
-      FREE( p );
-      p = next;
-    } // for
-    slist_init( list );
-  }
 }
 
 void* slist_peek_at( slist_t const *list, size_t offset ) {
