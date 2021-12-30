@@ -35,6 +35,7 @@
 // local
 #include "ad.h"                         /* must go first */
 #include "lexer.h"
+#include "keyword.h"
 #include "literals.h"
 #include "options.h"
 #include "util.h"
@@ -64,6 +65,11 @@
 #endif /* __clang__ */
 
 /// @endcond
+
+/**
+ * C++ raw string delimiter maximum length.
+ */
+#define RSTR_DELIM_LEN_MAX        16u
 
 /**
  * Sets <code>\ref lexer_token</code> to the current Flex token.
@@ -141,46 +147,7 @@
  */
 #define YY_USER_ACTION            lexer_update_loc(); /* must include ';' */
 
-/**
- * This code must be manually inserted before a REJECT to undo YY_USER_ACTION.
- *
- * @hideinitializer
- */
-#define YY_USER_ACTION_UNDO_FOR_REJECT \
-  token_column -= (int)yyleng
-
 ///////////////////////////////////////////////////////////////////////////////
-
-/**
- * ad keyword info.
- */
-struct keyword {
-  char const *literal;                  ///< C string literal of the keyword.
-  int         y_token;                  ///< Bison token number.
-};
-typedef struct keyword keyword_t;
-
-/**
- * All ad keywords.
- */
-static keyword_t const AD_KEYWORDS[] = {
-  { L_BOOL,           Y_BOOL      },
-  { L_BREAK,          Y_BREAK     },
-  { L_CASE,           Y_CASE      },
-  { L_DEFAULT,        Y_DEFAULT   },
-  { L_ENUM,           Y_ENUM      },
-  { L_FALSE,          Y_FALSE     },
-  { L_FLOAT,          Y_FLOAT     },
-  { L_INT,            Y_INT       },
-  { L_OFFSETOF,       Y_OFFSETOF  },
-  { L_SIZEOF,         Y_SIZEOF    },
-  { L_STRUCT,         Y_STRUCT    },
-  { L_SWITCH,         Y_SWITCH    },
-  { L_TRUE,           Y_TRUE      },
-  { L_TYPEDEF,        Y_TYPEDEF   },
-  { L_UINT,           Y_UINT      },
-  { NULL,             0           }
-};
 
 // extern variables
 static char const lexer_token_init_buf; ///< So lexer_token is never null.
@@ -203,21 +170,6 @@ noreturn
 static void       lexer_fatal( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
-
-/**
- * Finds a ad keyword matching \a s, if any.
- *
- * @param s The string to find.
- * @return Returns a pointer to the corresponding keyword or null if not found.
- */
-static keyword_t const* ad_keyword_find( char const *s ) {
-  assert( s != NULL );
-  for ( keyword_t const *k = AD_KEYWORDS; k->literal; ++k ) {
-    if ( strcmp( s, k->literal ) == 0 )
-      return k;
-  } // for
-  return NULL;
-}
 
 /**
  * Gets a line of input for flex and keeps a copy for use later if printing an
@@ -361,7 +313,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 keyword_t const *const ak = ad_keyword_find( lexer_token );
                 if ( ak != NULL ) {
                   if ( ak->c_keyword_synonym == NULL )
-                    return ak->y_token;
+                    return ak->yy_token_id;
                   lexer_token = ak->c_keyword_synonym;
                 }
 
@@ -383,7 +335,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 keyword_t const *k = keyword_find( lexer_token, opt_lang );
                 if ( k != NULL ) {
                   yylval.type_id = k->type_id;
-                  return k->y_token;
+                  return k->yy_token_id;
                 }
 
                 //

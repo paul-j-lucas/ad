@@ -28,6 +28,16 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_LANG(C)
 AC_PROG_CC
 gl_EARLY
+AX_PROG_FLEX(
+  [AC_DEFINE([LEX], [flex], ["flex" found])],
+  AS_IF([test ! -f "$srcdir/src/lexer.c"],
+        [AC_MSG_ERROR([required program "flex" not found])])
+)
+AX_PROG_BISON(
+  [AC_DEFINE([YACC], [bison], ["bison" found])],
+  AS_IF([test ! -f "$srcdir/src/parser.c"],
+        [AC_MSG_ERROR([required program "bison" not found])])
+)
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
@@ -71,7 +81,7 @@ PJL_CHECK_TYPEDEF(char32_t,[uchar.h],
   AC_DEFINE([HAVE_CHAR32_T], [1], [Define to 1 if `char32_t' is supported.]),
   AC_DEFINE([HAVE_CHAR32_T], [0], [Define to 1 if `char32_t' is supported.])
 )
-PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute((unused)) = 1;])
+PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute__((unused)) = 1;])
 
 # Checks for library functions.
 AC_FUNC_FSEEKO
@@ -89,8 +99,32 @@ AS_IF([test x$enable_ad_debug = xyes],
     [Define to 1 if ad debugging is enabled.])]
 )
 
+# Program feature: Flex debug (disabled by default)
+AC_ARG_ENABLE([flex-debug],
+  AS_HELP_STRING([--enable-flex-debug], [enable Flex debugging]),
+  [],
+  [enable_flex_debug=no]
+)
+AS_IF([test x$enable_flex_debug = xyes],
+  [AC_DEFINE([ENABLE_FLEX_DEBUG], [1],
+    [Define to 1 if Flex debugging is enabled.])]
+)
+
+# Program feature: Bison debug (disabled by default)
+AC_ARG_ENABLE([bison-debug],
+  AS_HELP_STRING([--enable-bison-debug], [enable for Bison debugging]),
+  [],
+  [enable_bison_debug=no]
+)
+AS_IF([test x$enable_bison_debug = xyes],
+  [AC_DEFINE([YYDEBUG], [1],
+    [Define to 1 if Bison debugging is enabled.])]
+)
+
 # Makefile conditionals.
-AM_CONDITIONAL([ENABLE_AD_DEBUG],   [test x$enable_ad_debug = xyes])
+AM_CONDITIONAL([ENABLE_AD_DEBUG],     [test x$enable_ad_debug     = xyes])
+AM_CONDITIONAL([ENABLE_BISON_DEBUG],  [test x$enable_bison_debug  = xyes])
+AM_CONDITIONAL([ENABLE_FLEX_DEBUG],   [test x$enable_flex_debug   = xyes])
 
 # Miscellaneous.
 AX_C___ATTRIBUTE__

@@ -18,26 +18,34 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-bin_PROGRAMS = ad
+bin_PROGRAMS =	ad
 
-AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
-LDADD = $(top_builddir)/lib/libgnu.a
+AM_CPPFLAGS =	-I$(top_srcdir)/lib -I$(top_builddir)/lib
+if ENABLE_FLEX_DEBUG
+AM_LFLAGS =     -d
+endif
+AM_YFLAGS =     -d
+LDADD =		$(top_builddir)/lib/libgnu.a
 
-ad_SOURCES = \
-	pjl_config.h \
-	ad.c \
-	color.c color.h \
-	common.h \
-	expr.c expr.h \
-	dump.c \
-	literals.c literals.h \
-	match.c match.h \
-	options.c options.h \
-	reverse.c \
-	slist.c slist.h \
-	types.c types.h \
-	unicode.c unicode.h \
-	util.c util.h
+BUILT_SOURCES =	parser.c parser.h lexer.c
+
+ad_SOURCES =	parser.y\
+		lexer.l lexer.h \
+		pjl_config.h \
+		ad.c \
+		color.c color.h \
+		common.h \
+		expr.c expr.h \
+		dump.c \
+		keyword.c keyword.h \
+		literals.c literals.h \
+		match.c match.h \
+		options.c options.h \
+		reverse.c \
+		slist.c slist.h \
+		types.c types.h \
+		unicode.c unicode.h \
+		util.c util.h
 
 parser.output: parser.y
 	bison -v --report=all $<

@@ -116,7 +116,9 @@ typedef struct ad_value_expr    ad_value_expr_t;
 
 /**
  * Unary expression; used for:
+ *  + Cast
  *  + Dereference
+ *  + Bitwise complement
  *  + Negation
  */
 struct ad_unary_expr {
@@ -127,11 +129,10 @@ struct ad_unary_expr {
  * Binary expression; used for:
  *  + Addition
  *  + Bitwise and
- *  + Bitwise complement
  *  + Bitwise or
  *  + Division
  *  + Left shift
- *  + Logical exclusive or
+ *  + Logical and
  *  + Logical or
  *  + Modulus
  *  + Multiplication

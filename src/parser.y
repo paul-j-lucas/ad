@@ -21,12 +21,10 @@
 /**
  * @file
  * Defines helper macros, data structures, variables, functions, and the
- * grammar ad C/C++ declarations.
+ * grammar ad C declarations.
  */
 
 /** @cond DOXYGEN_IGNORE */
-
-%expect 22
 
 %{
 /** @endcond */
@@ -68,15 +66,6 @@
 #else
 #define IF_DEBUG(...)             /* nothing */
 #endif /* ENABLE_AD_DEBUG */
-
-#define C_AST_CHECK(AST,CHECK) \
-  BLOCK( if ( !c_ast_check( (AST), (CHECK) ) ) PARSE_ABORT(); )
-
-#define C_AST_NEW(KIND,LOC) \
-  SLIST_PUSH_TAIL( c_ast_t*, &ast_gc_list, c_ast_new( (KIND), ast_depth, (LOC) ) )
-
-#define C_TYPE_ADD(DST,SRC,LOC) \
-  BLOCK( if ( !c_type_add( (DST), (SRC), &(LOC) ) ) PARSE_ABORT(); )
 
 // Developer aid for tracing when Bison %destructors are called.
 #if 0
@@ -232,9 +221,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// extern functions
-extern int            yylex( void );
-
 // local variables
 static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
 
@@ -285,7 +271,7 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
     PRINTF_ERR( " (%s:%d)", file, line );
 #endif /* ENABLE_AD_DEBUG */
 
-  PUTC_ERR( '\n' );
+  EPUTS( '\n' );
 }
 
 /**
@@ -349,75 +335,105 @@ static void yyerror( char const *msg ) {
 %}
 
 %union {
-  ad_expr_t          *expr;
   unsigned            bitmask;    /* multipurpose bitmask (used by show) */
+  ad_expr_t          *expr;
+  ad_expr_kind_t      expr_kind;  /* built-ins, storage classes, & qualifiers */
+  slist_t             list;       /* multipurpose list */
   char const         *literal;    /* token literal (for new-style casts) */
   char               *name;       /* name being declared or explained */
   ad_repitition_t     repetition;
   int                 number;     /* for array sizes */
-  ad_type_id_t        type_id;    /* built-ins, storage classes, & qualifiers */
 }
 
-%token  <oper_id>   '!'
-%token  <oper_id>   '%'
-%token  <oper_id>   '&'
-%token  <oper_id>   '(' ')'
-%token  <oper_id>   '*'
-%token  <oper_id>   '+'
-%token  <oper_id>   ','
-%token  <oper_id>   '-'
-%token  <oper_id>   '.'
-%token  <oper_id>   '/'
-%token              ';'
-%token  <oper_id>   '<' '>'
-%token  <oper_id>   '[' ']'
-%token  <oper_id>   '='
-%token  <oper_id>   '?'
-%token  <oper_id>   '^'
-%token              '{'
-%token  <oper_id>   '|'
-%token              '}'
-%token  <oper_id>   '~'
-%token  <oper_id>   Y_NOT_EQ      "!="
-%token  <oper_id>   Y_PERCENT_EQ  "%="
-%token  <oper_id>   Y_AMPER2      "&&"
-%token  <oper_id>   Y_AMPER_EQ    "&="
-%token  <oper_id>   Y_STAR_EQ     "*="
-%token  <oper_id>   Y_PLUS2       "++"
-%token  <oper_id>   Y_PLUS_EQ     "+="
-%token  <oper_id>   Y_MINUS2      "--"
-%token  <oper_id>   Y_MINUS_EQ    "-="
-%token  <oper_id>   Y_ARROW       "->"
-%token  <oper_id>   Y_SLASH_EQ    "/="
-%token  <oper_id>   Y_LESS2       "<<"
-%token  <oper_id>   Y_LESS2_EQ    "<<="
-%token  <oper_id>   Y_LESS_EQ     "<="
-%token  <oper_id>   Y_EQ2         "=="
-%token  <oper_id>   Y_GREATER_EQ  ">="
-%token  <oper_id>   Y_GREATER2    ">>"
-%token  <oper_id>   Y_GREATER2_EQ ">>="
-%token  <oper_id>   Y_CIRC_EQ     "^="
-%token  <oper_id>   Y_PIPE_EQ     "|="
-%token  <oper_id>   Y_PIPE2       "||"
-
-%token  <type_id>   Y_BOOL
+                    // ad keywords
+%token  <expr_kind> Y_BOOL
 %token              Y_BREAK
 %token              Y_CASE
-%token  <type_id>   Y_CHAR
+%token  <expr_kind> Y_CHAR
 %token              Y_DEFAULT
-%token  <type_id>   Y_ENUM
-%token  <type_id>   Y_FALSE
-%token  <type_id>   Y_FLOAT
-%token  <type_id>   Y_INT
-%token  <type_id>   Y_UINT
-%token  <type_id>   Y_SIZEOF
-%token  <type_id>   Y_STRUCT
+%token  <expr_kind> Y_ENUM
+%token  <expr_kind> Y_FALSE
+%token  <expr_kind> Y_FLOAT
+%token  <expr_kind> Y_INT
+%token  <expr_kind> Y_UINT
+%token  <expr_kind> Y_STRUCT
 %token              Y_SWITCH
-%token  <type_id>   Y_TRUE
-%token  <type_id>   Y_TYPEDEF
-%token  <type_id>   Y_UTF
+%token  <expr_kind> Y_TRUE
+%token  <expr_kind> Y_TYPEDEF
+%token  <expr_kind> Y_UTF
 
-                    /* miscellaneous */
+                    //
+                    // C operators that are single-character are represented by
+                    // themselves directly.  All multi-character operators are
+                    // given Y_ names.
+                    //
+
+                    // C operators: precedence 16
+%token  <oper_id>   Y_PLUS2       "++"
+%token  <oper_id>   Y_MINUS2      "--"
+%left   <oper_id>                 '(' ')'
+                                  '[' ']'
+%token  <oper_id>                 '.'
+%token  <oper_id>   Y_ARROW       "->"
+                    // C operators: precedence 15
+%token  <oper_id>                 '&'
+                                  '*'
+                                  '!'
+                 // Y_UMINUS   // '-' -- covered by '-' below
+                 // Y_PLUS     // '+' -- covered by '+' below
+%right  <oper_id>   Y_SIZEOF
+%right  <oper_id>                 '~'
+                    // C operators: precedence 14
+                    // C operators: precedence 13
+                               // '*' -- covered by '*' above
+%left   <oper_id>                 '/'
+                                  '%'
+                    // C operators: precedence 12
+%left   <oper_id>                 '+'
+                                  '-'
+                    // C operators: precedence 11
+%left   <oper_id>   Y_LESS2       "<<"
+                    Y_GREATER2    ">>"
+                    // C operators: precedence 10
+                    // C operators: precedence 9
+%left   <oper_id>                 '<' '>'
+                    Y_LESS_EQ     "<="
+                    Y_GREATER_EQ  ">="
+
+                    // C operators: precedence 8
+%left   <oper_id>   Y_EQ2         "=="
+                    Y_NOT_EQ      "!="
+                    // C operators: precedence 7
+                    Y_BIT_AND  // '&' -- covered by Y_AMPER
+                    // C operators: precedence 6
+%left   <oper_id>                 '^'
+                    // C operators: precedence 5
+%left   <oper_id>                 '|'
+                    // C operators: precedence 4
+%token  <oper_id>   Y_AMPER2      "&&"
+                    // C operators: precedence 3
+%left   <oper_id>   Y_PIPE2       "||"
+                    // C operators: precedence 2
+%right  <oper_id>                 '?'
+                                  '='
+                    Y_PERCENT_EQ  "%="
+                    Y_AMPER_EQ    "&="
+                    Y_STAR_EQ     "*="
+                    Y_PLUS_EQ     "+="
+                    Y_MINUS_EQ    "-="
+                    Y_SLASH_EQ    "/="
+                    Y_LESS2_EQ    "<<="
+                    Y_GREATER2_EQ ">>="
+                    Y_CIRC_EQ     "^="
+                    Y_PIPE_EQ     "|="
+
+                    // C operators: precedence 1
+%left   <oper_id>                 ','
+
+
+                    // Miscellaneous
+%token                            ';'
+%token                            '{' '}'
 %token              Y_END
 %token              Y_ERROR
 %token  <name>      Y_NAME
@@ -448,50 +464,43 @@ static void yyerror( char const *msg ) {
 //
 // Sort using: sort -bdk3
 
-%type   <ast_pair>  cast_c_ast cast_c_ast_opt cast2_c_ast
-%type   <ast_pair>  array_cast_c_ast
-%type   <ast_pair>  func_cast_c_ast
-%type   <ast_pair>  nested_cast_c_ast
-%type   <ast_pair>  pointer_cast_c_ast
-%type   <type_id>   pure_virtual_c_type_opt
+%type <xxxxx>     enum_declaration
+%type <xxxxx>     enumerator
+%type <xxxxx>     enumerator_list
 
-%type   <ast_pair>  decl_c_ast decl2_c_ast
-%type   <ast_pair>  array_decl_c_ast
-%type   <number>    array_size_c_num
-%type   <ast_pair>  func_decl_c_ast
-%type   <type_id>   func_noexcept_c_type_opt
-%type   <ast_pair>  func_trailing_return_type_c_ast_opt
-%type   <ast_pair>  nested_decl_c_ast
-%type   <ast_pair>  pointer_decl_c_ast
-%type   <ast_pair>  pointer_type_c_ast
-%type   <ast_pair>  unmodified_type_c_ast
+%type <xxxxx>     field_declaration
+%type <xxxxx>     array_opt
 
-%type   <ast_pair>  builtin_type_c_ast
-%type   <ast_pair>  enum_class_struct_union_ast
-%type   <ast_pair>  placeholder_c_ast
-%type   <ast_pair>  type_c_ast
-%type   <ast_pair>  typedef_type_c_ast
+%type <xxxxx>     struct_declaration
+%type <xxxxx>     switch_statement
+%type <xxxxx>     switch_case_statement
+%type <xxxxx>     switch_case_statement_list_opt
 
-%type   <type_id>   attribute_name_c_type
-%type   <type_id>   attribute_name_list_c_type attribute_name_list_c_type_opt
-%type   <type_id>   attribute_specifier_list_c_type
-%type   <type_id>   builtin_type
-%type   <type_id>   enum_class_struct_union_type
-%type   <type_id>   func_qualifier_list_c_type_opt
-%type   <type_id>   noexcept_bool_type
+%type <xxxxx>     typedef_declaration
+%type <xxxxx>     builtin_type
+%type <xxxxx>     type type_exp
+%type <xxxxx>     type_endian_opt
 
-%type   <ast_pair>  arg_c_ast
-%type   <ast>       arg_array_size_c_ast
-%type   <ast_list>  arg_list_c_ast arg_list_c_ast_opt
-%type   <type_id>   class_struct_union_type
-%type   <oper_id>   c_operator
-%type   <ast_pair>  name_ast
-%type   <name>      name_exp name_opt
-%type   <type_id>   namespace_type
-%type   <sname>     sname_c sname_c_exp sname_c_opt
-%type   <ast_pair>  sname_c_ast
-%type   <sname>     typedef_type_sname typedef_type_sname_exp
-%type   <type_id>   static_type_opt
+%type <expr>      additive_expr
+%type <list>      argument_expr_list
+%type <expr>      assign_expr
+%type <expr_kind> assign_op
+%type <expr>      bitwise_and_expr
+%type <expr>      bitwise_exclusive_or_expr
+%type <expr>      bitwise_or_expr
+%type <expr>      cast_expr
+%type <expr>      conditional_expr
+%type <expr>      equality_expr
+%type <expr>      expr
+%type <expr>      logical_and_expr
+%type <expr>      logical_or_expr
+%type <expr>      multiplicative_expr
+%type <expr>      postfix_expr
+%type <expr>      primary_expr
+%type <expr>      relational_expr
+%type <expr>      shift_expr
+%type <expr>      unary_expr
+%type <expr_kind> unary_op
 
 /*
  * Bison %destructors.  We don't use the <identifier> syntax because older
@@ -515,9 +524,13 @@ static void yyerror( char const *msg ) {
 /*****************************************************************************/
 %%
 
-statement_list
+///////////////////////////////////////////////////////////////////////////////
+//  STATEMENTS                                                               //
+///////////////////////////////////////////////////////////////////////////////
+
+statement_list_opt
   : /* empty */
-  | statement_list statement
+  | statement_list_opt statement
   ;
 
 statement
@@ -535,19 +548,19 @@ statement
 
 compound_statement
   : '{' '}'
-  | '{' statement_list '}'
+  | '{' statement_list_opt '}'
   ;
 
 declaration
-  : enum_decl
-  | field_decl
-  | struct_decl
-  | typedef_decl
+  : enum_declaration
+  | field_declaration
+  | struct_declaration
+  | typedef_declaration
   ;
 
 /// enum declaration //////////////////////////////////////////////////////////
 
-enum_decl
+enum_declaration
   : Y_ENUM name_exp colon_exp type_exp lbrace_exp enumerator_list '}'
   ;
 
@@ -569,7 +582,7 @@ enumerator
 
 /// field declaration /////////////////////////////////////////////////////////
 
-field_decl
+field_declaration
   : type_exp field_name_exp array_opt
     {
     }
@@ -596,8 +609,8 @@ array_opt
 
 /// struct declaration ////////////////////////////////////////////////////////
 
-struct_decl
-  : Y_STRUCT name_exp lbrace_exp statement_list rbrace_exp
+struct_declaration
+  : Y_STRUCT name_exp lbrace_exp statement_list_opt rbrace_exp
     {
       $$ = MALLOC( ad_struct, 1 );
       $$->name = $2;
@@ -618,113 +631,19 @@ switch_case_statement_list_opt
   ;
 
 switch_case_statement
-  : Y_CASE constant_expr_exp colon_exp statement_list
-  | Y_DEFAULT colon_exp statement_list
+  : Y_CASE constant_expr_exp colon_exp statement_list_opt
+  | Y_DEFAULT colon_exp statement_list_opt
   ;
 
 /// typedef declaration ///////////////////////////////////////////////////////
 
-typedef_decl
-  : Y_TYPEDEF type_c_ast
-    {
-      //
-      // Explicitly add T_TYPEDEF to prohibit cases like:
-      //
-      //      typedef extern int eint
-      //      typedef register int rint
-      //      typedef static int sint
-      //      ...
-      //
-      //  i.e., a defined type with a storage class.
-      //
-      C_TYPE_ADD( &$2.ast->type_id, T_TYPEDEF, @2 );
-      type_push( $2.ast );
-    }
-    decl_c_ast
-    {
-      type_pop();
-
-      DUMP_START( "typedef_decl", "TYPEDEF type_c_ast decl_c_ast" );
-      DUMP_AST( "type_c_ast", $2.ast );
-      DUMP_AST( "decl_c_ast", $4.ast );
-
-      c_ast_t *ast;
-      c_sname_t temp_sname;
-
-      if ( $2.ast->kind == K_TYPEDEF && $4.ast->kind == K_TYPEDEF ) {
-        //
-        // This is for a case like:
-        //
-        //      typedef size_t foo;
-        //
-        // that is: an existing typedef name followed by a new name.
-        //
-        ast = $2.ast;
-      }
-      else if ( $4.ast->kind == K_TYPEDEF ) {
-        //
-        // This is for a case like:
-        //
-        //      typedef int int_least32_t;
-        //
-        // that is: a type followed by an existing typedef name, i.e.,
-        // redefining an existing typedef name to be the same type.
-        //
-        ast = $2.ast;
-        temp_sname = c_ast_sname_dup( $4.ast->as.c_typedef->ast );
-        c_ast_sname_set_sname( ast, &temp_sname );
-      }
-      else {
-        //
-        // This is for a case like:
-        //
-        //      typedef int foo;
-        //
-        // that is: a type followed by a new name.
-        //
-        ast = c_ast_patch_placeholder( $2.ast, $4.ast );
-        temp_sname = c_ast_take_name( $4.ast );
-        c_ast_sname_set_sname( ast, &temp_sname );
-      }
-
-      C_AST_CHECK( ast, CHECK_DECL );
-      // see the comment in define_english about T_TYPEDEF
-      (void)c_ast_take_typedef( ast );
-
-      if ( c_ast_sname_count( ast ) > 1 ) {
-        print_error( &@4,
-          "%s names can not be scoped; use: %s %s { %s ... }",
-          L_TYPEDEF, L_NAMESPACE, c_ast_sname_scope_c( ast ), L_TYPEDEF
-        );
-        PARSE_ABORT();
-      }
-
-      DUMP_AST( "typedef_decl", ast );
-      DUMP_END();
-
-      temp_sname = c_sname_dup( &in_attr.current_scope );
-      c_ast_sname_set_type( ast, c_sname_type( &in_attr.current_scope ) );
-      c_ast_sname_prepend_sname( ast, &temp_sname );
-
-      switch ( c_typedef_add( ast ) ) {
-        case TD_ADD_ADDED:
-          // See the comment in define_english about ast_typedef_list.
-          slist_push_list_tail( &ast_typedef_list, &ast_gc_list );
-          break;
-        case TD_ADD_DIFF:
-          print_error( &@4,
-            "\"%s\": \"%s\" redefinition with different type",
-            c_ast_sname_full_c( ast ), L_TYPEDEF
-          );
-          PARSE_ABORT();
-        case TD_ADD_EQUIV:
-          // Do nothing.
-          break;
-      } // switch
-    }
+typedef_declaration
+  : Y_TYPEDEF
   ;
 
-/// expressions ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//  EXPRESSIONS                                                              //
+///////////////////////////////////////////////////////////////////////////////
 
 expr
   : assign_expr
@@ -860,7 +779,7 @@ postfix_expr
   | postfix_expr '(' ')'
   | postfix_expr '(' argument_expr_list ')'
   | postfix_expr '.' IDENTIFIER
-  | postfix_expr PTR_OP IDENTIFIER
+  | postfix_expr "->" IDENTIFIER
   | postfix_expr "++"
   | postfix_expr "--"
   ;
@@ -952,235 +871,18 @@ unary_op
   | '!'                         { $$ = AD_EXPR_LOG_NOT; }
   ;
 
-/*****************************************************************************/
-/*  declaration gibberish productions                                        */
-/*****************************************************************************/
-
-decl_c_ast
-  : decl2_c_ast
-  | pointer_decl_c_ast
-  ;
-
-decl2_c_ast
-  : array_decl_c_ast
-  | func_decl_c_ast
-  | nested_decl_c_ast
-  | sname_c_ast
-  | typedef_type_c_ast
-  ;
-
-array_decl_c_ast
-  : decl2_c_ast array_size_c_num
-    {
-      DUMP_START( "array_decl_c_ast", "decl2_c_ast array_size_c_num" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_AST( "decl2_c_ast", $1.ast );
-      if ( $1.target_ast != NULL )
-        DUMP_AST( "target_ast", $1.target_ast );
-      DUMP_NUM( "array_size_c_num", $2 );
-
-      c_ast_t *const array = C_AST_NEW( K_ARRAY, &@$ );
-      array->as.array.size = $2;
-      c_ast_set_parent( C_AST_NEW( K_PLACEHOLDER, &@1 ), array );
-
-      if ( $1.target_ast != NULL ) {    // array-of or function-ret type
-        $$.ast = $1.ast;
-        $$.target_ast = c_ast_add_array( $1.target_ast, array );
-      } else {
-        $$.ast = c_ast_add_array( $1.ast, array );
-        $$.target_ast = NULL;
-      }
-
-      DUMP_AST( "array_decl_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-array_size_c_num
-  : '[' ']'                       { $$ = C_ARRAY_SIZE_NONE; }
-  | '[' Y_NUMBER ']'              { $$ = $2; }
-  | '[' error ']'
-    {
-      elaborate_error( "integer expected for array size" );
-    }
-  ;
-
-func_decl_c_ast
-  : /* type_c_ast */ decl2_c_ast '(' arg_list_c_ast_opt ')'
-    func_qualifier_list_c_type_opt
-    func_noexcept_c_type_opt func_trailing_return_type_c_ast_opt
-    pure_virtual_c_type_opt
-    {
-      DUMP_START( "func_decl_c_ast",
-                  "decl2_c_ast '(' arg_list_c_ast_opt ')' "
-                  "func_qualifier_list_c_type_opt "
-                  "func_noexcept_c_type_opt "
-                  "func_trailing_return_type_c_ast_opt "
-                  "pure_virtual_c_type_opt" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_AST( "decl2_c_ast", $1.ast );
-      DUMP_AST_LIST( "arg_list_c_ast_opt", $3 );
-      DUMP_TYPE( "func_qualifier_list_c_type_opt", $5 );
-      DUMP_TYPE( "func_noexcept_c_type_opt", $7 );
-      DUMP_AST( "func_trailing_return_type_c_ast_opt", $8.ast );
-      DUMP_TYPE( "pure_virtual_c_type_opt", $9 );
-      if ( $1.target_ast != NULL )
-        DUMP_AST( "target_ast", $1.target_ast );
-
-      c_ast_t *const func = C_AST_NEW( K_FUNCTION, &@$ );
-      func->type_id = $5 | $6 | $7 | $9;
-      func->as.func.args = $3;
-
-      if ( $8.ast != NULL ) {
-        $$.ast = c_ast_add_func( $1.ast, $8.ast, func );
-      }
-      else if ( $1.target_ast != NULL ) {
-        $$.ast = $1.ast;
-        (void)c_ast_add_func( $1.target_ast, type_peek(), func );
-      }
-      else {
-        $$.ast = c_ast_add_func( $1.ast, type_peek(), func );
-      }
-      $$.target_ast = func->as.func.ret_ast;
-
-      DUMP_AST( "func_decl_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-func_qualifier_list_c_type_opt
-  : /* empty */                   { $$ = T_NONE; }
-  | func_qualifier_list_c_type_opt
-    {
-      DUMP_START( "func_qualifier_list_c_type_opt",
-                  "func_qualifier_list_c_type_opt func_qualifier_c_type" );
-      DUMP_TYPE( "func_qualifier_list_c_type_opt", $1 );
-
-      $$ = $1;
-      C_TYPE_ADD( &$$, $2, @2 );
-
-      DUMP_TYPE( "func_qualifier_list_c_type_opt", $$ );
-      DUMP_END();
-    }
-  ;
-
-sname_c_ast
-  : /* type_c_ast */ sname_c
-    {
-      DUMP_START( "sname_c_ast", "sname_c" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-      DUMP_STR( "sname", c_sname_full_c( &$1 ) );
-
-      $$.ast = type_peek();
-      $$.target_ast = NULL;
-      c_ast_sname_set_sname( $$.ast, &$1 );
-
-      DUMP_AST( "sname_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-sname_c
-  : sname_c "::" Y_NAME
-    {
-      // see the comment in "of_scope_list_english_opt"
-      if ( c_init >= INIT_READ_CONF && !C_LANG_IS_CPP() ) {
-        print_error( &@2, "scoped names not supported in %s", C_LANG_NAME() );
-        PARSE_ABORT();
-      }
-      $$ = $1;
-      c_type_id_t sn_type = c_sname_type( &$1 );
-      if ( sn_type == T_NONE )
-        sn_type = T_SCOPE;
-      c_sname_set_type( &$$, sn_type );
-      c_sname_append_name( &$$, $3 );
-    }
-  | sname_c "::" Y_TYPEDEF_TYPE
-    {
-      //
-      // This is for a case like:
-      //
-      //      define S::int8_t as char
-      //
-      // that is: the type int8_t is an existing type in no scope being defined
-      // as a distinct type in a new scope.
-      //
-      $$ = $1;
-      c_sname_t temp = c_ast_sname_dup( $3->ast );
-      c_sname_set_type( &$$, c_sname_type( &temp ) );
-      c_sname_append_sname( &$$, &temp );
-    }
-  | Y_NAME
-    {
-      c_sname_init( &$$ );
-      c_sname_append_name( &$$, $1 );
-    }
-  ;
-
-nested_decl_c_ast
-  : '(' placeholder_c_ast { type_push( $2.ast ); ++ast_depth; } decl_c_ast ')'
-    {
-      type_pop();
-      --ast_depth;
-
-      DUMP_START( "nested_decl_c_ast",
-                  "'(' placeholder_c_ast decl_c_ast ')'" );
-      DUMP_AST( "placeholder_c_ast", $2.ast );
-      DUMP_AST( "decl_c_ast", $4.ast );
-
-      $$ = $4;
-
-      DUMP_AST( "nested_decl_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-placeholder_c_ast
-  : /* empty */
-    {
-      $$.ast = C_AST_NEW( K_PLACEHOLDER, &@$ );
-      $$.target_ast = NULL;
-    }
-  ;
-
-pointer_decl_c_ast
-  : pointer_type_c_ast { type_push( $1.ast ); } decl_c_ast
-    {
-      type_pop();
-
-      DUMP_START( "pointer_decl_c_ast", "pointer_type_c_ast decl_c_ast" );
-      DUMP_AST( "pointer_type_c_ast", $1.ast );
-      DUMP_AST( "decl_c_ast", $3.ast );
-
-      (void)c_ast_patch_placeholder( $1.ast, $3.ast );
-      $$ = $3;
-
-      DUMP_AST( "pointer_decl_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
-pointer_type_c_ast
-  : /* type_c_ast */ '*'
-    {
-      DUMP_START( "pointer_type_c_ast", "*" );
-      DUMP_AST( "(type_c_ast)", type_peek() );
-
-      $$.ast = C_AST_NEW( K_POINTER, &@$ );
-      $$.target_ast = NULL;
-      $$.ast->type_id = $2;
-      c_ast_set_parent( type_peek(), $$.ast );
-
-      DUMP_AST( "pointer_type_c_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
 /// type //////////////////////////////////////////////////////////////////////
 
 type
   : builtin_type lt_exp expr type_endian_opt '>'
   | Y_TYPEDEF_TYPE
+  ;
+
+type_exp
+  : type
+  | error
+    {
+    }
   ;
 
 builtin_type
@@ -1332,23 +1034,6 @@ semi_opt
 semi_or_end
   : ';'
   | Y_END
-  ;
-
-typedef_type_sname
-  : Y_TYPEDEF_TYPE                { $$ = c_ast_sname_dup( $1->ast ); }
-  | Y_TYPEDEF_TYPE "::" sname_c
-    {
-      //
-      // This is for a case like:
-      //
-      //      define S as struct S
-      //      define S::T as struct T
-      //
-      $$ = c_ast_sname_dup( $1->ast );
-      c_sname_set_type( &$$, c_sname_type( &$3 ) );
-      c_sname_append_sname( &$$, &$3 );
-    }
-  | sname_c
   ;
 
 %%
