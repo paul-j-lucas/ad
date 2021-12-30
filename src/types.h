@@ -49,23 +49,31 @@ _GL_INLINE_HEADER_BEGIN
 //    N = null terminated: 0 = no, 1 = yes
 //    S = sign: 0 = unsigned, 1 = signed
 //    T = type (at most one set)
-//    Z = size in bits (at most one set)
+//    Z = size in bits: 1 = 8, 2 = 16, 3 = 32, 4 = 64
 //
 
+// x-xx xxxx xxxx xxxN
+#define T_NULL                   0x0001u              /**< Null-terminated.   */
+
+// x-xx xxxx xxxx xDDx
+#define T_END_HOST               0x0000u              /**< Host endian.       */
+#define T_END_LIT                0x0002u              /**< Little-endian.     */
+#define T_END_BIG                0x0004u              /**< Big-endian.        */
+
+// x-xx xxxx xZZZ Zxxx
 #define T_08_BITS                0x0008u              /**< 8-bit type.        */
 #define T_16_BITS                0x0010u              /**< 16-bit type.       */
 #define T_32_BITS                0x0020u              /**< 32-bit type.       */
 #define T_64_BITS                0x0040u              /**< 64-bit type.       */
 
-#define T_SIGNED                 0x8000u              /**< Signed type.       */
-#define T_END_HOST               0x0000u              /**< Host endian.       */
-#define T_END_LIT                0x0020u              /**< Little-endian.     */
-#define T_END_BIG                0x0040u              /**< Big-endian.        */
-#define T_NULL                   0x0001u              /**< Null-terminated.   */
-
-// types
-#define T_NONE                   0u                   /**< No type.           */
+// x-xx xxxx Exxx xxxx
 #define T_ERROR                  0x0080u              /**< Error type.        */
+
+// S-xx xxxx xxxx xxxx
+#define T_SIGNED                 0x8000u              /**< Signed type.       */
+
+// types: x-TT TTTT xxxx xxxx
+#define T_NONE                   0u                   /**< No type.           */
 
 #define T_BOOL                   0x0100               /**< Boolean.           */
 #define T_BOOL8     (            T_BOOL | T_08_BITS)  /**< `bool`             */
