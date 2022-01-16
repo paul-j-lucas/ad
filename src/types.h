@@ -145,6 +145,7 @@ typedef struct  ad_expr       ad_expr_t;
 typedef struct  ad_int        ad_int_t;
 typedef enum    ad_int_base   ad_int_base_t;
 typedef struct  ad_loc        ad_loc_t;
+typedef struct  ad_rep        ad_rep;
 typedef enum    ad_rep_times  ad_rep_times_t;
 typedef struct  ad_struct     ad_struct_t;
 typedef struct  ad_switch     ad_switch_t;
@@ -213,10 +214,38 @@ struct ad_loc {
 };
 
 /**
+ * Repetition values.
+ */
+enum ad_rep_times {
+  AD_REP_1,                             ///< Repeats once (no repetition).
+  AD_REP_EXPR,                          ///< Repeats _expr_ times.
+  AD_REP_0_1,                           ///< Repeats 0 or 1 times (optional).
+  AD_REP_0_MORE,                        ///< Repeats 0 or more times.
+  AD_REP_1_MORE                         ///< Repeats 1 or more times.
+};
+
+/**
+ * Repetition.
+ */
+struct ad_rep {
+  ad_rep_times_t  times;
+  ad_expr_t       expr;                 ///< Used only if times == AD_REP_EXPR
+};
+
+/**
+ * TODO
+ */
+struct ad_field {
+  char const *name;
+  ad_type_t   type;
+  ad_rep_t    rep;
+};
+
+/**
  * struct type.
  */
 struct ad_struct {
-  char           *name;
+  char const     *name;
   ad_type_list_t  members;              ///< Structure members.
 };
 

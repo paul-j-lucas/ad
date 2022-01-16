@@ -31,18 +31,18 @@
 
 // local
 #include "ad.h"                         /* must go first */
-#include "c_expr.h"
-#include "c_keyword.h"
-#include "c_type.h"
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
 #include "debug.h"
 #endif /* ENABLE_AD_DEBUG */
+#include "expr.h"
+#include "keyword.h"
 #include "lexer.h"
 #include "literals.h"
 #include "options.h"
 #include "print.h"
 #include "slist.h"
+#include "type.h"
 #include "typedefs.h"
 #include "util.h"
 
@@ -78,8 +78,8 @@
 
 /**
  * @defgroup parser-dump-group Debugging Macros
- * Macros that are used to dump a trace during parsing when `opt_cdecl_debug`
- * is `true`.
+ * Macros that are used to dump a trace during parsing when `opt_ad_debug` is
+ * `true`.
  * @ingroup parser-group
  * @{
  */
@@ -89,26 +89,7 @@
  * called.  It's used to separate items being dumped.
  */
 #define DUMP_COMMA \
-  BLOCK( if ( true_or_set( &debug_comma ) ) PUTS_OUT( ",\n" ); )
-
-/**
- * Dumps an AST.
- *
- * @param KEY The key name to print.
- * @param AST The AST to dump.
- */
-#define DUMP_AST(KEY,AST) \
-  IF_DEBUG( DUMP_COMMA; c_ast_debug( (AST), 1, (KEY), stdout ); )
-
-/**
- * Dumps an `s_list` of AST.
- *
- * @param KEY The key name to print.
- * @param AST_LIST The `s_list` of AST to dump.
- */
-#define DUMP_AST_LIST(KEY,AST_LIST) IF_DEBUG( \
-  DUMP_COMMA; PUTS_OUT( "  " KEY " = " );     \
-  c_ast_list_debug( &(AST_LIST), 1, stdout ); )
+  BLOCK( if ( true_or_set( &dump_comma ) ) PUTS_OUT( ",\n" ); )
 
 /**
  * Dumps a `bool`.
@@ -119,6 +100,25 @@
 #define DUMP_BOOL(KEY,BOOL)  IF_DEBUG(  \
   DUMP_COMMA;                           \
   FPRINTF( stdout, "  " KEY " = %s", ((BOOL) ? "true" : "false") ); )
+
+/**
+ * Dumps an ad_expr.
+ *
+ * @param KEY The key name to print.
+ * @param EXPR The ad_expr to dump.
+ */
+#define DUMP_EXPR(KEY,EXPR) \
+  IF_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), 1, (KEY), stdout ); )
+
+/**
+ * Dumps an `s_list` of ad_expr_t.
+ *
+ * @param KEY The key name to print.
+ * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
+ */
+#define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_DEBUG( \
+  DUMP_COMMA; PUTS_OUT( "  " KEY " = " );       \
+  ad_expr_list_dump( &(EXPR_LIST), 1, stdout ); )
 
 /**
  * Dumps an integer.
@@ -149,7 +149,7 @@
  * @sa DUMP_END
  */
 #define DUMP_START(NAME,PROD) \
-  bool debug_comma = false;   \
+  bool dump_comma = false;    \
   IF_DEBUG( PUTS_OUT( "\n" NAME " ::= " PROD " = {\n" ); )
 #else
 #define DUMP_START(NAME,PROD)     /* nothing */
@@ -163,7 +163,7 @@
 #define DUMP_END()                IF_DEBUG( PUTS_OUT( "\n}\n" ); )
 
 #define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
-  DUMP_COMMA; PUTS_OUT( "  " KEY " = " ); c_type_debug( TYPE, stdout ); )
+  DUMP_COMMA; PUTS_OUT( "  " KEY " = " ); c_type_dump( TYPE, stdout ); )
 
 /** @} */
 
@@ -335,14 +335,17 @@ static void yyerror( char const *msg ) {
 %}
 
 %union {
-  unsigned            bitmask;    /* multipurpose bitmask (used by show) */
-  ad_expr_t          *expr;
-  ad_expr_kind_t      expr_kind;  /* built-ins, storage classes, & qualifiers */
-  slist_t             list;       /* multipurpose list */
-  char const         *literal;    /* token literal (for new-style casts) */
-  char               *name;       /* name being declared or explained */
-  ad_repitition_t     repetition;
-  int                 number;     /* for array sizes */
+  unsigned            bitmask;    // multipurpose bitmask (used by show)
+  ad_enum_value_t     enum_val;
+  ad_expr_t          *expr;       // for the expression being built
+  ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
+  ad_field_t          field;
+  slist_t             list;       // multipurpose list
+  char const         *literal;    // token literal (for new-style casts)
+  char               *name;       // name being declared or explained
+  ad_rep_t            rep_val;
+  int                 number;     // for array sizes
+  char               *str_val;    // qupted string value
 }
 
                     // ad keywords
@@ -436,8 +439,9 @@ static void yyerror( char const *msg ) {
 %token                            '{' '}'
 %token              Y_END
 %token              Y_ERROR
+%token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
-%token  <number>    Y_NUMBER
+%token  <str_val>   Y_STR_LIT
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -464,23 +468,21 @@ static void yyerror( char const *msg ) {
 //
 // Sort using: sort -bdk3
 
-%type <xxxxx>     enum_declaration
-%type <xxxxx>     enumerator
-%type <xxxxx>     enumerator_list
-
-%type <xxxxx>     field_declaration
-%type <xxxxx>     array_opt
-
-%type <xxxxx>     struct_declaration
-%type <xxxxx>     switch_statement
-%type <xxxxx>     switch_case_statement
-%type <xxxxx>     switch_case_statement_list_opt
-
-%type <xxxxx>     typedef_declaration
+                  // Declarations
+%type <rep_val>   array_opt
 %type <xxxxx>     builtin_type
+%type             enum_declaration
+%type <enum_val>  enumerator
+%type <list>      enumerator_list
+%type <field>     field_declaration
+%type <xxxxx>     struct_declaration
+%type <xxxxx>     switch_case_statement
+%type <list>      switch_case_statement_list_opt
+%type <xxxxx>     switch_statement
 %type <xxxxx>     type type_exp
-%type <xxxxx>     type_endian_opt
+%type <xxxxx>     typedef_declaration
 
+                  // Expressions
 %type <expr>      additive_expr
 %type <list>      argument_expr_list
 %type <expr>      assign_expr
@@ -502,11 +504,15 @@ static void yyerror( char const *msg ) {
 %type <expr>      unary_expr
 %type <expr_kind> unary_op
 
+                  // Miscellaneous
+%type <str_lit>   str_lit str_lit_exp
+%type <int_val>   type_endian_opt
+
 /*
  * Bison %destructors.  We don't use the <identifier> syntax because older
  * versions of Bison don't support it.
  *
- * Clean-up of AST nodes is done via garbage collection using ast_gc_list.
+ * Clean-up of expr nodes is done via garbage collection using expr_gc_list.
  */
 
 /* name */
@@ -535,7 +541,7 @@ statement_list_opt
 
 statement
   : compound_statement
-  | declaration
+  | declaration semi_exp
   | switch_statement
   | error
     {
@@ -547,8 +553,7 @@ statement
   ;
 
 compound_statement
-  : '{' '}'
-  | '{' statement_list_opt '}'
+  : '{' statement_list_opt '}'
   ;
 
 declaration
@@ -562,18 +567,30 @@ declaration
 
 enum_declaration
   : Y_ENUM name_exp colon_exp type_exp lbrace_exp enumerator_list '}'
+    {
+      ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
+      ad_enum->name = $2;
+      ad_enum->bits = XX;
+      ad_enum->endian = XX;
+      ad_enum->base = xx;
+    }
   ;
 
 enumerator_list
-  : enumerator
-  | enumerator_list ',' enumerator
+  : enumerator_list ',' enumerator
     {
+      $$ = $1;
       slist_push_tail( &$$, $3 );
+    }
+  | enumerator
+    {
+      slist_init( &$$ );
+      slist_push_tail( &$$, $1 );
     }
   ;
 
 enumerator
-  : Y_NAME equals_exp number_exp
+  : Y_NAME equals_exp int_exp
     {
       $$.name = $1;
       $$.value = $3;
@@ -585,12 +602,15 @@ enumerator
 field_declaration
   : type_exp field_name_exp array_opt
     {
+      $$.type = $1;
+      $$.name = $2;
+      $$.rep = $3;
     }
   ;
 
 array_opt
   : /* empty */                   { $$.times = AD_REP_1; }
-  | '[' ']' eqeq_exp literal
+  | '[' ']' equals_exp str_lit_exp
     {
     }
   | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
@@ -672,6 +692,10 @@ additive_expr
 assign_expr
   : conditional_expr
   | unary_expr assign_op assign_expr
+    {
+      $$ = ad_expr_new( $2 );
+      // TODO
+    }
   ;
 
 bitwise_and_expr
@@ -749,6 +773,11 @@ logical_and_expr
 logical_or_expr
   : logical_and_expr
   | logical_or_expr "||" logical_and_expr
+    {
+      $$ = ad_expr_new( AD_EXPR_LOG_OR );
+      $$->as.binary.lhs_expr = $1;
+      $$->as.binary.rhs_expr = $3;
+    }
   ;
 
 multiplicative_expr
@@ -776,22 +805,56 @@ multiplicative_expr
 postfix_expr
   : primary_expr
   | postfix_expr '[' expr ']'
+    {
+    }
   | postfix_expr '(' ')'
+    {
+    }
   | postfix_expr '(' argument_expr_list ')'
-  | postfix_expr '.' IDENTIFIER
-  | postfix_expr "->" IDENTIFIER
+    {
+    }
+  | postfix_expr '.' name_exp
+    {
+    }
+  | postfix_expr "->" name_exp
+    {
+    }
   | postfix_expr "++"
+    {
+    }
   | postfix_expr "--"
+    {
+    }
   ;
 
 argument_expr_list
   : assignment_expr
+    {
+      slist_init( &$$ );
+      slist_push_tail( &$$, $1 );
+    }
   | argument_expr_list ',' assignment_expr
+    {
+      slist_push_tail( &$$, $3 );
+    }
   ;
 
 primary_expr
-  : identifier
-  | constant
+  : Y_NAME
+    {
+      // TODO
+    }
+  | Y_INT_LIT
+    {
+      $$ = ad_expr_new( AD_EXPR_VALUE );
+   // $$.as.value.type = xx;
+      $$.as.value.as.i64 = $1;
+    }
+  | Y_STR_LIT
+    {
+      $$ = ad_expr_new( AD_EXPR_VALUE );
+      // TODO
+    }
   | '(' expr ')'                  { $$ = $2; }
   ;
 
@@ -909,14 +972,6 @@ comma_exp
     }
   ;
 
-eqeq_exp
-  : "=="
-  | error
-    {
-      elaborate_error( "\"==\" expected" );
-    }
-  ;
-
 equals_exp
   : '='
   | error
@@ -930,6 +985,14 @@ gt_exp
   | error
     {
       elaborate_error( "'>' expected" );
+    }
+  ;
+
+int_exp
+  : Y_INT_LIT
+  | error
+    {
+      elaborate_error( "integer expected" );
     }
   ;
 
@@ -957,21 +1020,6 @@ lt_exp
     }
   ;
 
-name_ast
-  : Y_NAME
-    {
-      DUMP_START( "name_ast", "NAME" );
-      DUMP_STR( "NAME", $1 );
-
-      $$.ast = C_AST_NEW( K_NAME, &@$ );
-      $$.target_ast = NULL;
-      c_ast_sname_set_name( $$.ast, $1 );
-
-      DUMP_AST( "name_ast", $$.ast );
-      DUMP_END();
-    }
-  ;
-
 name_exp
   : Y_NAME
   | error
@@ -984,14 +1032,6 @@ name_exp
 name_opt
   : /* empty */                   { $$ = NULL; }
   | Y_NAME
-  ;
-
-number_exp
-  : Y_NUMBER
-  | error
-    {
-      elaborate_error( "number expected" );
-    }
   ;
 
 rbrace_exp
@@ -1034,6 +1074,24 @@ semi_opt
 semi_or_end
   : ';'
   | Y_END
+  ;
+
+str_lit
+  : Y_STR_LIT
+  | Y_LEXER_ERROR
+    {
+      $$ = NULL;
+      PARSE_ABORT();
+    }
+  ;
+
+str_lit_exp
+  : str_lit
+  | error
+    {
+      $$ = NULL;
+      elaborate_error( "string literal expected" );
+    }
   ;
 
 %%
