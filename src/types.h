@@ -270,7 +270,7 @@ struct ad_switch {
  * @param VAR The `slist_node` loop variable.
  */
 #define FOREACH_CASE(VAR,SWITCH) \
-  FOREACH_SLIST( VAR, (SWITCH)->cases, NULL )
+  FOREACH_SLIST_NODE( VAR, (SWITCH)->cases )
 
 /**
  * A type.  Every %ad_type at least has the ID that it's a type of and a size

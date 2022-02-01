@@ -355,7 +355,7 @@ static void yyerror( char const *msg ) {
   char const         *literal;    // token literal
   char               *name;       // name being declared or explained
   ad_rep_t            rep_val;
-  char               *str_val;    // qupted string value
+  char const         *str_lit;    // string literal
   ad_switch_case_t    switch_case;
   ad_type_id_t        type_id;
 }
@@ -453,7 +453,7 @@ static void yyerror( char const *msg ) {
 %token              Y_ERROR
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
-%token  <str_val>   Y_STR_LIT
+%token  <str_lit>   Y_STR_LIT
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -468,15 +468,12 @@ static void yyerror( char const *msg ) {
 // if a rule:
 //
 //  1. Is a list, "_list" is appended.
-//  2. Is specific to C/C++, "_c" is appended; is specific to English,
-//     "_english" is appended.
-//  3. Is of type:
-//      + <ast> or <ast_pair>: "_ast" is appended.
+//  2. Is of type:
 //      + <name>: "_name" is appended.
 //      + <int_val>: "_int" is appended.
 //      + <sname>: "_sname" is appended.
-//      + <type_id>: "_type" is appended.
-//  4. Is expected, "_exp" is appended; is optional, "_opt" is appended.
+//      + <type_id>: "_type_id" is appended.
+//  3. Is expected, "_exp" is appended; is optional, "_opt" is appended.
 //
 // Sort using: sort -bdk3
 
@@ -485,6 +482,7 @@ static void yyerror( char const *msg ) {
 %type <type_id>   builtin_type_id
 %type <enum_val>  enumerator
 %type <list>      enumerator_list
+%type <xxxxx>     statement
 %type <list>      statement_list statement_list_opt
 %type <switch_case>  switch_case
 %type <list>      switch_case_list switch_case_list_opt
@@ -550,11 +548,15 @@ statement_list
       slist_push_back( &$$, $1 );
     }
   | statement
+    {
+      slist_init( &$$ );
+      slist_push_back( &$$, $1 );
+    }
   ;
 
 statement
   : compound_statement
-  | declaration semi_exp
+  | declaration semi_exp          { $$ = $1; }
   | switch_statement
   | error
     {
@@ -673,6 +675,10 @@ switch_case_list
     }
 
   | switch_case
+    {
+      slist_init( &$$ );
+      slist_push_back( &$$, $1 );
+    }
   ;
 
 switch_case
@@ -979,6 +985,11 @@ unary_expr
       (void)$2;
     }
   | unary_op cast_expr
+    {
+      // TODO
+      (void)$1;
+      (void)$2;
+    }
   | Y_SIZEOF unary_expr
     {
       // TODO
