@@ -88,7 +88,9 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF32LE   (T_END_LIT | T_UTF  | T_32_BITS)  /**< UTF-32 little.     */
 
 #define T_UTF_0     (T_NULL    | T_UTF             )  /**< UTF string.       */
-#define T_UTF8_0    (T_NULL    | T_UTF  | T_08_BITS)  /**< UTF-8 string.      */
+
+/**< UTF-8, null-terminated string. */
+#define T_UTF8_0    (T_NULL    | T_UTF  | T_08_BITS)
 
 /** UTF-16 host-endian, null-terminated string. */
 #define T_UTF16HE_0 (T_NULL    | T_UTF  | T_16_BITS)
@@ -183,7 +185,7 @@ struct ad_enum {
   ad_bits_t       bits;                 ///< Value number of bits.
   ad_endian_t     endian;               ///< Endianness of values.
   ad_int_base_t   base;                 ///< Base of values.
-  slist_t         values;               ///< Values.
+  slist_t         values;               ///< List of ad_enum_value.
 };
 
 /**
@@ -206,9 +208,6 @@ struct ad_loc {
   //
   int first_line;                       ///< First line of location range.
   int first_column;                     ///< First column of location range.
-  //
-  // Cdecl doesn't use either of these.
-  //
   int last_line;                        ///< Last line of location range.
   int last_column;                      ///< Last column of location range.
 };
@@ -233,7 +232,7 @@ struct ad_rep {
 };
 
 /**
- * TODO
+ * A data field.
  */
 struct ad_field {
   char const *name;
@@ -253,7 +252,7 @@ struct ad_struct {
  * `switch` `case` type.
  */
 struct ad_switch_case {
-  // value
+  ad_expr_r       expr;
   ad_type_list_t  case_types;           ///< All the type(s) for the case value.
 };
 

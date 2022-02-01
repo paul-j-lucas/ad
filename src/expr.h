@@ -58,7 +58,7 @@ enum ad_expr_err {
 };
 
 /**
- * The expression ID.
+ * The expression kind.
  */
 enum ad_expr_kind {
   AD_EXPR_NONE,                         ///< No expression.
@@ -67,10 +67,10 @@ enum ad_expr_kind {
   AD_EXPR_VALUE,                        ///< Constant value expression.
 
   // unary
-  AD_EXPR_ADDR     = AD_EXPR_UNARY + 1, ///< Address-of expression.
-  AD_EXPR_BIT_COMP,                     ///< Bitwise-complement expression.
-  AD_EXPR_DEREF,                        ///< Dereference expression.
+  AD_EXPR_BIT_COMP = AD_EXPR_UNARY + 1, ///< Bitwise-complement expression.
   AD_EXPR_MATH_NEG,                     ///< Negation expression.
+  AD_EXPR_PTR_ADDR,                     ///< Address-of expression.
+  AD_EXPR_PTR_DEREF,                    ///< Dereference expression.
 
   // binary
   AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
@@ -116,8 +116,8 @@ typedef struct ad_value_expr    ad_value_expr_t;
 
 /**
  * Unary expression; used for:
- *  + Cast
- *  + Dereference
+ *  + Pointer address
+ *  + Pointer dereference
  *  + Bitwise complement
  *  + Negation
  */
@@ -130,6 +130,7 @@ struct ad_unary_expr {
  *  + Addition
  *  + Bitwise and
  *  + Bitwise or
+ *  + Cast
  *  + Division
  *  + Left shift
  *  + Logical and
@@ -146,7 +147,7 @@ struct ad_binary_expr {
 
 /**
  * Ternary expression; used for:
- *  + If-else
+ *  + `?:`
  */
 struct ad_ternary_expr {
   ad_expr_t *cond_expr;
@@ -168,7 +169,7 @@ struct ad_value_expr {
     double        f64;                  ///< f32, f64
 
     // UTF characters.
-    utf8_t        c8;                   ///< UTF-8 character.
+    chat8_t       c8;                   ///< UTF-8 character.
     char16_t      c16;                  ///< UTF-16 character.
     char32_t      c32;                  ///< UTF-32 character.
 
