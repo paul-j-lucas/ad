@@ -215,7 +215,8 @@
  * Aborts the current parse (presumably after an error message has been
  * printed).
  */
-#define PARSE_ABORT()             BLOCK( parse_cleanup( true ); YYABORT; )
+#define PARSE_ABORT() \
+  BLOCK( parse_cleanup( /*fatal_error=*/true ); YYABORT; )
 
 /// @endcond
 
@@ -257,6 +258,14 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
   assert( format != NULL );
 
   EPUTS( ": " );
+#ifdef ENABLE_AD_DEBUG
+  if ( opt_ad_debug )
+    EPRINTF( " (%s:%d)", file, line );
+#else
+  (void)file;
+  (void)line;
+#endif /* ENABLE_AD_DEBUG */
+
   char const *const error_token = printable_token();
   if ( error_token != NULL )
     EPRINTF( "\"%s\": ", printable_token() );
@@ -266,10 +275,11 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
   vfprintf( stderr, format, args );
   va_end( args );
 
-#ifdef ENABLE_AD_DEBUG
-  if ( opt_ad_debug )
-    PRINTF_ERR( " (%s:%d)", file, line );
-#endif /* ENABLE_AD_DEBUG */
+  if ( error_token != NULL ) {
+    keyword_t const *const k = ad_keyword_find( error_token );
+    if ( k != NULL )
+      EPRINTF( " (\"%s\" is a keyword)", error_token );
+  }
 
   EPUTS( '\n' );
 }
@@ -277,24 +287,19 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
 /**
  * Cleans-up parser data after each parse.
  *
- * @param hard_reset If `true`, does a "hard" reset that currently resets the
- * EOF flag of the lexer.  This should be `true` if an error occurs and
- * `YYABORT` is called.
- *
- * @sa parse_init()
+ * @param fatal_error Must be `true` only if a fatal semantic error has
+ * occurred and `YYABORT` is about to be called to bail out of parsing by
+ * returning from yyparse().
  */
-static void parse_cleanup( bool hard_reset ) {
-  lexer_reset( hard_reset );
-  slist_cleanup( &expr_gc_list, NULL, (slist_free_fn_t)&ad_expr_free );
-}
+static void parse_cleanup( bool fatal_error ) {
+  //
+  // We need to reset the lexer differently depending on whether we completed a
+  // parse with a fatal error.  If so, do a "hard" reset that also resets the
+  // EOF flag of the lexer.
+  //
+  lexer_reset( /*hard_reset=*/fatal_error );
 
-/**
- * Gets ready to parse a statement.
- *
- * @sa parse_cleanup()
- */
-static void parse_init( void ) {
-  // TODO
+  slist_cleanup( &expr_gc_list, NULL, (slist_free_fn_t)&ad_expr_free );
 }
 
 /**
@@ -323,9 +328,14 @@ static void yyerror( char const *msg ) {
   SGR_START_COLOR( stderr, error );
   EPUTS( msg );                         // no newline
   SGR_END_COLOR( stderr );
-  error_newlined = false;
 
-  parse_cleanup( false );
+  //
+  // A syntax error has occurred, but syntax errors aren't fatal since Bison
+  // tries to recover.  We'll clean-up the current parse, but YYABORT won't be
+  // called so we won't bail out of parsing by returning from yyparse(); hence,
+  // parsing will continue.
+  //
+  parse_cleanup( /*fatal_error=*/false );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -340,12 +350,14 @@ static void yyerror( char const *msg ) {
   ad_expr_t          *expr;       // for the expression being built
   ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
   ad_field_t          field;
+  int                 int_val;
   slist_t             list;       // multipurpose list
-  char const         *literal;    // token literal (for new-style casts)
+  char const         *literal;    // token literal
   char               *name;       // name being declared or explained
   ad_rep_t            rep_val;
-  int                 number;     // for array sizes
   char               *str_val;    // qupted string value
+  ad_switch_case_t    switch_case;
+  ad_type_id_t        type_id;
 }
 
                     // ad keywords
@@ -461,7 +473,7 @@ static void yyerror( char const *msg ) {
 //  3. Is of type:
 //      + <ast> or <ast_pair>: "_ast" is appended.
 //      + <name>: "_name" is appended.
-//      + <number>: "_num" is appended.
+//      + <int_val>: "_int" is appended.
 //      + <sname>: "_sname" is appended.
 //      + <type_id>: "_type" is appended.
 //  4. Is expected, "_exp" is appended; is optional, "_opt" is appended.
@@ -470,17 +482,13 @@ static void yyerror( char const *msg ) {
 
                   // Declarations
 %type <rep_val>   array_opt
-%type <xxxxx>     builtin_type
-%type             enum_declaration
+%type <type_id>   builtin_type_id
 %type <enum_val>  enumerator
 %type <list>      enumerator_list
-%type <field>     field_declaration
-%type <xxxxx>     struct_declaration
-%type <xxxxx>     switch_case_statement
-%type <list>      switch_case_statement_list_opt
-%type <xxxxx>     switch_statement
-%type <xxxxx>     type type_exp
-%type <xxxxx>     typedef_declaration
+%type <list>      statement_list statement_list_opt
+%type <switch_case>  switch_case
+%type <list>      switch_case_list switch_case_list_opt
+%type <type_id>   type_id type_id_exp
 
                   // Expressions
 %type <expr>      additive_expr
@@ -493,7 +501,7 @@ static void yyerror( char const *msg ) {
 %type <expr>      cast_expr
 %type <expr>      conditional_expr
 %type <expr>      equality_expr
-%type <expr>      expr
+%type <expr>      expr expr_exp
 %type <expr>      logical_and_expr
 %type <expr>      logical_or_expr
 %type <expr>      multiplicative_expr
@@ -505,8 +513,10 @@ static void yyerror( char const *msg ) {
 %type <expr_kind> unary_op
 
                   // Miscellaneous
+%type <name>      name_exp name_opt
 %type <str_lit>   str_lit str_lit_exp
 %type <int_val>   type_endian_opt
+%type <name>      type_name_exp
 
 /*
  * Bison %destructors.  We don't use the <identifier> syntax because older
@@ -519,13 +529,7 @@ static void yyerror( char const *msg ) {
 %destructor { DTRACE; FREE( $$ ); } name_exp
 %destructor { DTRACE; FREE( $$ ); } name_opt
 %destructor { DTRACE; FREE( $$ ); } Y_NAME
-
-/* sname */
-%destructor { DTRACE; c_sname_free( &$$ ); } sname_c
-%destructor { DTRACE; c_sname_free( &$$ ); } sname_c_exp
-%destructor { DTRACE; c_sname_free( &$$ ); } sname_c_opt
-%destructor { DTRACE; c_sname_free( &$$ ); } typedef_type_sname
-%destructor { DTRACE; c_sname_free( &$$ ); } typedef_type_sname_exp
+%destructor { DTRACE; FREE( $$ ); } type_name_exp
 
 /*****************************************************************************/
 %%
@@ -535,8 +539,17 @@ static void yyerror( char const *msg ) {
 ///////////////////////////////////////////////////////////////////////////////
 
 statement_list_opt
-  : /* empty */
-  | statement_list_opt statement
+  : /* empty */                   { slist_init( &$$ ); }
+  | statement_list
+  ;
+
+statement_list
+  : statement_list statement
+    {
+      $$ = $1;
+      slist_push_back( &$$, $1 );
+    }
+  | statement
   ;
 
 statement
@@ -566,13 +579,13 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_ENUM name_exp colon_exp type_exp lbrace_exp enumerator_list '}'
+  : Y_ENUM name_exp colon_exp type_id_exp lbrace_exp enumerator_list '}'
     {
       ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
       ad_enum->name = $2;
-      ad_enum->bits = XX;
-      ad_enum->endian = XX;
-      ad_enum->base = xx;
+   // ad_enum->bits = XX;
+   // ad_enum->endian = XX;
+   // ad_enum->base = xx;
     }
   ;
 
@@ -593,18 +606,19 @@ enumerator
   : Y_NAME equals_exp int_exp
     {
       $$.name = $1;
-      $$.value = $3;
+   // $$.value = $3;
     }
   ;
 
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : type_exp field_name_exp array_opt
+  : type_id_exp name_exp array_opt
     {
-      $$.type = $1;
-      $$.name = $2;
-      $$.rep = $3;
+      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
+      ad_field->type = $1;
+      ad_field->name = $2;
+      ad_field->rep = $3;
     }
   ;
 
@@ -632,8 +646,8 @@ array_opt
 struct_declaration
   : Y_STRUCT name_exp lbrace_exp statement_list_opt rbrace_exp
     {
-      $$ = MALLOC( ad_struct, 1 );
-      $$->name = $2;
+      ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
+      ad_struct->name = $2;
       // TODO
     }
   ;
@@ -641,18 +655,37 @@ struct_declaration
 /// switch statement //////////////////////////////////////////////////////////
 
 switch_statement
-  : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp
-    switch_case_statement_list_opt '}'
+  : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
+    {
+    }
   ;
 
-switch_case_statement_list_opt
-  : /* empty */
-  | switch_case_statement_list_opt switch_case_statement
+switch_case_list_opt
+  : /* empty */                   { slist_init( &$$ ); }
+  | switch_case_list
   ;
 
-switch_case_statement
-  : Y_CASE constant_expr_exp colon_exp statement_list_opt
+switch_case_list
+  : switch_case_list switch_case
+    {
+      $$ = $1;
+      slist_push_back( &$$, &$2 );
+    }
+
+  | switch_case
+  ;
+
+switch_case
+  : Y_CASE expr_exp colon_exp statement_list_opt
+    {
+      $$ = MALLOC( ad_switch_case_t, 1 );
+      $$->expr = $2;
+      // TODO
+    }
   | Y_DEFAULT colon_exp statement_list_opt
+    {
+      $$ = $3;
+    }
   ;
 
 /// typedef declaration ///////////////////////////////////////////////////////
@@ -670,6 +703,13 @@ expr
   | expr ',' assign_expr
     {
       $$ = $3;
+    }
+  ;
+
+expr_exp
+  : expr
+  | error
+    {
     }
   ;
 
@@ -730,7 +770,12 @@ bitwise_or_expr
 
 cast_expr
   : unary_expr
-  | '(' type_name ')' cast_expr
+  | '(' type_name_exp rparen_exp cast_expr
+    {
+      // TODO
+      (void)$2;
+      (void)$4;
+    }
   ;
 
 conditional_expr
@@ -761,8 +806,8 @@ equality_expr
   ;
 
 logical_and_expr
-  : inclusive_or_expr
-  | logical_and_expr "&&" inclusive_or_expr
+  : logical_or_expr
+  | logical_and_expr "&&" logical_or_expr
     {
       $$ = ad_expr_new( AD_EXPR_LOG_AND );
       $$->as.binary.lhs_expr = $1;
@@ -806,34 +851,52 @@ postfix_expr
   : primary_expr
   | postfix_expr '[' expr ']'
     {
+      // TODO
+      (void)$1;
+      (void)$3;
     }
   | postfix_expr '(' ')'
     {
+      // TODO
+      (void)$1;
     }
   | postfix_expr '(' argument_expr_list ')'
     {
+      // TODO
+      (void)$1;
+      (void)$3;
     }
   | postfix_expr '.' name_exp
     {
+      // TODO
+      (void)$1;
+      (void)$3;
     }
   | postfix_expr "->" name_exp
     {
+      // TODO
+      (void)$1;
+      (void)$3;
     }
   | postfix_expr "++"
     {
+      // TODO
+      (void)$1;
     }
   | postfix_expr "--"
     {
+      // TODO
+      (void)$1;
     }
   ;
 
 argument_expr_list
-  : assignment_expr
+  : assign_expr
     {
       slist_init( &$$ );
       slist_push_tail( &$$, $1 );
     }
-  | argument_expr_list ',' assignment_expr
+  | argument_expr_list ',' assign_expr
     {
       slist_push_tail( &$$, $3 );
     }
@@ -843,6 +906,7 @@ primary_expr
   : Y_NAME
     {
       // TODO
+      (void)$1;
     }
   | Y_INT_LIT
     {
@@ -905,54 +969,74 @@ shift_expr
 unary_expr
   : postfix_expr
   | "++" unary_expr
+    {
+      // TODO
+      (void)$2;
+    }
   | "--" unary_expr
+    {
+      // TODO
+      (void)$2;
+    }
   | unary_op cast_expr
   | Y_SIZEOF unary_expr
-  | Y_SIZEOF '(' type_name ')'
+    {
+      // TODO
+      (void)$2;
+    }
+  | Y_SIZEOF '(' type_name_exp rparen_exp
+    {
+      // TODO
+      (void)$3;
+    }
   ;
 
 assign_op
-  : '='                         { $$ = AD_EXPR_ASSIGN; }
-  | "%="                        { $$ = AD_EXPR_MATH_MOD; }
-  | "&="                        { $$ = AD_EXPR_BIT_AND; }
-  | "*="                        { $$ = AD_EXPR_MATH_MUL; }
-  | "+="                        { $$ = AD_EXPR_MATH_ADD; }
-  | "-="                        { $$ = AD_EXPR_MATH_SUB; }
-  | "/="                        { $$ = AD_EXPR_MATH_DIV; }
-  | "<<="                       { $$ = AD_EXPR_BIT_SHIFT_LEFT; }
-  | ">>="                       { $$ = AD_EXPR_BIT_SHIFT_RIGHT; }
-  | "^="                        { $$ = AD_EXPR_BIT_XOR; }
-  | "|="                        { $$ = AD_EXPR_BIT_OR; }
+  : '='                           { $$ = AD_EXPR_ASSIGN; }
+  | "%="                          { $$ = AD_EXPR_MATH_MOD; }
+  | "&="                          { $$ = AD_EXPR_BIT_AND; }
+  | "*="                          { $$ = AD_EXPR_MATH_MUL; }
+  | "+="                          { $$ = AD_EXPR_MATH_ADD; }
+  | "-="                          { $$ = AD_EXPR_MATH_SUB; }
+  | "/="                          { $$ = AD_EXPR_MATH_DIV; }
+  | "<<="                         { $$ = AD_EXPR_BIT_SHIFT_LEFT; }
+  | ">>="                         { $$ = AD_EXPR_BIT_SHIFT_RIGHT; }
+  | "^="                          { $$ = AD_EXPR_BIT_XOR; }
+  | "|="                          { $$ = AD_EXPR_BIT_OR; }
   ;
 
 unary_op
-  : '&'                         { $$ = AD_EXPR_ADDR; }
-  | '*'                         { $$ = AD_EXPR_DEREF; }
-  | '+'                         { $$ = AD_EXPR_MATH_ADD; }
-  | '-'                         { $$ = AD_EXPR_MATH_NEG; }
-  | '~'                         { $$ = AD_EXPR_BIT_COMPL; }
-  | '!'                         { $$ = AD_EXPR_LOG_NOT; }
+  : '&'                           { $$ = AD_EXPR_PTR_ADDR; }
+  | '*'                           { $$ = AD_EXPR_PTR_DEREF; }
+  | '+'                           { $$ = AD_EXPR_MATH_ADD; }
+  | '-'                           { $$ = AD_EXPR_MATH_NEG; }
+  | '~'                           { $$ = AD_EXPR_BIT_COMPL; }
+  | '!'                           { $$ = AD_EXPR_LOG_NOT; }
   ;
 
 /// type //////////////////////////////////////////////////////////////////////
 
-type
-  : builtin_type lt_exp expr type_endian_opt '>'
+builtin_type_id
+  : Y_FLOAT                       { $$ = T_FLOAT; }
+  | Y_INT                         { $$ = T_INT; }
+  | Y_UINT                        { $$ = T_INT; }
+  | Y_UTF                         { $$ = T_UTF; }
+  ;
+
+type_id
+  : builtin_type_id lt_exp expr type_endian_opt '>'
+    {
+      $$ = $1;
+      // TODO
+    }
   | Y_TYPEDEF_TYPE
   ;
 
-type_exp
-  : type
+type_id_exp
+  : type_id
   | error
     {
     }
-  ;
-
-builtin_type
-  : Y_FLOAT
-  | Y_INT
-  | Y_UINT
-  | Y_UTF
   ;
 
 type_endian_opt
@@ -960,9 +1044,21 @@ type_endian_opt
   | ',' expr                      { $$ = $2; }
   ;
 
+type_name_exp
+  : name_exp
+  ;
+
 ///////////////////////////////////////////////////////////////////////////////
 //  MISCELLANEOUS                                                            //
 ///////////////////////////////////////////////////////////////////////////////
+
+colon_exp
+  : ':'
+  | error
+    {
+      elaborate_error( "':' expected" );
+    }
+  ;
 
 comma_exp
   : ','
