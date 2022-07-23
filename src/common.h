@@ -27,13 +27,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define ELIDED_SEP_CHAR           '-'
-#define EX_NO_MATCHES             1     /* no errors, but no matches either */
-#define GROUP_BY_DEFAULT          2     /* how many bytes to group together */
-#define OFFSET_WIDTH_MIN          12    /* minimum offset digits */
-#define OFFSET_WIDTH_MAX          16    /* maximum offset digits */
-#define ROW_BYTES_DEFAULT         16    /* default bytes dumped on a row */
-#define ROW_BYTES_C               8     /* bytes dumped on a row in C */
-#define ROW_BYTES_MAX             32    /* maximum bytes dumped on a row */
+#define EX_NO_MATCHES             1     /**< No errors, but no matches. */
+#define GROUP_BY_DEFAULT          2     /**< Bytes to group together. */
+#define OFFSET_WIDTH_MIN          12    /**< Minimum offset digits. */
+#define OFFSET_WIDTH_MAX          16    /**< Maximum offset digits. */
+#define ROW_BYTES_DEFAULT         16    /**< Default bytes dumped on a row. */
+#define ROW_BYTES_C               8     /**< Bytes dumped on a row in C. */
+#define ROW_BYTES_MAX             32    /**< Maximum bytes dumped on a row. */
 
 extern size_t row_bytes;                // bytes dumped on a row
 
