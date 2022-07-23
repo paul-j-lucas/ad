@@ -41,6 +41,8 @@
 #  getline \
 #  getopt-gnu \
 #  stdbool \
+#  stddef \
+#  stdnoreturn \
 #  strdup-posix \
 #  strerror \
 #  strsep \
@@ -53,6 +55,8 @@ gl_MODULES([
   getline
   getopt-gnu
   stdbool
+  stddef
+  stdnoreturn
   strdup-posix
   strerror
   strsep
