@@ -50,6 +50,53 @@ extern char const  *me;
 // local variable definitions
 static slist_t free_later_list;         ///< List of stuff to free later.
 
+/////////// inline functions //////////////////////////////////////////////////
+
+/**
+ * Swaps the endianness of the given 16-bit value.
+ *
+ * @param n The 16-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+NODISCARD
+static inline uint16_t swap_16( uint16_t n ) {
+  return (uint16_t)((n >> 8)
+                  | (n << 8));
+}
+
+/**
+ * Swaps the endianness of the given 32-bit value.
+ *
+ * @param n The 32-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+NODISCARD
+static inline uint32_t swap_32( uint32_t n ) {
+  return  ( n                >> 24)
+        | ((n & 0x00FF0000u) >>  8)
+        | ((n & 0x0000FF00u) <<  8)
+        | ( n                << 24);
+}
+
+/**
+ * Swaps the endianness of the given 64-bit value.
+ *
+ * @param n The 64-bit value to swap.
+ * @return Returns the value with the endianness flipped.
+ */
+NODISCARD
+static inline uint64_t swap_64( uint64_t n ) {
+  return  ( n                          >> 56)
+        | ((n & 0x00FF000000000000ull) >> 40)
+        | ((n & 0x0000FF0000000000ull) >> 24)
+        | ((n & 0x000000FF00000000ull) >>  8)
+        | ((n & 0x00000000FF000000ull) <<  8)
+        | ((n & 0x0000000000FF0000ull) << 24)
+        | ((n & 0x000000000000FF00ull) << 40)
+        | ( n                          << 56);
+}
+>>>>>>> master
+
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -74,7 +121,7 @@ static char const* regex_error( regex_t *re, int err_code ) {
  * character or pointing to the NULL byte if either \a s was all whitespace or
  * empty.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char const* skip_ws( char const *s ) {
   assert( s != NULL );
   while ( isspace( *s ) )
@@ -227,14 +274,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian ) {
       switch ( bytes ) {
         case 1: /* do nothing */              break;
         case 2: *n = swap_16( (uint16_t)*n ); break;
-        case 3: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 3: *n <<= 8;                     FALLTHROUGH;
         case 4: *n = swap_32( (uint32_t)*n ); break;
-        case 5: *n <<= 8;                     PJL_FALLTHROUGH;
-        case 6: *n <<= 8;                     PJL_FALLTHROUGH;
-        case 7: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 5: *n <<= 8;                     FALLTHROUGH;
+        case 6: *n <<= 8;                     FALLTHROUGH;
+        case 7: *n <<= 8;                     FALLTHROUGH;
         case 8: *n = swap_64( *n );           break;
       } // switch
-      PJL_FALLTHROUGH;
+      FALLTHROUGH;
 
     case AD_ENDIAN_BIG:
       // move bytes to start of buffer

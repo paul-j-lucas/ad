@@ -79,7 +79,7 @@ typedef struct row_buf row_buf_t;
  * @param byte_pos The current byte position from the beginning of a line.
  * @return Returns \c true only if
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline bool print_readability_space( size_t byte_pos ) {
   return byte_pos == 8 && opt_group_by < 8;
 }
@@ -96,7 +96,7 @@ static inline bool print_readability_space( size_t byte_pos ) {
  * @return Returns the number of bytes comprising the UTF-8 character or 0 if
  * the bytes do not comprise a valid UTF-8 character.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
                             row_buf_t const *next, char8_t *utf8_char ) {
   assert( cur != NULL );

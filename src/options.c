@@ -35,6 +35,7 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
+#include <stdnoreturn.h>
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
@@ -123,7 +124,7 @@ static char const SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOpPrs:S:tTu:U:vV"
 static char         opts_given[ 128 ];
 
 // local functions
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char const*  get_long_opt( char );
 
 /////////// local functions ///////////////////////////////////////////////////
@@ -138,7 +139,7 @@ static char const*  get_long_opt( char );
  * @param buf_size The size of \a buf.
  * @return Returns \a buf.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char* format_opt( char short_opt, char buf[], size_t size ) {
   char const *const long_opt = get_long_opt( short_opt );
   snprintf(
@@ -154,7 +155,7 @@ static char* format_opt( char short_opt, char buf[], size_t size ) {
  * @param short_opt The short option to get the corresponding long option for.
  * @return Returns the said option or the empty string if none.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char const* get_long_opt( char short_opt ) {
   for ( struct option const *long_opt = LONG_OPTS; long_opt->name; ++long_opt )
     if ( long_opt->val == short_opt )
@@ -261,7 +262,7 @@ static void check_required( char const *opts, char const *req_opts ) {
  * @return Returns the corresponding \c c_fmt_t
  * or prints an error message and exits if \a s is invalid.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static c_fmt_t parse_c_fmt( char const *s ) {
   c_fmt_t c_fmt = CFMT_DEFAULT;
   char const *fmt;
@@ -316,7 +317,7 @@ dup_format:
  * @return Returns the Unicode code-point value
  * or prints an error message and exits if \a s is invalid.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char32_t parse_codepoint( char const *s ) {
   assert( s != NULL );
 
@@ -347,7 +348,7 @@ static char32_t parse_codepoint( char const *s ) {
  * @return Returns the associated \c color_when_t
  * or prints an error message and exits if \a when is invalid.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static color_when_t parse_color_when( char const *when ) {
   struct colorize_map {
     char const   *map_when;
@@ -402,7 +403,7 @@ static color_when_t parse_color_when( char const *when ) {
  * @return Returns the group-by value
  * or prints an error message and exits if the value is invalid.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static unsigned parse_group_by( char const *s ) {
   unsigned long long const group_by = parse_ull( s );
   switch ( group_by ) {
@@ -429,7 +430,7 @@ static unsigned parse_group_by( char const *s ) {
  * @return Returns the associated \c utf8_when_t
  * or prints an error message and exits if \a when is invalid.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static utf8_when_t parse_utf8_when( char const *when ) {
   struct utf8_map {
     char const *map_when;
@@ -477,7 +478,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
 /**
  * Prints the usage message to standard error and exits.
  */
-PJL_NORETURN
+noreturn
 static void usage( void ) {
   printf(
 "usage: " PACKAGE " [options] [+offset] [infile [outfile]]\n"
@@ -599,7 +600,7 @@ void parse_options( int argc, char *argv[] ) {
       case 'h': opt_offset_fmt = OFMT_HEX;                              break;
    // case 'H': usage();                // default case handles this
       case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
-                PJL_FALLTHROUGH;
+                FALLTHROUGH;
       case 'i': opt_case_insensitive = true;                            break;
       case 'j': fin_offset += (off_t)parse_offset( optarg );            break;
       case 'L': max_lines = parse_ull( optarg );                        break;
@@ -707,11 +708,11 @@ void parse_options( int argc, char *argv[] ) {
         //
         fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
       }
-      PJL_FALLTHROUGH;
+      FALLTHROUGH;
 
     case 1:                             // infile only
       fin_path = argv[1];
-      PJL_FALLTHROUGH;
+      FALLTHROUGH;
 
     case 0:
       if ( strcmp( fin_path, "-" ) == 0 )

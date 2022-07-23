@@ -76,7 +76,7 @@ void ad_type_free( ad_type_t *type );
  *
  * @param tid The ID of the type to create.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 ad_type_t* ad_type_new( ad_type_id_t tid );
 
 /**
@@ -85,7 +85,7 @@ ad_type_t* ad_type_new( ad_type_id_t tid );
  * @param tid The ID of the type to get the size of.
  * @return Returns said size.
  */
-PJL_WARN_UNUSED_RESULT AD_TYPES_INLINE
+NODISCARD AD_TYPES_INLINE
 size_t ad_type_size( ad_type_id_t tid ) {
   return tid & T_MASK_SIZE;
 }

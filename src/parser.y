@@ -232,7 +232,7 @@ static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
  *
  * @return Returns said string.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline char const* printable_token( void ) {
   switch ( lexer_token[0] ) {
     case '\0': return NULL;

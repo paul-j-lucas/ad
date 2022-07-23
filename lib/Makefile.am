@@ -36,12 +36,14 @@
 #  getline \
 #  getopt-gnu \
 #  stdbool \
+#  stddef \
+#  stdnoreturn \
 #  strdup-posix \
 #  strerror \
 #  strsep \
 #  sysexits
 
-AUTOMAKE_OPTIONS = 1.11 gnits
+AUTOMAKE_OPTIONS = 1.14 gnits
 
 SUBDIRS =
 noinst_HEADERS =
@@ -674,6 +676,28 @@ MOSTLYCLEANFILES += stdlib.h stdlib.h-t
 EXTRA_DIST += stdlib.in.h
 
 ## end   gnulib module stdlib
+
+## begin gnulib module stdnoreturn
+
+BUILT_SOURCES += $(STDNORETURN_H)
+
+# We need the following in order to create <stdnoreturn.h> when the system
+# doesn't have one that works.
+if GL_GENERATE_STDNORETURN_H
+stdnoreturn.h: stdnoreturn.in.h $(top_builddir)/config.status $(_NORETURN_H)
+	$(gl_V_at)$(SED_HEADER_STDOUT) \
+	  -e '/definition of _Noreturn/r $(_NORETURN_H)' \
+	  $(srcdir)/stdnoreturn.in.h > $@-t
+	$(AM_V_at)mv $@-t $@
+else
+stdnoreturn.h: $(top_builddir)/config.status
+	rm -f $@
+endif
+MOSTLYCLEANFILES += stdnoreturn.h stdnoreturn.h-t
+
+EXTRA_DIST += stdnoreturn.in.h
+
+## end   gnulib module stdnoreturn
 
 ## begin gnulib module strdup-posix
 

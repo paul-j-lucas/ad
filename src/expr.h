@@ -206,7 +206,7 @@ struct ad_expr {
  * @param rv The evaluated expression's value.
  * @return Returns `true` only if the evaluation succeeded.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv );
 
 /**
@@ -222,7 +222,7 @@ void ad_expr_free( ad_expr_t *expr );
  * @parm expr The expression to check.
  * @return Returns `true` only if \a expr is a value.
  */
-PJL_WARN_UNUSED_RESULT AD_EXPR_INLINE
+NODISCARD AD_EXPR_INLINE
 bool ad_expr_is_value( ad_expr_t const *expr ) {
   return expr->expr_kind == AD_EXPR_VALUE;
 }
@@ -233,7 +233,7 @@ bool ad_expr_is_value( ad_expr_t const *expr ) {
  * @param expr_kind The kind of the expression to create.
  * @return Returns a pointer to a new `ad_expr`.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
 
 /**
@@ -243,7 +243,7 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
  * @return Returns said type.
  * @sa ad_expr_get_base_type(ad_expr_t const*)
  */
-PJL_WARN_UNUSED_RESULT AD_EXPR_INLINE
+NODISCARD AD_EXPR_INLINE
 ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
   return ad_expr_is_value( expr ) ? expr->as.value.type.type_id : T_NONE;
 }
@@ -255,7 +255,7 @@ ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
  * @param expr The expression to get the base type of.
  * @return Returns said base type.
  */
-PJL_WARN_UNUSED_RESULT AD_EXPR_INLINE
+NODISCARD AD_EXPR_INLINE
 ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
   return ad_expr_get_type( expr ) & T_MASK_TYPE;
 }
@@ -266,7 +266,7 @@ ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
  * @param expr The expresion to check.
  * @return Returns `true` only of \a expr is zero.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 bool ad_expr_is_zero( ad_expr_t const *expr );
 
 /**

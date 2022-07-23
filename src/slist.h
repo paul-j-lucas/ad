@@ -165,7 +165,7 @@ struct slist_node {
  * @sa slist_back()
  * @sa slist_front()
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 void* slist_at_nocheck_offset( slist_t const *list, size_t offset );
 
 /**
@@ -192,7 +192,7 @@ void slist_cleanup( slist_t *list, slist_free_fn_t free_fn );
  * @return Returns a number less than 0, 0, or greater than 0 if \a i_list is
  * less than, equal to, or greater than \a j_list, respectively.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 int slist_cmp( slist_t const *i_list, slist_t const *j_list,
                slist_cmp_fn_t cmp_fn );
 
@@ -209,7 +209,7 @@ int slist_cmp( slist_t const *i_list, slist_t const *j_list,
  *
  * @sa slist_cleanup()
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 slist_t slist_dup( slist_t const *src_list, ssize_t n, slist_dup_fn_t dup_fn );
 
 /**
@@ -236,7 +236,7 @@ void slist_free_if( slist_t *list, slist_pred_fn_t pred_fn );
  *
  * @note This is an O(1) operation.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 void* slist_pop_front( slist_t *list );
 
 /**
@@ -307,7 +307,7 @@ void slist_push_list_front( slist_t *dst_list, slist_t *src_list );
  * @sa slist_back()
  * @sa slist_front()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 void* slist_at( slist_t const *list, size_t offset ) {
   return offset < list->len ? slist_at_nocheck_offset( list, offset ) : NULL;
 }
@@ -326,7 +326,7 @@ void* slist_at( slist_t const *list, size_t offset ) {
  * @sa slist_back()
  * @sa slist_front()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 void* slist_atr( slist_t const *list, size_t roffset ) {
   return roffset < list->len ?
     slist_at_nocheck_offset( list, list->len - (roffset + 1) ) : NULL;
@@ -345,7 +345,7 @@ void* slist_atr( slist_t const *list, size_t roffset ) {
  * @sa slist_atr()
  * @sa slist_front()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 void* slist_back( slist_t const *list ) {
   return list->tail != NULL ? list->tail->data : NULL;
 }
@@ -360,7 +360,7 @@ void* slist_back( slist_t const *list ) {
  *
  * @sa slist_len()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 bool slist_empty( slist_t const *list ) {
   return list->head == NULL;
 }
@@ -378,7 +378,7 @@ bool slist_empty( slist_t const *list ) {
  * @sa slist_atr()
  * @sa slist_back()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 void* slist_front( slist_t const *list ) {
   return list->head != NULL ? list->head->data : NULL;
 }
@@ -406,7 +406,7 @@ void slist_init( slist_t *list ) {
  *
  * @sa slist_empty()
  */
-SLIST_INLINE PJL_WARN_UNUSED_RESULT
+SLIST_INLINE NODISCARD
 size_t slist_len( slist_t const *list ) {
   return list->len;
 }

@@ -58,7 +58,7 @@ char const* lexer_input_line( size_t *plen );
  *
  * @return Returns said location.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 c_loc_t lexer_loc( void );
 
 /**
@@ -76,7 +76,7 @@ void lexer_reset( bool hard_reset );
  *
  * @return Returns the token ID.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 int yylex( void );
 
 ///////////////////////////////////////////////////////////////////////////////

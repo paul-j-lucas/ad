@@ -51,7 +51,7 @@ extern unsigned long total_matches;
  * @return Returns an array containing the values comprising the partial-match
  * table.  The caller is responsible for freeing the array.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 kmp_t* kmp_init( char const *pattern, size_t pattern_len );
 
 /**
@@ -69,7 +69,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * \a row_size except on the last row in which case it will be less than
  * \a row_size.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 size_t match_row( char8_t *row_buf, size_t row_size, match_bits_t *match_bits,
                   kmp_t const *kmps, char8_t *match_buf );
 

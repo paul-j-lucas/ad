@@ -117,7 +117,7 @@ extern uint64_t       search_number;    // the number to search for
  *
  * @return Returns said word.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 char const* get_offset_fmt_english( void );
 
 /**
@@ -125,7 +125,7 @@ char const* get_offset_fmt_english( void );
  *
  * @return Returns said printf(3) format.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 char const* get_offset_fmt_format( void );
 
 /**
@@ -133,7 +133,7 @@ char const* get_offset_fmt_format( void );
  *
  * @return Returns said width.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 size_t get_offset_width( void );
 
 /**
