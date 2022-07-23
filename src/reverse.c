@@ -59,7 +59,7 @@ typedef enum row_kind row_kind_t;
  * @param c The character to check.
  * @return Returns \c true only if \a c is an offset delimiter character.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline bool is_offset_delim( char c ) {
   return c == ':' || isspace( c );
 }
@@ -70,7 +70,7 @@ static inline bool is_offset_delim( char c ) {
  * @param c The hexadecimal character.
  * @return Returns \a c converted to an integer.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline unsigned xtoi( char c ) {
   return isdigit( c ) ?
     (unsigned)(c - '0') : 0xAu + (unsigned)(toupper( c ) - 'A');
@@ -86,7 +86,7 @@ static inline unsigned xtoi( char c ) {
  * @return Returns the width of the separator if between the minimum and
  * maximum valid offset widths.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static size_t parse_elided_separator( char const *buf, size_t buf_len ) {
   size_t n = 0;
   while ( n < buf_len && buf[n] == ELIDED_SEP_CHAR ) {
@@ -107,7 +107,7 @@ static size_t parse_elided_separator( char const *buf, size_t buf_len ) {
  * @param pbytes_len The length of \a bytes.
  * @return Returns the kind of row that was parsed.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
                              off_t *poffset, char8_t *bytes,
                              size_t *pbytes_len ) {

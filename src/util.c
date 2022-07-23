@@ -68,7 +68,7 @@ static free_node_t *free_head;          // linked list of stuff to free
  * @param n The 16-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline uint16_t swap_16( uint16_t n ) {
   return (uint16_t)((n >> 8)
                   | (n << 8));
@@ -80,7 +80,7 @@ static inline uint16_t swap_16( uint16_t n ) {
  * @param n The 32-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline uint32_t swap_32( uint32_t n ) {
   return  ( n                >> 24)
         | ((n & 0x00FF0000u) >>  8)
@@ -94,7 +94,7 @@ static inline uint32_t swap_32( uint32_t n ) {
  * @param n The 64-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static inline uint64_t swap_64( uint64_t n ) {
   return  ( n                          >> 56)
         | ((n & 0x00FF000000000000ull) >> 40)
@@ -116,7 +116,7 @@ static inline uint64_t swap_64( uint64_t n ) {
  * character or pointing to the NULL byte if either \a s was all whitespace or
  * empty.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 static char const* skip_ws( char const *s ) {
   assert( s != NULL );
   while ( isspace( *s ) )
@@ -278,14 +278,14 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
       switch ( bytes ) {
         case 1: /* do nothing */              break;
         case 2: *n = swap_16( (uint16_t)*n ); break;
-        case 3: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 3: *n <<= 8;                     FALLTHROUGH;
         case 4: *n = swap_32( (uint32_t)*n ); break;
-        case 5: *n <<= 8;                     PJL_FALLTHROUGH;
-        case 6: *n <<= 8;                     PJL_FALLTHROUGH;
-        case 7: *n <<= 8;                     PJL_FALLTHROUGH;
+        case 5: *n <<= 8;                     FALLTHROUGH;
+        case 6: *n <<= 8;                     FALLTHROUGH;
+        case 7: *n <<= 8;                     FALLTHROUGH;
         case 8: *n = swap_64( *n );           break;
       } // switch
-      PJL_FALLTHROUGH;
+      FALLTHROUGH;
 
     case ENDIAN_BIG:
       // move bytes to start of buffer

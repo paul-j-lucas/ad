@@ -73,7 +73,7 @@ typedef enum utf8_when utf8_when_t;
  * @param cp_candidate The Unicode code-point candidate value to check.
  * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
-PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_INLINE
 bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
@@ -85,7 +85,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * @param when The UTF-8 when value.
  * @return Returns \c true only if we should do UTF-8.
  */
-PJL_WARN_UNUSED_RESULT
+NODISCARD
 bool should_utf8( utf8_when_t when );
 
 /**
@@ -97,7 +97,7 @@ bool should_utf8( utf8_when_t when );
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
-PJL_NOWARN_UNUSED_RESULT
+PJL_DISCARD
 size_t utf8_encode( char32_t codepoint, char *utf8_buf );
 
 /**
@@ -109,7 +109,7 @@ size_t utf8_encode( char32_t codepoint, char *utf8_buf );
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
   char8_t const c8 = (char8_t)c;
   return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
@@ -124,7 +124,7 @@ bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
   char8_t const c8 = (char8_t)c;
   return c8 >= 0x80 && c8 < 0xC0;
@@ -137,7 +137,7 @@ bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-PJL_WARN_UNUSED_RESULT AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(
