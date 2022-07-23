@@ -31,7 +31,7 @@
 ////////// extern functions ///////////////////////////////////////////////////
 
 void ad_type_free( ad_type_t *type ) {
-  switch ( type->type_id & T_MASK_TYPE ) {
+  switch ( type->tid & T_MASK_TYPE ) {
     case T_STRUCT:
       break;
     case T_SWITCH:
@@ -46,7 +46,7 @@ void ad_type_free( ad_type_t *type ) {
   } // switch
 }
 
-ad_type_t* ad_type_new( ad_type_id_t tid ) {
+ad_type_t* ad_type_new( ad_tid_t tid ) {
   assert( tid != T_NONE );
 
   ad_type_t *const type = MALLOC( ad_type_t, 1 );

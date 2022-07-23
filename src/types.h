@@ -158,9 +158,9 @@ typedef struct  ad_switch     ad_switch_t;
 typedef struct  ad_switch_statement ad_switch_statement_t;
 typedef struct  slist         ad_switch_cases_t;
 typedef struct  ad_type       ad_type_t;
-typedef uint16_t              ad_type_id_t;
+typedef uint16_t              ad_tid_t;
 typedef unsigned short        ad_type_size_t;
-typedef struct  slist         ad_type_list_t;
+typedef struct   slist        ad_type_list_t;
 
 /**
  * Enumeration value.
@@ -282,7 +282,7 @@ struct ad_switch {
  * in bits.
  */
 struct ad_type {
-  ad_type_id_t    type_id;
+  ad_tid_t        tid;
 
   union {
     ad_int_t      ad_int;
@@ -307,7 +307,7 @@ void ad_type_free( ad_type_t *type );
  * @param tid The ID of the type to create.
  */
 NODISCARD
-ad_type_t* ad_type_new( ad_type_id_t tid );
+ad_type_t* ad_type_new( ad_tid_t tid );
 
 /**
  * Gets the size (in bits) of the type represented by \a tid.
@@ -316,7 +316,7 @@ ad_type_t* ad_type_new( ad_type_id_t tid );
  * @return Returns said size.
  */
 NODISCARD AD_TYPES_INLINE
-size_t ad_type_size( ad_type_id_t tid ) {
+size_t ad_type_size( ad_tid_t tid ) {
   return tid & T_MASK_SIZE;
 }
 

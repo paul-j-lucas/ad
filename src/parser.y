@@ -358,7 +358,7 @@ static void yyerror( char const *msg ) {
   ad_statement_t      statement;
   char const         *str_lit;    // string literal
   ad_switch_case_t    switch_case;
-  ad_type_id_t        type_id;
+  ad_tid_t            tid;
 }
 
                     // ad keywords
@@ -474,19 +474,19 @@ static void yyerror( char const *msg ) {
 //      + <name>: "_name" is appended.
 //      + <int_val>: "_int" is appended.
 //      + <sname>: "_sname" is appended.
-//      + <type_id>: "_type_id" is appended.
+//      + <tid>: "_tid" is appended.
 //  3. Is expected, "_exp" is appended; is optional, "_opt" is appended.
 //
 // Sort using: sort -bdk3
 
                   // Declarations
 %type <rep_val>   array_opt
-%type <type_id>   builtin_type_id
+%type <tid>   builtin_tid
 %type <enum_val>  enumerator
 %type <list>      enumerator_list
 %type <switch_case>  switch_case
 %type <list>      switch_case_list switch_case_list_opt
-%type <type_id>   type_id type_id_exp
+%type <tid>   tid tid_exp
 
                   // Expressions
 %type <expr>      additive_expr
@@ -590,7 +590,7 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_ENUM name_exp colon_exp type_id_exp lbrace_exp enumerator_list '}'
+  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list '}'
     {
       ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
       ad_enum->name = $2;
@@ -624,7 +624,7 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : type_id_exp name_exp array_opt
+  : tid_exp name_exp array_opt
     {
       ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
       ad_field->type = $1;
@@ -1036,15 +1036,15 @@ unary_op
 
 /// type //////////////////////////////////////////////////////////////////////
 
-builtin_type_id
+builtin_tid
   : Y_FLOAT                       { $$ = T_FLOAT; }
   | Y_INT                         { $$ = T_INT; }
   | Y_UINT                        { $$ = T_INT; }
   | Y_UTF                         { $$ = T_UTF; }
   ;
 
-type_id
-  : builtin_type_id lt_exp expr type_endian_opt '>'
+tid
+  : builtin_tid lt_exp expr type_endian_opt '>'
     {
       $$ = $1;
       // TODO
@@ -1052,8 +1052,8 @@ type_id
   | Y_TYPEDEF_TYPE
   ;
 
-type_id_exp
-  : type_id
+tid_exp
+  : tid
   | error
     {
     }

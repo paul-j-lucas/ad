@@ -55,9 +55,9 @@ struct ad_switch_statement {
 
 struct ad_statement {
   union {
-    ad_compound_statement_t compound;
-    ad_declaration_t        declaration;
-    ad_switch_statement_t   st_switch;
+    ad_compound_statement_t compound;   ///< Compound statement.
+    ad_declaration_t        declaration;///< Declaration.
+    ad_switch_statement_t   st_switch;  ///< `switch` statement.
   } as;                                 ///< Union discriminator.
   ad_statement_kind_t kind;
 };
@@ -77,7 +77,7 @@ void ad_type_free( ad_type_t *type );
  * @param tid The ID of the type to create.
  */
 NODISCARD
-ad_type_t* ad_type_new( ad_type_id_t tid );
+ad_type_t* ad_type_new( ad_tid_t tid );
 
 /**
  * Gets the size (in bits) of the type represented by \a tid.
@@ -86,7 +86,7 @@ ad_type_t* ad_type_new( ad_type_id_t tid );
  * @return Returns said size.
  */
 NODISCARD AD_TYPES_INLINE
-size_t ad_type_size( ad_type_id_t tid ) {
+size_t ad_type_size( ad_tid_t tid ) {
   return tid & T_MASK_SIZE;
 }
 

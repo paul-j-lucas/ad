@@ -241,11 +241,11 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
  *
  * @param expr The expression to get the type of.
  * @return Returns said type.
- * @sa ad_expr_get_base_type(ad_expr_t const*)
+ * @sa ad_expr_get_base_tid(ad_expr_t const*)
  */
 NODISCARD AD_EXPR_INLINE
-ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
-  return ad_expr_is_value( expr ) ? expr->as.value.type.type_id : T_NONE;
+ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
+  return ad_expr_is_value( expr ) ? expr->as.value.type.tid : T_NONE;
 }
 
 /**
@@ -256,8 +256,8 @@ ad_type_id_t ad_expr_get_type( ad_expr_t const *expr ) {
  * @return Returns said base type.
  */
 NODISCARD AD_EXPR_INLINE
-ad_type_id_t ad_expr_get_base_type( ad_expr_t const *expr ) {
-  return ad_expr_get_type( expr ) & T_MASK_TYPE;
+ad_tid_t ad_expr_get_base_tid( ad_expr_t const *expr ) {
+  return ad_expr_get_tid( expr ) & T_MASK_TYPE;
 }
 
 /**

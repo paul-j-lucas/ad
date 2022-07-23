@@ -59,25 +59,25 @@
 
 /**
  * Gets the base type of an expression by:
- *  1. Declaring a variable VAR_PFX_type.
+ *  1. Declaring a variable VAR_PFX_tid.
  *  2. Getting the base type of VAR_PFX_expr into it.
  *
  * @param VAR_PFX The prefix of the type variable to create.
  */
 #define GET_BASE_TYPE(VAR_PFX) \
-  ad_type_id_t const VAR_PFX##_type = ad_expr_get_base_type( &(VAR_PFX##_expr) ); \
-  if ( VAR_PFX##_type == T_ERROR ) \
+  ad_tid_t const VAR_PFX##_tid = ad_expr_get_base_tid( &(VAR_PFX##_expr) ); \
+  if ( VAR_PFX##_tid == T_ERROR ) \
     return false
 
 /**
- * Checks that a variable VAR_PFX_type is of type \a TYPE: if not, sets the
+ * Checks that a variable VAR_PFX_tid is of type \a TYPE: if not, sets the
  * implicit \a rv to \a ERR and returns `false`.
  *
  * @param VAR_PFX The prefix of the type variable to check.
  * @param TYPE The bitwise-or of types to check against.
  */
 #define CHECK_TYPE(VAR_PFX,TYPE) \
-  ENSURE_ELSE( (VAR_PFX##_type & (TYPE)) != T_NONE, BAD_OPERAND )
+  ENSURE_ELSE( (VAR_PFX##_tid & (TYPE)) != T_NONE, BAD_OPERAND )
 
 /**
  * Sets an error and returns `false`.
@@ -112,7 +112,7 @@ static inline int int32_cmp( int32_t i, int32_t j ) {
 static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
   char32_t cp;
 
-  switch ( expr->as.value.type.type_id ) {
+  switch ( expr->as.value.type.tid ) {
     case T_UTF8:
       return utf8_32( (char const*)&expr->as.value.as.c32 );
     case T_UTF16BE:
@@ -137,7 +137,7 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
  * @return Returns `true` only if the entire Unicode string TODO.
  */
 static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
-  switch ( expr->as.value.type.type_id ) {
+  switch ( expr->as.value.type.tid ) {
     case T_UTF8_0:
       *ps8 = expr->as.value.as.s8;
       break;
@@ -164,10 +164,10 @@ static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
 static bool ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
                                ad_expr_t const *rhs_expr,
                                int *cmp ) {
-  ad_type_id_t const lhs_type = ad_expr_get_type( lhs_expr );
-  ad_type_id_t const rhs_type = ad_expr_get_type( rhs_expr );
+  ad_tid_t const lhs_tid = ad_expr_get_tid( lhs_expr );
+  ad_tid_t const rhs_tid = ad_expr_get_tid( rhs_expr );
 
-  if ( lhs_type == rhs_type ) {
+  if ( lhs_tid == rhs_tid ) {
     //
     // The Unicode encoding of the left- and right-hand sides matches so we can
     // compare them directly.
@@ -212,10 +212,10 @@ static inline bool is_fzero( double d ) {
 }
 
 static void narrow( ad_expr_t *expr ) {
-  ad_type_id_t const to_type = expr->as.value.type.type_id;
-  assert( ((to_type & T_MASK_TYPE) & T_NUMBER) != T_NONE );
+  ad_tid_t const to_tid = expr->as.value.type.tid;
+  assert( ((to_tid & T_MASK_TYPE) & T_NUMBER) != T_NONE );
 
-  switch ( to_type ) {
+  switch ( to_tid ) {
     case T_BOOL8:
       expr->as.value.as.u64 = expr->as.value.as.u64 ? 1 : 0;
       break;
@@ -255,9 +255,9 @@ static void narrow( ad_expr_t *expr ) {
 
 static uint64_t widen_int( ad_expr_t const *expr ) {
   assert( ad_expr_is_value( expr ) );
-  assert( ad_expr_get_base_type( expr ) == T_INT );
+  assert( ad_expr_get_base_tid( expr ) == T_INT );
 
-  switch ( expr->as.value.type.type_id ) {
+  switch ( expr->as.value.type.tid ) {
     case T_INT8:
     case T_INT16:
     case T_INT32:
@@ -385,17 +385,17 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( lhs );
   ad_expr_t *const cast_expr = expr->as.binary.rhs_expr;
   assert( cast_expr->expr_kind == AD_EXPR_CAST );
-  ad_type_id_t const cast_type_id = ad_expr_get_type( cast_expr );
+  ad_tid_t const cast_tid = ad_expr_get_tid( cast_expr );
 
-  switch ( cast_type_id & T_MASK_TYPE ) {
+  switch ( cast_tid & T_MASK_TYPE ) {
 
     case T_BOOL:
       *rv = *expr;
-      rv->as.value.type.type_id = cast_type_id;
-      switch ( lhs_type ) {
+      rv->as.value.type.tid = cast_tid;
+      switch ( lhs_tid ) {
         case T_BOOL:
         case T_INT:
-          if ( (lhs_type & T_MASK_SIZE) < (cast_type_id & T_MASK_SIZE) )
+          if ( (lhs_tid & T_MASK_SIZE) < (cast_tid & T_MASK_SIZE) )
             narrow( rv );
           break;
         case T_FLOAT:
@@ -406,11 +406,11 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
 
     case T_INT:
       *rv = *expr;
-      rv->as.value.type.type_id = cast_type_id;
-      switch ( lhs_type ) {
+      rv->as.value.type.tid = cast_tid;
+      switch ( lhs_tid ) {
         case T_BOOL:
         case T_INT:
-          if ( (lhs_type & T_MASK_SIZE) < (cast_type_id & T_MASK_SIZE) )
+          if ( (lhs_tid & T_MASK_SIZE) < (cast_tid & T_MASK_SIZE) )
             narrow( rv );
           break;
         case T_FLOAT:
@@ -420,8 +420,8 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
 
     case T_FLOAT:
-      rv->as.value.type.type_id = cast_type_id;
-      switch ( lhs_type & ~T_MASK_SIZE ) {
+      rv->as.value.type.tid = cast_tid;
+      switch ( lhs_tid & ~T_MASK_SIZE ) {
         case T_INT:
           rv->as.value.as.f64 = lhs_expr.as.value.as.u64;
           break;
@@ -532,10 +532,10 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( rhs );
   CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
@@ -552,7 +552,7 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
@@ -590,10 +590,10 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
 
   ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
@@ -608,7 +608,7 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
@@ -646,10 +646,10 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
 
   ENSURE_ELSE( !ad_expr_is_zero( &rhs_expr ), DIV_0 );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
@@ -664,7 +664,7 @@ static bool ad_expr_math_mod( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
@@ -700,10 +700,10 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( rhs );
   CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
@@ -718,7 +718,7 @@ static bool ad_expr_math_mul( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
@@ -751,7 +751,7 @@ static bool ad_expr_math_neg( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( sub );
   CHECK_TYPE( sub, T_BOOL | T_INT | T_FLOAT );
 
-  switch ( sub_type ) {
+  switch ( sub_tid ) {
     case T_BOOL:
     case T_INT:
       ad_expr_set_i( rv, -sub_expr.as.value.as.i64 );
@@ -779,10 +779,10 @@ static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( rhs );
   CHECK_TYPE( rhs, T_BOOL | T_INT | T_FLOAT | T_UTF );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_i( rv,
@@ -797,7 +797,7 @@ static bool ad_expr_math_sub( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_f( rv,
@@ -829,10 +829,10 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -847,7 +847,7 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -862,7 +862,7 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_UTF:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_UTF: {
           int cmp;
           if ( !ad_expr_utfxx_cmp( &lhs_expr, &rhs_expr, &cmp ) )
@@ -890,10 +890,10 @@ static bool ad_expr_rel_greater( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -908,7 +908,7 @@ static bool ad_expr_rel_greater( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -940,10 +940,10 @@ static bool ad_expr_rel_greater_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -958,7 +958,7 @@ static bool ad_expr_rel_greater_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -990,10 +990,10 @@ static bool ad_expr_rel_less( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1008,7 +1008,7 @@ static bool ad_expr_rel_less( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1040,10 +1040,10 @@ static bool ad_expr_rel_less_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1058,7 +1058,7 @@ static bool ad_expr_rel_less_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1090,10 +1090,10 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
 
-  switch ( lhs_type ) {
+  switch ( lhs_tid ) {
     case T_BOOL:
     case T_INT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1108,7 +1108,7 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       } // switch
       break;
     case T_FLOAT:
-      switch ( rhs_type ) {
+      switch ( rhs_tid ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
@@ -1237,8 +1237,8 @@ void ad_expr_free( ad_expr_t *expr ) {
 
 bool ad_expr_is_zero( ad_expr_t const *expr ) {
   if ( ad_expr_is_value( expr ) ) {
-    ad_type_id_t const t = ad_expr_get_base_type( expr );
-    switch ( t ) {
+    ad_tid_t const tid = ad_expr_get_base_tid( expr );
+    switch ( tid ) {
       case T_BOOL:
       case T_INT:
         return expr->as.value.as.u64 == 0;
@@ -1260,31 +1260,31 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind ) {
 
 void ad_expr_set_b( ad_expr_t *expr, bool bval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->as.value.type.type_id = T_BOOL8;
+  expr->as.value.type.tid = T_BOOL8;
   expr->as.value.as.u64 = bval;
 }
 
 void ad_expr_set_f( ad_expr_t *expr, double dval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->as.value.type.type_id = T_FLOAT64;
+  expr->as.value.type.tid = T_FLOAT64;
   expr->as.value.as.f64 = dval;
 }
 
 void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
   expr->expr_kind = AD_EXPR_ERROR;
-  expr->as.value.type.type_id = T_ERROR;
+  expr->as.value.type.tid = T_ERROR;
   expr->as.value.as.err = err;
 }
 
 void ad_expr_set_i( ad_expr_t *expr, int64_t ival ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->as.value.type.type_id = T_INT64;
+  expr->as.value.type.tid = T_INT64;
   expr->as.value.as.i64 = ival;
 }
 
 void ad_expr_set_u( ad_expr_t *expr, uint64_t uval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->as.value.type.type_id = T_UINT64;
+  expr->as.value.type.tid = T_UINT64;
   expr->as.value.as.u64 = uval;
 }
 
@@ -1293,7 +1293,7 @@ void ad_value_free( ad_value_expr_t *value ) {
   // If the type has a null-terminated value, then the value bits are a pointer
   // that must be free'd.  (It doesn't matter which pointer type we free.)
   //
-  if ( (value->type.type_id & T_NULL) != T_NONE )
+  if ( (value->type.tid & T_NULL) != T_NONE )
     FREE( value->as.s8 );
 }
 

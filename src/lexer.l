@@ -334,7 +334,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 NO_OP;
                 keyword_t const *k = keyword_find( lexer_token, opt_lang );
                 if ( k != NULL ) {
-                  yylval.type_id = k->type_id;
+                  yylval.tid = k->tid;
                   return k->yy_token_id;
                 }
 
