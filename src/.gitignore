@@ -1,4 +1,9 @@
 /*.dSYM
+/*.output
+/*.tab.[ch]
+/*.vcg
 /ad
 /config.h
+/lexer.c
+/parser.[ch]
 /stamp-h1

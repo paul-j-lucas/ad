@@ -479,47 +479,49 @@ static void yyerror( char const *msg ) {
 //
 // Sort using: sort -bdk3
 
-                  // Declarations
-%type <rep_val>   array_opt
-%type <tid>   builtin_tid
-%type <enum_val>  enumerator
-%type <list>      enumerator_list
-%type <switch_case>  switch_case
-%type <list>      switch_case_list switch_case_list_opt
-%type <tid>   tid tid_exp
+                    // Declarations
+%type <rep_val>     array_opt
+%type <tid>         builtin_tid
+%type <enum_val>    enumerator
+%type <list>        enumerator_list
+%type <switch_case> switch_case
+%type <list>        switch_case_list switch_case_list_opt
+%type <tid>         tid tid_exp
 
-                  // Expressions
-%type <expr>      additive_expr
-%type <expr>      assign_expr
-%type <expr>      bitwise_and_expr
-%type <expr>      bitwise_exclusive_or_expr
-%type <expr>      bitwise_or_expr
-%type <expr>      cast_expr
-%type <expr>      conditional_expr
-%type <expr>      equality_expr
-%type <expr>      expr expr_exp
-%type <expr>      logical_and_expr
-%type <expr>      logical_or_expr
-%type <expr>      multiplicative_expr
-%type <expr>      postfix_expr
-%type <expr>      primary_expr
-%type <expr>      relational_expr
-%type <expr>      shift_expr
-%type <expr>      unary_expr
+                    // Expressions
+%type <expr>        additive_expr
+%type <expr>        assign_expr
+%type <expr>        bitwise_and_expr
+%type <expr>        bitwise_exclusive_or_expr
+%type <expr>        bitwise_or_expr
+%type <expr>        cast_expr
+%type <expr>        conditional_expr
+%type <expr>        equality_expr
+%type <expr>        expr expr_exp
+%type <expr>        logical_and_expr
+%type <expr>        logical_or_expr
+%type <expr>        multiplicative_expr
+%type <expr>        postfix_expr
+%type <expr>        primary_expr
+%type <expr>        relational_expr
+%type <expr>        shift_expr
+%type <expr>        unary_expr
 
-                  // Statements
-%type <statement> compound_statement
-%type <statement> statement
-%type <list>      statement_list statement_list_opt
+                    // Statements
+%type <statement>   compound_statement
+%type <statement>   declaration
+%type <statement>   statement
+%type <list>        statement_list statement_list_opt
+%type <statement>   switch_statement
 
-                  // Miscellaneous
-%type <list>      argument_expr_list
-%type <expr_kind> assign_op
-%type <name>      name_exp name_opt
-%type <str_lit>   str_lit str_lit_exp
-%type <int_val>   type_endian_opt
-%type <name>      type_name_exp
-%type <expr_kind> unary_op
+                    // Miscellaneous
+%type <list>        argument_expr_list
+%type <expr_kind>   assign_op
+%type <name>        name_exp name_opt
+%type <str_lit>     str_lit str_lit_exp
+%type <int_val>     type_endian_opt
+%type <name>        type_name_exp
+%type <expr_kind>   unary_op
 
 /*
  * Bison %destructors.  We don't use the <identifier> syntax because older
