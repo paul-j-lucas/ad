@@ -151,8 +151,7 @@ struct ad_binary_expr {
  */
 struct ad_ternary_expr {
   ad_expr_t *cond_expr;
-  ad_expr_t *true_expr;
-  ad_expr_t *false_expr;
+  ad_expr_t *sub_expr[2];
 };
 
 /**

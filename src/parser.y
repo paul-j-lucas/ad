@@ -355,6 +355,7 @@ static void yyerror( char const *msg ) {
   char const         *literal;    // token literal
   char               *name;       // name being declared or explained
   ad_rep_t            rep_val;
+  ad_statement_t      statement;
   char const         *str_lit;    // string literal
   ad_switch_case_t    switch_case;
   ad_type_id_t        type_id;
@@ -454,6 +455,7 @@ static void yyerror( char const *msg ) {
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
 %token  <str_lit>   Y_STR_LIT
+%token  <XXXXX>     Y_TYPEDEF_TYPE
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -482,17 +484,13 @@ static void yyerror( char const *msg ) {
 %type <type_id>   builtin_type_id
 %type <enum_val>  enumerator
 %type <list>      enumerator_list
-%type <xxxxx>     statement
-%type <list>      statement_list statement_list_opt
 %type <switch_case>  switch_case
 %type <list>      switch_case_list switch_case_list_opt
 %type <type_id>   type_id type_id_exp
 
                   // Expressions
 %type <expr>      additive_expr
-%type <list>      argument_expr_list
 %type <expr>      assign_expr
-%type <expr_kind> assign_op
 %type <expr>      bitwise_and_expr
 %type <expr>      bitwise_exclusive_or_expr
 %type <expr>      bitwise_or_expr
@@ -508,13 +506,20 @@ static void yyerror( char const *msg ) {
 %type <expr>      relational_expr
 %type <expr>      shift_expr
 %type <expr>      unary_expr
-%type <expr_kind> unary_op
+
+                  // Statements
+%type <statement> compound_statement
+%type <statement> statement
+%type <list>      statement_list statement_list_opt
 
                   // Miscellaneous
+%type <list>      argument_expr_list
+%type <expr_kind> assign_op
 %type <name>      name_exp name_opt
 %type <str_lit>   str_lit str_lit_exp
 %type <int_val>   type_endian_opt
 %type <name>      type_name_exp
+%type <expr_kind> unary_op
 
 /*
  * Bison %destructors.  We don't use the <identifier> syntax because older
@@ -569,6 +574,10 @@ statement
 
 compound_statement
   : '{' statement_list_opt '}'
+    {
+      $$.kind = AD_STMT_COMPOUND;
+      $$.as.compound.statements = $2;
+    }
   ;
 
 declaration
@@ -790,8 +799,8 @@ conditional_expr
     {
       $$ = ad_expr_new( AD_EXPR_IF_ELSE );
       $$->as.ternary.cond_expr = $1;
-      $$->as.ternary.true_expr = $3;
-      $$->as.ternary.false_expr = $5;
+      $$->as.ternary.sub_expr[0] = $3;
+      $$->as.ternary.sub_expr[1] = $5;
     }
   ;
 

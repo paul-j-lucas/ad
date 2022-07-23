@@ -444,9 +444,8 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
  */
 static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( ternary, cond );
-  return ad_expr_is_zero( &cond_expr ) ?
-    ad_expr_eval( expr->as.ternary.false_expr, rv ) :
-    ad_expr_eval( expr->as.ternary.true_expr, rv );
+  bool const is_zero = ad_expr_is_zero( &cond_expr );
+  ad_expr_eval( expr->as.ternary.sub_expr[ !is_zero ], rv );
 }
 
 /**

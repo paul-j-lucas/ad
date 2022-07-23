@@ -1,49 +1,40 @@
-enum endian {
-  BE,
-  LE
-};
-
-//////////
-
-% option:endian = BE
-
 struct SOI {
-  uint<16,BE> marker == 0xFFD8;
+  uint16_b marker == 0xFFD8;
 };
 
 struct APP0 {
-  enum units_t : uint<8> {
+  enum units_t : uint8 {
     NONE      = 0,
     DOTS_INCH = 1,
     DOTS_CM   = 2
   };
 
-  uint<16,BE> marker == 0xFFE0;
-  uint<16,BE> size;                     %u
-  utf<8>      jfif[] == "JFIF";
-  uint<8>     major;
-  uint<8>     minor;
-  units_t     units;
+  uint16_b marker == 0xFFE0;
+  uint16_b size;                     %u
+  utf8     jfif[] == "JFIF";
+  uint8    major;
+  uint8    minor;
+  units_t  units;
 
   switch ( units ) {
     case NONE:
-      uint<8> thumbnail_x;
-      uint<8> thumbnail_y;
+      uint8 thumbnail_x;
+      uint8 thumbnail_y;
       break;
     case DOTS_INCH:
-      uint<8> x_in;
-      uint<8> y_in;
+      uint8 x_in;
+      uint8 y_in;
       break;
     case DOTS_CM:
-      uint<8> x_cm;
-      uint<8> y_cm;
+      uint8 x_cm;
+      uint8 y_cm;
       break;
     default:
       WARN( "\"%u\": invalid units\n", units );
       units = NONE;
   } // switch
 
-  uint<8> thumbnail[ size ];
+  uint8 thumbnail[ size ];
 };
 
 struct COM {
@@ -56,21 +47,21 @@ struct SOF {
 };
 
 struct rgb {
-  uint<8> r;
-  uint<8> g;
-  uint<8> b;
+  uint8 r;
+  uint8 g;
+  uint8 b;
 };
 
 struct extension_APP0 {
-  enum thumbnail_format : uint<8> {
+  enum thumbnail_format : uint8 {
     THUMB_JPEG  = 0x10,
     THUMB_1BPP  = 0x11,
     THUMB_3BPP  = 0x13
   };
 
-  uint<16,BE> marker == 0xFFE0;
-  uint<16,BE> size;                     %u
-  utf<8>      jfxx[] == "JFXX";
+  uint16_b    marker == 0xFFE0;
+  uint16_b    size;                     %u
+  utf8        jfxx[] == "JFXX";
   thumbnail_format thumb_fmt;
 
     switch ( thumb_fmt ) {
@@ -80,10 +71,10 @@ struct extension_APP0 {
         EOI eoi;
         break;
       case THUMB_1BPP:
-        uint<8> x_thumb;
-        uint<8> y_thumb;
+        uint8   x_thumb;
+        uint8   y_thumb;
         rgb     palette[ 256 ];
-        uint<8> pixel[ x_thumb * y_thumb ];
+        uint8   pixel[ x_thumb * y_thumb ];
         break;
       case THUMB_3BPP:
         break;
@@ -91,11 +82,11 @@ struct extension_APP0 {
 };
 
 struct SOS {
-  uint<16,BE> marker == 0xFFDA;
+  uint16_b marker == 0xFFDA;
 };
 
 struct EOI {
-  uint<16,BE> marker == 0xFFD9;
+  uint16_b marker == 0xFFD9;
 };
 
 union body {
