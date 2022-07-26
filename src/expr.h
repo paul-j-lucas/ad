@@ -168,7 +168,7 @@ struct ad_value_expr {
     double        f64;                  ///< f32, f64
 
     // UTF characters.
-    chat8_t       c8;                   ///< UTF-8 character.
+    char8_t       c8;                   ///< UTF-8 character.
     char16_t      c16;                  ///< UTF-16 character.
     char32_t      c32;                  ///< UTF-32 character.
 

@@ -30,10 +30,9 @@
 /** @endcond */
 
 // local
-#include "ad.h"                         /* must go first */
+#include "common.h"                     /* must go first */
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
-#include "debug.h"
 #endif /* ENABLE_AD_DEBUG */
 #include "expr.h"
 #include "keyword.h"
@@ -42,8 +41,8 @@
 #include "options.h"
 #include "print.h"
 #include "slist.h"
-#include "type.h"
-#include "typedefs.h"
+#include "types.h"
+//#include "typedefs.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE

@@ -9,8 +9,8 @@ struct APP0 {
     DOTS_CM   = 2
   };
 
-  uint16_b marker == 0xFFE0;
-  uint16_b size;                     %u
+  . uint16\b marker == 0xFFE0;
+  . uint16\b size;                     %u
   utf8     jfif[] == "JFIF";
   uint8    major;
   uint8    minor;

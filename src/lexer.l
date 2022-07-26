@@ -487,7 +487,7 @@ char const* lexer_input_line( size_t *plen ) {
   return input_buf;
 }
 
-c_loc_t lexer_loc( void ) {
+ad_loc_t lexer_loc( void ) {
   ad_loc_t rv_loc;
   rv_loc.first_line = yylineno;
 

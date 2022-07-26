@@ -29,6 +29,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "types.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -50,7 +51,7 @@ extern char const  *lexer_token;        ///< Text of current token.
  * line.
  * @return Returns said line.
  */
-AD_WARN_UNUSED_RESULT
+NODISCARD
 char const* lexer_input_line( size_t *plen );
 
 /**
@@ -59,7 +60,7 @@ char const* lexer_input_line( size_t *plen );
  * @return Returns said location.
  */
 NODISCARD
-c_loc_t lexer_loc( void );
+ad_loc_t lexer_loc( void );
 
 /**
  * Resets the lexer to its initial state.

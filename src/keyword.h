@@ -21,21 +21,36 @@
 #ifndef ad_keyword_H
 #define ad_keyword_H
 
+// local
+#include "pjl_config.h"                 /* must go first */
+#include "types.h"
+
 /**
  * @file
- * Declares types and functions for looking up ad keyword information.
+ * Declares types and functions for looking up **ad** keyword information.
  */
+
+/**
+ * Convenience macro for iterating over all **ad** keywords.
+ *
+ * @param VAR The keyword loop variable.
+ *
+ * @sa ad_keyword_next()
+ */
+#define FOREACH_AD_KEYWORD(VAR) \
+  for ( ad_keyword_t const *VAR = NULL; (VAR = ad_keyword_next( VAR )) != NULL; )
 
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
  * ad keyword info.
  */
-struct keyword {
+struct ad_keyword {
   char const *literal;                  ///< C string literal of the keyword.
   int         yy_token_id;              ///< Bison token number.
+  ad_tid_t    tid;                      ///< Type the keyword maps to, if any.
 };
-typedef struct keyword keyword_t;
+typedef struct ad_keyword ad_keyword_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +60,19 @@ typedef struct keyword keyword_t;
  * @param s The string to find.
  * @return Returns a pointer to the corresponding keyword or null if not found.
  */
-keyword_t const* ad_keyword_find( char const *s );
+ad_keyword_t const* ad_keyword_find( char const *s );
+
+/**
+ * Iterates to the next ad keyword.
+ *
+ * @param k A pointer to the current keyword. For the first iteration, NULL
+ * should be passed.
+ * @return Returns the next **ad** keyword or NULL for none.
+ *
+ * @sa #FOREACH_C_KEYWORD()
+ */
+NODISCARD
+ad_keyword_t const* ad_keyword_next( ad_keyword_t const *k );
 
 ///////////////////////////////////////////////////////////////////////////////
 

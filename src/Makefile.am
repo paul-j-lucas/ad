@@ -35,12 +35,15 @@ ad_SOURCES =	parser.y\
 		ad.c \
 		color.c color.h \
 		common.h \
-		expr.c expr.h \
+		dam_lev.c dam_lev.h \
+		did_you_mean.c did_you_mean.h \
 		dump.c \
+		expr.c expr.h \
 		keyword.c keyword.h \
 		literals.c literals.h \
 		match.c match.h \
 		options.c options.h \
+		print.c print.h \
 		reverse.c \
 		slist.c slist.h \
 		types.c types.h \

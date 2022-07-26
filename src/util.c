@@ -50,54 +50,22 @@ extern char const  *me;
 // local variable definitions
 static slist_t free_later_list;         ///< List of stuff to free later.
 
-/////////// inline functions //////////////////////////////////////////////////
-
-/**
- * Swaps the endianness of the given 16-bit value.
- *
- * @param n The 16-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-NODISCARD
-static inline uint16_t swap_16( uint16_t n ) {
-  return (uint16_t)((n >> 8)
-                  | (n << 8));
-}
-
-/**
- * Swaps the endianness of the given 32-bit value.
- *
- * @param n The 32-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-NODISCARD
-static inline uint32_t swap_32( uint32_t n ) {
-  return  ( n                >> 24)
-        | ((n & 0x00FF0000u) >>  8)
-        | ((n & 0x0000FF00u) <<  8)
-        | ( n                << 24);
-}
-
-/**
- * Swaps the endianness of the given 64-bit value.
- *
- * @param n The 64-bit value to swap.
- * @return Returns the value with the endianness flipped.
- */
-NODISCARD
-static inline uint64_t swap_64( uint64_t n ) {
-  return  ( n                          >> 56)
-        | ((n & 0x00FF000000000000ull) >> 40)
-        | ((n & 0x0000FF0000000000ull) >> 24)
-        | ((n & 0x000000FF00000000ull) >>  8)
-        | ((n & 0x00000000FF000000ull) <<  8)
-        | ((n & 0x0000000000FF0000ull) << 24)
-        | ((n & 0x000000000000FF00ull) << 40)
-        | ( n                          << 56);
-}
->>>>>>> master
-
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Helper function for fprint_list() that, given a pointer to a pointer to an
+ * array of pointer to `char`, returns the pointer to the associated string.
+ *
+ * @param ppelt A pointer to the pointer to the element to get the string of.
+ * On return, it is incremented by the size of the element.
+ * @return Returns said string or NULL if none.
+ */
+NODISCARD
+static char const* fprint_list_apc_gets( void const **ppelt ) {
+  char const *const *const ps = *ppelt;
+  *ppelt = ps + 1;
+  return *ps;
+}
 
 /**
  * Gets the regular expression error message corresponding to \a err_code.
@@ -206,12 +174,32 @@ char* fgetln( FILE *f, size_t *len ) {
 
 void* free_later( void *p ) {
   assert( p != NULL );
-  slist_push_tail( &free_later_list, p );
+  slist_push_back( &free_later_list, p );
   return p;
 }
 
 void free_now( void ) {
   slist_cleanup( &free_later_list, &free );
+}
+
+void fprint_list( FILE *out, void const *elt,
+                  char const* (*gets)( void const** ) ) {
+  assert( out != NULL );
+  assert( elt != NULL );
+
+  if ( gets == NULL )
+    gets = &fprint_list_apc_gets;
+
+  char const *s = (*gets)( &elt );
+  for ( size_t i = 0; s != NULL; ++i ) {
+    char const *const next_s = (*gets)( &elt );
+    if ( i > 0 ) {
+      char const *const sep = next_s != NULL ? ", " : i > 1 ? ", or " : " or ";
+      FPUTS( sep, out );
+    }
+    FPUTS( s, out );
+    s = next_s;
+  } // for
 }
 
 void fskip( size_t bytes_to_skip, FILE *file ) {
@@ -404,9 +392,34 @@ char const* printable_char( char c ) {
   if ( ascii_is_print( c ) ) {
     buf[0] = c; buf[1] = '\0';
   } else {
-    snprintf( buf, sizeof buf, "\\x%02X", STATIC_CAST(unsigned, c) );
+    snprintf( buf, sizeof buf, "\\x%02X", STATIC_CAST( unsigned, c ) );
   }
   return buf;
+}
+
+uint16_t swap_16( uint16_t n ) {
+  return STATIC_CAST( uint16_t,
+    (n >> 8)
+  | (n << 8)
+  );
+}
+
+uint32_t swap_32( uint32_t n ) {
+  return  ( n                >> 24)
+        | ((n & 0x00FF0000u) >>  8)
+        | ((n & 0x0000FF00u) <<  8)
+        | ( n                << 24);
+}
+
+uint64_t swap_64( uint64_t n ) {
+  return  ( n                          >> 56)
+        | ((n & 0x00FF000000000000ull) >> 40)
+        | ((n & 0x0000FF0000000000ull) >> 24)
+        | ((n & 0x000000FF00000000ull) >>  8)
+        | ((n & 0x00000000FF000000ull) <<  8)
+        | ((n & 0x0000000000FF0000ull) << 24)
+        | ((n & 0x000000000000FF00ull) << 40)
+        | ( n                          << 56);
 }
 
 void regex_compile( regex_t *re, char const *pattern ) {

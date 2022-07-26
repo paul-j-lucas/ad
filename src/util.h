@@ -74,6 +74,34 @@ _GL_INLINE_HEADER_BEGIN
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
 /**
+ * Calls **putc**(3), checks for an error, and exits if there was one.
+ *
+ * @param C The character to print.
+ * @param STREAM The `FILE` stream to print to.
+ *
+ * @sa #EPUTC()
+ * @sa #FPRINTF()
+ * @sa #FPUTS()
+ * @sa perror_exit_if()
+ */
+#define FPUTC(C,STREAM) \
+  perror_exit_if( putc( (C), (STREAM) ) == EOF, EX_IOERR )
+
+/**
+ * Calls **fputs**(3), checks for an error, and exits if there was one.
+ *
+ * @param S The C string to print.
+ * @param STREAM The `FILE` stream to print to.
+ *
+ * @sa #EPUTS()
+ * @sa #FPRINTF()
+ * @sa #FPUTC()
+ * @sa perror_exit_if()
+ */
+#define FPUTS(S,STREAM) \
+  perror_exit_if( fputs( (S), (STREAM) ) == EOF, EX_IOERR )
+
+/**
  * Frees the given memory.
  *
  * @param PTR The pointer to the memory to free.
@@ -292,6 +320,34 @@ char* fgetln( FILE *f, size_t *len );
 #endif /* HAVE_FGETLN */
 
 /**
+ * Prints a zero-or-more element list of strings where for:
+ *
+ *  + A zero-element list, nothing is printed;
+ *  + A one-element list, the string for the element is printed;
+ *  + A two-element list, the strings for the elements are printed separated by
+ *    `or`;
+ *  + A three-or-more element list, the strings for the first N-1 elements are
+ *    printed separated by `,` and the N-1st and Nth elements are separated by
+ *    `, or`.
+ *
+ * @param out The `FILE` to print to.
+ * @param elt A pointer to the first element to print.
+ * @param gets A pointer to a function to call to get the string for the
+ * element `**ppelt`: if the function returns NULL, it signals the end of the
+ * list; otherwise, the function returns the string for the element and must
+ * increment `*ppelt` to the next element.  If \a gets is NULL, it is assumed
+ * that \a elt points to the first element of an array of `char*` and that the
+ * array ends with NULL.
+ *
+ * @warning The string pointer returned by \a gets for a given element _must_
+ * remain valid at least until after the _next_ call to fprint_list(), that is
+ * upon return, the previously returned string pointer must still be valid
+ * also.
+ */
+void fprint_list( FILE *out, void const *elt,
+                  char const* (*gets)( void const **ppelt ) );
+
+/**
  * Adds a pointer to the head of the free-later-list.
  *
  * @param p The pointer to add.
@@ -414,6 +470,23 @@ unsigned long long parse_ull( char const *s );
 void perror_exit( int status );
 
 /**
+ * If \a expr is `true`, prints an error message for `errno` to standard error
+ * and exits.
+ *
+ * @param expr The expression.
+ * @param status The exit status code.
+ *
+ * @sa #FATAL_ERR()
+ * @sa #INTERNAL_ERR()
+ * @sa perror_exit()
+ */
+AD_UTIL_INLINE
+void perror_exit_if( bool expr, int status ) {
+  if ( unlikely( expr ) )
+    perror_exit( status );
+}
+
+/**
  * Gets a printable version of the given character:
  *  + For characters for which isprint(3) returns non-zero,
  *    the printable version is a single character string of itself.
@@ -463,6 +536,7 @@ void regex_free( regex_t *re ) {
  * and there was a match.
  * @return Returns \c true only if there was a match.
  */
+NODISCARD
 bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
 
 /**
@@ -471,11 +545,8 @@ bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
  * @param n The 16-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-NODISCARD AD_UTIL_INLINE
-uint16_t swap_16( uint16_t n ) {
-  return (uint16_t)((n >> 8)
-                  | (n << 8));
-}
+NODISCARD
+uint16_t swap_16( uint16_t n );
 
 /**
  * Swaps the endianness of the given 32-bit value.
@@ -483,13 +554,8 @@ uint16_t swap_16( uint16_t n ) {
  * @param n The 32-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-NODISCARD AD_UTIL_INLINE
-uint32_t swap_32( uint32_t n ) {
-  return  ( n                >> 24)
-        | ((n & 0x00FF0000u) >>  8)
-        | ((n & 0x0000FF00u) <<  8)
-        | ( n                << 24);
-}
+NODISCARD
+uint32_t swap_32( uint32_t n );
 
 /**
  * Swaps the endianness of the given 64-bit value.
@@ -497,17 +563,8 @@ uint32_t swap_32( uint32_t n ) {
  * @param n The 64-bit value to swap.
  * @return Returns the value with the endianness flipped.
  */
-NODISCARD AD_UTIL_INLINE
-uint64_t swap_64( uint64_t n ) {
-  return  ( n                          >> 56)
-        | ((n & 0x00FF000000000000ull) >> 40)
-        | ((n & 0x0000FF0000000000ull) >> 24)
-        | ((n & 0x000000FF00000000ull) >>  8)
-        | ((n & 0x00000000FF000000ull) <<  8)
-        | ((n & 0x0000000000FF0000ull) << 24)
-        | ((n & 0x000000000000FF00ull) << 40)
-        | ( n                          << 56);
-}
+NODISCARD
+uint64_t swap_64( uint64_t n );
 
 /**
  * Converts a big-endian 16-bit integer to the host's representation.

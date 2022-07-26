@@ -38,34 +38,38 @@
 /**
  * All ad keywords.
  */
-static keyword_t const AD_KEYWORDS[] = {
-  { L_BOOL,     Y_BOOL      },
-  { L_BREAK,    Y_BREAK     },
-  { L_CASE,     Y_CASE      },
-  { L_DEFAULT,  Y_DEFAULT   },
-  { L_ENUM,     Y_ENUM      },
-  { L_FALSE,    Y_FALSE     },
-  { L_FLOAT,    Y_FLOAT     },
-  { L_INT,      Y_INT       },
-  { L_OFFSETOF, Y_OFFSETOF  },
-  { L_SIZEOF,   Y_SIZEOF    },
-  { L_STRUCT,   Y_STRUCT    },
-  { L_SWITCH,   Y_SWITCH    },
-  { L_TRUE,     Y_TRUE      },
-  { L_TYPEDEF,  Y_TYPEDEF   },
-  { L_UINT,     Y_UINT      },
+static ad_keyword_t const AD_KEYWORDS[] = {
+  { L_BOOL,     Y_BOOL,     T_BOOL    },
+  { L_BREAK,    Y_BREAK,    T_NONE    },
+  { L_CASE,     Y_CASE,     T_NONE    },
+  { L_DEFAULT,  Y_DEFAULT,  T_NONE    },
+  { L_ENUM,     Y_ENUM,     T_NONE    },
+  { L_FALSE,    Y_FALSE,    T_NONE    },
+  { L_FLOAT,    Y_FLOAT,    T_FLOAT   },
+  { L_INT,      Y_INT,      T_INT     },
+  { L_OFFSETOF, Y_OFFSETOF, T_NONE    },
+  { L_SIZEOF,   Y_SIZEOF,   T_NONE    },
+  { L_STRUCT,   Y_STRUCT,   T_STRUCT  },
+  { L_SWITCH,   Y_SWITCH,   T_SWITCH  },
+  { L_TRUE,     Y_TRUE,     T_NONE    },
+  { L_TYPEDEF,  Y_TYPEDEF,  T_NONE    },
+  { L_UINT,     Y_UINT,     T_INT     },
   { NULL,       0           }
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-keyword_t const* ad_keyword_find( char const *s ) {
+ad_keyword_t const* ad_keyword_find( char const *s ) {
   assert( s != NULL );
-  for ( keyword_t const *k = AD_KEYWORDS; k->literal; ++k ) {
+  for ( ad_keyword_t const *k = AD_KEYWORDS; k->literal; ++k ) {
     if ( strcmp( s, k->literal ) == 0 )
       return k;
   } // for
   return NULL;
+}
+
+ad_keyword_t const* ad_keyword_next( ad_keyword_t const *k ) {
+  return k == NULL ? AD_KEYWORDS : (++k)->literal == NULL ? NULL : k;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

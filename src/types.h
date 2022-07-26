@@ -139,28 +139,29 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef unsigned              ad_bits_t;
+typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
-typedef struct  ad_declaration ad_declaration_t;
-typedef struct  ad_char       ad_char_t;
-typedef struct  ad_enum       ad_enum_t;
-typedef struct  ad_enum_value ad_enum_value_t;
-typedef struct  ad_expr       ad_expr_t;
-typedef struct  ad_int        ad_int_t;
-typedef enum    ad_int_base   ad_int_base_t;
-typedef struct  ad_loc        ad_loc_t;
-typedef struct  ad_rep        ad_rep;
-typedef enum    ad_rep_times  ad_rep_times_t;
-typedef struct  ad_statement  ad_statement_t;
-typedef enum    ad_statement_kind ad_statement_kind_t;
-typedef struct  ad_struct     ad_struct_t;
-typedef struct  ad_switch     ad_switch_t;
-typedef struct  ad_switch_statement ad_switch_statement_t;
-typedef struct  slist         ad_switch_cases_t;
-typedef struct  ad_type       ad_type_t;
-typedef uint16_t              ad_tid_t;
-typedef unsigned short        ad_type_size_t;
-typedef struct   slist        ad_type_list_t;
+typedef struct  ad_declaration        ad_declaration_t;
+typedef struct  ad_char               ad_char_t;
+typedef struct  ad_enum               ad_enum_t;
+typedef struct  ad_enum_value         ad_enum_value_t;
+typedef struct  ad_expr               ad_expr_t;
+typedef struct  ad_int                ad_int_t;
+typedef enum    ad_int_base           ad_int_base_t;
+typedef struct  ad_loc                ad_loc_t;
+typedef struct  ad_rep                ad_rep_t;
+typedef enum    ad_rep_times          ad_rep_times_t;
+typedef struct  ad_statement          ad_statement_t;
+typedef enum    ad_statement_kind     ad_statement_kind_t;
+typedef struct  ad_struct             ad_struct_t;
+typedef struct  ad_switch             ad_switch_t;
+typedef struct  ad_switch_statement   ad_switch_statement_t;
+typedef struct  slist                 ad_switch_cases_t;
+typedef struct  ad_type               ad_type_t;
+typedef uint16_t                      ad_tid_t;
+typedef unsigned short                ad_type_size_t;
+typedef struct  slist                 ad_type_list_t;
+typedef struct  print_params          print_params_t;
 
 /**
  * Enumeration value.
@@ -233,7 +234,7 @@ enum ad_rep_times {
  */
 struct ad_rep {
   ad_rep_times_t  times;
-  ad_expr_t       expr;                 ///< Used only if times == AD_REP_EXPR
+  ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
 };
 
 /**
@@ -241,7 +242,7 @@ struct ad_rep {
  */
 struct ad_field {
   char const *name;
-  ad_type_t   type;
+  ad_type_t  *type;
   ad_rep_t    rep;
 };
 
@@ -257,7 +258,7 @@ struct ad_struct {
  * `switch` `case` type.
  */
 struct ad_switch_case {
-  ad_expr_t       expr;
+  ad_expr_t      *expr;
   ad_type_list_t  case_types;           ///< All the type(s) for the case value.
 };
 
@@ -265,7 +266,7 @@ struct ad_switch_case {
  * `switch` type.
  */
 struct ad_switch {
-  ad_expr_t         expr;
+  ad_expr_t        *expr;
   ad_switch_cases_t cases;
 };
 
