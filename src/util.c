@@ -141,7 +141,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   FILE *const file = fopen( path, mode );
   if ( unlikely( file == NULL ) ) {
     bool const create = strpbrk( mode, "aw" );
-    PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
+    FATAL_ERR( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   }
@@ -155,7 +155,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
   bool const create = (oflag & O_CREAT) != 0;
   int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
   if ( unlikely( fd == -1 ) )
-    PMESSAGE_EXIT( create ? EX_CANTCREAT : EX_NOINPUT,
+    FATAL_ERR( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset > 0 )
@@ -229,7 +229,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
-      PMESSAGE_EXIT( EX_IOERR, "can not read: %s\n", STRERROR );
+      FATAL_ERR( EX_IOERR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
   } // while
 }
@@ -349,7 +349,7 @@ unsigned long long parse_offset( char const *s ) {
   } // local scope
 
 error:
-  PMESSAGE_EXIT( EX_USAGE, "\"%s\": invalid offset\n", s );
+  FATAL_ERR( EX_USAGE, "\"%s\": invalid offset\n", s );
 }
 
 bool parse_sgr( char const *sgr_color ) {
@@ -384,7 +384,7 @@ unsigned long long parse_ull( char const *s ) {
     if ( likely( errno == 0 && *end == '\0' ) )
       return n;
   }
-  PMESSAGE_EXIT( EX_USAGE, "\"%s\": invalid integer\n", s );
+  FATAL_ERR( EX_USAGE, "\"%s\": invalid integer\n", s );
 }
 
 void perror_exit( int status ) {

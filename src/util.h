@@ -63,6 +63,16 @@ _GL_INLINE_HEADER_BEGIN
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
 /**
+ * Prints an error message to standard error and exits with \a STATUS code.
+ *
+ * @param STATUS The status code to **exit**(3) with.
+ * @param FORMAT The `printf()` format to use.
+ * @param ... The `printf()` arguments.
+ */
+#define FATAL_ERR(STATUS,FORMAT,...) \
+  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
+
+/**
  * Explicit C version of C++'s `reinterpret_cast`.
  *
  * @param T The type to cast to.
@@ -145,16 +155,6 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
-
-/**
- * Prints an error message to standard error and exits with \a STATUS code.
- *
- * @param STATUS The status code to **exit**(3) with.
- * @param FORMAT The `printf()` format to use.
- * @param ... The `printf()` arguments.
- */
-#define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
 
 ///////////////////////////////////////////////////////////////////////////////
 

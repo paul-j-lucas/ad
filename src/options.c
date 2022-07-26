@@ -176,7 +176,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
           char const gave_opt2 = *opt;
           char opt1_buf[ OPT_BUF_SIZE ];
           char opt2_buf[ OPT_BUF_SIZE ];
-          PMESSAGE_EXIT( EX_USAGE,
+          FATAL_ERR( EX_USAGE,
             "%s and %s are mutually exclusive\n",
             format_opt( gave_opt1, opt1_buf, sizeof opt1_buf ),
             format_opt( gave_opt2, opt2_buf, sizeof opt2_buf  )
@@ -204,7 +204,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size ) {
     char opt_buf[ OPT_BUF_SIZE ];
-    PMESSAGE_EXIT( EX_USAGE,
+    FATAL_ERR( EX_USAGE,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, format_opt( opt, opt_buf, sizeof opt_buf ),
@@ -231,7 +231,7 @@ static void check_required( char const *opts, char const *req_opts ) {
           return;
       char opt_buf[ OPT_BUF_SIZE ];
       bool const reqs_multiple = strlen( req_opts ) > 1;
-      PMESSAGE_EXIT( EX_USAGE,
+      FATAL_ERR( EX_USAGE,
         "%s requires %sthe -%s option%s to be given also\n",
         format_opt( *opt, opt_buf, sizeof opt_buf ),
         (reqs_multiple ? "one of " : ""),
@@ -268,7 +268,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 't': ADD_CFMT( SIZE_T );   break;
         case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
-          PMESSAGE_EXIT( EX_USAGE,
+          FATAL_ERR( EX_USAGE,
             "'%c': invalid C format for %s;"
             " must be one of: [cilstu]\n",
             *fmt, format_opt( 'C', opt_buf, sizeof opt_buf )
@@ -277,7 +277,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
     } // for
     if ( (c_fmt & CFMT_SIZE_T) != 0 &&
          (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != 0 ) {
-      PMESSAGE_EXIT( EX_USAGE,
+      FATAL_ERR( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
         s, format_opt( 'C', opt_buf, sizeof opt_buf )
@@ -287,7 +287,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   return c_fmt;
 
 dup_format:
-  PMESSAGE_EXIT( EX_USAGE,
+  FATAL_ERR( EX_USAGE,
     "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
     s, format_opt( 'C', opt_buf, sizeof opt_buf ), *fmt
@@ -325,7 +325,7 @@ static char32_t parse_codepoint( char const *s ) {
     return STATIC_CAST(char32_t, cp_candidate);
 
   char opt_buf[ OPT_BUF_SIZE ];
-  PMESSAGE_EXIT( EX_USAGE,
+  FATAL_ERR( EX_USAGE,
     "\"%s\": invalid Unicode code-point for %s\n",
     s0, format_opt( 'U', opt_buf, sizeof opt_buf )
   );
@@ -380,7 +380,7 @@ static color_when_t parse_color_when( char const *when ) {
   } // for
 
   char opt_buf[ OPT_BUF_SIZE ];
-  PMESSAGE_EXIT( EX_USAGE,
+  FATAL_ERR( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
     when, format_opt( 'c', opt_buf, sizeof opt_buf ), names_buf
   );
@@ -406,7 +406,7 @@ static unsigned parse_group_by( char const *s ) {
       return STATIC_CAST(unsigned, group_by);
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
-  PMESSAGE_EXIT( EX_USAGE,
+  FATAL_ERR( EX_USAGE,
     "\"%llu\": invalid value for %s;"
     " must be one of: 1, 2, 4, 8, 16, or 32\n",
     group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
@@ -459,7 +459,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   } // for
 
   char opt_buf[ OPT_BUF_SIZE ];
-  PMESSAGE_EXIT( EX_USAGE,
+  FATAL_ERR( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
     when, format_opt( 'u', opt_buf, sizeof opt_buf ), names_buf
   );
@@ -644,7 +644,7 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
-      PMESSAGE_EXIT( EX_USAGE,
+      FATAL_ERR( EX_USAGE,
         "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, format_opt( 'b', opt_buf, sizeof opt_buf )
@@ -655,7 +655,7 @@ void parse_options( int argc, char *argv[] ) {
 
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
-      PMESSAGE_EXIT( EX_USAGE,
+      FATAL_ERR( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
         size_in_bytes, format_opt( 'B', opt_buf, sizeof opt_buf )
       );
