@@ -73,22 +73,31 @@ _GL_INLINE_HEADER_BEGIN
   BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
 
 /**
- * Explicit C version of C++'s `reinterpret_cast`.
+ * Cast either from or to a pointer type &mdash; similar to C++'s
+ * `reinterpret_cast`, but for pointers only.
  *
  * @param T The type to cast to.
  * @param EXPR The expression to cast.
  *
- * @sa STATIC_CAST
+ * @note This macro silences a "cast to pointer from integer of different size"
+ * warning.  In C++, this would be done via `reinterpret_cast`, but it's not
+ * possible to implement that in C that works for both pointers and integers.
+ *
+ * @sa #STATIC_CAST()
  */
-#define REINTERPRET_CAST(T,EXPR)  ((T)(EXPR))
+#define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
 
 /**
- * Explicit C version of C++'s `static_cast`.
+ * C version of C++'s `static_cast`.
  *
  * @param T The type to cast to.
  * @param EXPR The expression to cast.
  *
- * @sa REINTERPRET_CAST
+ * @note This macro can't actually implement C++'s `static_cast` because
+ * there's no way to do it in C.  It serves merely as a visual cue for the type
+ * of cast meant.
+ *
+ * @sa #POINTER_CAST()
  */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
 

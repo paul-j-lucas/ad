@@ -234,7 +234,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         utf8_count = opt_utf8 ?
           utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )
-          FPUTS( REINTERPRET_CAST(char*, utf8_char) );
+          FPUTS( POINTER_CAST( char*, utf8_char ) );
         else
           FPUTC( ascii_is_print( (char)byte ) ? byte : '.' );
       }
