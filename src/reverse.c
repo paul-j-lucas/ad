@@ -41,8 +41,8 @@
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
-#define FWRITE(PTR,SIZE,N,STREAM) BLOCK( \
-  if ( unlikely( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N) ) ) perror_exit( EX_IOERR ); )
+#define FWRITE(PTR,SIZE,N,STREAM) \
+  perror_exit_if( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 
 enum row_kind {
   ROW_BYTES,
