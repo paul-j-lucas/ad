@@ -112,7 +112,7 @@ size_t utf8_encode( char32_t codepoint, char *utf8_buf );
  */
 NODISCARD AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
-  char8_t const c8 = (char8_t)c;
+  char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
 }
 
@@ -127,7 +127,7 @@ bool utf8_is_start( char c ) {
  */
 NODISCARD AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
-  char8_t const c8 = (char8_t)c;
+  char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 >= 0x80 && c8 < 0xC0;
 }
 
