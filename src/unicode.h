@@ -142,7 +142,7 @@ NODISCARD AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST(char8_t, start) ]
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ]
   );
 }
 

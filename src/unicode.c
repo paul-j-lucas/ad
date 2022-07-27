@@ -76,58 +76,42 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
-size_t utf8_encode( char32_t codepoint, char *p ) {
-  assert( p != NULL );
+size_t utf8_encode( char32_t cp, char *utf8_buf ) {
+  assert( utf8_buf != NULL );
 
   static unsigned const Mask1 = 0x80;
   static unsigned const Mask2 = 0xC0;
   static unsigned const Mask3 = 0xE0;
   static unsigned const Mask4 = 0xF0;
-  static unsigned const Mask5 = 0xF8;
-  static unsigned const Mask6 = 0xFC;
 
-  unsigned const n = codepoint & 0xFFFFFFFF;
-  char *const p0 = p;
-  if ( n < 0x80 ) {
+  char *const buf_orig = utf8_buf;
+  if ( cp < 0x80 ) {
     // 0xxxxxxx
-    *p++ = STATIC_CAST(char, n);
+    *utf8_buf++ = STATIC_CAST( char, cp );
   }
-  else if ( n < 0x800 ) {
+  else if ( cp < 0x800 ) {
     // 110xxxxx 10xxxxxx
-    *p++ = STATIC_CAST( char, Mask2 |  (n >>  6)         );
-    *p++ = STATIC_CAST( char, Mask1 | ( n        & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask2 |  (cp >>  6)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
-  else if ( n < 0x10000 ) {
+  else if ( cp < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST( char, Mask3 |  (n >> 12)         );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >>  6) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ( n        & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask3 |  (cp >> 12)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
-  else if ( n < 0x200000 ) {
+  else if ( cp < 0x200000 ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST( char, Mask4 |  (n >> 18)         );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 12) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >>  6) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ( n        & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask4 |  (cp >> 18)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >> 12) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
-  else if ( n < 0x4000000 ) {
-    // 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST( char, Mask5 |  (n >> 24)         );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 18) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 12) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >>  6) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ( n        & 0x3F) );
+  else {
+    return STATIC_CAST( size_t, -1 );
   }
-  else if ( n < 0x8000000 ) {
-    // 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *p++ = STATIC_CAST( char, Mask6 |  (n >> 30)         );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 24) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 18) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >> 12) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ((n >>  6) & 0x3F) );
-    *p++ = STATIC_CAST( char, Mask1 | ( n        & 0x3F) );
-  }
-  return STATIC_CAST( size_t, p - p0 );
+
+  return STATIC_CAST( size_t, utf8_buf - buf_orig );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
