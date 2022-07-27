@@ -53,9 +53,6 @@ _GL_INLINE_HEADER_BEGIN
 
 #define CP_INVALID                0x01FFFFu
 #define CP_SURROGATE_HIGH_START   0x00D800u
-#define CP_SURROGATE_HIGH_END     0x00DBFFu
-#define CP_SURROGATE_LOW_START    0x00DC00u
-#define CP_SURROGATE_HIGH_START   0x00D800u
 #define CP_SURROGATE_LOW_END      0x00DFFFu
 #define CP_VALID_MAX              0x10FFFFu
 #define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
@@ -205,7 +202,7 @@ NODISCARD AD_UNICODE_INLINE
 size_t utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST(char8_t, start) ]
+    size_t, UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ]
   );
 }
 
