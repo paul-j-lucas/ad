@@ -49,6 +49,13 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* HAVE_FSEEKO */
 
 /**
+ * Gets the number of elements of the given array.
+ *
+ * @param A The array to get the number of elements of.
+ */
+#define ARRAY_SIZE(A)             (sizeof(A) / sizeof(A[0]))
+
+/**
  * Embeds the given statements into a compound statement block.
  *
  * @param ... The statement(s) to embed.
@@ -90,6 +97,32 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define FATAL_ERR(STATUS,FORMAT,...) \
   BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
+
+/**
+ * Calls **fflush(3)** on \a STREAM, checks for an error, and exits if there
+ * was one.
+ *
+ * @param STREAM The `FILE` stream to flush.
+ *
+ * @sa perror_exit_if()
+ */
+#define FFLUSH(STREAM) \
+  perror_exit_if( fflush( STREAM ) != 0, EX_IOERR )
+
+/**
+ * Calls **fprintf**(3) on \a STREAM, checks for an error, and exits if there
+ * was one.
+ *
+ * @param STREAM The `FILE` stream to print to.
+ * @param ... The `fprintf()` arguments.
+ *
+ * @sa #EPRINTF()
+ * @sa #FPUTC()
+ * @sa #FPUTS()
+ * @sa perror_exit_if()
+ */
+#define FPRINTF(STREAM,...) \
+  perror_exit_if( fprintf( (STREAM), __VA_ARGS__ ) < 0, EX_IOERR )
 
 /**
  * Calls **putc**(3), checks for an error, and exits if there was one.

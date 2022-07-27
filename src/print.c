@@ -31,7 +31,6 @@
 #include "keyword.h"
 #include "lexer.h"
 #include "options.h"
-#include "strbuf.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -81,13 +80,13 @@ static char const* fprint_list_dym_gets( void const **ppelt ) {
     return NULL;
   *ppelt = dym + 1;
 
-  static strbuf_t sbufs[ 2 ];
+  typedef char buf_t[30];
+  static buf_t bufs[2];
   static unsigned buf_index;
 
-  strbuf_t *const sbuf = &sbufs[ buf_index++ % ARRAY_SIZE( sbufs ) ];
-  strbuf_reset( sbuf );
-  strbuf_printf( sbuf, "\"%s\"", dym->token );
-  return sbuf->str;
+  char *const buf = &bufs[ buf_index++ % ARRAY_SIZE( bufs ) ];
+  snprintf( buf, 30, "\"%s\"", dym->token );
+  return buf;
 }
 
 /**
@@ -325,25 +324,10 @@ void fl_print_error_unknown_name( char const *file, int line,
   if ( k != NULL ) {
     char const *what = NULL;
 
-    switch ( c_tid_tpid( k->tid ) ) {
-      case C_TPID_NONE:                 // e.g., "break"
-      case C_TPID_STORE:                // e.g., "extern"
-        dym_kind = DYM_C_KEYWORDS;
-        what = "keyword";
-        break;
-      case C_TPID_BASE:                 // e.g., "char"
-        dym_kind = DYM_C_TYPES;
-        what = "type";
-        break;
-      case C_TPID_ATTR:
-        dym_kind = DYM_C_ATTRIBUTES;    // e.g., "noreturn"
-        what = "attribute";
-        break;
-    } // switch
+    dym_kind = DYM_KEYWORDS;
+    what = "keyword";
 
-    fl_print_error( file, line, loc,
-      "\"%s\": unsupported %s%s", name, what, c_lang_which( k->lang_ids )
-    );
+    fl_print_error( file, line, loc, "\"%s\": unsupported %s", name, what );
   }
 
   print_suggestions( dym_kind, name );

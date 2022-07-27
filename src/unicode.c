@@ -72,7 +72,7 @@ static inline bool utf16_is_surrogate( char16_t u16 ) {
 }
 
 static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
-  return (unsigned)(high << 10u) + low - 0x35FDC00u;
+  return STATIC_CAST( unsigned, high << 10u ) + low - 0x35FDC00u;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -127,31 +127,31 @@ size_t utf32_8( char32_t cp, char *utf8_buf ) {
   char *const buf_orig = utf8_buf;
   if ( cp < 0x80 ) {
     // 0xxxxxxx
-    *utf8_buf++ = STATIC_CAST(char, cp);
+    *utf8_buf++ = STATIC_CAST( char, cp );
   }
   else if ( cp < 0x800 ) {
     // 110xxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST(char, Mask2 |  (cp >>  6)        );
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+    *utf8_buf++ = STATIC_CAST( char, Mask2 |  (cp >>  6)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else if ( cp < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST(char, Mask3 |  (cp >> 12)        );
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+    *utf8_buf++ = STATIC_CAST( char, Mask3 |  (cp >> 12)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else if ( cp < 0x200000 ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST(char, Mask4 |  (cp >> 18)        );
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >> 12) & 0x3F));
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ((cp >>  6) & 0x3F));
-    *utf8_buf++ = STATIC_CAST(char, Mask1 | ( cp        & 0x3F));
+    *utf8_buf++ = STATIC_CAST( char, Mask4 |  (cp >> 18)         );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >> 12) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else {
-    return (size_t)-1;
+    return STATIC_CAST( size_t, -1 );
   }
 
-  return (size_t)(utf8_buf - buf_orig);
+  return STATIC_CAST( size_t, utf8_buf - buf_orig );
 }
 
 char32_t utf8_32_impl( char const *s ) {
@@ -163,9 +163,9 @@ char32_t utf8_32_impl( char const *s ) {
   uint8_t const *u = (uint8_t const*)s;
 
   switch ( len ) {
-    case 4: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
-    case 3: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
-    case 2: cp += *u++; cp <<= 6; PJL_FALLTHROUGH;
+    case 4: cp += *u++; cp <<= 6; FALLTHROUGH;
+    case 3: cp += *u++; cp <<= 6; FALLTHROUGH;
+    case 2: cp += *u++; cp <<= 6; FALLTHROUGH;
     case 1: cp += *u;
   } // switch
 
