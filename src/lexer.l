@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/lexer.l
 **
-**      Copyright (C) 2019  Paul J. Lucas
+**      Copyright (C) 2022  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 /**
  * @file
  * Defines helper macros, data structures, variables, functions, and the
- * tokenizer for C/C++ declarations.
+ * tokenizer for the **ad** language.
  */
 
 /** @cond DOXYGEN_IGNORE */
@@ -220,6 +220,7 @@ static inline void newline( void ) {
  * end of the identifier.
  * @return Returns `true` only if an identifier was parsed.
  */
+NODISCARD
 static bool parse_identifier( char const *s, char const **end ) {
   assert( s != NULL );
   assert( end != NULL );
@@ -237,6 +238,7 @@ static bool parse_identifier( char const *s, char const **end ) {
  * @param base The integer base to use.
  * @return Returns the integer value.
  */
+NODISCARD
 static inline int parse_int( int base ) {
   //
   // We don't need to check for errors from strtol(3) here since the lexer
@@ -246,29 +248,6 @@ static inline int parse_int( int base ) {
   // it if the base is 2.
   //
   return (int)strtol( lexer_token + (base == 2 ? 2 : 0), NULL, base );
-}
-
-/**
- * Parses a scoped name, e.g. `a::b::c`.
- *
- * @param s The string to parse.
- * @return Returns the scoped name.
- */
-static c_sname_t parse_sname( char const *s ) {
-  assert( s != NULL );
-  c_sname_t rv;
-  c_sname_init( &rv );
-
-  for ( char const *end; parse_identifier( s, &end ); ) {
-    c_sname_append_name( &rv, strndup( s, end - s ) );
-    SKIP_WS( end );
-    if ( strncmp( end, "::", 2 ) != 0 )
-      break;
-    s = end + 2;
-    SKIP_WS( s );
-  } // for
-
-  return rv;
 }
 
 /**
@@ -332,7 +311,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
         find_keyword:
                 NO_OP;
-                keyword_t const *k = keyword_find( lexer_token, opt_lang );
+                keyword_t const *k = ad_keyword_find( lexer_token );
                 if ( k != NULL ) {
                   yylval.tid = k->tid;
                   return k->yy_token_id;
@@ -345,11 +324,13 @@ hex_int       0[xX]{H}+{int_sfx}?
                 return Y_NAME;
               }
 
-{bin_int}     { SET_TOKEN; yylval.number = parse_int(  2 ); return Y_NUMBER; }
-{oct_int}     { SET_TOKEN; yylval.number = parse_int(  8 ); return Y_NUMBER; }
-{dec_int}     { SET_TOKEN; yylval.number = parse_int( 10 ); return Y_NUMBER; }
-{hex_int}     { SET_TOKEN; yylval.number = parse_int( 16 ); return Y_NUMBER; }
+              /* Integer literals. */
+{bin_int}     { SET_TOKEN; yylval.number = parse_int(  2 ); return Y_INT_LIT; }
+{oct_int}     { SET_TOKEN; yylval.number = parse_int(  8 ); return Y_INT_LIT; }
+{dec_int}     { SET_TOKEN; yylval.number = parse_int( 10 ); return Y_INT_LIT; }
+{hex_int}     { SET_TOKEN; yylval.number = parse_int( 16 ); return Y_INT_LIT; }
 
+              /* Multi-character operators. */
 "::"          { SET_TOKEN; return Y_COLON2          ; }
 "!="          { SET_TOKEN; return Y_EXCLAM_EQ       ; }
 "%="          { SET_TOKEN; return Y_PERCENT_EQ      ; }
@@ -378,6 +359,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 "|="          { SET_TOKEN; return Y_PIPE_EQ         ; }
 "||"          { SET_TOKEN; return Y_PIPE2           ; }
 
+              /* Single-character operators and miscellaneous punctuation. */
 "!"           |
 "%"           |
 "&"           |
@@ -403,8 +385,10 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 "/*"          {                         /* ignore C-style comments */
                 for ( int c = input(), prev = '\0'; ; prev = c, c = input() ) {
-                  if ( c == '\0' || c == EOF )
+                  if ( c == '\0' || c == EOF ) {
+                    print_error( &yylloc, "unterminated comment\n" );
                     return Y_LEXER_ERROR;
+                  }
                   ++token_column;
                   if ( c == '/' && prev == '*' )
                     break;
@@ -424,6 +408,11 @@ hex_int       0[xX]{H}+{int_sfx}?
                 return Y_END;
               }
 
+.             {
+                SET_TOKEN;
+                return Y_ERROR;
+              }
+
 <<EOF>>       {
                 SET_TOKEN;
                 newline();
@@ -437,11 +426,6 @@ hex_int       0[xX]{H}+{int_sfx}?
                 // encounter EOF, treat it as EOF by returning no token.
                 //
                 return (is_eof = !is_eof) ? Y_END : YY_NULL;
-              }
-
-.             {
-                SET_TOKEN;
-                return Y_ERROR;
               }
 
 %%
@@ -480,7 +464,6 @@ static void lexer_update_loc( void ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-AD_WARN_UNUSED_RESULT
 char const* lexer_input_line( size_t *plen ) {
   if ( plen != NULL )
     *plen = input_len;

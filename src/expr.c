@@ -445,7 +445,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
 static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( ternary, cond );
   bool const is_zero = ad_expr_is_zero( &cond_expr );
-  ad_expr_eval( expr->as.ternary.sub_expr[ !is_zero ], rv );
+  return ad_expr_eval( expr->as.ternary.sub_expr[ !is_zero ], rv );
 }
 
 /**
@@ -1159,10 +1159,6 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_CAST:
       return ad_expr_cast( expr, rv );
 
-    case AD_EXPR_DEREF:
-      // TODO
-      return true;
-
     case AD_EXPR_IF_ELSE:
       return ad_expr_if_else( expr, rv );
 
@@ -1196,6 +1192,10 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_MATH_SUB:
       return ad_expr_math_sub( expr, rv );
 
+    case AD_EXPR_PTR_DEREF:
+      // TODO
+      return true;
+
     case AD_EXPR_REL_GREATER:
       return ad_expr_rel_greater( expr, rv );
 
@@ -1220,11 +1220,11 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
 void ad_expr_free( ad_expr_t *expr ) {
   switch ( expr->expr_kind & AD_EXPR_MASK ) {
     case AD_EXPR_TERNARY:
-      ad_expr_free( expr->as.ternary.false_expr );
-      PJL_FALLTHROUGH;
+      ad_expr_free( expr->as.ternary.sub_expr[1] );
+      FALLTHROUGH;
     case AD_EXPR_BINARY:
       ad_expr_free( expr->as.binary.rhs_expr );
-      PJL_FALLTHROUGH;
+      FALLTHROUGH;
     case AD_EXPR_UNARY:
       ad_expr_free( expr->as.unary.sub_expr );
       break;

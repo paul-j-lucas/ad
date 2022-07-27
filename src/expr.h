@@ -141,8 +141,12 @@ struct ad_unary_expr {
  *  + Subtraction
  */
 struct ad_binary_expr {
+#if 1
   ad_expr_t *lhs_expr;
   ad_expr_t *rhs_expr;
+#else
+  ad_expr_t *sub_expr[2];
+#endif
 };
 
 /**
