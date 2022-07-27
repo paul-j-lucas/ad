@@ -241,8 +241,15 @@ _GL_INLINE_HEADER_BEGIN
 # define unlikely(EXPR)           (EXPR)
 #endif /* __GNUC__ */
 
-#define FSEEK(STREAM,OFFSET,WHENCE) BLOCK( \
-	if ( unlikely( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
+/**
+ * Calls **fseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param STREAM The `FILE` stream to check for an error.
+ * @param OFFSET The offset to seek to.
+ * @param WHENCE What \a OFFSET if relative to.
+ */
+#define FSEEK(STREAM,OFFSET,WHENCE) \
+  perror_exit_if( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **fstat**(3), checks for an error, and exits if there was one.
@@ -250,8 +257,8 @@ _GL_INLINE_HEADER_BEGIN
  * @param FD The file descriptor to stat.
  * @param STAT A pointer to a `struct stat` to receive the result.
  */
-#define FSTAT(FD,STAT) BLOCK( \
-	if ( unlikely( fstat( (FD), (STAT) ) < 0 ) ) perror_exit( EX_IOERR ); )
+#define FSTAT(FD,STAT) \
+  perror_exit_if( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
  * Calls **lseek**(3), checks for an error, and exits if there was one.
@@ -260,8 +267,8 @@ _GL_INLINE_HEADER_BEGIN
  * @param OFFSET The file offset to seek to.
  * @param WHENCE Where \a OFFSET is relative to.
  */
-#define LSEEK(FD,OFFSET,WHENCE) BLOCK( \
-	if ( unlikely( lseek( (FD), (OFFSET), (WHENCE) ) == -1 ) ) perror_exit( EX_IOERR ); )
+#define LSEEK(FD,OFFSET,WHENCE) \
+  perror_exit_if( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **malloc**(3) and casts the result to \a TYPE.
@@ -516,6 +523,9 @@ unsigned long long parse_ull( char const *s );
  * Prints an error message for \c errno to standard error and exits.
  *
  * @param status The exit status code.
+ *
+ * @sa #FATAL_ERR()
+ * @sa perror_exit_if()
  */
 void perror_exit( int status );
 
@@ -527,7 +537,6 @@ void perror_exit( int status );
  * @param status The exit status code.
  *
  * @sa #FATAL_ERR()
- * @sa #INTERNAL_ERR()
  * @sa perror_exit()
  */
 AD_UTIL_INLINE
