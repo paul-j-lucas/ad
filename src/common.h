@@ -21,8 +21,13 @@
 #ifndef ad_common_H
 #define ad_common_H
 
+// local
+#include "pjl_config.h"                 /* must go first */
+
 // standard
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint64_t */
+#include <stdio.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +40,27 @@
 #define ROW_BYTES_C               8     /**< Bytes dumped on a row in C. */
 #define ROW_BYTES_MAX             32    /**< Maximum bytes dumped on a row. */
 
-extern size_t row_bytes;                // bytes dumped on a row
+/**
+ * The endian order for numeric searches.
+ */
+enum endian {
+  ENDIAN_UNSPECIFIED,
+  ENDIAN_BIG,
+  ENDIAN_LITTLE
+};
+typedef enum endian endian_t;
+
+extern FILE        *fin;                ///< Input file.
+extern off_t        fin_offset;         ///< Curent offset into fin.
+extern char const  *fin_path;           ///< Path name of fin.
+extern FILE        *fout;               ///< Output file.
+extern char const  *fout_path;          ///< Path name of fout.
+extern char const  *me;                 ///< Executable name from argv[0].
+extern size_t       row_bytes;          ///< Bytes dumped on a row.
+extern char        *search_buf;         ///< Not NULL-terminated when numeric.
+extern endian_t     search_endian;      ///< Numeric search endianness.
+extern size_t       search_len;         ///< Number of bytes in search_buf.
+extern uint64_t     search_number;      ///< The number to search for.
 
 ///////////////////////////////////////////////////////////////////////////////
 

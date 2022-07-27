@@ -29,6 +29,7 @@
 #include <stdlib.h>                     /* for atexit() */
 #include <string.h>                     /* for memset(), str...() */
 #include <sysexits.h>
+#include <sys/types.h>                  /* for off_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -38,7 +39,17 @@ extern void dump_file_c( void );
 extern void reverse_dump_file( void );
 
 // extern variable definitions
-size_t row_bytes = ROW_BYTES_DEFAULT;
+FILE       *fin;
+off_t       fin_offset;
+char const *fin_path = "-";
+FILE       *fout;
+char const *fout_path = "-";
+char const *me;
+size_t      row_bytes = ROW_BYTES_DEFAULT;
+char       *search_buf;
+endian_t    search_endian;
+size_t      search_len;
+uint64_t    search_number;
 
 /////////// local functions ///////////////////////////////////////////////////
 
