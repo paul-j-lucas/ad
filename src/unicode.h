@@ -172,7 +172,7 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  */
 NODISCARD AD_UNICODE_INLINE
 bool utf8_is_start( char c ) {
-  char8_t const c8 = (char8_t)c;
+  char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
 }
 
@@ -187,7 +187,7 @@ bool utf8_is_start( char c ) {
  */
 NODISCARD AD_UNICODE_INLINE
 bool utf8_is_cont( char c ) {
-  char8_t const c8 = (char8_t)c;
+  char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 >= 0x80 && c8 < 0xC0;
 }
 
