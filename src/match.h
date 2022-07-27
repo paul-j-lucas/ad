@@ -26,8 +26,8 @@
 #include "unicode.h"
 
 // standard
-#include <inttypes.h>                   /* for uint32_t */
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint32_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 

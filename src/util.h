@@ -27,9 +27,9 @@
 
 // standard
 #include <errno.h>
-#include <inttypes.h>                   /* for uint64_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */

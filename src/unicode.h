@@ -26,9 +26,9 @@
 #include "util.h"
 
 // standard
-#include <inttypes.h>                   /* for uint*_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>                     /* for uint*_t */
 #if HAVE_CHAR8_T || HAVE_CHAR32_T
 #include <uchar.h>
 #endif /* HAVE_CHAR8_T || HAVE_CHAR32_T */

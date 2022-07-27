@@ -26,11 +26,9 @@
 #include "common.h"
 
 // standard
-#include <inttypes.h>                   /* for uint64_t */
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
-#include <stdio.h>                      /* for FILE */
-#include <sys/types.h>                  /* for off_t */
+#include <stdint.h>                     /* for uint64_t */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -46,7 +44,7 @@ enum c_fmt {
   CFMT_LONG     = 1 << 5,               // declare len type as "long"
   CFMT_SIZE_T   = 1 << 6                // declare len type as "size_t"
 };
-typedef unsigned c_fmt_t;               // for the bitwise-or of c_fmt options
+typedef unsigned c_fmt_t;               ///< Bitwise-or of c_fmt options.
 
 /**
  * Checks whether the given \c c_fmt specifies a type.
@@ -56,15 +54,15 @@ typedef unsigned c_fmt_t;               // for the bitwise-or of c_fmt options
  * @hideinitializer
  */
 #define CFMT_HAS_TYPE(FMT) \
-  ((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T))
+  (((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T)) != 0)
 
 /**
  * Whether to print the total number of matches.
  */
 enum matches {
-  MATCHES_NO_PRINT,                     // don't print
-  MATCHES_ALSO_PRINT,                   // additionally print
-  MATCHES_ONLY_PRINT                    // only print
+  MATCHES_NO_PRINT,                     ///< Don't print total matches.
+  MATCHES_ALSO_PRINT,                   ///< Additionally print total matches.
+  MATCHES_ONLY_PRINT                    ///< Only print total matches.
 };
 typedef enum matches matches_t;
 
@@ -81,13 +79,6 @@ typedef enum offset_fmt offset_fmt_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-extern FILE          *fin;              // file to read from
-extern off_t          fin_offset;       // curent offset into file
-extern char const    *fin_path;         // path name of input file
-extern FILE          *fout;             // file to write to
-extern char const    *fout_path;        // path name of output file
-extern char const    *me;               // executable name from argv[0]
-
 extern bool           opt_case_insensitive;
 extern unsigned       opt_c_fmt;
 extern unsigned       opt_group_by;
@@ -102,11 +93,6 @@ extern bool           opt_utf8;
 extern char const    *opt_utf8_pad;
 extern bool           opt_verbose;
 
-extern char          *search_buf;       // not NULL-terminated when numeric
-extern endian_t       search_endian;    // if searching for a number
-extern size_t         search_len;       // number of bytes in search_buf
-extern uint64_t       search_number;    // the number to search for
-
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
@@ -118,7 +104,7 @@ NODISCARD
 char const* get_offset_fmt_english( void );
 
 /**
- * Gets the printf(3) format for the current offset format.
+ * Gets the **printf**(3) format for the current offset format.
  *
  * @return Returns said printf(3) format.
  */

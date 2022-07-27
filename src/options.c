@@ -49,31 +49,19 @@
   (opts_given[ STATIC_CAST( char8_t, (OPT) ) ] = STATIC_CAST( char, (OPT) ))
 
 // option extern variable definitions
-bool                opt_case_insensitive;
-c_fmt_t             opt_c_fmt;
-unsigned            opt_group_by = GROUP_BY_DEFAULT;
-size_t              opt_max_bytes = SIZE_MAX;
-matches_t           opt_matches;
-offset_fmt_t        opt_offset_fmt = OFMT_HEX;
-bool                opt_only_matching;
-bool                opt_only_printing;
-bool                opt_print_ascii = true;
-bool                opt_reverse;
-bool                opt_utf8;
-char const         *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
-bool                opt_verbose;
-
-// other extern variable definitions
-FILE               *fin;
-off_t               fin_offset;
-char const         *fin_path = "-";
-FILE               *fout;
-char const         *fout_path = "-";
-char const         *me;
-char               *search_buf;
-endian_t            search_endian;
-size_t              search_len;
-uint64_t            search_number;
+bool          opt_case_insensitive;
+c_fmt_t       opt_c_fmt;
+unsigned      opt_group_by = GROUP_BY_DEFAULT;
+size_t        opt_max_bytes = SIZE_MAX;
+matches_t     opt_matches;
+offset_fmt_t  opt_offset_fmt = OFMT_HEX;
+bool          opt_only_matching;
+bool          opt_only_printing;
+bool          opt_print_ascii = true;
+bool          opt_reverse;
+bool          opt_utf8;
+char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
+bool          opt_verbose;
 
 // local constant definitions
 static struct option const LONG_OPTS[] = {
