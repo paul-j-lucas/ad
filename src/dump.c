@@ -225,7 +225,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         if ( utf8_count > 1 )
           FPUTS( POINTER_CAST( char*, utf8_char ), fout );
         else
-          FPUTC( ascii_is_print( STATIC_CAST( char, byte ) ) ? byte : '.' );
+          FPUTC( ascii_is_print( STATIC_CAST( char, byte ) ) ? byte : '.', fout );
       }
 
       prev_matches = matches;

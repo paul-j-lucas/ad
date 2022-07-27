@@ -27,10 +27,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "did_you_mean.h"
-#include "c_ast.h"
-#include "c_keyword.h"
-#include "c_lang.h"
-#include "cdecl_keyword.h"
+#include "keyword.h"
 #include "cli_options.h"
 #include "dam_lev.h"
 #include "util.h"
@@ -253,8 +250,6 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
     ((kinds & DYM_KEYWORDS) != DYM_NONE ?
       copy_keywords( /*pdym=*/NULL, C_TPID_NONE ) +
       copy_keywords( /*pdym=*/NULL, C_TPID_STORE ) : 0) +
-    ((kinds & DYM_C_ATTRIBUTES) != DYM_NONE ?
-      copy_keywords( /*pdym=*/NULL, C_TPID_ATTR ) : 0) +
     ((kinds & DYM_TYPES) != DYM_NONE ?
       copy_keywords( /*pdym=*/NULL, C_TPID_BASE ) +
       copy_typedefs( /*pdym=*/NULL ) : 0);
