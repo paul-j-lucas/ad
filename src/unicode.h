@@ -161,8 +161,6 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
   return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
 }
 
-size_t utf8_encode( char32_t codepoint, char *utf8_buf );
-
 /**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
  * comprising an encoded character.  Note that this is not equivalent to
