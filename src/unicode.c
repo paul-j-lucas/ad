@@ -64,7 +64,7 @@ static inline bool utf16_is_high_surrogate( char16_t u16 ) {
 }
 
 static inline bool utf16_is_low_surrogate( char16_t u16 ) {
-  return false;//(u16 & 0xFFFFFC00u) == CP_SURROGATE_LOW_START;
+  return (u16 & 0xFFFFFC00u) == CP_SURROGATE_LOW_START;
 }
 
 static inline bool utf16_is_surrogate( char16_t u16 ) {
