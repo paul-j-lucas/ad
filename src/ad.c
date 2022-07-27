@@ -51,9 +51,9 @@ size_t row_bytes = ROW_BYTES_DEFAULT;
 static void clean_up( void ) {
   free_now();
   if ( fin != NULL )
-    (void)fclose( fin );
+    PJL_IGNORE_RV( fclose( fin ) );
   if ( fout != NULL )
-    (void)fclose( fout );
+    PJL_IGNORE_RV( fclose( fout ) );
 }
 
 /**
