@@ -78,6 +78,20 @@ _GL_INLINE_HEADER_BEGIN
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
 /**
+ * Prints an error message to standard error and exits with \a STATUS code.
+ *
+ * @param STATUS The status code to **exit**(3) with.
+ * @param FORMAT The `printf()` format to use.
+ * @param ... The `printf()` arguments.
+ *
+ * @sa #INTERNAL_ERR()
+ * @sa perror_exit()
+ * @sa #UNEXPECTED_INT_VALUE()
+ */
+#define FATAL_ERR(STATUS,FORMAT,...) \
+  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
+
+/**
  * Calls **putc**(3), checks for an error, and exits if there was one.
  *
  * @param C The character to print.
@@ -225,16 +239,6 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
-
-/**
- * Prints an error message to standard error and exits with \a STATUS code.
- *
- * @param STATUS The status code to **exit**(3) with.
- * @param FORMAT The `printf()` format to use.
- * @param ... The `printf()` arguments.
- */
-#define PMESSAGE_EXIT(STATUS,FORMAT,...) \
-  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); exit( STATUS ); )
 
 ///////////////////////////////////////////////////////////////////////////////
 
