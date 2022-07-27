@@ -136,7 +136,11 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   // parse offset
   char const *end = NULL;
   errno = 0;
-  *poffset = (off_t)strtoull( buf, REINTERPRET_CAST(char**, &end), (int)opt_offset_fmt );
+  *poffset = STATIC_CAST( off_t,
+    strtoull(
+      buf, POINTER_CAST( char**, &end ), STATIC_CAST( int, opt_offset_fmt )
+    )
+  );
   if ( unlikely( errno != 0 || (end[0] != '\0' && !is_offset_delim( *end )) ) )
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
