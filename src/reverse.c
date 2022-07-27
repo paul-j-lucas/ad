@@ -74,7 +74,8 @@ static inline bool is_offset_delim( char c ) {
 NODISCARD
 static inline unsigned xtoi( char c ) {
   return isdigit( c ) ?
-    (unsigned)(c - '0') : 0xAu + (unsigned)(toupper( c ) - 'A');
+    STATIC_CAST( unsigned, c - '0' ) :
+    0xAu + STATIC_CAST( unsigned, toupper( c ) - 'A' );
 }
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -148,7 +149,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     );
   if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
     return ROW_IGNORE;
-  col += (size_t)(end - buf);
+  col += STATIC_CAST( size_t, end - buf );
 
   char const *p = end;
   end = buf + buf_len;
@@ -173,7 +174,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     // parse first nybble
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    char8_t byte = (char8_t)(xtoi( *p ) << 4);
+    char8_t byte = STATIC_CAST( char8_t, xtoi( *p  ) << 4 );
 
     // parse second nybble
     ++col;
@@ -184,7 +185,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       );
     if ( unlikely( !isxdigit( *p ) ) )
       goto expected_hex_digit;
-    byte |= (char8_t)xtoi( *p );
+    byte |= STATIC_CAST( char8_t, xtoi( *p ) );
 
     bytes[ bytes_len++ ] = byte;
   } // while
@@ -204,7 +205,7 @@ expected_hex_digit:
 void reverse_dump_file( void ) {
   char8_t bytes[ row_bytes ];
   size_t  bytes_len;
-  off_t   fout_offset = -(off_t)row_bytes;
+  off_t   fout_offset = -STATIC_CAST( off_t, row_bytes );
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
@@ -220,7 +221,8 @@ void reverse_dump_file( void ) {
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES: {
-        off_t const row_end_offset = fout_offset + (off_t)row_bytes;
+        off_t const row_end_offset =
+          fout_offset + STATIC_CAST( off_t, row_bytes );
         if ( unlikely( new_offset < row_end_offset ) )
           goto backwards_offset;
         if ( new_offset > row_end_offset )
@@ -232,7 +234,7 @@ void reverse_dump_file( void ) {
 
       case ROW_ELIDED:
         assert( bytes_len % row_bytes == 0 );
-        fout_offset += (off_t)(bytes_len / row_bytes);
+        fout_offset += STATIC_CAST( off_t, bytes_len / row_bytes );
         for ( ; bytes_len > 0; bytes_len -= row_bytes )
           FWRITE( bytes, 1, row_bytes, fout );
         break;

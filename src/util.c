@@ -167,7 +167,7 @@ char* fgetln( FILE *f, size_t *len ) {
   ssize_t const temp_len = getline( &buf, &cap, f );
   if ( unlikely( temp_len == -1 ) )
     return NULL;
-  *len = (size_t)temp_len;
+  *len = STATIC_CAST( size_t, temp_len );
   return buf;
 }
 #endif /* HAVE_FGETLN */
@@ -460,7 +460,7 @@ bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range ) {
 char* tolower_s( char *s ) {
   assert( s != NULL );
   for ( char *t = s; *t != '\0'; ++t )
-    *t = (char)tolower( *t );
+    *t = STATIC_CAST( char, tolower( *t ) );
   return s;
 }
 

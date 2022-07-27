@@ -91,7 +91,7 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( (char)cur->bytes[ buf_pos ] );
+  size_t const len = utf8_len( STATIC_CAST( char, cur->bytes[ buf_pos ] ) );
   if ( len > 1 ) {
     row_buf_t const *row = cur;
     *utf8_char++ = row->bytes[ buf_pos++ ];
@@ -139,8 +139,9 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // print row separator (if necessary)
   if ( !opt_only_matching && !opt_only_printing ) {
-    uint64_t const offset_delta =
-      (uint64_t)(fin_offset - dumped_offset - (off_t)row_bytes);
+    uint64_t const offset_delta = STATIC_CAST( uint64_t,
+      fin_offset - dumped_offset - STATIC_CAST( off_t, row_bytes )
+    );
     if ( offset_delta > 0 && any_dumped ) {
       SGR_START_IF( sgr_elided );
       for ( size_t i = get_offset_width(); i > 0; --i )
@@ -224,7 +225,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
         if ( utf8_count > 1 )
           FPUTS( POINTER_CAST( char*, utf8_char ), fout );
         else
-          FPUTC( ascii_is_print( (char)byte ) ? byte : '.', fout );
+          FPUTC( ascii_is_print( STATIC_CAST( char, byte ) ) ? byte : '.' );
       }
 
       prev_matches = matches;
@@ -322,7 +323,7 @@ void dump_file( void ) {
     cur = next;
     next = temp;
 
-    fin_offset += (off_t)row_bytes;
+    fin_offset += STATIC_CAST( off_t, row_bytes );
   } // while
 
   if ( opt_matches != MATCHES_NO_PRINT ) {
@@ -357,7 +358,7 @@ void dump_file_c( void ) {
     match_bits_t match_bits;            // not used when dumping in C
     row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
-    fin_offset += (off_t)row_len;
+    fin_offset += STATIC_CAST( off_t, row_len );
     array_len += row_len;
   } while ( row_len == ROW_BYTES_C );
 
