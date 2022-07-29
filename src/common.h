@@ -46,7 +46,8 @@
 enum endian {
   ENDIAN_UNSPECIFIED,
   ENDIAN_BIG,
-  ENDIAN_LITTLE
+  ENDIAN_LITTLE,
+  ENDIAN_HOST
 };
 typedef enum endian endian_t;
 

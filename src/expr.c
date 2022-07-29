@@ -1133,6 +1133,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
       break;
+    case AD_EXPR_ASSIGN:
     case AD_EXPR_ERROR:
     case AD_EXPR_VALUE:
       *rv = *expr;
@@ -1191,6 +1192,10 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
 
     case AD_EXPR_MATH_SUB:
       return ad_expr_math_sub( expr, rv );
+
+    case AD_EXPR_PTR_ADDR:
+      // TODO
+      return true;
 
     case AD_EXPR_PTR_DEREF:
       // TODO

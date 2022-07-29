@@ -1,5 +1,5 @@
-typedef int<32>   st_time_t;
-typedef uint<32>  st_addr_t;
+typedef int<32>\b   st_time_t;
+typedef uint<32>\b  st_addr_t;
 
 struct tsidx_header {
   utf<8>    magic[8] /= R"Splunk\d{2}";
@@ -41,24 +41,16 @@ struct st_fclex_body {
   uint<8>   data;
 };
 
-tsidx_header          header;
-st_tsval_encoded      value[ header.num_values ];
-align<8>;
-uint<header.et_nbits> event_type[ header.et_array_size ];
-align<8>;
-uint<header.s_nbits>  source[ header.s_array_size ];
-align<8>;
-uint<header.st_nbits> source_type[ header.st_array_size ];
-align<8>;
-uint<header.h_nbits>  host[ header.st_array_size ];
-align<8>;
-uint<header.d_nbits>  deletes[ header.d_array_size ];
-align<8>;
-uint<32>              plo[ header.num_values ];
-align<8>;
-st_term_metadata      meta[ header.num_values ];
-align<8>;
-st_fclex_body         fclex_body;
+            tsidx_header          header;
+            st_tsval_encoded      value[ header.num_values ];
+alignas(1)  uint<header.et_nbits> event_type[ header.et_array_size ];
+alignas(1)  uint<header.s_nbits>  source[ header.s_array_size ];
+alignas(1)  uint<header.st_nbits> source_type[ header.st_array_size ];
+alignas(1)  uint<header.h_nbits>  host[ header.st_array_size ];
+alignas(1)  uint<header.d_nbits>  deletes[ header.d_array_size ];
+alignas(1)  uint<32>              plo[ header.num_values ];
+alignas(1)  st_term_metadata      meta[ header.num_values ];
+alignas(1)  st_fclex_body         fclex_body;
 
 uint<32> num_blocks = (fclex_body.num_terms + fclex_body.terms_per_block - 1) / fclex_body.terms_per_block;
 

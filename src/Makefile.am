@@ -46,6 +46,7 @@ ad_SOURCES =	parser.y\
 		print.c print.h \
 		reverse.c \
 		slist.c slist.h \
+		strbuf.c strbuf.h \
 		types.c types.h \
 		unicode.c unicode.h \
 		util.c util.h

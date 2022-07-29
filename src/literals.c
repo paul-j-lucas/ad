@@ -20,11 +20,12 @@
 
 /**
  * @file
- * Defines constants for ad literals.
+ * Defines constants for **ad** literals.
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 
+char const L_ALIGNAS[]  = "alignas";
 char const L_BOOL[]     = "bool";
 char const L_BREAK[]    = "break";
 char const L_CASE[]     = "case";

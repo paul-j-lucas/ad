@@ -195,6 +195,20 @@ _GL_INLINE_HEADER_BEGIN
 #define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
 
 /**
+ * Convenience macro for calling check_realloc().
+ *
+ * @param PTR The pointer to memory to reallocate.  It is set to the newly
+ * reallocated memory.
+ * @param TYPE The type of object to reallocate.
+ * @param N The number of objects of \a TYPE to reallocate.
+ *
+ * @sa check_realloc()
+ * @sa #MALLOC()
+ */
+#define REALLOC(PTR,TYPE,N) \
+  ((PTR) = check_realloc( (PTR), sizeof(TYPE) * (N) ))
+
+/**
  * C version of C++'s `static_cast`.
  *
  * @param T The type to cast to.
@@ -276,6 +290,9 @@ _GL_INLINE_HEADER_BEGIN
  * @param TYPE The type to allocate.
  * @param N The number of objects of \a TYPE to allocate.
  * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
+ *
+ * @sa check_realloc()
+ * @sa #REALLOC()
  */
 #define MALLOC(TYPE,N) \
   (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
@@ -348,6 +365,9 @@ int check_open( char const *path, int oflag, off_t offset );
  * @param p The pointer to reallocate.  If NULL, new memory is allocated.
  * @param size The number of bytes to allocate.
  * @return Returns a pointer to the allocated memory.
+ *
+ * @sa #MALLOC()
+ * @sa #REALLOC()
  */
 NODISCARD
 void* check_realloc( void *p, size_t size );
@@ -624,6 +644,21 @@ uint32_t swap_32( uint32_t n );
  */
 NODISCARD
 uint64_t swap_64( uint64_t n );
+
+/**
+ * Checks \a flag: if `false`, sets it to `true`.
+ *
+ * @param flag A pointer to the Boolean flag to be tested and, if `false`, sets
+ * it to `true`.
+ * @return Returns `true` only if \a flag was `true` initially.
+ *
+ * @sa false_set()
+ * @sa true_clear()
+ */
+AD_UTIL_INLINE NODISCARD
+bool true_or_set( bool *flag ) {
+  return *flag || !(*flag = true);
+}
 
 /**
  * Converts a big-endian 16-bit integer to the host's representation.

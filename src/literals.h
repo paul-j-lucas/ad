@@ -23,11 +23,12 @@
 
 /**
  * @file
- * Declares constants for ad literals.
+ * Declares constants for **ad** literals.
  */
 
 ////////// literals ///////////////////////////////////////////////////////////
 
+extern char const L_ALIGNAS[];
 extern char const L_BOOL[];
 extern char const L_BREAK[];
 extern char const L_CASE[];

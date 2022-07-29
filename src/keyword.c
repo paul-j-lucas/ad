@@ -39,6 +39,7 @@
  * All ad keywords.
  */
 static ad_keyword_t const AD_KEYWORDS[] = {
+  { L_ALIGNAS,  Y_ALIGNAS,  T_NONE    },
   { L_BOOL,     Y_BOOL,     T_BOOL    },
   { L_BREAK,    Y_BREAK,    T_NONE    },
   { L_CASE,     Y_CASE,     T_NONE    },

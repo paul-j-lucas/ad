@@ -163,6 +163,8 @@ static size_t     input_len;            ///< Length of line in `input_buf`.
 static size_t     input_sent;           ///< How many bytes returned to flex.
 static bool       is_eof;               ///< Encountered EOF?
 static int        newline_column;       ///< Column position of newline.
+static strbuf_t   str_lit_buf;          ///< String (or character) literal.
+static ad_loc_t   str_lit_loc;          ///< String literal starting location.
 static int        token_column;         ///< Column position of current token.
 
 // local functions
@@ -274,12 +276,20 @@ H             [0-9A-Fa-f]
 S             [ \f\r\t\v]
 
 identifier    {L}({L}|{D})*
+
+cstr_pfx      L|u8?|U
+rstr_pfx      {cstr_pfx}?R\"[^ \f\n\r\t\v()\\]*"("
 int_sfx       [lL][lL]?[uU]?|[uU]([lL][lL]?|[zZ])?|[zZ][uU]?
 
 bin_int       0[bB]{B}+{int_sfx}?
 oct_int       0{O}*{int_sfx}?
 dec_int       [1-9]{D}*{int_sfx}?
 hex_int       0[xX]{H}+{int_sfx}?
+
+/*
+ * For character and string literals.
+ */
+%x X_CHAR X_STR X_RSTR
 
 %%
 
@@ -290,11 +300,8 @@ hex_int       0[xX]{H}+{int_sfx}?
                 // 1. See if it's an ad keyword.
                 //
                 keyword_t const *const ak = ad_keyword_find( lexer_token );
-                if ( ak != NULL ) {
-                  if ( ak->c_keyword_synonym == NULL )
-                    return ak->yy_token_id;
-                  lexer_token = ak->c_keyword_synonym;
-                }
+                if ( ak != NULL )
+                  return ak->yy_token_id;
 
                 //
                 // 2. See if it's a typedef'd type.
@@ -382,6 +389,141 @@ hex_int       0[xX]{H}+{int_sfx}?
 "|"           |
 "}"           |
 "~"           { SET_TOKEN; return lexer_token[0]; }
+
+{rstr_pfx}    { // e.g.: u8R"abc(...)abc"
+                // find:    ^   ^
+                char const *q = strchr( yytext, '"' );
+                assert( q != NULL );
+                char const *const p = strchr( ++q, '(' );
+                assert( p != NULL );
+
+                size_t const delim_len = (size_t)(p - q);
+                if ( delim_len > RSTR_DELIM_LEN_MAX ) {
+                  print_error( &yylloc,
+                    "raw string literal delimiter "
+                    "exceeds maximum length of %u\n",
+                    RSTR_DELIM_LEN_MAX
+                  );
+                  return Y_LEXER_ERROR;
+                }
+
+                strncpy( rstr_delim, q, delim_len );
+                //
+                // To make the delimiter-match code simpler, include the
+                // closing '"' as part of the delimiter.  (Using strcpy() also
+                // has the benefit of ensuring rstr_delim is null-terminated.)
+                //
+                strcpy( rstr_delim + delim_len, "\"" );
+
+                strbuf_init( &str_lit_buf );
+                //
+                // Save the start location because we want to use it as the
+                // location for the literal, not its end location.
+                //
+                str_lit_loc = yylloc;
+
+                BEGIN( X_RSTR );
+              }
+
+<X_RSTR>{
+  [^)]+       { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
+  ")"         {
+                char const *d;
+                for ( d = rstr_delim; *d != '\0'; ++d, ++token_column ) {
+                  int const c = input();
+                  if ( c == EOF ) {
+                    print_error( &yylloc, "unterminated string literal\n" );
+                    strbuf_reset( &str_lit_buf );
+                    return Y_LEXER_ERROR;
+                  }
+                  if ( c != *d ) {
+                    //
+                    // Found a mismatch with the delimiter, e.g.:
+                    //
+                    //      )abc"       // delimiter
+                    //      )abx"       // what was found
+                    //
+                    // Hence, it's not the actual delimiter, but part of the
+                    // string literal: append the part that matched (")ab").
+                    //
+                    strbuf_printf( &str_lit_buf,
+                      ")%.*s", (int)(d - rstr_delim), rstr_delim
+                    );
+                    //
+                    // Unput the character that caused the mismatch since it
+                    // could be ')' that could potentially start a real match,
+                    // e.g.:
+                    //
+                    //      R"abc(X)ab)abc"
+                    //                ^
+                    //
+                    // Hence the raw string is "X)ab".
+                    //
+                    unput( c );
+                    break;
+                  }
+                } // for
+
+                if ( *d == '\0' ) {     // found delimiter
+                  yylloc.first_line   = str_lit_loc.first_line;
+                  yylloc.first_column = str_lit_loc.first_column;
+                  yylval.str_val = strbuf_take( &str_lit_buf );
+                  BEGIN( INITIAL );
+                  return Y_STR_LIT;
+                }
+              }
+}
+
+{cstr_pfx}?['"] {
+                strbuf_init( &str_lit_buf );
+                //
+                // Save the start location because we want to use it as the
+                // location for the literal, not its end location.
+                //
+                str_lit_loc = yylloc;
+
+                char const quote = yytext[ yyleng - 1 ];
+                BEGIN( quote == '"' ? X_STR : X_CHAR );
+              }
+
+              /*
+               * Common code between X_CHAR and X_STR.  Multicharacter literals
+               * are legal, but implementation-defined.
+               */
+<X_CHAR,X_STR>{
+              /* Escaped characters are copied verbatim, not interpreted. */
+  \\(.|\n)    { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
+  \n          {
+                print_error( &str_lit_loc,
+                  "unterminated %s literal\n",
+                  YY_START == X_CHAR ? "character" : "string"
+                );
+                strbuf_reset( &str_lit_buf );
+                return Y_LEXER_ERROR;
+              }
+}
+
+<X_CHAR>{
+  [^'\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
+  \'          {
+                yylloc.first_line   = str_lit_loc.first_line;
+                yylloc.first_column = str_lit_loc.first_column;
+                yylval.str_val = strbuf_take( &str_lit_buf );
+                BEGIN( INITIAL );
+                return Y_CHAR_LIT;
+              }
+}
+
+<X_STR>{      /* X_STR is the same as X_CHAR except " replaces '. */
+  [^"\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
+  \"          {
+                yylloc.first_line   = str_lit_loc.first_line;
+                yylloc.first_column = str_lit_loc.first_column;
+                yylval.str_val = strbuf_take( &str_lit_buf );
+                BEGIN( INITIAL );
+                return Y_STR_LIT;
+              }
+}
 
 "/*"          {                         /* ignore C-style comments */
                 for ( int c = input(), prev = '\0'; ; prev = c, c = input() ) {

@@ -317,6 +317,9 @@ static void parse_cleanup( bool fatal_error ) {
  *      print_loc()
  *
  * @param msg The error message to print.
+ *
+ * @sa fl_elaborate_error()
+ * @sa print_loc()
  */
 static void yyerror( char const *msg ) {
   assert( msg != NULL );
@@ -361,6 +364,7 @@ static void yyerror( char const *msg ) {
 }
 
                     // ad keywords
+%token              Y_ALIGNAS;
 %token  <expr_kind> Y_BOOL
 %token              Y_BREAK
 %token              Y_CASE
@@ -1037,6 +1041,10 @@ unary_op
 
 /// type //////////////////////////////////////////////////////////////////////
 
+type
+  : tid '<' expr '>'
+  ;
+
 builtin_tid
   : Y_FLOAT                       { $$ = T_FLOAT; }
   | Y_INT                         { $$ = T_INT; }
@@ -1045,7 +1053,7 @@ builtin_tid
   ;
 
 tid
-  : builtin_tid lt_exp expr type_endian_opt '>'
+  : builtin_tid lt_exp expr gt_exp type_endian_exp
     {
       $$ = $1;
       // TODO
@@ -1060,9 +1068,11 @@ tid_exp
     }
   ;
 
-type_endian_opt
-  : /* empty */                   { $$ = 0; }
-  | ',' expr                      { $$ = $2; }
+type_endian_exp
+  : '\\' 'b'                      { $$ = ENDIAN_BIG; }
+  | '\\' 'l'                      { $$ = ENDIAN_LITTLE; }
+  | '\\' 'h'                      { $$ = ENDIAN_HOST; }
+  | '\\' '<' expr '>'             { $$ = $3; }
   ;
 
 type_name_exp
