@@ -595,7 +595,7 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list '}'
+  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbracket_exp
     {
       ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
       ad_enum->name = $2;
@@ -635,6 +635,12 @@ field_declaration
       ad_field->type = $1;
       ad_field->name = $2;
       ad_field->rep = $3;
+    }
+
+  | Y_TYPEDEF_TYPE name_exp array_opt
+    {
+      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
+      // TODO
     }
   ;
 
