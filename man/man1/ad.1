@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "February 22, 2018" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 30, 2022" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -118,7 +118,7 @@ Suppresses printing the ASCII part.
 Highlights all occurrences of the unsigned integer
 .I n
 in big-endian byte order.
-.IP ""
+.IP
 The number of bytes to search for is automatically calculated
 as the minimum number of bytes needed to represent
 .IR n .
@@ -196,7 +196,7 @@ Declares the length as \f(CWsize_t\f1.
 .B u
 Declares the length as \f(CWunsigned\f1.
 .RE
-.IP ""
+.IP
 If none of
 .BR i ,
 .BR l ,
@@ -272,7 +272,7 @@ is not empty and not equal to
 .BR fstat (3)
 is called on standard output:
 colorize only if \f(CWS_IFREG\f1 is false.)
-.IP ""
+.IP
 This is more useful than
 .B isatty
 since it accomodates the common case of allowing color output to be piped to
@@ -293,7 +293,7 @@ An explicit synonym for
 A shorthand synonym for
 .BR isatty .
 .RE
-.IP ""
+.IP
 The default is
 .BR not_file .
 .TP
@@ -393,13 +393,13 @@ spelling is for compatibility with
 .BR xxd (1).)
 Note that only the hexedecimal part of the dump is read;
 the ASCII part is ignored.
-.IP ""
+.IP
 When an existing output file is used,
 it is not truncated.
 This allows a small dump file
 to patch a subset of bytes in an existing larger binary file.
 The bytes to be patched are given by the offsets.
-.IP ""
+.IP
 Elided bytes,
 given by the separator of ``-'' characters
 when none of the
@@ -467,7 +467,7 @@ Dump in UTF-8 only if the terminal's encoding is UTF-8.
 .B never
 Never dump in UTF-8.
 .RE
-.IP ""
+.IP
 The default is
 .BR never .
 (Either
@@ -476,7 +476,7 @@ or
 .B auto
 should be used
 only if UTF-8 encoded text is expected.)
-.IP ""
+.IP
 Because mutli-byte UTF-8 encoded characters
 are displayed as a single character,
 one to five padding characters
@@ -512,7 +512,7 @@ Instead,
 a separator of ``\f(CW-\f1'' characters is printed
 along with the number of bytes elided
 in both decimal and hexadecimal.
-.IP ""
+.IP
 However,
 if none of the
 .BR \-\-matching-only ,
@@ -571,7 +571,7 @@ in a manner similar to the
 variable
 used by
 .BR grep .
-.IP ""
+.IP
 As with
 .BR grep ,
 the value is composed of a colon-separated sequence of capabilities.
@@ -591,7 +591,7 @@ in the range 0\-255.
 An example SGR value is \f(CW31;1\f1
 that specifies a bright red foreground
 on the terminal's default background.
-.IP ""
+.IP
 Capability names in upper-case are unique to
 .BR ad ;
 those in lower-case are upwards compatibile with
@@ -644,7 +644,7 @@ prevents clearing to the end of a line using the Erase in Line
 SGR escape sequence
 (as with
 .BR grep ).
-.IP ""
+.IP
 This is needed on terminals on which EL is not supported.
 It is otherwise useful on terminals for which the
 .B back_color_erase
@@ -662,7 +662,7 @@ SGR for the ``\f(CW:\f1'' and ``\f(CW-\f1'' separators
 The default is \f(CW36\f1
 (cyan foreground over current terminal background).
 .RE
-.IP ""
+.IP
 Other
 .B grep
 capabilities, if present, are ignored
