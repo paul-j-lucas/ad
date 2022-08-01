@@ -19,6 +19,7 @@
 ##
 
 bin_PROGRAMS =	ad
+check_PROGRAMS=	red_black_test slist_test
 
 AM_CPPFLAGS =	-I$(top_srcdir)/lib -I$(top_builddir)/lib
 if ENABLE_FLEX_DEBUG
@@ -44,12 +45,32 @@ ad_SOURCES =	parser.y\
 		match.c match.h \
 		options.c options.h \
 		print.c print.h \
+		red_black.c red_black.h \
 		reverse.c \
 		slist.c slist.h \
 		strbuf.c strbuf.h \
 		types.c types.h \
 		unicode.c unicode.h \
 		util.c util.h
+
+red_black_test_SOURCES = \
+		ad.h \
+		pjl_config.h \
+		red_black.c red_black.h \
+		red_black_test.c \
+		slist.c slist.h \
+		types.h \
+		util.c util.h \
+		unit_test.h
+
+slist_test_SOURCES = \
+		ad.h \
+		pjl_config.h \
+		slist.c slist.h \
+		slist_test.c \
+		types.h \
+		util.c util.h \
+		unit_test.h
 
 parser.output: parser.y
 	bison -v --report=all $<
