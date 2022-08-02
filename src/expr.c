@@ -253,19 +253,6 @@ static void narrow( ad_expr_t *expr ) {
   } // switch
 }
 
-static uint64_t widen_int( ad_expr_t const *expr ) {
-  assert( ad_expr_is_value( expr ) );
-  assert( ad_expr_get_base_tid( expr ) == T_INT );
-
-  switch ( expr->as.value.type.tid ) {
-    case T_INT8:
-    case T_INT16:
-    case T_INT32:
-      ;
-  } // switch
-  return expr->as.value.as.u64;
-}
-
 /**
  * Performs a bitwise and of two subexpressions.
  *

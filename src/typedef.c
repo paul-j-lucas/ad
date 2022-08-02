@@ -26,10 +26,10 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "c_ast.h"
 #include "common.h"
 #include "options.h"
 #include "red_black.h"
+#include "type.h"
 #include "typedef.h"
 #include "util.h"
 
@@ -48,8 +48,8 @@
  *
  * @param NAME The name.
  */
-#define C_TYPEDEF_SNAME_LIT(SNAME) \
-  C_TYPEDEF_AST_LIT( &(c_ast_t const){ .sname = (SNAME) } )
+#define C_TYPEDEF_NAME_LIT(SNAME) \
+  C_TYPEDEF_AST_LIT( &(c_ast_t const){ .name = (SNAME) } )
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,15 +57,13 @@
  * Data passed to our red-black tree visitor function.
  */
 struct tdef_rb_visit_data {
-  ad_typedef_visit_fn_t  visit_fn;      ///< Caller's visitor function.
-  void                 *v_data;         ///< Caller's optional data.
+  ad_typedef_visit_fn_t   visit_fn;     ///< Caller's visitor function.
+  void                   *v_data;       ///< Caller's optional data.
 };
 typedef struct tdef_rb_visit_data tdef_rb_visit_data_t;
 
 // local variables
 static rb_tree_t    typedef_set;        ///< Global set of `typedef`s.
-
-///////////////////////////////////////////////////////////////////////////////
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -98,7 +96,7 @@ static int ad_typedef_cmp( void const *i_data, void const *j_data ) {
   assert( j_data != NULL );
   ad_typedef_t const *const i_tdef = i_data;
   ad_typedef_t const *const j_tdef = j_data;
-  return c_sname_cmp( &i_tdef->ast->sname, &j_tdef->ast->sname );
+  return strcmp( &i_tdef->type->name, &j_tdef->type->name );
 }
 
 /**
@@ -139,11 +137,12 @@ static bool rb_visitor( void *node_data, void *v_data ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-ad_typedef_t const* ad_typedef_add( c_ast_t const *ast ) {
+ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
   assert( ast != NULL );
-  assert( !c_sname_empty( &ast->sname ) );
+  assert( ast->name != NULL );
+  assert( strlen( ast->name ) > 0 );
 
-  ad_typedef_t *const new_tdef = ad_typedef_new( ast );
+  ad_typedef_t *const new_tdef = ad_typedef_new( type );
   rb_insert_rv_t const rv = rb_tree_insert( &typedef_set, new_tdef );
   if ( !rv.inserted ) {
     //
@@ -154,10 +153,10 @@ ad_typedef_t const* ad_typedef_add( c_ast_t const *ast ) {
   return rv.node->data;
 }
 
-ad_typedef_t const* ad_typedef_find_sname( c_sname_t const *sname ) {
-  assert( sname != NULL );
+ad_typedef_t const* ad_typedef_find_name( char const *name ) {
+  assert( name != NULL );
   rb_node_t const *const found_rb =
-    rb_tree_find( &typedef_set, &C_TYPEDEF_SNAME_LIT( *sname ) );
+    rb_tree_find( &typedef_set, &C_TYPEDEF_NAME_LIT( *name ) );
   return found_rb != NULL ? found_rb->data : NULL;
 }
 

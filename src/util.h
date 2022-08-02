@@ -56,6 +56,40 @@ _GL_INLINE_HEADER_BEGIN
 #define ARRAY_SIZE(A)             (sizeof(A) / sizeof(A[0]))
 
 /**
+ * Gets a value where all bits that are less than or equal to the one bit set
+ * in \a N are also set, e.g., <code>%BITS_GE(00010000)</code> = `00011111`.
+ *
+ * @param N The integer.  Exactly one bit _must_ be set.
+ * @return Returns said value.
+ *
+ * @sa #BITS_LT()
+ */
+#define BITS_LE(N)                (BITS_LT(N) | (N))
+
+/**
+ * Gets a value where all bits that are less than the one bit set in \a N are
+ * set, e.g., <code>%BITS_GT(00010000)</code> = `00001111`.
+ *
+ * @param N The integer.  Exactly one bit _must_ be set.
+ * @return Returns said value.
+ *
+ * @sa #BITS_LE()
+ */
+#define BITS_LT(N)                ((N) - 1u)
+
+/**
+ * Gets a value comprised of \a N lower 1 bits, e.g.,
+ * <code>BITS_LOWER(5)</code> = `011111`.
+ *
+ * @param N The integer in the range [1,63].
+ * @return Returns said value.
+ *
+ * @sa #BITS_LE()
+ * @sa #BITS_LT()
+ */
+#define BITS_LOWER(N)             BITS_LE( 1u << ((N) - 1u) )
+
+/**
  * Embeds the given statements into a compound statement block.
  *
  * @param ... The statement(s) to embed.

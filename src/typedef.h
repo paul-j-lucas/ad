@@ -39,12 +39,11 @@
 /// @endcond
 
 /**
- * Convenience macro for specifying a \ref c_typedef literal having \a AST.
+ * Convenience macro for specifying a \ref c_typedef literal having \a TYPE.
  *
- * @param AST The AST.
+ * @param TYPE The type.
  */
-#define C_TYPEDEF_AST_LIT(AST) (c_typedef_t const) \
-  { (AST), .is_predefined = false }
+#define C_TYPEDEF_LIT(TYPE)       (c_typedef_t const){ (TYPE) }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,8 +57,7 @@
  * **ad** C/C++ `typedef` information.
  */
 struct ad_typedef {
-  c_ast_t const  *ast;                  ///< AST representing the type.
-  bool            is_predefined;        ///< Was the type predefined?
+  ad_type_t const *type;                ///< The underlying type.
 };
 
 /**
