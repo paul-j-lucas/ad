@@ -334,18 +334,6 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Endian-ness.
- */
-enum ad_endian {
-  AD_ENDIAN_NONE,
-  AD_ENDIAN_LITTLE,
-  AD_ENDIAN_BIG
-};
-typedef enum ad_endian ad_endian_t;
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**
  * Checks whethere there is at least one printable ASCII character in \a s.
  *
  * @param s The string to check.

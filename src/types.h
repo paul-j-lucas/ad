@@ -49,100 +49,97 @@ _GL_INLINE_HEADER_BEGIN
 //    N = null terminated: 0 = no, 1 = yes
 //    S = sign: 0 = unsigned, 1 = signed
 //    T = type (at most one set)
-//    Z = size in bits: 1 = 8, 2 = 16, 3 = 32, 4 = 64
+//    Z = size in bits - 1
 //
 
-// x-xx xxxx xxxx xxxN
-#define T_NULL                   0x0001u              /**< Null-terminated.   */
+// Si(Z)e:    xxxx xxxx xxZZ ZZZZ
+#define T_SIZE_MASK               0x003Fu             /**< Size mask.         */
 
-// x-xx xxxx xxxx xDDx
-#define T_END_HOST               0x0000u              /**< Host endian.       */
-#define T_END_LIT                0x0002u              /**< Little-endian.     */
-#define T_END_BIG                0x0004u              /**< Big-endian.        */
+// En(D)ian:  xxxx xxxx EExx xxxx
+#define T_ENDIAN_MASK            0x00C0u              /**< Endian mask.       */
 
-// x-xx xxxx xZZZ Zxxx
-#define T_08_BITS                0x0008u              /**< 8-bit type.        */
-#define T_16_BITS                0x0010u              /**< 16-bit type.       */
-#define T_32_BITS                0x0020u              /**< 32-bit type.       */
-#define T_64_BITS                0x0040u              /**< 64-bit type.       */
+// (N)ull:    xxxx xxxN xxxx xxxx
+#define T_NULL                   0x0100u              /**< Null-terminated.   */
 
-// x-xx xxxx Exxx xxxx
-#define T_ERROR                  0x0080u              /**< Error type.        */
+// (E)rror:   xxxx xxEx xxxx xxxx
+#define T_ERROR                  0x0200u              /**< Error type.        */
 
-// S-xx xxxx xxxx xxxx
-#define T_SIGNED                 0x8000u              /**< Signed type.       */
-
-// types: x-TT TTTT xxxx xxxx
+// (T)ypes:   xTTT TTxx xxxx xxxx
 #define T_NONE                   0u                   /**< No type.           */
 
-#define T_BOOL                   0x0100               /**< Boolean.           */
-#define T_BOOL8     (            T_BOOL | T_08_BITS)  /**< `bool`             */
+// (S)igned:  Sxxx xxxx xxxx xxxx
+#define T_SIGNED                 0x8000u              /**< Signed type.       */
 
-#define T_UTF                    0x0200               /**< Unicode.           */
-#define T_UTF8      (            T_UTF  | T_08_BITS)  /**< UTF-8 (multibyte). */
-#define T_UTF16HE   (            T_UTF  | T_16_BITS)  /**< UTF-16 host.       */
-#define T_UTF16BE   (T_END_BIG | T_UTF  | T_16_BITS)  /**< UTF-16 big.        */
-#define T_UTF16LE   (T_END_LIT | T_UTF  | T_16_BITS)  /**< UTF-16 little.     */
-#define T_UTF32HE   (            T_UTF  | T_32_BITS)  /**< UTF-32 host.       */
-#define T_UTF32BE   (T_END_BIG | T_UTF  | T_32_BITS)  /**< UTF-32 big.        */
-#define T_UTF32LE   (T_END_LIT | T_UTF  | T_32_BITS)  /**< UTF-32 little.     */
+#define T_BOOL                   0x0400u              /**< Boolean.           */
+#define T_BOOL8     (            T_BOOL |  8u)  /**< `bool`             */
 
-#define T_UTF_0     (T_NULL    | T_UTF             )  /**< UTF string.       */
+#define T_UTF                    0x0800u        /**< Unicode.           */
+#define T_UTF8      (            T_UTF  |  8u)  /**< UTF-8 (multibyte). */
+#define T_UTF16HE   (            T_UTF  | 16u)  /**< UTF-16 host.       */
+#define T_UTF16BE   (T_END_BIG | T_UTF  | 16u)  /**< UTF-16 big.        */
+#define T_UTF16LE   (T_END_LIT | T_UTF  | 16u)  /**< UTF-16 little.     */
+#define T_UTF32HE   (            T_UTF  | 32u)  /**< UTF-32 host.       */
+#define T_UTF32BE   (T_END_BIG | T_UTF  | 32u)  /**< UTF-32 big.        */
+#define T_UTF32LE   (T_END_LIT | T_UTF  | 32u)  /**< UTF-32 little.     */
+
+#define T_UTF_0     (T_NULL    | T_UTF)  /**< UTF string.       */
 
 /**< UTF-8, null-terminated string. */
-#define T_UTF8_0    (T_NULL    | T_UTF  | T_08_BITS)
+#define T_UTF8_0    (T_NULL    | T_UTF   |  8u)
 
 /** UTF-16 host-endian, null-terminated string. */
-#define T_UTF16HE_0 (T_NULL    | T_UTF  | T_16_BITS)
+#define T_UTF16HE_0 (T_NULL    | T_UTF   | 16u)
 
 /** UTF-16 big-endian, null-terminated string. */
-#define T_UTF16BE_0 (T_END_BIG | T_UTF  | T_16_BITS | T_NULL)
+#define T_UTF16BE_0 (T_END_BIG | T_UTF   | 16u | T_NULL)
 
 /** UTF-16 little-endian, null-terminated string. */
-#define T_UTF16LE_0 (T_END_LIT | T_UTF  | T_16_BITS | T_NULL)
+#define T_UTF16LE_0 (T_END_LIT | T_UTF   | 16u | T_NULL)
 
 /**< UTF-32 host-endian, null-terminated string. */
-#define T_UTF32HE_0 (T_NULL    | T_UTF  | T_32_BITS)
+#define T_UTF32HE_0 (T_NULL    | T_UTF   | 32u)
 
 /**< UTF-32 big-endian null-terminated string. */
-#define T_UTF32BE_0 (T_END_BIG | T_UTF  | T_32_BITS | T_NULL)
+#define T_UTF32BE_0 (T_END_BIG | T_UTF   | 32u | T_NULL)
 
 /** UTF-32 little-endian, null-terminated string. */
-#define T_UTF32LE_0 (T_END_LIT | T_UTF  | T_32_BITS | T_NULL)
+#define T_UTF32LE_0 (T_END_LIT | T_UTF   | 32u | T_NULL)
 
-#define T_INT       (            0x0400             ) /**< Integer.           */
-#define T_INT8      (T_SIGNED  | T_INT   | T_08_BITS) /**< `signed int8`      */
-#define T_INT16     (T_SIGNED  | T_INT   | T_16_BITS) /**< `signed int16`     */
-#define T_INT32     (T_SIGNED  | T_INT   | T_32_BITS) /**< `signed int32`     */
-#define T_INT64     (T_SIGNED  | T_INT   | T_64_BITS) /**< `signed int64`     */
-#define T_UINT8     (            T_INT   | T_08_BITS) /**< `unsigned int8`    */
-#define T_UINT16    (            T_INT   | T_16_BITS) /**< `unsigned int16`   */
-#define T_UINT32    (            T_INT   | T_32_BITS) /**< `unsigned int32`   */
-#define T_UINT64    (            T_INT   | T_64_BITS) /**< `unsigned int64`   */
+#define T_INT       (            0x1000u      ) /**< Integer.           */
+#define T_INT8      (T_SIGNED  | T_INT   |  8u) /**< `signed int8`      */
+#define T_INT16     (T_SIGNED  | T_INT   | 16u) /**< `signed int16`     */
+#define T_INT32     (T_SIGNED  | T_INT   | 32u) /**< `signed int32`     */
+#define T_INT64     (T_SIGNED  | T_INT   | 64u) /**< `signed int64`     */
+#define T_UINT8     (            T_INT   |  8u) /**< `unsigned int8`    */
+#define T_UINT16    (            T_INT   | 16u) /**< `unsigned int16`   */
+#define T_UINT32    (            T_INT   | 32u) /**< `unsigned int32`   */
+#define T_UINT64    (            T_INT   | 64u) /**< `unsigned int64`   */
 
-#define T_FLOAT                  0x0800               /**< Floating point.    */
-#define T_FLOAT32   (T_SIGNED  | T_FLOAT | T_32_BITS) /**< `float32`          */
-#define T_FLOAT64   (T_SIGNED  | T_FLOAT | T_64_BITS) /**< `float64`          */
+#define T_FLOAT                  0x2000         /**< Floating point.    */
+#define T_FLOAT32   (T_SIGNED  | T_FLOAT | 32u) /**< `float32`          */
+#define T_FLOAT64   (T_SIGNED  | T_FLOAT | 64u) /**< `float64`          */
 
-#define T_STRUCT                 0x1000               /**< `struct`           */
-#define T_SWITCH                 0x2000               /**< `switch`           */
+#define T_STRUCT                 0x4000               /**< `struct`           */
 
 #define T_INT_LIKE  (T_BOOL | T_INT)
 #define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)
 
 // bit masks
-#define T_MASK_ENDIAN            0x0006u              /**< Endian bitmask.    */
-#define T_MASK_NULL              T_NULL               /**< Null bitmask.      */
-#define T_MASK_SIGN              T_SIGNED             /**< Sign bitmask.      */
-#define T_MASK_SIZE              0x0078u              /**< Size bitmask.      */
-#define T_MASK_TYPE              0x3F00u              /**< Type bitmask.      */
+#define T_MASK_ENDIAN             0x0006u        /**< Endian bitmask.    */
+#define T_MASK_NULL               T_NULL         /**< Null bitmask.      */
+#define T_MASK_SIGN               T_SIGNED       /**< Sign bitmask.      */
+#define T_MASK_SIZE               0x0078u        /**< Size bitmask.      */
+#define T_MASK_TYPE               0x3F00u        /**< Type bitmask.      */
 
 ///////////////////////////////////////////////////////////////////////////////
+
+#define T_GET_SIZE(T)             (((T) & T_MASK_SIZE) + 1u)
 
 typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_char               ad_char_t;
+typedef enum    ad_endian             ad_endian_t;
 typedef struct  ad_enum               ad_enum_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
@@ -162,6 +159,16 @@ typedef uint16_t                      ad_tid_t;
 typedef unsigned short                ad_type_size_t;
 typedef struct  slist                 ad_type_list_t;
 typedef struct  print_params          print_params_t;
+
+/**
+ * Endian-ness.
+ */
+enum ad_endian {
+  AD_ENDIAN_NONE    = 0x00,             ///< No endian-ness.
+  AD_ENDIAN_HOST    = 0x10,             ///< Host endian-ness.
+  AD_ENDIAN_LITTLE  = 0x20,             ///< Little endian-ness.
+  AD_ENDIAN_BIG     = 0x30              ///< Big endian-ness.
+};
 
 /**
  * Enumeration value.
