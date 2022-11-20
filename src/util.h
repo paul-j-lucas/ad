@@ -35,9 +35,9 @@
 #include <sys/types.h>                  /* for off_t */
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTIL_INLINE
-# define AD_UTIL_INLINE _GL_INLINE
-#endif /* AD_UTIL_INLINE */
+#ifndef AD_UTIL_H_INLINE
+# define AD_UTIL_H_INLINE _GL_INLINE
+#endif /* AD_UTIL_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -192,7 +192,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * @param c The characther to check.
  * @return Returns \c true only if \c is an ASCII printable character.
  */
-NODISCARD AD_UTIL_INLINE
+NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
@@ -378,7 +378,7 @@ void perror_exit( int status );
  * @sa #FATAL_ERR()
  * @sa perror_exit()
  */
-AD_UTIL_INLINE
+AD_UTIL_H_INLINE
 void perror_exit_if( bool expr, int status ) {
   if ( unlikely( expr ) )
     perror_exit( status );
