@@ -36,7 +36,6 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>                     /* for free(3) */
-#include <sysexits.h>
 
 /// @endcond
 
@@ -119,7 +118,7 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   va_start( args, format );
   int rv = vsnprintf( buf, buf_rem, format, args );
   va_end( args );
-  perror_exit_if( rv < 0, EX_IOERR );
+  PERROR_EXIT_IF( rv < 0, EX_IOERR );
 
   //
   // Then reserve that number of characters: if strbuf_reserve() returns false,
@@ -134,7 +133,7 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
     va_start( args, format );
     rv = vsnprintf( sbuf->str + sbuf->len, buf_rem, format, args );
     va_end( args );
-    perror_exit_if( rv < 0, EX_IOERR );
+    PERROR_EXIT_IF( rv < 0, EX_IOERR );
   }
 
   sbuf->len += args_len;
@@ -165,7 +164,7 @@ bool strbuf_reserve( strbuf_t *sbuf, size_t res_len ) {
 
 void strbuf_reset( strbuf_t *sbuf ) {
   assert( sbuf != NULL );
-  if ( sbuf->len > 0 ) {
+  if ( sbuf->str != NULL ) {
     sbuf->str[0] = '\0';
     sbuf->len = 0;
   }

@@ -45,9 +45,9 @@ typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UNICODE_INLINE
-# define AD_UNICODE_INLINE _GL_INLINE
-#endif /* AD_UNICODE_INLINE */
+#ifndef AD_UNICODE_H_INLINE
+# define AD_UNICODE_H_INLINE _GL_INLINE
+#endif /* AD_UNICODE_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +82,7 @@ typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
  * @param cp The Unicode code-point to check.
  * @return Returns \c true only if \a cp is an ASCII character.
  */
-AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
+AD_UNICODE_H_INLINE bool cp_is_ascii( char32_t cp ) {
   return cp <= 0x7F;
 }
 
@@ -92,7 +92,7 @@ AD_UNICODE_INLINE bool cp_is_ascii( char32_t cp ) {
  * @param cp_candidate The Unicode code-point candidate value to check.
  * @return Returns \c true only if \a cp_candidate is a valid code-point.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
@@ -141,7 +141,7 @@ size_t utf32_8( char32_t cp, char *utf8_buf );
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
   char32_t const cp = (uint8_t)*s;
@@ -155,7 +155,7 @@ char32_t utf8_32( char const *s ) {
  * @param u2 The second UTF-8 character.
  * @return Returns `true` only if \a u1 equals \a u2.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
   extern uint8_t const UTF8_LEN_TABLE[];
   return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
@@ -170,7 +170,7 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_start( char c ) {
   char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
@@ -185,7 +185,7 @@ bool utf8_is_start( char c ) {
  * @return Returns \c true only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_cont( char c ) {
   char8_t const c8 = STATIC_CAST( char8_t, c );
   return c8 >= 0x80 && c8 < 0xC0;
@@ -198,7 +198,7 @@ bool utf8_is_cont( char c ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-NODISCARD AD_UNICODE_INLINE
+NODISCARD AD_UNICODE_H_INLINE
 size_t utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
   return STATIC_CAST(

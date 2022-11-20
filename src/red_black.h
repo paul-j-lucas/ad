@@ -76,6 +76,14 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Red-black tree colors.
+ */
+enum rb_color {
+  RB_BLACK,                             ///< Black.
+  RB_RED                                ///< Red.
+};
+
 typedef enum   rb_color     rb_color_t;
 typedef struct rb_insert_rv rb_insert_rv_t;
 typedef struct rb_node      rb_node_t;
@@ -110,14 +118,6 @@ typedef void (*rb_free_fn_t)( void *data );
  * to be returned to the caller of rb_tree_visit().
  */
 typedef bool (*rb_visit_fn_t)( void *node_data, void *v_data );
-
-/**
- * Red-black tree colors.
- */
-enum rb_color {
-  RB_BLACK,                             ///< Black.
-  RB_RED                                ///< Red.
-};
 
 /**
  * A red-black tree node.
@@ -243,7 +243,7 @@ void* rb_tree_delete( rb_tree_t *tree, rb_node_t *node );
  * @param tree A pointer to the red-black tree to check.
  * @return Returns `true` only if \a tree is empty.
  */
-RED_BLACK_H_INLINE NODISCARD
+NODISCARD RED_BLACK_H_INLINE
 bool rb_tree_empty( rb_tree_t const *tree ) {
   return tree->fake_root.child[0] == &tree->nil;
 }

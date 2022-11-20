@@ -43,7 +43,7 @@
   )
 
 #define FWRITE(PTR,SIZE,N,STREAM) \
-  perror_exit_if( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
+  PERROR_EXIT_IF( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 
 enum row_kind {
   ROW_BYTES,

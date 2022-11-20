@@ -33,11 +33,12 @@
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTIL_INLINE
-# define AD_UTIL_INLINE _GL_INLINE
-#endif /* AD_UTIL_INLINE */
+#ifndef AD_UTIL_H_INLINE
+# define AD_UTIL_H_INLINE _GL_INLINE
+#endif /* AD_UTIL_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -138,10 +139,10 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @param STREAM The `FILE` stream to flush.
  *
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 #define FFLUSH(STREAM) \
-  perror_exit_if( fflush( STREAM ) != 0, EX_IOERR )
+  PERROR_EXIT_IF( fflush( STREAM ) != 0, EX_IOERR )
 
 /**
  * Calls **fprintf**(3) on \a STREAM, checks for an error, and exits if there
@@ -153,10 +154,10 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #EPRINTF()
  * @sa #FPUTC()
  * @sa #FPUTS()
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 #define FPRINTF(STREAM,...) \
-  perror_exit_if( fprintf( (STREAM), __VA_ARGS__ ) < 0, EX_IOERR )
+  PERROR_EXIT_IF( fprintf( (STREAM), __VA_ARGS__ ) < 0, EX_IOERR )
 
 /**
  * Calls **putc**(3), checks for an error, and exits if there was one.
@@ -167,10 +168,10 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #EPUTC()
  * @sa #FPRINTF()
  * @sa #FPUTS()
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 #define FPUTC(C,STREAM) \
-  perror_exit_if( putc( (C), (STREAM) ) == EOF, EX_IOERR )
+  PERROR_EXIT_IF( putc( (C), (STREAM) ) == EOF, EX_IOERR )
 
 /**
  * Calls **fputs**(3), checks for an error, and exits if there was one.
@@ -181,10 +182,10 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #EPUTS()
  * @sa #FPRINTF()
  * @sa #FPUTC()
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 #define FPUTS(S,STREAM) \
-  perror_exit_if( fputs( (S), (STREAM) ) == EOF, EX_IOERR )
+  PERROR_EXIT_IF( fputs( (S), (STREAM) ) == EOF, EX_IOERR )
 
 /**
  * Frees the given memory.
@@ -211,6 +212,21 @@ _GL_INLINE_HEADER_BEGIN
 #else
 #define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
 #endif /* HAVE___TYPEOF__ */
+
+/**
+ * If \a EXPR is `true`, prints an error message for `errno` to standard error
+ * and exits with status \a STATUS.
+ *
+ * @param EXPR The expression.
+ * @param STATUS The exit status code.
+ *
+ * @sa #FATAL_ERR()
+ * @sa #INTERNAL_ERR()
+ * @sa perror_exit()
+ * @sa #UNEXPECTED_INT_VALUE()
+ */
+#define PERROR_EXIT_IF( EXPR, STATUS ) \
+  BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
 
 /**
  * Cast either from or to a pointer type &mdash; similar to C++'s
@@ -297,7 +313,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE What \a OFFSET if relative to.
  */
 #define FSEEK(STREAM,OFFSET,WHENCE) \
-  perror_exit_if( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **fstat**(3), checks for an error, and exits if there was one.
@@ -306,7 +322,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param STAT A pointer to a `struct stat` to receive the result.
  */
 #define FSTAT(FD,STAT) \
-  perror_exit_if( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
+  PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
  * Calls **lseek**(3), checks for an error, and exits if there was one.
@@ -316,7 +332,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE Where \a OFFSET is relative to.
  */
 #define LSEEK(FD,OFFSET,WHENCE) \
-  perror_exit_if( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **malloc**(3) and casts the result to \a TYPE.
@@ -351,7 +367,7 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * @param c The characther to check.
  * @return Returns \c true only if \c is an ASCII printable character.
  */
-NODISCARD AD_UTIL_INLINE
+NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
@@ -554,25 +570,9 @@ unsigned long long parse_ull( char const *s );
  * @param status The exit status code.
  *
  * @sa #FATAL_ERR()
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 void perror_exit( int status );
-
-/**
- * If \a expr is `true`, prints an error message for `errno` to standard error
- * and exits.
- *
- * @param expr The expression.
- * @param status The exit status code.
- *
- * @sa #FATAL_ERR()
- * @sa perror_exit()
- */
-AD_UTIL_INLINE
-void perror_exit_if( bool expr, int status ) {
-  if ( unlikely( expr ) )
-    perror_exit( status );
-}
 
 /**
  * Gets a printable version of the given character:
@@ -607,7 +607,7 @@ void regex_compile( regex_t *re, char const *pattern );
  *
  * @param re A pointer to the wregex_t to free.
  */
-AD_UTIL_INLINE
+AD_UTIL_H_INLINE
 void regex_free( regex_t *re ) {
   regfree( re );
 }
@@ -664,7 +664,7 @@ uint64_t swap_64( uint64_t n );
  * @sa false_set()
  * @sa true_clear()
  */
-AD_UTIL_INLINE NODISCARD
+AD_UTIL_H_INLINE NODISCARD
 bool true_or_set( bool *flag ) {
   return *flag || !(*flag = true);
 }
@@ -675,7 +675,7 @@ bool true_or_set( bool *flag ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t uint16be_host16( uint16_t n ) {
+AD_UTIL_H_INLINE uint16_t uint16be_host16( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return n;
 #else /* machine words are little endian */
@@ -689,7 +689,7 @@ AD_UTIL_INLINE uint16_t uint16be_host16( uint16_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t uint16le_host16( uint16_t n ) {
+AD_UTIL_H_INLINE uint16_t uint16le_host16( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return swap_16( n );
 #else /* machine words are little endian */
@@ -704,7 +704,7 @@ AD_UTIL_INLINE uint16_t uint16le_host16( uint16_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
+AD_UTIL_H_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
   return endian == AD_ENDIAN_LITTLE ?
     uint16le_host16( n ) : uint16be_host16( n );
 }
@@ -715,7 +715,7 @@ AD_UTIL_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint32_t uint32be_host32( uint32_t n ) {
+AD_UTIL_H_INLINE uint32_t uint32be_host32( uint32_t n ) {
 #ifdef WORDS_BIGENDIAN
   return n;
 #else /* machine words are little endian */
@@ -729,7 +729,7 @@ AD_UTIL_INLINE uint32_t uint32be_host32( uint32_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint32_t uint32le_host32( uint32_t n ) {
+AD_UTIL_H_INLINE uint32_t uint32le_host32( uint32_t n ) {
 #ifdef WORDS_BIGENDIAN
   return swap_32( n );
 #else /* machine words are little endian */
@@ -744,7 +744,7 @@ AD_UTIL_INLINE uint32_t uint32le_host32( uint32_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
+AD_UTIL_H_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
   return endian == AD_ENDIAN_LITTLE ?
     uint32le_host32( n ) : uint32be_host32( n );
 }

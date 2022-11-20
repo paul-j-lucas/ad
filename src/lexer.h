@@ -71,11 +71,11 @@ ad_loc_t lexer_loc( void );
 void lexer_reset( bool hard_reset );
 
 /**
- * Gets the next token ID.
- *
- * @note The definition is provided by Flex.
+ * Flex: gets the next token ID.
  *
  * @return Returns the token ID.
+ *
+ * @note The definition is provided by Flex.
  */
 NODISCARD
 int yylex( void );

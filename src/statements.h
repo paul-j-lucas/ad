@@ -31,9 +31,9 @@
 #include <stdint.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_STATEMENTS_INLINE
-# define AD_STATEMENTS_INLINE _GL_INLINE
-#endif /* AD_STATEMENTS_INLINE */
+#ifndef AD_STATEMENTS_H_INLINE
+# define AD_STATEMENTS_H_INLINE _GL_INLINE
+#endif /* AD_STATEMENTS_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -85,7 +85,7 @@ ad_type_t* ad_type_new( ad_tid_t tid );
  * @param tid The ID of the type to get the size of.
  * @return Returns said size.
  */
-NODISCARD AD_TYPES_INLINE
+NODISCARD AD_TYPES_H_INLINE
 size_t ad_type_size( ad_tid_t tid ) {
   return tid & T_MASK_SIZE;
 }

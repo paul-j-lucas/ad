@@ -21,7 +21,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 /// @cond DOXYGEN_IGNORE
-#define AD_TYPES_INLINE _GL_EXTERN_INLINE
+#define AD_TYPES_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "types.h"
 

@@ -32,9 +32,9 @@
 #include <stdbool.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_EXPR_INLINE
-# define AD_EXPR_INLINE _GL_INLINE
-#endif /* AD_EXPR_INLINE */
+#ifndef AD_EXPR_H_INLINE
+# define AD_EXPR_H_INLINE _GL_INLINE
+#endif /* AD_EXPR_H_INLINE */
 
 /// @endcond
 
@@ -226,7 +226,7 @@ void ad_expr_free( ad_expr_t *expr );
  * @parm expr The expression to check.
  * @return Returns `true` only if \a expr is a value.
  */
-NODISCARD AD_EXPR_INLINE
+NODISCARD AD_EXPR_H_INLINE
 bool ad_expr_is_value( ad_expr_t const *expr ) {
   return expr->expr_kind == AD_EXPR_VALUE;
 }
@@ -247,7 +247,7 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
  * @return Returns said type.
  * @sa ad_expr_get_base_tid(ad_expr_t const*)
  */
-NODISCARD AD_EXPR_INLINE
+NODISCARD AD_EXPR_H_INLINE
 ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
   return ad_expr_is_value( expr ) ? expr->as.value.type.tid : T_NONE;
 }
@@ -259,7 +259,7 @@ ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
  * @param expr The expression to get the base type of.
  * @return Returns said base type.
  */
-NODISCARD AD_EXPR_INLINE
+NODISCARD AD_EXPR_H_INLINE
 ad_tid_t ad_expr_get_base_tid( ad_expr_t const *expr ) {
   return ad_expr_get_tid( expr ) & T_MASK_TYPE;
 }

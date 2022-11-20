@@ -35,11 +35,12 @@
 // standard
 #include <stdbool.h>
 #include <stddef.h>                     /* for NULL, size_t */
+#include <sys/types.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef SLIST_INLINE
-# define SLIST_INLINE _GL_INLINE
-#endif /* SLIST_INLINE */
+#ifndef SLIST_H_INLINE
+# define SLIST_H_INLINE _GL_INLINE
+#endif /* SLIST_H_INLINE */
 
 /// @endcond
 
@@ -149,15 +150,13 @@ struct slist_node {
 /**
  * Peeks at the data at \a offset of \a list.
  *
- * @note This function isn't normally called directly; use either slist_at() or
- * slist_atr() instead.
- *
  * @param list A pointer to the \ref slist.
  * @param offset The offset (starting at 0) of the data to get.  It is _not_
  * checked to ensure it's &lt; the list's length.
- * @return Returns the data from the node at \a offset or NULL if \a offset
- * &ge; slist_len().
+ * @return Returns the data from the node at \a offset.
  *
+ * @note This function isn't normally called directly; use either slist_at() or
+ * slist_atr() instead.
  * @note This is an O(n) operation.
  *
  * @sa slist_at()
@@ -166,7 +165,7 @@ struct slist_node {
  * @sa slist_front()
  */
 NODISCARD
-void* slist_at_nocheck_offset( slist_t const *list, size_t offset );
+void* slist_at_nocheck( slist_t const *list, size_t offset );
 
 /**
  * Cleans-up all memory associated with \a list but _not_ \a list itself.
@@ -303,13 +302,14 @@ void slist_push_list_front( slist_t *dst_list, slist_t *src_list );
  *
  * @note This is an O(n) operation.
  *
+ * @sa slist_at_nocheck()
  * @sa slist_atr()
  * @sa slist_back()
  * @sa slist_front()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 void* slist_at( slist_t const *list, size_t offset ) {
-  return offset < list->len ? slist_at_nocheck_offset( list, offset ) : NULL;
+  return offset < list->len ? slist_at_nocheck( list, offset ) : NULL;
 }
 
 /**
@@ -322,14 +322,15 @@ void* slist_at( slist_t const *list, size_t offset ) {
  *
  * @note This is an O(n) operation.
  *
+ * @sa slist_at_nocheck()
  * @sa slist_at()
  * @sa slist_back()
  * @sa slist_front()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 void* slist_atr( slist_t const *list, size_t roffset ) {
   return roffset < list->len ?
-    slist_at_nocheck_offset( list, list->len - (roffset + 1) ) : NULL;
+    slist_at_nocheck( list, list->len - (roffset + 1) ) : NULL;
 }
 
 /**
@@ -341,11 +342,12 @@ void* slist_atr( slist_t const *list, size_t roffset ) {
  *
  * @note This is an O(1) operation.
  *
+ * @sa slist_at_nocheck()
  * @sa slist_at()
  * @sa slist_atr()
  * @sa slist_front()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 void* slist_back( slist_t const *list ) {
   return list->tail != NULL ? list->tail->data : NULL;
 }
@@ -360,7 +362,7 @@ void* slist_back( slist_t const *list ) {
  *
  * @sa slist_len()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 bool slist_empty( slist_t const *list ) {
   return list->head == NULL;
 }
@@ -374,11 +376,12 @@ bool slist_empty( slist_t const *list ) {
  *
  * @note This is an O(1) operation.
  *
+ * @sa slist_at_nocheck()
  * @sa slist_at()
  * @sa slist_atr()
  * @sa slist_back()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 void* slist_front( slist_t const *list ) {
   return list->head != NULL ? list->head->data : NULL;
 }
@@ -390,8 +393,9 @@ void* slist_front( slist_t const *list ) {
  * @param list A pointer to the \ref slist to initialize.
  *
  * @sa slist_cleanup()
+ * @sa slist_move()
  */
-SLIST_INLINE
+SLIST_H_INLINE
 void slist_init( slist_t *list ) {
   MEM_ZERO( list );
 }
@@ -406,9 +410,28 @@ void slist_init( slist_t *list ) {
  *
  * @sa slist_empty()
  */
-SLIST_INLINE NODISCARD
+NODISCARD SLIST_H_INLINE
 size_t slist_len( slist_t const *list ) {
   return list->len;
+}
+
+/**
+ * Reinitializes \a list and returns its former value so that it can be "moved"
+ * into another list via assignment.  For example:
+ * @code
+ *  slist new_list = slist_move( old_list );
+ * @endcode
+ *
+ * @param list The \ref slist to move.
+ * @return Returns the former value of \a list.
+ *
+ * @sa slist_init()
+ */
+NODISCARD SLIST_H_INLINE
+slist_t slist_move( slist_t *list ) {
+  slist_t const rv_list = *list;
+  MEM_ZERO( list );
+  return rv_list;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

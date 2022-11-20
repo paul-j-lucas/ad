@@ -20,7 +20,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#define AD_UTIL_INLINE _GL_EXTERN_INLINE
+#define AD_UTIL_H_INLINE _GL_EXTERN_INLINE
 #include "slist.h"
 #include "util.h"
 

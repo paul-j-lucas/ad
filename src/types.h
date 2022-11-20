@@ -30,9 +30,9 @@
 #include <stdint.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_TYPES_INLINE
-# define AD_TYPES_INLINE _GL_INLINE
-#endif /* AD_TYPES_INLINE */
+#ifndef AD_TYPES_H_INLINE
+# define AD_TYPES_H_INLINE _GL_INLINE
+#endif /* AD_TYPES_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -135,30 +135,10 @@ _GL_INLINE_HEADER_BEGIN
 
 #define T_GET_SIZE(T)             (((T) & T_MASK_SIZE) + 1u)
 
-typedef unsigned                      ad_bits_t;
-typedef struct  ad_compound_statement ad_compound_statement_t;
-typedef struct  ad_declaration        ad_declaration_t;
-typedef struct  ad_char               ad_char_t;
-typedef enum    ad_endian             ad_endian_t;
-typedef struct  ad_enum               ad_enum_t;
-typedef struct  ad_enum_value         ad_enum_value_t;
-typedef struct  ad_expr               ad_expr_t;
-typedef struct  ad_int                ad_int_t;
-typedef enum    ad_int_base           ad_int_base_t;
-typedef struct  ad_loc                ad_loc_t;
-typedef struct  ad_rep                ad_rep_t;
-typedef enum    ad_rep_times          ad_rep_times_t;
-typedef struct  ad_statement          ad_statement_t;
-typedef enum    ad_statement_kind     ad_statement_kind_t;
-typedef struct  ad_struct             ad_struct_t;
-typedef struct  ad_switch             ad_switch_t;
-typedef struct  ad_switch_statement   ad_switch_statement_t;
-typedef struct  slist                 ad_switch_cases_t;
-typedef struct  ad_type               ad_type_t;
-typedef uint16_t                      ad_tid_t;
-typedef unsigned short                ad_type_size_t;
-typedef struct  slist                 ad_type_list_t;
-typedef struct  print_params          print_params_t;
+////////// enumerations ///////////////////////////////////////////////////////
+
+// Enumerations have to be declared before typedefs of them since ISO C doesn't
+// allow forward declarations of enums.
 
 /**
  * Endian-ness.
@@ -192,6 +172,44 @@ enum ad_int_base {
 };
 
 /**
+ * Repetition values.
+ */
+enum ad_rep_times {
+  AD_REP_1,                             ///< Repeats once (no repetition).
+  AD_REP_EXPR,                          ///< Repeats _expr_ times.
+  AD_REP_0_1,                           ///< Repeats 0 or 1 times (optional).
+  AD_REP_0_MORE,                        ///< Repeats 0 or more times.
+  AD_REP_1_MORE                         ///< Repeats 1 or more times.
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+typedef unsigned                      ad_bits_t;
+typedef struct  ad_compound_statement ad_compound_statement_t;
+typedef struct  ad_declaration        ad_declaration_t;
+typedef struct  ad_char               ad_char_t;
+typedef enum    ad_endian             ad_endian_t;
+typedef struct  ad_enum               ad_enum_t;
+typedef struct  ad_enum_value         ad_enum_value_t;
+typedef struct  ad_expr               ad_expr_t;
+typedef struct  ad_int                ad_int_t;
+typedef enum    ad_int_base           ad_int_base_t;
+typedef struct  ad_loc                ad_loc_t;
+typedef struct  ad_rep                ad_rep_t;
+typedef enum    ad_rep_times          ad_rep_times_t;
+typedef struct  ad_statement          ad_statement_t;
+typedef enum    ad_statement_kind     ad_statement_kind_t;
+typedef struct  ad_struct             ad_struct_t;
+typedef struct  ad_switch             ad_switch_t;
+typedef struct  ad_switch_statement   ad_switch_statement_t;
+typedef struct  slist                 ad_switch_cases_t;
+typedef struct  ad_type               ad_type_t;
+typedef uint16_t                      ad_tid_t;
+typedef unsigned short                ad_type_size_t;
+typedef struct  slist                 ad_type_list_t;
+typedef struct  print_params          print_params_t;
+
+/**
  * Enumeration type.
  */
 struct ad_enum {
@@ -223,17 +241,6 @@ struct ad_loc {
   int first_column;                     ///< First column of location range.
   int last_line;                        ///< Last line of location range.
   int last_column;                      ///< Last column of location range.
-};
-
-/**
- * Repetition values.
- */
-enum ad_rep_times {
-  AD_REP_1,                             ///< Repeats once (no repetition).
-  AD_REP_EXPR,                          ///< Repeats _expr_ times.
-  AD_REP_0_1,                           ///< Repeats 0 or 1 times (optional).
-  AD_REP_0_MORE,                        ///< Repeats 0 or more times.
-  AD_REP_1_MORE                         ///< Repeats 1 or more times.
 };
 
 /**
@@ -323,7 +330,7 @@ ad_type_t* ad_type_new( ad_tid_t tid );
  * @param tid The ID of the type to get the size of.
  * @return Returns said size.
  */
-NODISCARD AD_TYPES_INLINE
+NODISCARD AD_TYPES_H_INLINE
 size_t ad_type_size( ad_tid_t tid ) {
   return tid & T_MASK_SIZE;
 }
