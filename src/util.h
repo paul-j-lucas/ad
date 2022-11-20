@@ -347,19 +347,6 @@ NODISCARD
 unsigned long long parse_offset( char const *s );
 
 /**
- * Parses an SGR (Select Graphic Rendition) value that matches the regular
- * expression of \c n(;n)* or a semicolon-separated list of integers in the
- * range 0-255.
- *
- * See: http://en.wikipedia.org/wiki/ANSI_escape_code
- *
- * @param sgr_color The NULL-terminated allegedly SGR string to parse.
- * @return Returns \c true only only if \a s contains a valid SGR value.
- */
-NODISCARD
-bool parse_sgr( char const *sgr_color );
-
-/**
  * Parses a string into an <code>unsigned long long</code>.
  * Unlike \c strtoull(3), insists that \a s is entirely a non-negative number.
  *

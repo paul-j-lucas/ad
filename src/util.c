@@ -352,29 +352,6 @@ error:
   FATAL_ERR( EX_USAGE, "\"%s\": invalid offset\n", s );
 }
 
-bool parse_sgr( char const *sgr_color ) {
-  if ( sgr_color == NULL )
-    return false;
-  for ( ;; ) {
-    if ( unlikely( !isdigit( *sgr_color ) ) )
-      return false;
-    char *end;
-    errno = 0;
-    unsigned long long const n = strtoull( sgr_color, &end, 10 );
-    if ( unlikely( errno != 0 || n > 255 ) )
-      return false;
-    switch ( end[0] ) {
-      case '\0':
-        return true;
-      case ';':
-        sgr_color = end + 1;
-        continue;
-      default:
-        return false;
-    } // switch
-  } // for
-}
-
 unsigned long long parse_ull( char const *s ) {
   s = skip_ws( s );
   if ( likely( s[0] != '\0' || s[0] != '-' ) ) {

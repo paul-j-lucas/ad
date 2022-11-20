@@ -26,6 +26,7 @@
 
 // standard
 #include <assert.h>
+#include <ctype.h>                      /* for isdigit() */
 #include <stdio.h>                      /* for fileno() */
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
@@ -34,18 +35,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // local constant definitions
-#define SGR_START "\33[%sm"             /* start color sequence */
-#define SGR_END   "\33[m"               /* end color sequence */
-#define SGR_EL    "\33[K"               /* Erase in Line (EL) sequence */
+#define SGR_START           "\33[%sm"   /**< Start color sequence.        */
+#define SGR_END             "\33[m"     /**< End color sequence.          */
+#define SGR_EL              "\33[K"     /**< Erase in Line (EL) sequence. */
 
 /**
  * Color capability used to map an AD_COLORS/GREP_COLORS "capability" either to
  * the variable to set or the function to call.
  */
 struct color_cap {
-  char const *cap_name;                 // capability name
-  char const **cap_var_to_set;          // variable to set ...
-  void (*cap_func)( char const* );      // ... OR function to call
+  char const   *cap_name;               ///< Capability name.
+  char const  **cap_var_to_set;         ///< Pointer to variable to set.
+  void        (*cap_func)(char const*); ///< Pointer to function to call.
 };
 typedef struct color_cap color_cap_t;
 
@@ -58,6 +59,10 @@ char const *sgr_sep;
 char const *sgr_elided;
 char const *sgr_hex_match;
 char const *sgr_ascii_match;
+
+// local functions
+NODISCARD
+static bool sgr_is_valid( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -76,7 +81,7 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   if ( sgr_color != NULL ) {
     if ( sgr_color[0] == '\0' )         // empty string -> NULL = unset
       sgr_color = NULL;
-    else if ( !parse_sgr( sgr_color ) )
+    else if ( !sgr_is_valid( sgr_color ) )
       return false;
   }
   if ( cap->cap_var_to_set != NULL )
@@ -113,6 +118,40 @@ static void cap_ne( char const *sgr_color ) {
   sgr_end   = SGR_END;
 }
 
+/**
+ * Parses an SGR (Select Graphic Rendition) value that matches the regular
+ * expression of `n(;n)*` or a semicolon-separated list of integers in the
+ * range 0-255.
+ *
+ * @param sgr_color The null-terminated allegedly SGR string to parse.
+ * @return Returns `true` only if \a sgr_color contains a valid SGR value.
+ *
+ * @sa [ANSI escape code](http://en.wikipedia.org/wiki/ANSI_escape_code)
+ */
+NODISCARD
+static bool sgr_is_valid( char const *sgr_color ) {
+  if ( sgr_color == NULL )
+    return false;
+  for (;;) {
+    if ( unlikely( !isdigit( *sgr_color ) ) )
+      return false;
+    char *end;
+    errno = 0;
+    unsigned long long const n = strtoull( sgr_color, &end, 10 );
+    if ( unlikely( errno || n > 255 ) )
+      return false;
+    switch ( *end ) {
+      case '\0':
+        return true;
+      case ';':
+        sgr_color = end + 1;
+        continue;
+      default:
+        return false;
+    } // switch
+  } // for
+}
+
 #define CALL_FN(FN)   NULL, (FN)
 #define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
 
@@ -135,7 +174,7 @@ static color_cap_t const COLOR_CAPS[] = {
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool parse_grep_color( char const *sgr_color ) {
-  if ( parse_sgr( sgr_color ) ) {
+  if ( sgr_is_valid( sgr_color ) ) {
     cap_MB( sgr_color );
     return true;
   }
@@ -148,9 +187,9 @@ bool parse_grep_colors( char const *capabilities ) {
   if ( capabilities != NULL ) {
     // free this later since the sgr_* variables point to substrings
     char *next_cap = (char*)free_later( check_strdup( capabilities ) );
-    char *cap_name_val;
 
-    while ( (cap_name_val = strsep( &next_cap, ":" )) != NULL ) {
+    for ( char *cap_name_val;
+          (cap_name_val = strsep( &next_cap, ":" )) != NULL; ) {
       char const *const cap_name = strsep( &cap_name_val, "=" );
       for ( color_cap_t const *cap = COLOR_CAPS; cap->cap_name; ++cap ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
@@ -160,8 +199,9 @@ bool parse_grep_colors( char const *capabilities ) {
           break;
         }
       } // for
-    } // while
+    } // for
   }
+
   return set_something;
 }
 
