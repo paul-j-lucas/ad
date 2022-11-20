@@ -221,9 +221,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param STATUS The exit status code.
  *
  * @sa #FATAL_ERR()
- * @sa #INTERNAL_ERR()
  * @sa perror_exit()
- * @sa #UNEXPECTED_INT_VALUE()
  */
 #define PERROR_EXIT_IF( EXPR, STATUS ) \
   BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
