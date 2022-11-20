@@ -73,6 +73,19 @@ _GL_INLINE_HEADER_BEGIN
   BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
 
 /**
+ * If \a EXPR is `true`, prints an error message for `errno` to standard error
+ * and exits with status \a STATUS.
+ *
+ * @param EXPR The expression.
+ * @param STATUS The exit status code.
+ *
+ * @sa #FATAL_ERR()
+ * @sa perror_exit()
+ */
+#define PERROR_EXIT_IF( EXPR, STATUS ) \
+  BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
+
+/**
  * Cast either from or to a pointer type &mdash; similar to C++'s
  * `reinterpret_cast`, but for pointers only.
  *
@@ -141,7 +154,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE What \a OFFSET if relative to.
  */
 #define FSEEK(STREAM,OFFSET,WHENCE) \
-  perror_exit_if( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **fstat**(3), checks for an error, and exits if there was one.
@@ -150,7 +163,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param STAT A pointer to a `struct stat` to receive the result.
  */
 #define FSTAT(FD,STAT) \
-  perror_exit_if( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
+  PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
  * Calls **lseek**(3), checks for an error, and exits if there was one.
@@ -160,7 +173,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE Where \a OFFSET is relative to.
  */
 #define LSEEK(FD,OFFSET,WHENCE) \
-  perror_exit_if( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **malloc**(3) and casts the result to \a TYPE.
@@ -364,25 +377,9 @@ unsigned long long parse_ull( char const *s );
  * @param status The exit status code.
  *
  * @sa #FATAL_ERR()
- * @sa perror_exit_if()
+ * @sa #PERROR_EXIT_IF()
  */
 void perror_exit( int status );
-
-/**
- * If \a expr is `true`, prints an error message for `errno` to standard error
- * and exits.
- *
- * @param expr The expression.
- * @param status The exit status code.
- *
- * @sa #FATAL_ERR()
- * @sa perror_exit()
- */
-AD_UTIL_H_INLINE
-void perror_exit_if( bool expr, int status ) {
-  if ( unlikely( expr ) )
-    perror_exit( status );
-}
 
 /**
  * Gets a printable version of the given character:
