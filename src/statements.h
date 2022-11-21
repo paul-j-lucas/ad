@@ -52,7 +52,7 @@ struct ad_statement {
     ad_compound_statement_t compound;   ///< Compound statement.
     ad_declaration_t        declaration;///< Declaration.
     ad_switch_statement_t   st_switch;  ///< `switch` statement.
-  } as;                                 ///< Union discriminator.
+  };
   ad_statement_kind_t kind;
 };
 

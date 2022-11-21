@@ -384,7 +384,7 @@ struct ad_type {
     ad_enum_t     ad_enum;
     ad_struct_t   ad_struct;
     ad_switch_t   ad_switch;
-  } as;                                 ///< Union discriminator.
+  };
 };
 
 ////////// extern functions ///////////////////////////////////////////////////

@@ -110,7 +110,7 @@ struct ad_value_expr {
     // Miscellaneous.
     ad_type_t     cast_type;
     ad_expr_err_t err;
-  } as;                                 ///< Union discriminator.
+  };
 };
 
 /**
@@ -124,7 +124,7 @@ struct ad_expr {
     ad_binary_expr_t  binary;           ///< Binary expression.
     ad_ternary_expr_t ternary;          ///< Ternary expression.
     ad_value_expr_t   value;            ///< Value expression.
-  } as;                                 ///< Union discriminator.
+  };
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
  */
 NODISCARD AD_EXPR_H_INLINE
 ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
-  return ad_expr_is_value( expr ) ? expr->as.value.type.tid : T_NONE;
+  return ad_expr_is_value( expr ) ? expr->value.type.tid : T_NONE;
 }
 
 /**

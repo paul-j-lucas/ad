@@ -585,7 +585,7 @@ compound_statement
   : '{' statement_list_opt '}'
     {
       //$$.kind = AD_STMT_COMPOUND;
-      //$$.as.compound.statements = $2;
+      //$$.compound.statements = $2;
     }
   ;
 
@@ -749,14 +749,14 @@ additive_expr
   | additive_expr '+' multiplicative_expr
     {
       $$ = ad_expr_new( AD_EXPR_ADD );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | additive_expr '-' multiplicative_expr
     {
       $$ = ad_expr_new( AD_EXPR_SUB );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -774,8 +774,8 @@ bitwise_and_expr
   | bitwise_and_expr '&' equality_expr
     {
       $$ = ad_expr_new( AD_EXPR_BIT_AND );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -784,8 +784,8 @@ bitwise_exclusive_or_expr
   | bitwise_exclusive_or_expr '^' bitwise_and_expr
     {
       $$ = ad_expr_new( AD_EXPR_BIT_XOR );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -794,8 +794,8 @@ bitwise_or_expr
   | bitwise_or_expr '|' bitwise_exclusive_or_expr
     {
       $$ = ad_expr_new( AD_EXPR_BIT_OR );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -814,9 +814,9 @@ conditional_expr
   | logical_or_expr '?' expr ':' conditional_expr
     {
       $$ = ad_expr_new( AD_EXPR_IF_ELSE );
-      $$->as.ternary.cond_expr = $1;
-      $$->as.ternary.sub_expr[0] = $3;
-      $$->as.ternary.sub_expr[1] = $5;
+      $$->ternary.cond_expr = $1;
+      $$->ternary.sub_expr[0] = $3;
+      $$->ternary.sub_expr[1] = $5;
     }
   ;
 
@@ -825,14 +825,14 @@ equality_expr
   | equality_expr "==" relational_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_EQ );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | equality_expr "!=" relational_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_NOT_EQ );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -841,8 +841,8 @@ logical_and_expr
   | logical_and_expr "&&" logical_or_expr
     {
       $$ = ad_expr_new( AD_EXPR_LOG_AND );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -851,8 +851,8 @@ logical_or_expr
   | logical_or_expr "||" logical_and_expr
     {
       $$ = ad_expr_new( AD_EXPR_LOG_OR );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -861,20 +861,20 @@ multiplicative_expr
   | multiplicative_expr '*' cast_expr
     {
       $$ = ad_expr_new( AD_EXPR_MATH_MUL );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | multiplicative_expr '/' cast_expr
     {
       $$ = ad_expr_new( AD_EXPR_MATH_DIV );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | multiplicative_expr '%' cast_expr
     {
       $$ = ad_expr_new( AD_EXPR_MATH_MOD );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -942,8 +942,8 @@ primary_expr
   | Y_INT_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE );
-   // $$.as.value.type = xx;
-      $$.as.value.as.i64 = $1;
+   // $$.value.type = xx;
+      $$.value.i64 = $1;
     }
   | Y_STR_LIT
     {
@@ -958,26 +958,26 @@ relational_expr
   | relational_expr '<' shift_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_LESS );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | relational_expr '>' shift_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_GREATER );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | relational_expr "<=" shift_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_LESS_EQ );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | relational_expr ">=" shift_expr
     {
       $$ = ad_expr_new( AD_EXPR_REL_GREATER_EQ );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -986,14 +986,14 @@ shift_expr
   | shift_expr "<<" additive_expr
     {
       $$ = ad_expr_new( AD_EXPR_BIT_SHIFT_LEFT );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | shift_expr ">>" additive_expr
     {
       $$ = ad_expr_new( AD_EXPR_BIT_SHIFT_RIGHT );
-      $$->as.binary.lhs_expr = $1;
-      $$->as.binary.rhs_expr = $3;
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
