@@ -27,6 +27,8 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 # Checks for programs.
 AC_LANG(C)
 AC_PROG_CC
+AS_IF([test "x$ac_cv_prog_cc_c11" = xno],
+  [AC_MSG_ERROR([a C11 compiler is required to compile $PACKAGE_NAME])])
 gl_EARLY
 AX_PROG_FLEX(
   [AC_DEFINE([LEX], [flex], ["flex" found])],
