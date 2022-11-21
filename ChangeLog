@@ -1,3 +1,68 @@
+2022-11-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Now requiring C11.
+
+2022-11-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * reverse.c, util.h: s/perror_exit_if/PERROR_EXIT_IF/
+   * unicode.c, unicode.h, util.c, util.h: Inserted "_H" into inline macros.
+   * color.c, color.h, util.c, util.h: Moved parse_sgr() to sgr_is_valid() in
+     color.c.
+   * configure.ac: Added more -W flags.
+
+2022-08-17  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Now once space after ) in help.
+
+2022-07-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Formatting improvements.
+
+2022-07-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, common.h, match.h, options.c, options.h, unicode.h, util.h: Global
+     variable reorganization.
+
+2022-07-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * unicode.h: STATIC_CAST.
+   * ad.c, dump.c, options.c, reverse.c, unicode.c, util.c: Using STATIC_CAST()
+     more.
+   * ad.c, dump.c, reverse.c, util.h: s/REINTERPRET_CAST/POINTER_CAST/
+   * match.c, options.c, reverse.c, util.c, util.h: s/PMESSAGE_EXIT/FATAL_ERR/
+
+2022-07-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * bootstrap: Added bootstrap.
+
+2022-07-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c, color.h, dump.c, match.c, match.h, options.c, options.h,
+     pjl_config.h, reverse.c, unicode.h, util.c, util.h: Now using attribute.h.
+   * lib/Makefile.am, attribute.h, stdnoreturn.in.h, gnulib-cache.m4,
+     gnulib-comp.m4, stdnoreturn.m4: Updated Gnulib.
+   * lib/Makefile.am, stdlib.in.h, string.in.h, verify.h, extern-inline.m4,
+     gnulib-common.m4: Updated GnuLib.
+
+2022-01-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, c++defs.h, errno.in.h,
+     getdelim.c, getline.c, getopt-cdefs.in.h, getopt-core.h, getopt-ext.h,
+     getopt-pfx-core.h, getopt-pfx-ext.h, getopt.c, getopt.in.h, getopt1.c,
+     getopt_int.h, gettext.h, intprops.h, limits.in.h, malloc.c, stdbool.in.h,
+     stddef.in.h, stdint.in.h, stdio-read.c, stdio-write.c, stdio.in.h,
+     stdlib.in.h, strdup.c, strerror-override.c, strerror-override.h,
+     strerror.c, string.in.h, strsep.c, sys_types.in.h, sysexits.in.h,
+     unistd.c, unistd.in.h, verify.h, warn-on-use.h, 00gnulib.m4,
+     absolute-header.m4, errno_h.m4, extensions.m4, extern-inline.m4,
+     getdelim.m4, getline.m4, getopt.m4, gnulib-cache.m4, gnulib-common.m4,
+     gnulib-comp.m4, gnulib-tool.m4, include_next.m4, limits-h.m4, malloc.m4,
+     multiarch.m4, nocrash.m4, off_t.m4, pid_t.m4, ssize_t.m4, std-gnu11.m4,
+     stdbool.m4, stddef_h.m4, stdint.m4, stdio_h.m4, stdlib_h.m4, strdup.m4,
+     strerror.m4, string_h.m4, strsep.m4, sys_socket_h.m4, sys_types_h.m4,
+     sysexits.m4, unistd_h.m4, vararrays.m4, warn-on-use.m4, wchar_t.m4,
+     wint_t.m4, zzgnulib.m4: Updated Gnulib.
+
 2021-12-28  Paul J. Lucas <paul@lucasmail.org>
 
    * lib/Makefile.am, _Noreturn.h, getopt.c, gettext.h, intprops.h,
