@@ -34,6 +34,12 @@ _GL_INLINE_HEADER_BEGIN
 # define AD_TYPES_H_INLINE _GL_INLINE
 #endif /* AD_TYPES_H_INLINE */
 
+#define AD_EXPR_UNARY       0x0100      /**< Unary expression.    */
+#define AD_EXPR_BINARY      0x0200      /**< Binary expression.   */
+#define AD_EXPR_TERNARY     0x0400      /**< Ternary expression.  */
+
+#define AD_EXPR_MASK        0x0F00      ///< Expression type bitmask.
+
 ///////////////////////////////////////////////////////////////////////////////
 
 //
@@ -161,6 +167,62 @@ struct ad_enum_value {
 };
 
 /**
+ * Expression errors.
+ */
+enum ad_expr_err {
+  AD_ERR_NONE,                          ///< No error.
+  AD_ERR_BAD_OPERAND,                   ///< Bad operand, e.g., & for double.
+  AD_ERR_DIV_0,                         ///< Divide by 0.
+};
+
+/**
+ * The expression kind.
+ */
+enum ad_expr_kind {
+  AD_EXPR_NONE,                         ///< No expression.
+  AD_EXPR_ERROR,                        ///< Error expression.
+
+  AD_EXPR_VALUE,                        ///< Constant value expression.
+
+  // unary
+  AD_EXPR_BIT_COMP = AD_EXPR_UNARY + 1, ///< Bitwise-complement expression.
+  AD_EXPR_MATH_NEG,                     ///< Negation expression.
+  AD_EXPR_PTR_ADDR,                     ///< Address-of expression.
+  AD_EXPR_PTR_DEREF,                    ///< Dereference expression.
+
+  // binary
+  AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
+  AD_EXPR_CAST,                         ///< Cast expression.
+
+  AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
+  AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.
+  AD_EXPR_BIT_SHIFT_LEFT,               ///< Bitwise-left-shift expression.
+  AD_EXPR_BIT_SHIFT_RIGHT,              ///< Bitwise-right-shift expression.
+  AD_EXPR_BIT_XOR,                      ///< Bitwise-exclusive-or expression.
+
+  AD_EXPR_LOG_AND,                      ///< Logical-and expression.
+  AD_EXPR_LOG_NOT,                      ///< Logical-not expression.
+  AD_EXPR_LOG_OR,                       ///< Logical-or expression.
+  AD_EXPR_LOG_XOR,                      ///< Logical-exclusive-or expression.
+
+  AD_EXPR_MATH_ADD,                     ///< Addition expression.
+  AD_EXPR_MATH_SUB,                     ///< Subtraction expression.
+  AD_EXPR_MATH_MUL,                     ///< Multiplication expression.
+  AD_EXPR_MATH_DIV,                     ///< Division expression.
+  AD_EXPR_MATH_MOD,                     ///< Modulus expression.
+
+  AD_EXPR_REL_EQ,                       ///< Equal.
+  AD_EXPR_REL_NOT_EQ,                   ///< Not equal.
+  AD_EXPR_REL_GREATER,                  ///< Greater than.
+  AD_EXPR_REL_GREATER_EQ,               ///< Greater than or equal to.
+  AD_EXPR_REL_LESS,                     ///< Less than.
+  AD_EXPR_REL_LESS_EQ,                  ///< Less than or equal to.
+
+  // ternary
+  AD_EXPR_IF_ELSE = AD_EXPR_TERNARY + 1,///< If-else ?: expression.
+};
+
+/**
  * Integer base (for printing).
  */
 enum ad_int_base {
@@ -182,8 +244,18 @@ enum ad_rep_times {
   AD_REP_1_MORE                         ///< Repeats 1 or more times.
 };
 
+/**
+ * TODO
+ */
+enum ad_statement_kind {
+  AD_STMT_COMPOUND,
+  AD_STMT_DECLARATION,
+  AD_STMT_SWITCH
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef struct  ad_binary_expr        ad_binary_expr_t;
 typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef struct  ad_declaration        ad_declaration_t;
@@ -192,8 +264,12 @@ typedef enum    ad_endian             ad_endian_t;
 typedef struct  ad_enum               ad_enum_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
+typedef enum    ad_expr_err           ad_expr_err_t;
+typedef enum    ad_expr_kind          ad_expr_kind_t;
+typedef struct  ad_field              ad_field_t;
 typedef struct  ad_int                ad_int_t;
 typedef enum    ad_int_base           ad_int_base_t;
+typedef struct  ad_keyword            ad_keyword_t;
 typedef struct  ad_loc                ad_loc_t;
 typedef struct  ad_rep                ad_rep_t;
 typedef enum    ad_rep_times          ad_rep_times_t;
@@ -202,11 +278,15 @@ typedef enum    ad_statement_kind     ad_statement_kind_t;
 typedef struct  ad_struct             ad_struct_t;
 typedef struct  ad_switch             ad_switch_t;
 typedef struct  ad_switch_statement   ad_switch_statement_t;
+typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  slist                 ad_switch_cases_t;
+typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
 typedef uint16_t                      ad_tid_t;
 typedef unsigned short                ad_type_size_t;
 typedef struct  slist                 ad_type_list_t;
+typedef struct  ad_unary_expr         ad_unary_expr_t;
+typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
 
 /**

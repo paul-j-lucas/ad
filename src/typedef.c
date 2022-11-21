@@ -29,7 +29,7 @@
 #include "common.h"
 #include "options.h"
 #include "red_black.h"
-#include "type.h"
+#include "types.h"
 #include "typedef.h"
 #include "util.h"
 

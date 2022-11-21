@@ -41,6 +41,7 @@
 #include "options.h"
 #include "print.h"
 #include "slist.h"
+#include "statements.h"
 #include "types.h"
 //#include "typedefs.h"
 #include "util.h"
@@ -298,7 +299,7 @@ static void parse_cleanup( bool fatal_error ) {
   //
   lexer_reset( /*hard_reset=*/fatal_error );
 
-  slist_cleanup( &expr_gc_list, NULL, (slist_free_fn_t)&ad_expr_free );
+  slist_cleanup( &expr_gc_list, (slist_free_fn_t)&ad_expr_free );
 }
 
 /**
@@ -348,6 +349,7 @@ static void yyerror( char const *msg ) {
 
 %union {
   unsigned            bitmask;    // multipurpose bitmask (used by show)
+  ad_endian_t         endian_val;
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
   ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
@@ -374,11 +376,12 @@ static void yyerror( char const *msg ) {
 %token  <expr_kind> Y_FALSE
 %token  <expr_kind> Y_FLOAT
 %token  <expr_kind> Y_INT
-%token  <expr_kind> Y_UINT
+%token              Y_OFFSETOF
 %token  <expr_kind> Y_STRUCT
 %token              Y_SWITCH
 %token  <expr_kind> Y_TRUE
 %token  <expr_kind> Y_TYPEDEF
+%token  <expr_kind> Y_UINT
 %token  <expr_kind> Y_UTF
 
                     //
@@ -458,7 +461,7 @@ static void yyerror( char const *msg ) {
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
 %token  <str_lit>   Y_STR_LIT
-%token  <XXXXX>     Y_TYPEDEF_TYPE
+%token  <tid>       Y_TYPEDEF_TYPE
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -511,18 +514,19 @@ static void yyerror( char const *msg ) {
 %type <expr>        unary_expr
 
                     // Statements
-%type <statement>   compound_statement
-%type <statement>   declaration
-%type <statement>   statement
+//%type <statement>   compound_statement
+//%type <statement>   declaration
+//%type <statement>   statement
 %type <list>        statement_list statement_list_opt
-%type <statement>   switch_statement
+//%type <statement>   switch_statement
 
                     // Miscellaneous
 %type <list>        argument_expr_list
 %type <expr_kind>   assign_op
 %type <name>        name_exp name_opt
 %type <str_lit>     str_lit str_lit_exp
-%type <int_val>     type_endian_opt
+//%type <endian_val>     type_endian_opt
+%type <endian_val>  type_endian_exp
 %type <name>        type_name_exp
 %type <expr_kind>   unary_op
 
@@ -554,19 +558,19 @@ statement_list_opt
 statement_list
   : statement_list statement
     {
-      $$ = $1;
-      slist_push_back( &$$, $1 );
+      //$$ = $1;
+      //slist_push_back( &$$, $1 );
     }
   | statement
     {
-      slist_init( &$$ );
-      slist_push_back( &$$, $1 );
+      //slist_init( &$$ );
+      //slist_push_back( &$$, $1 );
     }
   ;
 
 statement
   : compound_statement
-  | declaration semi_exp          { $$ = $1; }
+  | declaration semi_exp
   | switch_statement
   | error
     {
@@ -580,8 +584,8 @@ statement
 compound_statement
   : '{' statement_list_opt '}'
     {
-      $$.kind = AD_STMT_COMPOUND;
-      $$.as.compound.statements = $2;
+      //$$.kind = AD_STMT_COMPOUND;
+      //$$.as.compound.statements = $2;
     }
   ;
 
@@ -609,12 +613,12 @@ enumerator_list
   : enumerator_list ',' enumerator
     {
       $$ = $1;
-      slist_push_tail( &$$, $3 );
+      slist_push_back( &$$, $3 );
     }
   | enumerator
     {
       slist_init( &$$ );
-      slist_push_tail( &$$, $1 );
+      slist_push_back( &$$, $1 );
     }
   ;
 
@@ -641,6 +645,7 @@ field_declaration
     {
       ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
       // TODO
+      free( $2 );
     }
   ;
 
@@ -920,11 +925,11 @@ argument_expr_list
   : assign_expr
     {
       slist_init( &$$ );
-      slist_push_tail( &$$, $1 );
+      slist_push_back( &$$, $1 );
     }
   | argument_expr_list ',' assign_expr
     {
-      slist_push_tail( &$$, $3 );
+      slist_push_back( &$$, $3 );
     }
   ;
 

@@ -50,7 +50,6 @@ struct ad_keyword {
   int         yy_token_id;              ///< Bison token number.
   ad_tid_t    tid;                      ///< Type the keyword maps to, if any.
 };
-typedef struct ad_keyword ad_keyword_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 

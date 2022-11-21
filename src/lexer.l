@@ -33,7 +33,7 @@
 /** @endcond */
 
 // local
-#include "ad.h"                         /* must go first */
+#include "common.h"                     /* must go first */
 #include "lexer.h"
 #include "keyword.h"
 #include "literals.h"
@@ -299,17 +299,17 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 1. See if it's an ad keyword.
                 //
-                keyword_t const *const ak = ad_keyword_find( lexer_token );
-                if ( ak != NULL )
-                  return ak->yy_token_id;
+                keyword_t const *const k = ad_keyword_find( lexer_token );
+                if ( k != NULL )
+                  return k->yy_token_id;
 
                 //
                 // 2. See if it's a typedef'd type.
                 //
                 SLIST_TEMP_INIT_VAR( typedef_name, lexer_token );
-                c_typedef_t const *const t = c_typedef_find( &typedef_name );
+                ad_typedef_t const *const t = ad_typedef_find( &typedef_name );
                 if ( t != NULL ) {
-                  yylval.c_typedef = t;
+                  yylval.ad_typedef = t;
                   return Y_TYPEDEF_TYPE;
                 }
 

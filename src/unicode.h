@@ -118,7 +118,7 @@ bool should_utf8( utf8_when_t when );
  * successfully.
  */
 NODISCARD
-bool utf16_32( char16_t const *u16, size_t u16_size, ad_endian_t endian,
+bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
                char32_t *u32 );
 
 /**

@@ -37,12 +37,6 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-enum ad_statement_kind {
-  AD_STMT_COMPOUND,
-  AD_STMT_DECLARATION,
-  AD_STMT_SWITCH
-};
-
 struct ad_compound_statement {
   slist statements;
 };

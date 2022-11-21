@@ -94,7 +94,7 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
-bool utf16_32( char16_t const *p16, size_t size16, ad_endian_t endian,
+bool utf16_32( char16_t const *p16, size_t size16, endian_t endian,
                char32_t *p32 ) {
   assert( p16 != NULL );
   assert( p32 != NULL );

@@ -23,6 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "common.h"
 
 // standard
 #include <errno.h>
@@ -212,6 +213,11 @@ _GL_INLINE_HEADER_BEGIN
 #else
 #define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
 #endif /* HAVE___TYPEOF__ */
+
+/**
+ * No-operation statement.  (Useful for a `goto` target.)
+ */
+#define NO_OP                     ((void)0)
 
 /**
  * If \a EXPR is `true`, prints an error message for `errno` to standard error
@@ -525,7 +531,7 @@ size_t int_len( uint64_t n );
  * @param bytes The number of bytes to use; must be 1-8.
  * @param endian The endianness to use.
  */
-void int_rearrange_bytes( uint64_t *n, size_t bytes, ad_endian_t endian );
+void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
 
 /**
  * Checks whether the given file descriptor refers to a regular file.
@@ -702,8 +708,8 @@ AD_UTIL_H_INLINE uint16_t uint16le_host16( uint16_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint16_t uint16xx_host16( uint16_t n, ad_endian_t endian ) {
-  return endian == AD_ENDIAN_LITTLE ?
+AD_UTIL_H_INLINE uint16_t uint16xx_host16( uint16_t n, endian_t endian ) {
+  return endian == ENDIAN_LITTLE ?
     uint16le_host16( n ) : uint16be_host16( n );
 }
 
@@ -742,8 +748,8 @@ AD_UTIL_H_INLINE uint32_t uint32le_host32( uint32_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint32_t uint32xx_host32( uint32_t n, ad_endian_t endian ) {
-  return endian == AD_ENDIAN_LITTLE ?
+AD_UTIL_H_INLINE uint32_t uint32xx_host32( uint32_t n, endian_t endian ) {
+  return endian == ENDIAN_LITTLE ?
     uint32le_host32( n ) : uint32be_host32( n );
 }
 

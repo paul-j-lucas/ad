@@ -39,11 +39,11 @@
 /// @endcond
 
 /**
- * Convenience macro for specifying a \ref c_typedef literal having \a TYPE.
+ * Convenience macro for specifying a \ref ad_typedef literal having \a TYPE.
  *
  * @param TYPE The type.
  */
-#define C_TYPEDEF_LIT(TYPE)       (c_typedef_t const){ (TYPE) }
+#define AD_TYPEDEF_LIT(TYPE)      (ad_typedef_t const){ (TYPE) }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -117,5 +117,5 @@ ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
 
 /** @} */
 
-#endif /* cdecl_c_typedef_H */
+#endif /* cdecl_typedef_H */
 /* vim:set et sw=2 ts=2: */
