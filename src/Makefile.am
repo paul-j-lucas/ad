@@ -33,9 +33,8 @@ BUILT_SOURCES =	parser.c parser.h lexer.c
 ad_SOURCES =	parser.y\
 		lexer.l lexer.h \
 		pjl_config.h \
-		ad.c \
+		ad.c ad.h \
 		color.c color.h \
-		common.h \
 		dam_lev.c dam_lev.h \
 		did_you_mean.c did_you_mean.h \
 		dump.c \

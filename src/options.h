@@ -23,6 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 #include "types.h"
 
 // standard
