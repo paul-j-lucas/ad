@@ -41,7 +41,6 @@
 #include "options.h"
 #include "print.h"
 #include "slist.h"
-#include "statements.h"
 #include "types.h"
 //#include "typedefs.h"
 #include "util.h"
@@ -250,21 +249,17 @@ static inline char const* printable_token( void ) {
  * @param file The name of the file where this function was called from.
  * @param line The line number within \a file where this function was called
  * from.
+ * @param dym_kinds The bitwise-or of the kind(s) of things possibly meant.
  * @param format A `printf()` style format string.
  * @param ... Arguments to print.
  */
-static void fl_elaborate_error( char const *file, int line, char const *format,
+static void fl_elaborate_error( char const *file, int line,
+                                dym_kind_t dym_kinds, char const *format,
                                 ... ) {
   assert( format != NULL );
 
   EPUTS( ": " );
-#ifdef ENABLE_AD_DEBUG
-  if ( opt_ad_debug )
-    EPRINTF( " (%s:%d)", file, line );
-#else
-  (void)file;
-  (void)line;
-#endif /* ENABLE_AD_DEBUG */
+  print_debug_file_line( file, line );
 
   char const *const error_token = printable_token();
   if ( error_token != NULL )
@@ -276,12 +271,13 @@ static void fl_elaborate_error( char const *file, int line, char const *format,
   va_end( args );
 
   if ( error_token != NULL ) {
-    keyword_t const *const k = ad_keyword_find( error_token );
+    ad_keyword_t const *const k = ad_keyword_find( error_token );
     if ( k != NULL )
       EPRINTF( " (\"%s\" is a keyword)", error_token );
+    print_suggestions( dym_kinds, error_token );
   }
 
-  EPUTS( '\n' );
+  EPUTC( '\n' );
 }
 
 /**
@@ -325,7 +321,7 @@ static void parse_cleanup( bool fatal_error ) {
 static void yyerror( char const *msg ) {
   assert( msg != NULL );
 
-  c_loc_t loc = lexer_loc();
+  ad_loc_t loc = lexer_loc();
   print_loc( &loc );
 
   SGR_START_COLOR( stderr, error );
@@ -643,7 +639,7 @@ field_declaration
 
   | Y_TYPEDEF_TYPE name_exp array_opt
     {
-      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
+      //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
       // TODO
       free( $2 );
     }
@@ -1202,16 +1198,6 @@ semi_exp
     {
       elaborate_error( "';' expected" );
     }
-  ;
-
-semi_opt
-  : /* empty */
-  | ';'
-  ;
-
-semi_or_end
-  : ';'
-  | Y_END
   ;
 
 str_lit

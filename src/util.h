@@ -121,6 +121,28 @@ _GL_INLINE_HEADER_BEGIN
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
 /**
+ * Shorthand for printing a character to standard error.
+ *
+ * @param C The character to print.
+ *
+ * @sa #EPRINTF()
+ * @sa #EPUTS()
+ * @sa #FPUTC()
+ */
+#define EPUTC(C)                  FPUTC( (C), stderr )
+
+/**
+ * Shorthand for printing a C string to standard error.
+ *
+ * @param S The C string to print.
+ *
+ * @sa #EPRINTF()
+ * @sa #EPUTC()
+ * @sa #FPUTS()
+ */
+#define EPUTS(S)                  FPUTS( (S), stderr )
+
+/**
  * Prints an error message to standard error and exits with \a STATUS code.
  *
  * @param STATUS The status code to **exit**(3) with.

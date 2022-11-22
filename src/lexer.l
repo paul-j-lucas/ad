@@ -38,6 +38,7 @@
 #include "keyword.h"
 #include "literals.h"
 #include "options.h"
+#include "typedef.h"
 #include "util.h"
 #include "parser.h"                     /* must go last */
 

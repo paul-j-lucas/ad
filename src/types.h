@@ -340,6 +340,27 @@ struct ad_field {
   ad_rep_t    rep;
 };
 
+struct ad_compound_statement {
+  slist_t statements;
+};
+
+struct ad_declaration {
+  int PLACEHOLDER;
+};
+
+struct ad_switch_statement {
+  int PLACEHOLDER;
+};
+
+struct ad_statement {
+  union {
+    ad_compound_statement_t compound;   ///< Compound statement.
+    ad_declaration_t        declaration;///< Declaration.
+    ad_switch_statement_t   st_switch;  ///< `switch` statement.
+  };
+  ad_statement_kind_t kind;
+};
+
 /**
  * struct type.
  */
