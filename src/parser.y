@@ -30,7 +30,7 @@
 /** @endcond */
 
 // local
-#include "common.h"                     /* must go first */
+#include "ad.h"                         /* must go first */
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
 #endif /* ENABLE_AD_DEBUG */
