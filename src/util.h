@@ -23,7 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
+#include "ad.h"
 
 // standard
 #include <errno.h>

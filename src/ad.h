@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/common.h
+**      src/ad.h
 **
 **      Copyright (C) 2015-2021  Paul J. Lucas
 **
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_common_H
-#define ad_common_H
+#ifndef ad_ad_H
+#define ad_ad_H
 
 // local
 #include "pjl_config.h"                 /* must go first */
@@ -64,5 +64,5 @@ extern uint64_t     search_number;      ///< The number to search for.
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif /* ad_common_H */
+#endif /* ad_ad_H */
 /* vim:set et sw=2 ts=2: */

@@ -25,9 +25,8 @@ LDADD = $(top_builddir)/lib/libgnu.a
 
 ad_SOURCES = \
 	pjl_config.h \
-	ad.c \
+	ad.c ad.h \
 	color.c color.h \
-	common.h \
 	dump.c \
 	match.c match.h \
 	options.c options.h \

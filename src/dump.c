@@ -20,8 +20,8 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 #include "color.h"
-#include "common.h"
 #include "match.h"
 #include "options.h"
 #include "unicode.h"
