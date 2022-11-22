@@ -32,12 +32,16 @@
 #include <string.h>                     /* for str...() */
 #include <unistd.h>                     /* for isatty() */
 
-///////////////////////////////////////////////////////////////////////////////
+//
+// Color capabilities.  Names containing Upper-case are unique to cdecl and
+// upper-case to avoid conflict with gcc.
+//
+#define CAP_BYTE_OFFSET           "bn"
+#define CAP_ELIDED_COUNT          "EC"
+#define CAP_MATCHED_BOTH          "MB"
+#define CAP_SEPARATOR             "se"
 
-// local constant definitions
-#define SGR_START           "\33[%sm"   /**< Start color sequence.        */
-#define SGR_END             "\33[m"     /**< End color sequence.          */
-#define SGR_EL              "\33[K"     /**< Erase in Line (EL) sequence. */
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Color capability used to map an AD_COLORS/GREP_COLORS "capability" either to
@@ -49,6 +53,12 @@ struct color_cap {
   void        (*cap_func)(char const*); ///< Pointer to function to call.
 };
 typedef struct color_cap color_cap_t;
+
+char const  COLORS_DEFAULT[] =
+  CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
+  CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
+  CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+  CAP_SEPARATOR     "=" SGR_FG_CYAN;
 
 // extern variable definitions
 bool        colorize;
@@ -71,10 +81,10 @@ static bool sgr_is_valid( char const* );
  *
  * @param cap The color capability to set the color for.
  * @param sgr_color The SGR color to set; or null or empty to unset.
- * @return Returns \c true only if \a sgr_color is valid.
+ * @return Returns `true` only if \a sgr_color is valid.
  */
 NODISCARD
-static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
+static bool sgr_cap_set( color_cap_t const *cap, char const *sgr_color ) {
   assert( cap != NULL );
   assert( cap->cap_var_to_set != NULL || cap->cap_func != NULL );
 
@@ -89,33 +99,6 @@ static bool cap_set( color_cap_t const *cap, char const *sgr_color ) {
   else
     (*cap->cap_func)( sgr_color );
   return true;
-}
-
-/**
- * Sets both the hex and ASCII match color.
- * (This function is needed for the color capabilities table to support the
- * "MB" and "mt" capabilities.)
- *
- * @param sgr_color The SGR color to set; or null or empty to unset.
- */
-static void cap_MB( char const *sgr_color ) {
-  assert( sgr_color != NULL );
-  if ( sgr_color[0] == '\0' )           // empty string -> NULL = unset
-    sgr_color = NULL;
-  sgr_ascii_match = sgr_hex_match = sgr_color;
-}
-
-/**
- * Turns off using the EL (Erase in Line) sequence.
- * (This function is needed for the color capabilities table to support the
- * "ne" capability.)
- *
- * @param sgr_color Not used.
- */
-static void cap_ne( char const *sgr_color ) {
-  (void)sgr_color;                      // suppress warning
-  sgr_start = SGR_START;
-  sgr_end   = SGR_END;
 }
 
 /**
@@ -152,7 +135,34 @@ static bool sgr_is_valid( char const *sgr_color ) {
   } // for
 }
 
-#define CALL_FN(FN)   NULL, (FN)
+/**
+ * Sets both the hex and ASCII match color.
+ * (This function is needed for the color capabilities table to support the
+ * "MB" and "mt" capabilities.)
+ *
+ * @param sgr_color The SGR color to set; or null or empty to unset.
+ */
+static void sgr_set_cap_MB( char const *sgr_color ) {
+  assert( sgr_color != NULL );
+  if ( sgr_color[0] == '\0' )           // empty string -> NULL = unset
+    sgr_color = NULL;
+  sgr_ascii_match = sgr_hex_match = sgr_color;
+}
+
+/**
+ * Turns off using the EL (Erase in Line) sequence.
+ * (This function is needed for the color capabilities table to support the
+ * "ne" capability.)
+ *
+ * @param sgr_color Not used.
+ */
+static void sgr_set_cap_ne( char const *sgr_color ) {
+  (void)sgr_color;                      // suppress warning
+  sgr_start = SGR_START;
+  sgr_end   = SGR_END;
+}
+
+#define CALL_FN(FN)   NULL, (sgr_ ## FN)
 #define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
 
 /**
@@ -164,10 +174,10 @@ static color_cap_t const COLOR_CAPS[] = {
   { "EC", SET_SGR( elided       ) },    // elided count
   { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
   { "MH", SET_SGR( hex_match    ) },    // matched hex
-  { "MB", CALL_FN( cap_MB       ) },    // matched both
-  { "mt", CALL_FN( cap_MB       ) },    // grep: matched text (both)
+  { "MB", CALL_FN( set_cap_MB   ) },    // matched both
+  { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
   { "se", SET_SGR( sep          ) },    // grep: separator
-  { "ne", CALL_FN( cap_ne       ) },    // grep: no EL on SGR
+  { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
   { NULL, NULL, NULL              }
 };
 
@@ -175,7 +185,7 @@ static color_cap_t const COLOR_CAPS[] = {
 
 bool parse_grep_color( char const *sgr_color ) {
   if ( sgr_is_valid( sgr_color ) ) {
-    cap_MB( sgr_color );
+    sgr_set_cap_MB( sgr_color );
     return true;
   }
   return false;
@@ -194,7 +204,7 @@ bool parse_grep_colors( char const *capabilities ) {
       for ( color_cap_t const *cap = COLOR_CAPS; cap->cap_name; ++cap ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
           char const *const cap_value = strsep( &cap_name_val, "=" );
-          if ( cap_set( cap, cap_value ) )
+          if ( sgr_cap_set( cap, cap_value ) )
             set_something = true;
           break;
         }

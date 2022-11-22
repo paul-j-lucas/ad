@@ -51,14 +51,34 @@
 #define SGR_CAP_SEP         ":"         /**< Capability separator.        */
 #define SGR_SEP             ";"         /**< Attribute/RGB separator.     */
 
+#define SGR_START           "\33[%sm"   /**< Start color sequence.        */
+#define SGR_END             "\33[m"     /**< End color sequence.          */
+#define SGR_EL              "\33[K"     /**< Erase in Line (EL) sequence. */
+
 /** When to colorize default. */
 #define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
 
-#define COLORS_DEFAULT                                                  \
-  /* byte offset  */ "bn=" SGR_FG_GREEN                     SGR_CAP_SEP \
-  /* elided count */ "EC=" SGR_FG_MAGENTA                   SGR_CAP_SEP \
-  /* matched both */ "MB=" SGR_BG_RED     SGR_SEP SGR_BOLD  SGR_CAP_SEP \
-  /* separator    */ "se=" SGR_FG_CYAN
+/**
+ * Starts printing in the predefined \a COLOR.
+ *
+ * @param STREAM The `FILE` to print to.
+ * @param COLOR The predefined color without the `sgr_` prefix.
+ *
+ * @sa #SGR_END_COLOR
+ */
+#define SGR_START_COLOR(STREAM,COLOR) BLOCK(  \
+  if ( colorize && (sgr_ ## COLOR) != NULL )  \
+    FPRINTF( (STREAM), SGR_START SGR_EL, (sgr_ ## COLOR) ); )
+
+/**
+ * Ends printing in color.
+ *
+ * @param STREAM The `FILE` to print to.
+ *
+ * @sa #SGR_START_COLOR
+ */
+#define SGR_END_COLOR(STREAM) \
+  BLOCK( if ( colorize ) FPUTS( SGR_END SGR_EL, (STREAM) ); )
 
 /**
  * When to colorize output.
@@ -70,6 +90,9 @@ enum color_when {
   COLOR_ALWAYS                          // always colorize
 };
 typedef enum color_when color_when_t;
+
+// extern constants
+extern char const   COLORS_DEFAULT[];   ///< Default colors.
 
 // extern variables
 extern bool         colorize;           // dump in color?
