@@ -31,7 +31,6 @@
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
-#include <libgen.h>                     /* for basename() */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
@@ -541,7 +540,7 @@ size_t get_offset_width( void ) {
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
-void parse_options( int argc, char *argv[] ) {
+void parse_options( int argc, char const *argv[] ) {
   color_when_t  color_when = COLOR_WHEN_DEFAULT;
   size_t        max_lines = 0;
   bool          print_version = false;
@@ -549,11 +548,13 @@ void parse_options( int argc, char *argv[] ) {
   char32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
-  me = basename( argv[0] );
   opterr = 1;
 
   for ( ;; ) {
-    int const opt = getopt_long( argc, argv, SHORT_OPTS, LONG_OPTS, NULL );
+    int const opt = getopt_long(
+      argc, CONST_CAST( char**, argv ), SHORT_OPTS, LONG_OPTS,
+      /*longindex=*/NULL
+    );
     if ( opt == -1 )
       break;
     SET_OPTION( opt );

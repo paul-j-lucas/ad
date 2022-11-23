@@ -56,6 +56,21 @@ _GL_INLINE_HEADER_BEGIN
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 
 /**
+ * C version of C++'s `const_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @note This macro can't actually implement C++'s `const_cast` because there's
+ * no way to do it in C.  It serves merely as a visual cue for the type of cast
+ * meant.
+ *
+ * @sa #POINTER_CAST()
+ * @sa #STATIC_CAST()
+ */
+#define CONST_CAST(T,EXPR)        ((T)(EXPR))
+
+/**
  * Shorthand for printing to standard error.
  *
  * @param ... The `printf()` arguments.
@@ -154,6 +169,7 @@ _GL_INLINE_HEADER_BEGIN
  * warning.  In C++, this would be done via `reinterpret_cast`, but it's not
  * possible to implement that in C that works for both pointers and integers.
  *
+ * @sa #CONST_CAST()
  * @sa #STATIC_CAST()
  */
 #define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
@@ -168,6 +184,7 @@ _GL_INLINE_HEADER_BEGIN
  * there's no way to do it in C.  It serves merely as a visual cue for the type
  * of cast meant.
  *
+ * @sa #CONST_CAST()
  * @sa #POINTER_CAST()
  */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
@@ -271,6 +288,28 @@ NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
+
+/**
+ * Extracts the base portion of a path-name.
+ * Unlike **basename**(3):
+ *  + Trailing `/` characters are not deleted.
+ *  + \a path_name is never modified (hence can therefore be `const`).
+ *  + Returns a pointer within \a path_name (hence is multi-call safe).
+ *
+ * @param path_name The path-name to extract the base portion of.
+ * @return Returns a pointer to the last component of \a path_name.
+ * If \a path_name consists entirely of `/` characters, a pointer to the string
+ * `/` is returned.
+ */
+NODISCARD
+char const* base_name( char const *path_name );
+
+/**
+ * Calls **atexit**(3) and checks for failure.
+ *
+ * @param cleanup_fn The pointer to the function to call **atexit**(3) with.
+ */
+void check_atexit( void (*cleanup_fn)(void) );
 
 /**
  * Opens the given file and seeks to the given offset

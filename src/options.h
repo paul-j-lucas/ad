@@ -125,7 +125,7 @@ size_t get_offset_width( void );
  * @param argc The argument count from \c main().
  * @param argv The argument values from \c main().
  */
-void parse_options( int argc, char *argv[] );
+void parse_options( int argc, char const *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
 

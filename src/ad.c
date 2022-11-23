@@ -73,9 +73,13 @@ static void clean_up( void ) {
  *  + Parsing command-line options.
  *  + Initializing search variables.
  *  + Initializing the elided separator.
+ *
+ * @param argc The command-line argument count.
+ * @param argv The command-line argument values.
  */
-static void init( int argc, char *argv[] ) {
-  atexit( clean_up );
+static void init( int argc, char const *argv[] ) {
+  me = base_name( argv[0] );
+  check_atexit( clean_up );
   parse_options( argc, argv );
 
   if ( search_buf != NULL )             // searching for a string?
@@ -93,7 +97,14 @@ static void init( int argc, char *argv[] ) {
 
 /////////// main //////////////////////////////////////////////////////////////
 
-int main( int argc, char *argv[] ) {
+/**
+ * The main entry point.
+ *
+ * @param argc The command-line argument count.
+ * @param argv The command-line argument values.
+ * @return Returns 0 on success, non-zero on failure.
+ */
+int main( int argc, char const *argv[] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 

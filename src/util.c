@@ -134,6 +134,19 @@ bool ascii_any_printable( char const *s, size_t s_len ) {
   return false;
 }
 
+char const* base_name( char const *path_name ) {
+  assert( path_name != NULL );
+  char const *const slash = strrchr( path_name, '/' );
+  if ( slash != NULL )
+    return slash[1] != '\0' ? slash + 1 : slash;
+  return path_name;
+}
+
+void check_atexit( void (*cleanup_fn)(void) ) {
+  assert( cleanup_fn != NULL );
+  PERROR_EXIT_IF( atexit( cleanup_fn ) != 0, EX_OSERR );
+}
+
 FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   assert( path != NULL );
   assert( mode != NULL );
