@@ -349,9 +349,10 @@ void dump_file_c( void ) {
     array_name = free_later( identify( basename( temp ) ) );
   }
   FPRINTF( fout,
-    "%sunsigned char %s%s[] = {\n",
-    ((opt_c_fmt & CFMT_STATIC) != 0 ? "static " : ""),
-    ((opt_c_fmt & CFMT_CONST ) != 0 ? "const "  : ""),
+    "%s%s %s%s[] = {\n",
+    ((opt_c_fmt & CFMT_STATIC ) != 0 ? "static " : ""),
+    ((opt_c_fmt & CFMT_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
+    ((opt_c_fmt & CFMT_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
 

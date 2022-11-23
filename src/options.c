@@ -249,6 +249,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   if ( s != NULL && s[0] != '\0' ) {
     for ( fmt = s; fmt[0] != '\0'; ++fmt ) {
       switch ( fmt[0] ) {
+        case '8': ADD_CFMT( CHAR8_T );  break;
         case 'c': ADD_CFMT( CONST );    break;
         case 'i': ADD_CFMT( INT );      break;
         case 'l': ADD_CFMT( LONG );     break;
@@ -258,7 +259,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         default :
           FATAL_ERR( EX_USAGE,
             "'%c': invalid C format for %s;"
-            " must be one of: [cilstu]\n",
+            " must be one of: [8cilstu]\n",
             *fmt, format_opt( 'C', opt_buf, sizeof opt_buf )
           );
       } // switch

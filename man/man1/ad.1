@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "July 30, 2022" "PJL TOOLS"
+.TH \f3ad\f1 1 "November 23, 2022" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -178,6 +178,10 @@ is zero or more of the following letters
 that specify the format of the declarations:
 .RS
 .TP 3
+.B 8
+Declares the array as \f(CWchar8_t\f1.
+The default is \f(CWunsigned char\fP.
+.TP
 .B c
 Declares both the array and length as \f(CWconst\f1.
 .TP
