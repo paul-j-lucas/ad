@@ -249,10 +249,14 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
   assert( off_fmt != NULL );
   assert( buf != NULL );
 
-  // print offset
-  FPUTS( "  /* ", fout );
-  FPRINTF( fout, off_fmt, fin_offset );
-  FPUTS( " */", fout );
+  if ( opt_offset_fmt == OFMT_NONE ) {
+    FPUTC( ' ', fout );
+  } else {
+    // print offset
+    FPUTS( "  /* ", fout );
+    FPRINTF( fout, off_fmt, fin_offset );
+    FPUTS( " */", fout );
+  }
 
   // dump hex part
   char8_t const *const end = buf + buf_len;
