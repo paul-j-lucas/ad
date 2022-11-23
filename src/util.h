@@ -33,6 +33,7 @@
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UTIL_H_INLINE

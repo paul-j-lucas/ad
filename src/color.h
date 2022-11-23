@@ -23,9 +23,16 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "util.h"
 
 // standard
 #include <stdbool.h>
+#include <stdio.h>
+
+_GL_INLINE_HEADER_BEGIN
+#ifndef COLOR_H_INLINE
+# define COLOR_H_INLINE _GL_INLINE
+#endif /* COLOR_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -59,28 +66,6 @@
 #define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
 
 /**
- * Starts printing in the predefined \a COLOR.
- *
- * @param STREAM The `FILE` to print to.
- * @param COLOR The predefined color without the `sgr_` prefix.
- *
- * @sa #SGR_END_COLOR
- */
-#define SGR_START_COLOR(STREAM,COLOR) BLOCK(  \
-  if ( colorize && (sgr_ ## COLOR) != NULL )  \
-    FPRINTF( (STREAM), SGR_START SGR_EL, (sgr_ ## COLOR) ); )
-
-/**
- * Ends printing in color.
- *
- * @param STREAM The `FILE` to print to.
- *
- * @sa #SGR_START_COLOR
- */
-#define SGR_END_COLOR(STREAM) \
-  BLOCK( if ( colorize ) FPUTS( SGR_END SGR_EL, (STREAM) ); )
-
-/**
  * When to colorize output.
  */
 enum color_when {
@@ -105,6 +90,36 @@ extern char const  *sgr_hex_match;      // hex match color
 extern char const  *sgr_ascii_match;    // ASCII match color
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Ends printing in \a sgr_color.
+ *
+ * @param file The `FILE` to print to.
+ * @param sgr_color The predefined color.  If NULL, does nothing.  This _must_
+ * be the same value that was passed to color_start().
+ *
+ * @sa color_start()
+ * @sa color_strbuf_end()
+ */
+COLOR_H_INLINE
+void color_end( FILE *file, char const *sgr_color ) {
+  if ( colorize && sgr_color != NULL )
+    FPUTS( SGR_END SGR_EL, file );
+}
+
+/**
+ * Starts printing in the predefined \a sgr_color.
+ *
+ * @param file The `FILE` to print to.
+ * @param sgr_color The predefined color.  If NULL, does nothing.
+ *
+ * @sa color_end()
+ */
+COLOR_H_INLINE
+void color_start( FILE *file, char const *sgr_color ) {
+  if ( colorize && sgr_color != NULL )
+    FPRINTF( file, SGR_START SGR_EL, sgr_color );
+}
 
 /**
  * Parses a single SGR color and, if successful, sets the match color.
@@ -135,6 +150,8 @@ NODISCARD
 bool should_colorize( color_when_t c );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+_GL_INLINE_HEADER_END
 
 #endif /* ad_color_H */
 /* vim:set et sw=2 ts=2: */
