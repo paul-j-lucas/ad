@@ -210,7 +210,7 @@ void reverse_dump_file( void ) {
   char    msg_fmt[ 128 ];
   off_t   new_offset;
 
-  for ( ;; ) {
+  for (;;) {
     size_t row_len;
     char *const row_buf = fgetln( fin, &row_len );
     if ( row_buf == NULL ) {

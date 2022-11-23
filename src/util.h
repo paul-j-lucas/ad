@@ -111,12 +111,16 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #POINTER_CAST()
  * @sa #STATIC_CAST()
  */
-#define CONST_CAST(T,EXPR)        ((T)(uintptr_t)(EXPR))
+#define CONST_CAST(T,EXPR)        ((T)(EXPR))
 
 /**
  * Shorthand for printing to standard error.
  *
  * @param ... The `printf()` arguments.
+ *
+ * @sa #EPUTC()
+ * @sa #EPUTS()
+ * @sa #FPRINTF()
  */
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
@@ -307,22 +311,26 @@ _GL_INLINE_HEADER_BEGIN
 #ifdef __GNUC__
 
 /**
- * Specifies that \a EXPR is \e very likely (as in 99.99% of the time) to be
+ * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
  * non-zero (true) allowing the compiler to better order code blocks for
  * magrinally better performance.
  *
- * @see http://lwn.net/Articles/255364/
- * @hideinitializer
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #unlikely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
  */
 #define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
 
 /**
- * Specifies that \a EXPR is \e very unlikely (as in .01% of the time) to be
+ * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
  * non-zero (true) allowing the compiler to better order code blocks for
  * magrinally better performance.
  *
- * @see http://lwn.net/Articles/255364/
- * @hideinitializer
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #likely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
  */
 #define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
 
@@ -376,11 +384,11 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Checks whethere there is at least one printable ASCII character in \a s.
+ * Checks whether there is at least one printable ASCII character in \a s.
  *
  * @param s The string to check.
  * @param s_len The number of characters to check.
- * @return Returns \c true only if there is at least one printable character.
+ * @return Returns `true` only if there is at least one printable character.
  */
 NODISCARD
 bool ascii_any_printable( char const *s, size_t s_len );
@@ -391,12 +399,34 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * considers printable.)
  *
  * @param c The characther to check.
- * @return Returns \c true only if \c is an ASCII printable character.
+ * @return Returns `true` only if \a c is an ASCII printable character.
  */
 NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
+
+/**
+ * Extracts the base portion of a path-name.
+ * Unlike **basename**(3):
+ *  + Trailing `/` characters are not deleted.
+ *  + \a path_name is never modified (hence can therefore be `const`).
+ *  + Returns a pointer within \a path_name (hence is multi-call safe).
+ *
+ * @param path_name The path-name to extract the base portion of.
+ * @return Returns a pointer to the last component of \a path_name.
+ * If \a path_name consists entirely of `/` characters, a pointer to the string
+ * `/` is returned.
+ */
+NODISCARD
+char const* base_name( char const *path_name );
+
+/**
+ * Calls **atexit**(3) and checks for failure.
+ *
+ * @param cleanup_fn The pointer to the function to call **atexit**(3) with.
+ */
+void check_atexit( void (*cleanup_fn)(void) );
 
 /**
  * Opens the given file and seeks to the given offset
@@ -405,7 +435,7 @@ bool ascii_is_print( char c ) {
  * @param path The full path of the file to open.
  * @param mode The mode to use.
  * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding \c FILE.
+ * @return Returns the corresponding `FILE`.
  */
 NODISCARD
 FILE* check_fopen( char const *path, char const *mode, off_t offset );
@@ -423,7 +453,7 @@ NODISCARD
 int check_open( char const *path, int oflag, off_t offset );
 
 /**
- * Calls \c realloc(3) and checks for failure.
+ * Calls **realloc(3)** and checks for failure.
  * If reallocation fails, prints an error message and exits.
  *
  * @param p The pointer to reallocate.  If NULL, new memory is allocated.
@@ -437,7 +467,7 @@ NODISCARD
 void* check_realloc( void *p, size_t size );
 
 /**
- * Calls \c strdup(3) and checks for failure.
+ * Calls **strdup(3)** and checks for failure.
  * If memory allocation fails, prints an error message and exits.
  *
  * @param s The NULL-terminated string to duplicate.
@@ -526,7 +556,7 @@ NODISCARD
 char* identify( char const *s );
 
 /**
- * Gets the minimum number of bytes required to contain the given \c uint64_t
+ * Gets the minimum number of bytes required to contain the given `uint64_t`
  * value.
  *
  * @param n The number to get the number of bytes for.
@@ -537,7 +567,7 @@ NODISCARD
 size_t int_len( uint64_t n );
 
 /**
- * Rearranges the bytes in the given \c uint64_t such that:
+ * Rearranges the bytes in the given `uint64_t` such that:
  *  + The value is down-cast into the requested number of bytes.
  *  + The bytes have the requested endianness.
  *  + The bytes are shifted to start at the lowest memory address.
@@ -549,7 +579,7 @@ size_t int_len( uint64_t n );
  *  + big, the result in memory would be 00-00-11-22-00-00-00-00.
  *  + little, the result in memory would be 22-11-00-00-00-00-00-00.
  *
- * @param n A pointer to the \c uint64_t to rearrange.
+ * @param n A pointer to the `uint64_t` to rearrange.
  * @param bytes The number of bytes to use; must be 1-8.
  * @param endian The endianness to use.
  */
@@ -559,16 +589,16 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * Checks whether the given file descriptor refers to a regular file.
  *
  * @param fd The file descriptor to check.
- * @return Returns \c true only if \a fd refers to a regular file.
+ * @return Returns `true` only if \a fd refers to a regular file.
  */
 NODISCARD
 bool is_file( int fd );
 
 /**
  * Parses a string into an offset.
- * Unlike \c strtoull(3):
+ * Unlike **strtoull(3)**:
  *  + Insists that \a s is non-negative.
- *  + May be followed by one of \c b, \c k, or \c m
+ *  + May be followed by one of `b`, `k`, or `m`
  *    for 512-byte blocks, kilobytes, and megabytes, respectively.
  *
  * @param s The NULL-terminated string to parse.
@@ -580,7 +610,7 @@ unsigned long long parse_offset( char const *s );
 
 /**
  * Parses a string into an <code>unsigned long long</code>.
- * Unlike \c strtoull(3), insists that \a s is entirely a non-negative number.
+ * Unlike **strtoull(3)**, insists that \a s is entirely a non-negative number.
  *
  * @param s The NULL-terminated string to parse.
  * @param n A pointer to receive the parsed number.
@@ -591,7 +621,7 @@ NODISCARD
 unsigned long long parse_ull( char const *s );
 
 /**
- * Prints an error message for \c errno to standard error and exits.
+ * Prints an error message for `errno` to standard error and exits.
  *
  * @param status The exit status code.
  *

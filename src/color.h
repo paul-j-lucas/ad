@@ -23,9 +23,16 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "util.h"
 
 // standard
 #include <stdbool.h>
+#include <stdio.h>
+
+_GL_INLINE_HEADER_BEGIN
+#ifndef COLOR_H_INLINE
+# define COLOR_H_INLINE _GL_INLINE
+#endif /* COLOR_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -51,14 +58,12 @@
 #define SGR_CAP_SEP         ":"         /**< Capability separator.        */
 #define SGR_SEP             ";"         /**< Attribute/RGB separator.     */
 
+#define SGR_START           "\33[%sm"   /**< Start color sequence.        */
+#define SGR_END             "\33[m"     /**< End color sequence.          */
+#define SGR_EL              "\33[K"     /**< Erase in Line (EL) sequence. */
+
 /** When to colorize default. */
 #define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
-
-#define COLORS_DEFAULT                                                  \
-  /* byte offset  */ "bn=" SGR_FG_GREEN                     SGR_CAP_SEP \
-  /* elided count */ "EC=" SGR_FG_MAGENTA                   SGR_CAP_SEP \
-  /* matched both */ "MB=" SGR_BG_RED     SGR_SEP SGR_BOLD  SGR_CAP_SEP \
-  /* separator    */ "se=" SGR_FG_CYAN
 
 /**
  * When to colorize output.
@@ -71,6 +76,9 @@ enum color_when {
 };
 typedef enum color_when color_when_t;
 
+// extern constants
+extern char const   COLORS_DEFAULT[];   ///< Default colors.
+
 // extern variables
 extern bool         colorize;           // dump in color?
 extern char const  *sgr_start;          // start color output
@@ -82,6 +90,36 @@ extern char const  *sgr_hex_match;      // hex match color
 extern char const  *sgr_ascii_match;    // ASCII match color
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Ends printing in \a sgr_color.
+ *
+ * @param file The `FILE` to print to.
+ * @param sgr_color The predefined color.  If NULL, does nothing.  This _must_
+ * be the same value that was passed to color_start().
+ *
+ * @sa color_start()
+ * @sa color_strbuf_end()
+ */
+COLOR_H_INLINE
+void color_end( FILE *file, char const *sgr_color ) {
+  if ( colorize && sgr_color != NULL )
+    FPUTS( SGR_END SGR_EL, file );
+}
+
+/**
+ * Starts printing in the predefined \a sgr_color.
+ *
+ * @param file The `FILE` to print to.
+ * @param sgr_color The predefined color.  If NULL, does nothing.
+ *
+ * @sa color_end()
+ */
+COLOR_H_INLINE
+void color_start( FILE *file, char const *sgr_color ) {
+  if ( colorize && sgr_color != NULL )
+    FPRINTF( file, SGR_START SGR_EL, sgr_color );
+}
 
 /**
  * Parses a single SGR color and, if successful, sets the match color.
@@ -112,6 +150,8 @@ NODISCARD
 bool should_colorize( color_when_t c );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+_GL_INLINE_HEADER_END
 
 #endif /* ad_color_H */
 /* vim:set et sw=2 ts=2: */
