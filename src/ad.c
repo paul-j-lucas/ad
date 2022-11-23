@@ -27,16 +27,17 @@
 // standard
 #include <assert.h>
 #include <stdlib.h>                     /* for atexit() */
+#include <stdnoreturn.h>
 #include <string.h>                     /* for memset(), str...() */
-#include <sysexits.h>
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern function declarations
-extern void dump_file( void );
-extern void dump_file_c( void );
-extern void reverse_dump_file( void );
+noreturn void dump_file( void );
+noreturn void dump_file_c( void );
+noreturn void reverse_dump_file( void );
 
 // extern variable definitions
 FILE       *fin;
