@@ -41,12 +41,13 @@
 #define ROW_BYTES_MAX             32    /**< Maximum bytes dumped on a row. */
 
 /**
- * The endian order for numeric searches.
+ * Byte endian order.
  */
 enum endian {
-  ENDIAN_UNSPECIFIED,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE
+  ENDIAN_NONE,                          ///< No-endian order.
+  ENDIAN_LITTLE,                        ///< Little-endian order.
+  ENDIAN_BIG,                           ///< Big-endian order.
+  ENDIAN_HOST                           ///< Host-endian order.
 };
 typedef enum endian endian_t;
 
