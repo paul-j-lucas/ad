@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "November 23, 2022" "PJL TOOLS"
+.TH \f3ad\f1 1 "November 24, 2022" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -153,8 +153,10 @@ based on the argument to one of the
 .BR \-\-little-endian ,
 .BR \-e ,
 .BR \-\-big-endian ,
+.BR \-E ,
+.BR \-\-host-endian ,
 or
-.B \-E
+.B \-H
 options.
 .TP
 .BI \-\-bytes \f1=\fPn "\f1 | \fP" "" \-B " n"
@@ -250,6 +252,8 @@ Note that this greatly diminishes the usefulness of the
 .BR \-e ,
 .BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-host-endian ,
+.BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
 .BR \-\-string-ignore-case ,
@@ -320,12 +324,12 @@ When less than 8,
 an additional space is dumped after the 8th byte
 to aid readability.
 .TP
-.BR \-\-help " | " \-H
+.BR \-\-help " | " \-h
 Prints a help message
 to standard error
 and exits.
 .TP
-.BR \-\-hexadecimal " | " \-h
+.BR \-\-hexadecimal " | " \-x
 Prints offsets in hexadecimal
 (the default).
 For
@@ -335,6 +339,14 @@ or
 .BR \-r ,
 parses offsets in hexadecimal
 (also the default).
+.TP
+.BI \-\-host-endian \f1=\fPn "\f1 | \fP" "" \-H " n"
+Same as the
+.B \-\-big-endian
+or
+.B \-E
+options
+but in host-endian byte order.
 .TP
 .BR \-\-ignore-case " | " \-i
 Performs a case-insensitive search
@@ -542,8 +554,11 @@ No matches if one of
 .BR \-e ,
 .BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-host-endian ,
+.BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
+.BR \-\-string-ignore-case ,
 or
 .B \-S
 was specified.

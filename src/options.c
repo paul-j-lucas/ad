@@ -40,37 +40,39 @@
 #include <sys/types.h>
 #include <sysexits.h>
 
-// in ascending option character ASCII order
+// in ascending option character ASCII order; sort using: sort -bdfk3
 #define OPT_NO_ASCII            A
 #define OPT_BITS                b
 #define OPT_BYTES               B
 #define OPT_COLOR               c
 #define OPT_C_ARRAY             C
-#define OPT_DECIMAL             d
 #define OPT_DEBUG               D
-#define OPT_LITTLE_ENDIAN       e
+#define OPT_DECIMAL             d
 #define OPT_BIG_ENDIAN          E
+#define OPT_LITTLE_ENDIAN       e
+#define OPT_LITTLE_ENDIAN       e
 #define OPT_GROUP_BY            g
-#define OPT_HEXADECIMAL         h
-#define OPT_HELP                H
-#define OPT_STRING_IGNORE_CASE  S
+#define OPT_HELP                h
+#define OPT_HOST_ENDIAN         H
 #define OPT_IGNORE_CASE         i
 #define OPT_SKIP_BYTES          j
 #define OPT_MAX_LINES           L
 #define OPT_MATCHING_ONLY       m
 #define OPT_MAX_BYTES           N
-#define OPT_OCTAL               o
 #define OPT_NO_OFFSETS          O
-#define OPT_PRINTING_ONLY       p
+#define OPT_OCTAL               o
 #define OPT_PLAIN               P
+#define OPT_PRINTING_ONLY       p
 #define OPT_REVERSE             r
 #define OPT_STRING              s
+#define OPT_STRING_IGNORE_CASE  S
 #define OPT_TOTAL_MATCHES       t
 #define OPT_TOTAL_MATCHES_ONLY  T
 #define OPT_UTF8                u
 #define OPT_UTF8_PADDING        U
 #define OPT_VERBOSE             v
 #define OPT_VERSION             V
+#define OPT_HEXADECIMAL         x
 
 /// Command-line option character as a character literal.
 #define COPT(X)                   CHARIFY(OPT_##X)
@@ -82,8 +84,6 @@
 
 #define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
-#define SET_OPTION(OPT) \
-  (opts_given[ STATIC_CAST( char8_t, (OPT) ) ] = STATIC_CAST( char, (OPT) ))
 
 // extern variable definitions
 bool          opt_ad_debug;
@@ -111,6 +111,9 @@ static struct option const OPTS_LONG[] = {
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
   { "c-array",            optional_argument,  NULL, COPT(C_ARRAY)             },
+#ifdef ENABLE_AD_DEBUG
+  { "--debug",            no_argument,        NULL, COPT(DEBUG)               },
+#endif /* ENABLE_AD_DEBUG */
   { "decimal",            no_argument,        NULL, COPT(DECIMAL)             },
   { "little-endian",      required_argument,  NULL, COPT(LITTLE_ENDIAN)       },
   { "big-endian",         required_argument,  NULL, COPT(BIG_ENDIAN)          },
@@ -157,6 +160,9 @@ static char const OPTS_SHORT[] = ":"
   SOPT(BYTES)               SOPT_REQUIRED_ARGUMENT
   SOPT(COLOR)               SOPT_REQUIRED_ARGUMENT
   SOPT(C_ARRAY)             SOPT_REQUIRED_ARGUMENT
+#ifdef ENABLE_AD_DEBUG
+  SOPT(DEBUG)               SOPT_NO_ARGUMENT
+#endif /* ENABLE_AD_DEBUG */
   SOPT(DECIMAL)             SOPT_NO_ARGUMENT
   SOPT(LITTLE_ENDIAN)       SOPT_REQUIRED_ARGUMENT
   SOPT(BIG_ENDIAN)          SOPT_REQUIRED_ARGUMENT
@@ -184,7 +190,7 @@ static char const OPTS_SHORT[] = ":"
 ;
 
 // local variable definitions
-static char         opts_given[ 128 ];
+static bool         opts_given[ 128 ];
 
 // local functions
 NODISCARD
@@ -210,7 +216,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   char gave_opt1 = '\0';
 
   for ( unsigned i = 0; i < 2; ++i ) {
-    for ( ; *opt; ++opt ) {
+    for ( ; *opt != '\0'; ++opt ) {
       if ( GAVE_OPTION( *opt ) ) {
         if ( ++gave_count > 1 ) {
           char const gave_opt2 = *opt;
@@ -547,19 +553,23 @@ noreturn
 static void usage( int status ) {
   fprintf( status == EX_OK ? stdout : stderr,
 "usage: %s [options] [+offset] [infile [outfile]]\n"
-"       %s -r [-dho] [infile [outfile]]\n"
-"       %s -H\n"
-"       %s -V\n"
+"       %s -%c [-%c%c%c] [infile [outfile]]\n"
+"       %s -%c\n"
+"       %s -%c\n"
 "options:\n"
 "  --big-endian=NUM         (-%c) Search for big-endian number.\n"
 "  --bits=NUM               (-%c) Number size in bits: 8-64 [default: auto].\n"
 "  --bytes=NUM              (-%c) Number size in bytes: 1-8 [default: auto].\n"
 "  --c-array=FMT            (-%c) Dump bytes as a C array.\n"
 "  --color=WHEN             (-%c) When to colorize output [default: not_file].\n"
+#ifdef ENABLE_AD_DEBUG
+"  --debug                  (-%c) Print " PACKAGE_NAME " debug output.\n"
+#endif /* ENABLE_AD_DEBUG */
 "  --decimal                (-%c) Print offsets in decimal.\n"
 "  --group-by=NUM           (-%c) Group bytes by 1/2/4/8/16/32 [default: %u].\n"
 "  --help                   (-%c) Print this help and exit.\n"
 "  --hexadecimal            (-%c) Print offsets in hexadecimal [default].\n"
+"  --host-endian=NUM        (-%c) Search for host-endian number.\n"
 "  --ignore-case            (-%c) Ignore case for string searches.\n"
 "  --little-endian=NUM      (-%c) Search for little-endian number.\n"
 "  --matching-only          (-%c) Only dump rows having matches.\n"
@@ -583,16 +593,23 @@ static void usage( int status ) {
 "\n"
 "Report bugs to: " PACKAGE_BUGREPORT "\n"
 PACKAGE_NAME " home page: " PACKAGE_URL "\n",
-    me, me, me, me,
+    me,
+    me, COPT(REVERSE), COPT(DECIMAL), COPT(OCTAL), COPT(HEXADECIMAL),
+    me, COPT(HELP),
+    me, COPT(VERSION),
     COPT(BIG_ENDIAN),
     COPT(BITS),
     COPT(BYTES),
     COPT(C_ARRAY),
     COPT(COLOR),
+#ifdef ENABLE_AD_DEBUG
+    COPT(DEBUG),
+#endif /* ENABLE_AD_DEBUG */
     COPT(DECIMAL),
     COPT(GROUP_BY), GROUP_BY_DEFAULT,
     COPT(HELP),
     COPT(HEXADECIMAL),
+    COPT(HOST_ENDIAN),
     COPT(IGNORE_CASE),
     COPT(LITTLE_ENDIAN),
     COPT(MATCHING_ONLY),
@@ -677,10 +694,10 @@ void parse_options( int argc, char const *argv[] ) {
     );
     if ( opt == -1 )
       break;
-    SET_OPTION( opt );
     switch ( opt ) {
-      case COPT(NO_ASCII):
-        opt_print_ascii = false;
+      case COPT(BIG_ENDIAN):
+        search_number = parse_ull( optarg );
+        search_endian = ENDIAN_BIG;
         break;
       case COPT(BITS):
         size_in_bits = parse_ull( optarg );
@@ -688,11 +705,11 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(BYTES):
         size_in_bytes = parse_ull( optarg );
         break;
-      case COPT(COLOR):
-        color_when = parse_color_when( optarg );
-        break;
       case COPT(C_ARRAY):
         opt_c_fmt = parse_c_fmt( optarg );
+        break;
+      case COPT(COLOR):
+        color_when = parse_color_when( optarg );
         break;
 #ifdef ENABLE_AD_DEBUG
       case COPT(DEBUG):
@@ -702,19 +719,22 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(DECIMAL):
         opt_offset_fmt = OFMT_DEC;
         break;
-      case COPT(LITTLE_ENDIAN):
-      case COPT(BIG_ENDIAN):
-        search_number = parse_ull( optarg );
-        search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE;
-        break;
       case COPT(GROUP_BY):
         opt_group_by = parse_group_by( optarg );
+        break;
+      case COPT(HELP):
+        print_usage = true;
         break;
       case COPT(HEXADECIMAL):
         opt_offset_fmt = OFMT_HEX;
         break;
-      case COPT(HELP):
-        print_usage = true;
+      case COPT(HOST_ENDIAN):
+        search_number = parse_ull( optarg );
+#ifdef WORDS_BIGENDIAN
+        search_endian = ENDIAN_BIG;
+#else
+        search_endian = ENDIAN_LITTLE;
+#endif /* WORDS_BIGENDIAN */
         break;
       case COPT(STRING_IGNORE_CASE):
         search_buf = (char*)free_later( check_strdup( optarg ) );
@@ -722,11 +742,9 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(IGNORE_CASE):
         opt_case_insensitive = true;
         break;
-      case COPT(SKIP_BYTES):
-        fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
-        break;
-      case COPT(MAX_LINES):
-        max_lines = parse_ull( optarg );
+      case COPT(LITTLE_ENDIAN):
+        search_number = parse_ull( optarg );
+        search_endian = ENDIAN_LITTLE;
         break;
       case COPT(MATCHING_ONLY):
         opt_only_matching = true;
@@ -734,22 +752,31 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(MAX_BYTES):
         opt_max_bytes = parse_offset( optarg );
         break;
-      case COPT(OCTAL):
-        opt_offset_fmt = OFMT_OCT;
+      case COPT(MAX_LINES):
+        max_lines = parse_ull( optarg );
+        break;
+      case COPT(NO_ASCII):
+        opt_print_ascii = false;
         break;
       case COPT(NO_OFFSETS):
         opt_offset_fmt = OFMT_NONE;
         break;
-      case COPT(PRINTING_ONLY):
-        opt_only_printing = true;
+      case COPT(OCTAL):
+        opt_offset_fmt = OFMT_OCT;
         break;
       case COPT(PLAIN):
         opt_group_by = ROW_BYTES_MAX;
         opt_offset_fmt = OFMT_NONE;
         opt_print_ascii = false;
         break;
+      case COPT(PRINTING_ONLY):
+        opt_only_printing = true;
+        break;
       case COPT(REVERSE):
         opt_reverse = true;
+        break;
+      case COPT(SKIP_BYTES):
+        fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
       case COPT(STRING):
         search_buf = (char*)free_later( check_strdup( optarg ) );
@@ -781,6 +808,13 @@ void parse_options( int argc, char const *argv[] ) {
         );
       }
 
+      case '?':                         // invalid option
+        EPRINTF(
+          "%s: '%c': invalid option; use --help or -%c for help\n",
+          me, STATIC_CAST( char, optopt ), COPT(HELP)
+        );
+        exit( EX_USAGE );
+
       default:
         if ( isprint( opt ) )
           INTERNAL_ERR(
@@ -790,12 +824,13 @@ void parse_options( int argc, char const *argv[] ) {
           "%d: unaccounted-for getopt_long() return value\n", opt
         );
     } // switch
+    opts_given[ opt ] = true;
   } // for
   argc -= optind;
   argv += optind - 1;
 
   // handle special case of +offset option
-  if ( argc && *argv[1] == '+' ) {
+  if ( argc > 0 && *argv[1] == '+' ) {
     fin_offset += STATIC_CAST( off_t, parse_offset( argv[1] ) );
     --argc;
     ++argv;
@@ -804,15 +839,19 @@ void parse_options( int argc, char const *argv[] ) {
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
-  check_mutually_exclusive( "d", "hoOP" );
-  check_mutually_exclusive( "eE", "sS" );
+  check_mutually_exclusive( "d", "ox" );
+  check_mutually_exclusive( "dox", "OP" );
+  check_mutually_exclusive( "e", "EH" );
+  check_mutually_exclusive( "eEH", "sS" );
   check_mutually_exclusive( "g", "P" );
+  check_mutually_exclusive( "h", "AbBcCdeEgHijmLNoOpPrsStTuUvVx" );
   check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
+  check_mutually_exclusive( "o", "dx" );
   check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "H", "AbBcCdeEghijmLNoOpPrsStTuUvV" );
-  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOpPrsStTuUv" );
+  check_mutually_exclusive( "V", "AbBcCdeEgHijmLNoOpPrsStTuUvx" );
+  check_mutually_exclusive( "x", "do" );
 
   // check for options that require other options
   check_required( "bB", "eE" );

@@ -69,10 +69,10 @@ _GL_INLINE_HEADER_BEGIN
  * When to colorize output.
  */
 enum color_when {
-  COLOR_NEVER,                          // never colorize
-  COLOR_ISATTY,                         // colorize only if isatty(3)
-  COLOR_NOT_FILE,                       // colorize only if !ISREG stdout
-  COLOR_ALWAYS                          // always colorize
+  COLOR_NEVER,                          ///< Never colorize.
+  COLOR_ISATTY,                         ///< Colorize only if **isatty**(3).
+  COLOR_NOT_FILE,                       ///< Colorize only if `!ISREG` stdout.
+  COLOR_ALWAYS                          ///< Always colorize.
 };
 typedef enum color_when color_when_t;
 
@@ -80,15 +80,15 @@ typedef enum color_when color_when_t;
 extern char const   COLORS_DEFAULT[];   ///< Default colors.
 
 // extern variables
-extern bool         colorize;           // dump in color?
-extern char const  *sgr_start;          // start color output
-extern char const  *sgr_end;            // end color output
-extern char const  *sgr_error;          // error color output
-extern char const  *sgr_offset;         // offset color
-extern char const  *sgr_sep;            // separator color
-extern char const  *sgr_elided;         // elided byte count color
-extern char const  *sgr_hex_match;      // hex match color
-extern char const  *sgr_ascii_match;    // ASCII match color
+extern bool         colorize;           ///< Dump in color?
+extern char const  *sgr_start;          ///< Start color output.
+extern char const  *sgr_end;            ///< End color output.
+extern char const  *sgr_error;          ///< Error color output.
+extern char const  *sgr_offset;         ///< Offset color.
+extern char const  *sgr_sep;            ///< Separator color.
+extern char const  *sgr_elided;         ///< Elided byte count color.
+extern char const  *sgr_hex_match;      ///< Hex match color.
+extern char const  *sgr_ascii_match;    ///< ASCII match color.
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +100,6 @@ extern char const  *sgr_ascii_match;    // ASCII match color
  * be the same value that was passed to color_start().
  *
  * @sa color_start()
- * @sa color_strbuf_end()
  */
 COLOR_H_INLINE
 void color_end( FILE *file, char const *sgr_color ) {
