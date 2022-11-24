@@ -46,7 +46,7 @@ _GL_INLINE_HEADER_BEGIN
 // The bits (right to left) are used as follows:
 //
 //    F-DC BA98 7654 3210
-//    S-TT TTTT EZZZ ZDDN
+//    S-TT TTTT EZZZ ZNDD
 //
 // where:
 //
@@ -59,13 +59,13 @@ _GL_INLINE_HEADER_BEGIN
 //
 
 // Si(Z)e:    xxxx xxxx xxZZ ZZZZ
-#define T_SIZE_MASK               0x003Fu             /**< Size mask.         */
+#define T_SIZE_MASK              0x003Fu              /**< Size mask.         */
 
 // En(D)ian:  xxxx xxxx EExx xxxx
-#define T_ENDIAN_MASK            0x00C0u              /**< Endian mask.       */
+#define T_ENDIAN_MASK            0x0003u              /**< Endian mask.       */
 
 // (N)ull:    xxxx xxxN xxxx xxxx
-#define T_NULL                   0x0100u              /**< Null-terminated.   */
+#define T_NULL                   0x0040u              /**< Null-terminated.   */
 
 // (E)rror:   xxxx xxEx xxxx xxxx
 #define T_ERROR                  0x0200u              /**< Error type.        */
@@ -145,16 +145,6 @@ _GL_INLINE_HEADER_BEGIN
 
 // Enumerations have to be declared before typedefs of them since ISO C doesn't
 // allow forward declarations of enums.
-
-/**
- * Endian-ness.
- */
-enum ad_endian {
-  AD_ENDIAN_NONE    = 0x00,             ///< No endian-ness.
-  AD_ENDIAN_HOST    = 0x10,             ///< Host endian-ness.
-  AD_ENDIAN_LITTLE  = 0x20,             ///< Little endian-ness.
-  AD_ENDIAN_BIG     = 0x30              ///< Big endian-ness.
-};
 
 /**
  * Enumeration value.
@@ -260,7 +250,6 @@ typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_char               ad_char_t;
-typedef enum    ad_endian             ad_endian_t;
 typedef struct  ad_enum               ad_enum_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
@@ -285,6 +274,7 @@ typedef struct  ad_type               ad_type_t;
 typedef uint16_t                      ad_tid_t;
 typedef unsigned short                ad_type_size_t;
 typedef struct  slist                 ad_type_list_t;
+typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
@@ -294,7 +284,7 @@ typedef struct  print_params          print_params_t;
  */
 struct ad_enum {
   ad_bits_t       bits;                 ///< Value number of bits.
-  ad_endian_t     endian;               ///< Endianness of values.
+  endian_t        endian;               ///< Endianness of values.
   ad_int_base_t   base;                 ///< Base of values.
   slist_t         values;               ///< List of ad_enum_value.
 };
@@ -304,7 +294,7 @@ struct ad_enum {
  */
 struct ad_int {
   ad_bits_t       bits;                 ///< Value number of bits.
-  ad_endian_t     endian;               ///< Endianness of value.
+  endian_t        endian;               ///< Endianness of value.
   ad_int_base_t   base;                 ///< Base of value.
 };
 

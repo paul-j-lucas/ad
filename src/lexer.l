@@ -33,11 +33,12 @@
 /** @endcond */
 
 // local
-#include "common.h"                     /* must go first */
+#include "ad.h"                         /* must go first */
 #include "lexer.h"
 #include "keyword.h"
 #include "literals.h"
 #include "options.h"
+#include "strbuf.h"
 #include "typedef.h"
 #include "util.h"
 #include "parser.h"                     /* must go last */
@@ -49,6 +50,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for strtol(3) */
+#include <stdnoreturn.h>
 #include <string.h>
 
 #ifdef __GNUC__
@@ -175,6 +177,23 @@ static void       lexer_fatal( char const* );
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
+ * Called by flex only when there's a fatal error.
+ *
+ * @param msg The error message to print.
+ */
+static void lexer_fatal( char const *msg ) {
+  //
+  // This is defined down here to avoid having to declare yy_fatal_error
+  // ourselves and having to get it right being subject to possible changes in
+  // its signature in different flex versions.
+  //
+  INTERNAL_ERR( "%s\n", msg );
+
+  // Not reached -- "called" just to silence the "unused function" warning.
+  yy_fatal_error( msg );
+}
+
+/**
  * Gets a line of input for flex and keeps a copy for use later if printing an
  * error message.
  *
@@ -205,6 +224,17 @@ static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
   memcpy( buf, input_buf + input_sent, input_avail );
   input_sent += input_avail;
   return input_avail;
+}
+
+/**
+ * Update the parser's location.
+ * @note This is called by flex via `YY_USER_ACTION`.
+ */
+static void lexer_update_loc( void ) {
+  yylloc.first_line   = yylloc.last_line = yylineno;
+  yylloc.first_column = token_column;
+  yylloc.last_column  = token_column + yyleng - 1;
+  token_column += yyleng;
 }
 
 /**
@@ -307,10 +337,11 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 2. See if it's a typedef'd type.
                 //
-                SLIST_TEMP_INIT_VAR( typedef_name, lexer_token );
-                ad_typedef_t const *const t = ad_typedef_find( &typedef_name );
-                if ( t != NULL ) {
-                  yylval.ad_typedef = t;
+                SLIST_INIT_VAR( typedef_name, lexer_token );
+                ad_typedef_t const *const tdef =
+                  ad_typedef_find( &typedef_name );
+                if ( tdef != NULL ) {
+                  yylval.tdef = tdef;
                   return Y_TYPEDEF_TYPE;
                 }
 
@@ -574,36 +605,6 @@ hex_int       0[xX]{H}+{int_sfx}?
 %%
 
 /// @endcond
-
-////////// local functions ////////////////////////////////////////////////////
-
-/**
- * Called by flex only when there's a fatal error.
- *
- * @param msg The error message to print.
- */
-static void lexer_fatal( char const *msg ) {
-  //
-  // This is defined down here to avoid having to declare yy_fatal_error
-  // ourselves and having to get it right being subject to possible changes in
-  // its signature in different flex versions.
-  //
-  INTERNAL_ERR( "%s\n", msg );
-
-  // Not reached -- "called" just to silence the "unused function" warning.
-  yy_fatal_error( msg );
-}
-
-/**
- * Update the parser's location.
- * @note This is called by flex via `YY_USER_ACTION`.
- */
-static void lexer_update_loc( void ) {
-  yylloc.first_line   = yylloc.last_line = yylineno;
-  yylloc.first_column = token_column;
-  yylloc.last_column  = token_column + yyleng - 1;
-  token_column += yyleng;
-}
 
 ////////// extern functions ///////////////////////////////////////////////////
 

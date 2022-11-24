@@ -44,10 +44,10 @@
  * The endian order for numeric searches.
  */
 enum endian {
-  ENDIAN_UNSPECIFIED,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE,
-  ENDIAN_HOST
+  ENDIAN_UNSPECIFIED,                   ///< No endian-ness.
+  ENDIAN_HOST,                          ///< Host endian-ness.
+  ENDIAN_LITTLE,                        ///< Little endian-ness.
+  ENDIAN_BIG                            ///< Big endian-ness.
 };
 typedef enum endian endian_t;
 

@@ -74,6 +74,4 @@ ad_keyword_t const* ad_keyword_next( ad_keyword_t const *k ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-#endif /* ad_keyword_H */
 /* vim:set et sw=2 ts=2: */

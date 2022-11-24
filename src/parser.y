@@ -324,9 +324,9 @@ static void yyerror( char const *msg ) {
   ad_loc_t loc = lexer_loc();
   print_loc( &loc );
 
-  SGR_START_COLOR( stderr, error );
+  color_start( stderr, sgr_error );
   EPUTS( msg );                         // no newline
-  SGR_END_COLOR( stderr );
+  color_end( stderr, sgr_error );
 
   //
   // A syntax error has occurred, but syntax errors aren't fatal since Bison
@@ -345,7 +345,7 @@ static void yyerror( char const *msg ) {
 
 %union {
   unsigned            bitmask;    // multipurpose bitmask (used by show)
-  ad_endian_t         endian_val;
+  endian_t            endian_val;
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
   ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
@@ -358,6 +358,7 @@ static void yyerror( char const *msg ) {
   ad_statement_t      statement;
   char const         *str_lit;    // string literal
   ad_switch_case_t    switch_case;
+  ad_typedef_t        tdef;
   ad_tid_t            tid;
 }
 
@@ -598,7 +599,7 @@ enum_declaration
   : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbracket_exp
     {
       ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
-      ad_enum->name = $2;
+   // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
    // ad_enum->base = xx;
@@ -609,12 +610,12 @@ enumerator_list
   : enumerator_list ',' enumerator
     {
       $$ = $1;
-      slist_push_back( &$$, $3 );
+      //slist_push_back( &$$, $3 );
     }
   | enumerator
     {
       slist_init( &$$ );
-      slist_push_back( &$$, $1 );
+      //slist_push_back( &$$, $1 );
     }
   ;
 

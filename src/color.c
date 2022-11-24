@@ -67,6 +67,7 @@ char const  COLORS_DEFAULT[] =
 bool        colorize;
 char const *sgr_start = SGR_START SGR_EL;
 char const *sgr_end   = SGR_END SGR_EL;
+char const *sgr_error;
 char const *sgr_offset;
 char const *sgr_sep;
 char const *sgr_elided;

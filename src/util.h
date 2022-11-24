@@ -161,6 +161,16 @@ _GL_INLINE_HEADER_BEGIN
   BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
 
 /**
+ * Calls **ferror**(3) and exits if there was an error on \a STREAM.
+ *
+ * @param STREAM The `FILE` stream to check for an error.
+ *
+ * @sa #PERROR_EXIT_IF()
+ */
+#define FERROR(STREAM) \
+  PERROR_EXIT_IF( ferror( STREAM ) != 0, EX_IOERR )
+
+/**
  * Calls **fflush(3)** on \a STREAM, checks for an error, and exits if there
  * was one.
  *
@@ -223,6 +233,21 @@ _GL_INLINE_HEADER_BEGIN
  * This macro exists since free'ing a pointer-to const generates a warning.
  */
 #define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
+
+/**
+ * A special-case of #FATAL_ERR that additionally prints the file and line
+ * where an internal error occurred.
+ *
+ * @param FORMAT The `printf()` format to use.
+ * @param ... The `printf()` arguments.
+ *
+ * @sa #FATAL_ERR()
+ * @sa perror_exit()
+ * @sa #PERROR_EXIT_IF()
+ * @sa #UNEXPECTED_INT_VALUE()
+ */
+#define INTERNAL_ERR(FORMAT,...) \
+  FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
 /**
  * Zeros the memory pointed to by \a PTR.  The number of bytes to zero is given

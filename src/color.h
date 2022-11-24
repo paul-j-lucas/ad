@@ -83,6 +83,7 @@ extern char const   COLORS_DEFAULT[];   ///< Default colors.
 extern bool         colorize;           // dump in color?
 extern char const  *sgr_start;          // start color output
 extern char const  *sgr_end;            // end color output
+extern char const  *sgr_error;          // error color output
 extern char const  *sgr_offset;         // offset color
 extern char const  *sgr_sep;            // separator color
 extern char const  *sgr_elided;         // elided byte count color
