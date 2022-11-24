@@ -46,31 +46,56 @@ _GL_INLINE_HEADER_BEGIN
 // The bits (right to left) are used as follows:
 //
 //    F-DC BA98 7654 3210
-//    S-TT TTTT EZZZ ZNDD
+//    S--- TTTT TTZZ ENDD
 //
 // where:
 //
-//    D = Endianness: 0 = host, 1 = little, 2 = big
-//    E = Error: 1 = error
-//    N = null terminated: 0 = no, 1 = yes
-//    S = sign: 0 = unsigned, 1 = signed
+//    D = endianness:
+//      0 = none
+//      1 = little
+//      2 = big
+//      3 = host
+//    E = error:
+//      0 = no error
+//      1 = error
+//    N = null terminated:
+//      0 = not null terminated
+//      1 = null terminated
+//    S = sign:
+//      0 = unsigned
+//      1 = signed
 //    T = type (at most one set)
-//    Z = size in bits - 1
+//      0 = bool
+//      1 = UTF
+//      2 = int
+//      3 = float
+//      4 = struct
+//    Z = size in bits:
+//      0 = 8 bits
+//      1 = 16 bits
+//      2 = 32 bits
+//      3 = 4 bits
 //
 
-// Si(Z)e:    xxxx xxxx xxZZ ZZZZ
-#define T_SIZE_MASK              0x003Fu              /**< Size mask.         */
+#define T_END_B (ENDIAN_BIG)
+#define T_END_L (ENDIAN_LITTLE)
+#define T_END_H (ENDIAN_HOST)
 
-// En(D)ian:  xxxx xxxx EExx xxxx
-#define T_ENDIAN_MASK            0x0003u              /**< Endian mask.       */
+#define T_08  (0u)
+#define T_16  (1u << 4)
+#define T_32  (2u << 4)
+#define T_64  (3u << 4)
 
-// (N)ull:    xxxx xxxN xxxx xxxx
+/** En(D)ian bitmask: `xxxx xxxx xxxx xxDD` */
+#define T_MASK_ENDIAN             0x0006u
+
+// (N)ull:    xxxx xxxx xxxx xNxx
 #define T_NULL                   0x0040u              /**< Null-terminated.   */
 
-// (E)rror:   xxxx xxEx xxxx xxxx
-#define T_ERROR                  0x0200u              /**< Error type.        */
+// (E)rror:   xxxx xxxx xxxx Exxx
+#define T_ERROR                  0x0080u              /**< Error type.        */
 
-// (T)ypes:   xTTT TTxx xxxx xxxx
+/** (T)ype bitmask: `xxTT TTTT xxxx xxxx` */
 #define T_NONE                   0u                   /**< No type.           */
 
 // (S)igned:  Sxxx xxxx xxxx xxxx
@@ -82,11 +107,11 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF                    0x0800u        /**< Unicode.           */
 #define T_UTF8      (            T_UTF  |  8u)  /**< UTF-8 (multibyte). */
 #define T_UTF16HE   (            T_UTF  | 16u)  /**< UTF-16 host.       */
-#define T_UTF16BE   (T_END_BIG | T_UTF  | 16u)  /**< UTF-16 big.        */
-#define T_UTF16LE   (T_END_LIT | T_UTF  | 16u)  /**< UTF-16 little.     */
+#define T_UTF16BE   (T_END_B | T_UTF  | 16u)  /**< UTF-16 big.        */
+#define T_UTF16LE   (T_END_L | T_UTF  | 16u)  /**< UTF-16 little.     */
 #define T_UTF32HE   (            T_UTF  | 32u)  /**< UTF-32 host.       */
-#define T_UTF32BE   (T_END_BIG | T_UTF  | 32u)  /**< UTF-32 big.        */
-#define T_UTF32LE   (T_END_LIT | T_UTF  | 32u)  /**< UTF-32 little.     */
+#define T_UTF32BE   (T_END_B | T_UTF  | 32u)  /**< UTF-32 big.        */
+#define T_UTF32LE   (T_END_L | T_UTF  | 32u)  /**< UTF-32 little.     */
 
 #define T_UTF_0     (T_NULL    | T_UTF)  /**< UTF string.       */
 
@@ -97,19 +122,19 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF16HE_0 (T_NULL    | T_UTF   | 16u)
 
 /** UTF-16 big-endian, null-terminated string. */
-#define T_UTF16BE_0 (T_END_BIG | T_UTF   | 16u | T_NULL)
+#define T_UTF16BE_0 (T_END_B | T_UTF   | 16u | T_NULL)
 
 /** UTF-16 little-endian, null-terminated string. */
-#define T_UTF16LE_0 (T_END_LIT | T_UTF   | 16u | T_NULL)
+#define T_UTF16LE_0 (T_END_L | T_UTF   | 16u | T_NULL)
 
 /**< UTF-32 host-endian, null-terminated string. */
 #define T_UTF32HE_0 (T_NULL    | T_UTF   | 32u)
 
 /**< UTF-32 big-endian null-terminated string. */
-#define T_UTF32BE_0 (T_END_BIG | T_UTF   | 32u | T_NULL)
+#define T_UTF32BE_0 (T_END_B | T_UTF   | 32u | T_NULL)
 
 /** UTF-32 little-endian, null-terminated string. */
-#define T_UTF32LE_0 (T_END_LIT | T_UTF   | 32u | T_NULL)
+#define T_UTF32LE_0 (T_END_L | T_UTF   | 32u | T_NULL)
 
 #define T_INT       (            0x1000u      ) /**< Integer.           */
 #define T_INT8      (T_SIGNED  | T_INT   |  8u) /**< `signed int8`      */
@@ -131,7 +156,6 @@ _GL_INLINE_HEADER_BEGIN
 #define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)
 
 // bit masks
-#define T_MASK_ENDIAN             0x0006u        /**< Endian bitmask.    */
 #define T_MASK_NULL               T_NULL         /**< Null bitmask.      */
 #define T_MASK_SIGN               T_SIGNED       /**< Sign bitmask.      */
 #define T_MASK_SIZE               0x0078u        /**< Size bitmask.      */

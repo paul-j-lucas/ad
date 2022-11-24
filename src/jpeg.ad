@@ -9,12 +9,12 @@ struct APP0 {
     DOTS_CM   = 2
   };
 
-  . uint16\b marker == 0xFFE0;
-  . uint16\b size;                     %u
-  . utf<8>   jfif[] == "JFIF";
-  . uint<8>  major;
-  . uint<8>  minor;
-  . units_t  units;
+  uint16\b marker == 0xFFE0;
+  uint16\b size;                     %u
+  utf<8>   jfif[] == "JFIF";
+  uint<8>  major;
+  uint<8>  minor;
+  units_t  units;
 
   switch ( units ) {
     case NONE:

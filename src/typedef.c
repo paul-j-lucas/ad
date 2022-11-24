@@ -102,15 +102,15 @@ static int ad_typedef_cmp( void const *i_data, void const *j_data ) {
 /**
  * Creates a new \ref ad_typedef.
  *
- * @param ast The AST of the type.
+ * @param type The type.
  * @return Returns said \ref ad_typedef.
  */
 NODISCARD
-static ad_typedef_t* ad_typedef_new( c_ast_t const *ast ) {
-  assert( ast != NULL );
+static ad_typedef_t* ad_typedef_new( ad_type_t const *type ) {
+  assert( type != NULL );
 
   ad_typedef_t *const tdef = MALLOC( ad_typedef_t, 1 );
-  tdef->ast = ast;
+  tdef->type = type;
 
   return tdef;
 }
@@ -138,9 +138,7 @@ static bool rb_visitor( void *node_data, void *v_data ) {
 ////////// extern functions ///////////////////////////////////////////////////
 
 ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
-  assert( ast != NULL );
-  assert( ast->name != NULL );
-  assert( strlen( ast->name ) > 0 );
+  assert( type != NULL );
 
   ad_typedef_t *const new_tdef = ad_typedef_new( type );
   rb_insert_rv_t const rv = rb_tree_insert( &typedef_set, new_tdef );

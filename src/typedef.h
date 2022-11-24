@@ -76,15 +76,14 @@ typedef bool (*ad_typedef_visit_fn_t)( ad_typedef_t const *tdef, void *v_data );
 /**
  * Adds a new `typedef` to the global set.
  *
- * @param type_ast The AST of the type to add.  Ownership is taken only if the
- * type was added.
+ * @param type The type to add.  Ownership is taken only if the type was added.
  * @return Returns the \ref ad_typedef of either:
  * + The newly added type (its AST's \ref c_ast.unique_id "unique_id" is equal
  *   to \a type_ast's `unique_id`); or:
  * + The previously added type having the same scoped name.
  */
 NODISCARD
-ad_typedef_t const* ad_typedef_add( c_ast_t const *type_ast );
+ad_typedef_t const* ad_typedef_add( ad_type_t const *type );
 
 /**
  * Gets the \ref ad_typedef for \a name.
