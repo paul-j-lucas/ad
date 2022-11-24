@@ -160,7 +160,7 @@ ad_typedef_t const* ad_typedef_find_name( char const *name ) {
 
 void ad_typedef_init( void ) {
   rb_tree_init( &typedef_set, &ad_typedef_cmp );
-  PERROR_EXIT_IF( atexit( &ad_typedef_cleanup ) != 0, EX_OSERR );
+  check_atexit( &ad_typedef_cleanup );
 }
 
 ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
