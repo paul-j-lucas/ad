@@ -40,36 +40,36 @@
 #include <sys/types.h>
 #include <sysexits.h>
 
-// in ascending option character ASCII order
+// in ascending option character ASCII order; sort using: sort -bdfk3
 #define OPT_NO_ASCII            A
 #define OPT_BITS                b
 #define OPT_BYTES               B
 #define OPT_COLOR               c
 #define OPT_C_ARRAY             C
 #define OPT_DECIMAL             d
-#define OPT_LITTLE_ENDIAN       e
 #define OPT_BIG_ENDIAN          E
+#define OPT_LITTLE_ENDIAN       e
 #define OPT_GROUP_BY            g
-#define OPT_HEXADECIMAL         h
 #define OPT_HELP                H
-#define OPT_STRING_IGNORE_CASE  S
 #define OPT_IGNORE_CASE         i
 #define OPT_SKIP_BYTES          j
 #define OPT_MAX_LINES           L
 #define OPT_MATCHING_ONLY       m
 #define OPT_MAX_BYTES           N
-#define OPT_OCTAL               o
 #define OPT_NO_OFFSETS          O
-#define OPT_PRINTING_ONLY       p
+#define OPT_OCTAL               o
 #define OPT_PLAIN               P
+#define OPT_PRINTING_ONLY       p
 #define OPT_REVERSE             r
 #define OPT_STRING              s
+#define OPT_STRING_IGNORE_CASE  S
 #define OPT_TOTAL_MATCHES       t
 #define OPT_TOTAL_MATCHES_ONLY  T
 #define OPT_UTF8                u
 #define OPT_UTF8_PADDING        U
 #define OPT_VERBOSE             v
 #define OPT_VERSION             V
+#define OPT_HEXADECIMAL         x
 
 /// Command-line option character as a character literal.
 #define COPT(X)                   CHARIFY(OPT_##X)
@@ -81,8 +81,6 @@
 
 #define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
-#define SET_OPTION(OPT) \
-  (opts_given[ STATIC_CAST( char8_t, (OPT) ) ] = STATIC_CAST( char, (OPT) ))
 
 // option extern variable definitions
 bool          opt_case_insensitive;
@@ -182,7 +180,7 @@ static char const OPTS_SHORT[] = ":"
 ;
 
 // local variable definitions
-static char         opts_given[ 128 ];
+static bool         opts_given[ 128 ];
 
 // local functions
 NODISCARD
@@ -675,7 +673,6 @@ void parse_options( int argc, char const *argv[] ) {
     );
     if ( opt == -1 )
       break;
-    SET_OPTION( opt );
     switch ( opt ) {
       case COPT(NO_ASCII):
         opt_print_ascii = false;
@@ -783,6 +780,7 @@ void parse_options( int argc, char const *argv[] ) {
           "%d: unaccounted-for getopt_long() return value\n", opt
         );
     } // switch
+    opts_given[ opt ] = true;
   } // for
   argc -= optind;
   argv += optind - 1;
