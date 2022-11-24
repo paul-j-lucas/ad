@@ -50,7 +50,7 @@
 #define OPT_BIG_ENDIAN          E
 #define OPT_LITTLE_ENDIAN       e
 #define OPT_GROUP_BY            g
-#define OPT_HELP                H
+#define OPT_HELP                h
 #define OPT_IGNORE_CASE         i
 #define OPT_SKIP_BYTES          j
 #define OPT_MAX_LINES           L
@@ -793,7 +793,7 @@ void parse_options( int argc, char const *argv[] ) {
   argv += optind - 1;
 
   // handle special case of +offset option
-  if ( argc && *argv[1] == '+' ) {
+  if ( argc > 0 && *argv[1] == '+' ) {
     fin_offset += STATIC_CAST( off_t, parse_offset( argv[1] ) );
     --argc;
     ++argv;
@@ -802,15 +802,17 @@ void parse_options( int argc, char const *argv[] ) {
   // check for mutually exclusive options
   check_mutually_exclusive( "b", "B" );
   check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
-  check_mutually_exclusive( "d", "hoOP" );
+  check_mutually_exclusive( "d", "oOPx" );
   check_mutually_exclusive( "eE", "sS" );
   check_mutually_exclusive( "g", "P" );
+  check_mutually_exclusive( "h", "AbBcCdeEgHijmLNoOpPrsStTuUvVx" );
   check_mutually_exclusive( "L", "N" );
   check_mutually_exclusive( "mp", "v" );
+  check_mutually_exclusive( "o", "dOPx" );
   check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
   check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "H", "AbBcCdeEghijmLNoOpPrsStTuUvV" );
-  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOpPrsStTuUv" );
+  check_mutually_exclusive( "V", "AbBcCdeEgHijmLNoOpPrsStTuUvx" );
+  check_mutually_exclusive( "x", "doOP" );
 
   // check for options that require other options
   check_required( "bB", "eE" );
