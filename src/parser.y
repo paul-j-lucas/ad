@@ -212,11 +212,53 @@
   fl_elaborate_error( __FILE__, __LINE__, (DYM_KINDS), __VA_ARGS__ ); PARSE_ABORT(); )
 
 /**
+ * Calls fl_keyword_expected() followed by #PARSE_ABORT().
+ *
+ * @param KEYWORD A keyword literal.
+ *
+ * @note This must be used _only_ after an `error` token, e.g.:
+ * @code
+ *  : Y_virtual
+ *  | error
+ *    {
+ *      keyword_expected( L_virtual );
+ *    }
+ * @endcode
+ *
+ * @sa elaborate_error()
+ * @sa elaborate_error_dym()
+ * @sa punct_expected()
+ */
+#define keyword_expected(KEYWORD) BLOCK ( \
+  fl_keyword_expected( __FILE__, __LINE__, (KEYWORD) ); PARSE_ABORT(); )
+
+/**
  * Aborts the current parse (presumably after an error message has been
  * printed).
  */
 #define PARSE_ABORT() \
   BLOCK( parse_cleanup( /*fatal_error=*/true ); YYABORT; )
+
+/**
+ * Calls fl_punct_expected() followed by #PARSE_ABORT().
+ *
+ * @param PUNCT The punctuation character that was expected.
+ *
+ * @note This must be used _only_ after an `error` token, e.g.:
+ * @code
+ *  : ','
+ *  | error
+ *    {
+ *      punct_expected( ',' );
+ *    }
+ * @endcode
+ *
+ * @sa elaborate_error()
+ * @sa elaborate_error_dym()
+ * @sa keyword_expected()
+ */
+#define punct_expected(PUNCT) BLOCK( \
+  fl_punct_expected( __FILE__, __LINE__, (PUNCT) ); PARSE_ABORT(); )
 
 /// @endcond
 
@@ -244,8 +286,19 @@ static inline char const* printable_token( void ) {
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Prints an additional parsing error message to standard error that continues
- * from where `yyerror()` left off.
+ * Prints an additional parsing error message including a newline to standard
+ * error that continues from where yyerror() left off.  Additionally:
+ *
+ * + If the printable_token() isn't NULL:
+ *     + Checks to see if it's a keyword: if it is, mentions that it's a
+ *       keyword in the error message.
+ *     + May print "did you mean ...?" \a dym_kinds suggestions.
+ *
+ * + In debug mode, also prints the file & line where the function was called
+ *   from.
+ *
+ * @note This function isn't normally called directly; use the
+ * #elaborate_error() macro instead.
  *
  * @param file The name of the file where this function was called from.
  * @param line The line number within \a file where this function was called
@@ -253,6 +306,10 @@ static inline char const* printable_token( void ) {
  * @param dym_kinds The bitwise-or of the kind(s) of things possibly meant.
  * @param format A `printf()` style format string.
  * @param ... Arguments to print.
+ *
+ * @sa fl_keyword_expected()
+ * @sa fl_punct_expected()
+ * @sa yyerror()
  */
 static void fl_elaborate_error( char const *file, int line,
                                 dym_kind_t dym_kinds, char const *format,
@@ -279,6 +336,89 @@ static void fl_elaborate_error( char const *file, int line,
   }
 
   EPUTC( '\n' );
+}
+
+/**
+ * A special case of fl_elaborate_error() that prevents oddly worded error
+ * messages where a C/C++ keyword is expected, but that keyword isn't a keyword
+ * either until a later version of the language or in a different language;
+ * hence, the lexer will return the keyword as the `Y_NAME` token instead of
+ * the keyword token.
+ *
+ * For example, if fl_elaborate_error() were used for the following \b cdecl
+ * command when the current language is C, you'd get the following:
+ * @code
+ * declare f as virtual function returning void
+ *              ^
+ * 14: syntax error: "virtual": "virtual" expected; not a keyword until C++98
+ * @endcode
+ * because it's really this:
+ * @code
+ * ... "virtual" [the name]": "virtual" [the token] expected ...
+ * @endcode
+ * and that looks odd.
+ *
+ * @note This function isn't normally called directly; use the
+ * #keyword_expected() macro instead.
+ *
+ * @param file The name of the file where this function was called from.
+ * @param line The line number within \a file where this function was called
+ * from.
+ * @param keyword A keyword literal.
+ *
+ * @sa fl_elaborate_error()
+ * @sa fl_punct_expected()
+ * @sa yyerror()
+ */
+static void fl_keyword_expected( char const *file, int line,
+                                 char const *keyword ) {
+  assert( keyword != NULL );
+
+  dym_kind_t dym_kinds = DYM_NONE;
+
+  char const *const error_token = printable_token();
+  if ( error_token != NULL )
+    dym_kinds = DYM_AD_KEYWORDS;
+
+  fl_elaborate_error( file, line, dym_kinds, "\"%s\" expected", keyword );
+}
+
+/**
+ * A special case of fl_elaborate_error() that prevents oddly worded error
+ * messages when a punctuation character is expected by not doing keyword look-
+ * ups of the error token.
+
+ * For example, if fl_elaborate_error() were used for the following \b cdecl
+ * command, you'd get the following:
+ * @code
+ * explain void f(int g const)
+ *                      ^
+ * 29: syntax error: "const": ',' expected ("const" is a keyword)
+ * @endcode
+ * and that looks odd since, if a punctuation character was expected, it seems
+ * silly to point out that the encountered token is a keyword.
+ *
+ * @note This function isn't normally called directly; use the
+ * #punct_expected() macro instead.
+ *
+ * @param file The name of the file where this function was called from.
+ * @param line The line number within \a file where this function was called
+ * from.
+ * @param punct The punctuation character that was expected.
+ *
+ * @sa fl_elaborate_error()
+ * @sa fl_keyword_expected()
+ * @sa yyerror()
+ */
+static void fl_punct_expected( char const *file, int line, char punct ) {
+  EPUTS( ": " );
+  print_debug_file_line( file, line );
+
+  char const *const error_token = printable_token();
+  if ( error_token != NULL )
+    EPRINTF( "\"%s\": ", error_token );
+
+  EPRINTF( "'%c' expected\n", punct );
 }
 
 /**
@@ -364,7 +504,7 @@ static void yyerror( char const *msg ) {
 }
 
                     // ad keywords
-%token              Y_ALIGNAS;
+%token              Y_alignas;
 %token  <expr_kind> Y_BOOL
 %token              Y_BREAK
 %token              Y_CASE
@@ -481,7 +621,7 @@ static void yyerror( char const *msg ) {
 //      + <tid>: "_tid" is appended.
 //  3. Is expected, "_exp" is appended; is optional, "_opt" is appended.
 //
-// Sort using: sort -bdk3
+// Sort using: sort -bdfk3
 
                     // Declarations
 %type <rep_val>     array_opt
@@ -597,13 +737,14 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbracket_exp
+  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbrace_exp
     {
    // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
    // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
    // ad_enum->base = xx;
+      (void)$2;
     }
   ;
 
@@ -662,7 +803,7 @@ array_opt
     }
   | '[' error ']'
     {
-      // TODO
+      elaborate_error( "array size expected" );
     }
   ;
 
@@ -720,7 +861,10 @@ switch_case
 /// typedef declaration ///////////////////////////////////////////////////////
 
 typedef_declaration
-  : Y_TYPEDEF
+  : Y_TYPEDEF field_declaration
+    {
+      // TODO
+    }
   ;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1096,7 +1240,7 @@ colon_exp
   : ':'
   | error
     {
-      elaborate_error( "':' expected" );
+      punct_expected( ':' );
     }
   ;
 
@@ -1104,7 +1248,7 @@ comma_exp
   : ','
   | error
     {
-      elaborate_error( "',' expected" );
+      punct_expected( ',' );
     }
   ;
 
@@ -1112,7 +1256,7 @@ equals_exp
   : '='
   | error
     {
-      elaborate_error( "'=' expected" );
+      punct_expected( '=' );
     }
   ;
 
@@ -1120,7 +1264,7 @@ gt_exp
   : '>'
   | error
     {
-      elaborate_error( "'>' expected" );
+      punct_expected( '>' );
     }
   ;
 
@@ -1136,7 +1280,7 @@ lbrace_exp
   : '{'
   | error
     {
-      elaborate_error( "'{' expected" );
+      punct_expected( '{' );
     }
   ;
 
@@ -1144,7 +1288,7 @@ lparen_exp
   : '('
   | error
     {
-      elaborate_error( "'(' expected" );
+      punct_expected( '(' );
     }
   ;
 
@@ -1152,7 +1296,7 @@ lt_exp
   : '<'
   | error
     {
-      elaborate_error( "'<' expected" );
+      punct_expected( '<' );
     }
   ;
 
@@ -1174,7 +1318,7 @@ rbrace_exp
   : '}'
   | error
     {
-      elaborate_error( "'}' expected" );
+      punct_expected( '}' );
     }
   ;
 
@@ -1182,7 +1326,7 @@ rbracket_exp
   : ']'
   | error
     {
-      elaborate_error( "']' expected" );
+      punct_expected( ']' );
     }
   ;
 
@@ -1190,7 +1334,7 @@ rparen_exp
   : ')'
   | error
     {
-      elaborate_error( "')' expected" );
+      punct_expected( ')' );
     }
   ;
 
@@ -1198,7 +1342,7 @@ semi_exp
   : ';'
   | error
     {
-      elaborate_error( "';' expected" );
+      punct_expected( ';' );
     }
   ;
 
