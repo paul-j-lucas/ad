@@ -598,7 +598,7 @@ declaration
 enum_declaration
   : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbracket_exp
     {
-      ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
+   // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
    // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
