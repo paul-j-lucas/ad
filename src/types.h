@@ -303,6 +303,12 @@ typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
 
+typedef ad_loc_t YYLTYPE;               ///< Source location type for Bison.
+/// @cond DOXYGEN_IGNORE
+#define YYLTYPE_IS_DECLARED       1
+#define YYLTYPE_IS_TRIVIAL        1
+/// @endcond
+
 /**
  * Enumeration type.
  */
