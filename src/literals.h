@@ -28,22 +28,22 @@
 
 ////////// literals ///////////////////////////////////////////////////////////
 
-extern char const L_ALIGNAS[];
-extern char const L_BOOL[];
-extern char const L_BREAK[];
-extern char const L_CASE[];
-extern char const L_DEFAULT[];
-extern char const L_ENUM[];
-extern char const L_FALSE[];
-extern char const L_FLOAT[];
-extern char const L_INT[];
-extern char const L_OFFSETOF[];
-extern char const L_SIZEOF[];
-extern char const L_STRUCT[];
-extern char const L_SWITCH[];
-extern char const L_TRUE[];
-extern char const L_TYPEDEF[];
-extern char const L_UINT[];
+extern char const L_alignas[];
+extern char const L_bool[];
+extern char const L_break[];
+extern char const L_case[];
+extern char const L_default[];
+extern char const L_enum[];
+extern char const L_false[];
+extern char const L_float[];
+extern char const L_int[];
+extern char const L_offsetof[];
+extern char const L_sizeof[];
+extern char const L_struct[];
+extern char const L_switch[];
+extern char const L_true[];
+extern char const L_typedef[];
+extern char const L_uint[];
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -39,22 +39,22 @@
  * All ad keywords.
  */
 static ad_keyword_t const AD_KEYWORDS[] = {
-  { L_ALIGNAS,  Y_alignas,  T_NONE    },
-  { L_BOOL,     Y_BOOL,     T_BOOL    },
-  { L_BREAK,    Y_BREAK,    T_NONE    },
-  { L_CASE,     Y_CASE,     T_NONE    },
-  { L_DEFAULT,  Y_DEFAULT,  T_NONE    },
-  { L_ENUM,     Y_ENUM,     T_NONE    },
-  { L_FALSE,    Y_FALSE,    T_NONE    },
-  { L_FLOAT,    Y_FLOAT,    T_FLOAT   },
-  { L_INT,      Y_INT,      T_INT     },
-  { L_OFFSETOF, Y_OFFSETOF, T_NONE    },
-  { L_SIZEOF,   Y_SIZEOF,   T_NONE    },
-  { L_STRUCT,   Y_STRUCT,   T_STRUCT  },
-  { L_SWITCH,   Y_SWITCH,   T_SWITCH  },
-  { L_TRUE,     Y_TRUE,     T_NONE    },
-  { L_TYPEDEF,  Y_TYPEDEF,  T_NONE    },
-  { L_UINT,     Y_UINT,     T_INT     },
+  { L_alignas,  Y_alignas,  T_NONE    },
+  { L_bool,     Y_bool,     T_BOOL    },
+  { L_break,    Y_break,    T_NONE    },
+  { L_case,     Y_case,     T_NONE    },
+  { L_default,  Y_default,  T_NONE    },
+  { L_enum,     Y_enum,     T_NONE    },
+  { L_false,    Y_false,    T_NONE    },
+  { L_float,    Y_float,    T_FLOAT   },
+  { L_int,      Y_int,      T_INT     },
+  { L_offsetof, Y_offsetof, T_NONE    },
+  { L_sizeof,   Y_SIZEOF,   T_NONE    },
+  { L_struct,   Y_struct,   T_STRUCT  },
+  { L_switch,   Y_switch,   T_SWITCH  },
+  { L_true,     Y_true,     T_NONE    },
+  { L_typedef,  Y_typedef,  T_NONE    },
+  { L_uint,     Y_uint,     T_INT     },
   { NULL,       0           }
 };
 

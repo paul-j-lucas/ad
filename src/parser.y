@@ -505,22 +505,22 @@ static void yyerror( char const *msg ) {
 
                     // ad keywords
 %token              Y_alignas;
-%token  <expr_kind> Y_BOOL
-%token              Y_BREAK
-%token              Y_CASE
-%token  <expr_kind> Y_CHAR
-%token              Y_DEFAULT
-%token  <expr_kind> Y_ENUM
-%token  <expr_kind> Y_FALSE
-%token  <expr_kind> Y_FLOAT
-%token  <expr_kind> Y_INT
-%token              Y_OFFSETOF
-%token  <expr_kind> Y_STRUCT
-%token              Y_SWITCH
-%token  <expr_kind> Y_TRUE
-%token  <expr_kind> Y_TYPEDEF
-%token  <expr_kind> Y_UINT
-%token  <expr_kind> Y_UTF
+%token  <expr_kind> Y_bool
+%token              Y_break
+%token              Y_case
+%token  <expr_kind> Y_char
+%token              Y_default
+%token  <expr_kind> Y_enum
+%token  <expr_kind> Y_false
+%token  <expr_kind> Y_float
+%token  <expr_kind> Y_int
+%token              Y_offsetof
+%token  <expr_kind> Y_struct
+%token              Y_switch
+%token  <expr_kind> Y_true
+%token  <expr_kind> Y_typedef
+%token  <expr_kind> Y_uint
+%token  <expr_kind> Y_utf
 
                     //
                     // C operators that are single-character are represented by
@@ -737,7 +737,7 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_ENUM name_exp colon_exp tid_exp lbrace_exp enumerator_list rbrace_exp
+  : Y_enum name_exp colon_exp tid_exp lbrace_exp enumerator_list rbrace_exp
     {
    // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
    // ad_enum->name = $2;
@@ -810,7 +810,7 @@ array_opt
 /// struct declaration ////////////////////////////////////////////////////////
 
 struct_declaration
-  : Y_STRUCT name_exp lbrace_exp statement_list_opt rbrace_exp
+  : Y_struct name_exp lbrace_exp statement_list_opt rbrace_exp
     {
       ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
       ad_struct->name = $2;
@@ -821,7 +821,7 @@ struct_declaration
 /// switch statement //////////////////////////////////////////////////////////
 
 switch_statement
-  : Y_SWITCH lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
+  : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
     {
     }
   ;
@@ -846,13 +846,13 @@ switch_case_list
   ;
 
 switch_case
-  : Y_CASE expr_exp colon_exp statement_list_opt
+  : Y_case expr_exp colon_exp statement_list_opt
     {
       $$ = MALLOC( ad_switch_case_t, 1 );
       $$->expr = $2;
       // TODO
     }
-  | Y_DEFAULT colon_exp statement_list_opt
+  | Y_default colon_exp statement_list_opt
     {
       $$ = $3;
     }
@@ -861,7 +861,7 @@ switch_case
 /// typedef declaration ///////////////////////////////////////////////////////
 
 typedef_declaration
-  : Y_TYPEDEF field_declaration
+  : Y_typedef field_declaration
     {
       // TODO
     }
@@ -1199,10 +1199,10 @@ type
   ;
 
 builtin_tid
-  : Y_FLOAT                       { $$ = T_FLOAT; }
-  | Y_INT                         { $$ = T_INT; }
-  | Y_UINT                        { $$ = T_INT; }
-  | Y_UTF                         { $$ = T_UTF; }
+  : Y_float                       { $$ = T_FLOAT; }
+  | Y_int                         { $$ = T_INT; }
+  | Y_uint                        { $$ = T_INT; }
+  | Y_utf                         { $$ = T_UTF; }
   ;
 
 tid

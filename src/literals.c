@@ -25,22 +25,22 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-char const L_ALIGNAS[]  = "alignas";
-char const L_BOOL[]     = "bool";
-char const L_BREAK[]    = "break";
-char const L_CASE[]     = "case";
-char const L_DEFAULT[]  = "default";
-char const L_ENUM[]     = "enum";
-char const L_FALSE[]    = "false";
-char const L_FLOAT[]    = "float";
-char const L_INT[]      = "int";
-char const L_OFFSETOF[] = "offsetof";
-char const L_SIZEOF[]   = "sizeof";
-char const L_STRUCT[]   = "struct";
-char const L_SWITCH[]   = "switch";
-char const L_TRUE[]     = "true";
-char const L_TYPEDEF[]  = "typedef";
-char const L_UINT[]     = "uint";
+char const L_alignas[]  = "alignas";
+char const L_bool[]     = "bool";
+char const L_break[]    = "break";
+char const L_case[]     = "case";
+char const L_default[]  = "default";
+char const L_enum[]     = "enum";
+char const L_false[]    = "false";
+char const L_float[]    = "float";
+char const L_int[]      = "int";
+char const L_offsetof[] = "offsetof";
+char const L_sizeof[]   = "sizeof";
+char const L_struct[]   = "struct";
+char const L_switch[]   = "switch";
+char const L_true[]     = "true";
+char const L_typedef[]  = "typedef";
+char const L_uint[]     = "uint";
 
 ///////////////////////////////////////////////////////////////////////////////
 /* vim:set et sw=2 ts=2: */
