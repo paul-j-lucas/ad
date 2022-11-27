@@ -25,4 +25,5 @@ tags
 /depcomp
 /install-sh
 /missing
+/test-driver
 /ylwrap

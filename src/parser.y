@@ -379,7 +379,7 @@ static void fl_keyword_expected( char const *file, int line,
 
   char const *const error_token = printable_token();
   if ( error_token != NULL )
-    dym_kinds = DYM_AD_KEYWORDS;
+    dym_kinds = DYM_KEYWORDS;
 
   fl_elaborate_error( file, line, dym_kinds, "\"%s\" expected", keyword );
 }

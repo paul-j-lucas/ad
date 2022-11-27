@@ -71,6 +71,11 @@ slist_test_SOURCES = \
 		util.c util.h \
 		unit_test.h
 
+TESTS =		$(check_PROGRAMS)
+
+clean-local:
+	rm -f $(BUILT_SOURCES) parser.output
+
 parser.output: parser.y
 	bison -v --report=all $<
 	@rm -f parser.tab.c
