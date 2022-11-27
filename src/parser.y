@@ -35,6 +35,7 @@
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
 #endif /* ENABLE_AD_DEBUG */
+#include "did_you_mean.h"
 #include "expr.h"
 #include "keyword.h"
 #include "lexer.h"
@@ -340,12 +341,12 @@ static void fl_elaborate_error( char const *file, int line,
 
 /**
  * A special case of fl_elaborate_error() that prevents oddly worded error
- * messages where a C/C++ keyword is expected, but that keyword isn't a keyword
- * either until a later version of the language or in a different language;
- * hence, the lexer will return the keyword as the `Y_NAME` token instead of
- * the keyword token.
+ * messages where an **ad** keyword is expected, but that keyword isn't a
+ * keyword either until a later version of the language or in a different
+ * language; hence, the lexer will return the keyword as the `Y_NAME` token
+ * instead of the keyword token.
  *
- * For example, if fl_elaborate_error() were used for the following \b cdecl
+ * For example, if fl_elaborate_error() were used for the following \b ad
  * command when the current language is C, you'd get the following:
  * @code
  * declare f as virtual function returning void
@@ -388,7 +389,7 @@ static void fl_keyword_expected( char const *file, int line,
  * messages when a punctuation character is expected by not doing keyword look-
  * ups of the error token.
 
- * For example, if fl_elaborate_error() were used for the following \b cdecl
+ * For example, if fl_elaborate_error() were used for the following \b ad
  * command, you'd get the following:
  * @code
  * explain void f(int g const)

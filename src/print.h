@@ -172,8 +172,8 @@ void fl_print_warning( char const *file, int line, ad_loc_t const *loc,
                        char const *format, ... );
 
 /**
- * If \ref opt_cdecl_debug is compiled in and enabled, prints \a file and \a
- * line to standard error in the form `"[<file>:<line>] "`; otherwise prints
+ * If \ref opt_ad_debug is compiled in and enabled, prints \a file and \a line
+ * to standard error in the form `"[<file>:<line>] "`; otherwise prints
  * nothing.
  *
  * @param file The name of the file to print.
@@ -239,5 +239,5 @@ bool print_suggestions( dym_kind_t kinds, char const *unknown_token );
 
 /** @} */
 
-#endif /* cdecl_print_H */
+#endif /* ad_print_H */
 /* vim:set et sw=2 ts=2: */

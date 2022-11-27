@@ -27,9 +27,10 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "did_you_mean.h"
-#include "keyword.h"
-#include "cli_options.h"
 #include "dam_lev.h"
+#include "keyword.h"
+#include "options.h"
+#include "typedef.h"
 #include "util.h"
 
 // standard
@@ -81,7 +82,7 @@ static char* check_prefix_strdup( char const *prefix, char const *s ) {
   assert( s != NULL );
 
   size_t const prefix_len = strlen( prefix );
-  char *const dup_s = MALLOC( char*, prefix_len + strlen( s ) + 1/*\0*/ );
+  char *const dup_s = MALLOC( char, prefix_len + strlen( s ) + 1/*\0*/ );
   strcpy( dup_s, prefix );
   strcpy( dup_s + prefix_len, s );
   return dup_s;
@@ -94,15 +95,15 @@ static char* check_prefix_strdup( char const *prefix, char const *s ) {
  * @param pdym A pointer to the current \ref did_you_mean pointer or NULL to
  * just count keywords, not copy.  If not NULL, on return, the pointed-to
  * pointer is incremented.
- * @param tpid The type part ID that a keyword must have in order to be copied
- * (or counted).
+ * @param copy_types If `true` copy (or count) keywords for types; if `false`
+ * copy (or count) keywords for non-types.
  * @return Returns said number of keywords.
  */
 PJL_DISCARD
-static size_t copy_keywords( did_you_mean_t **const pdym, c_tpid_t tpid ) {
+static size_t copy_keywords( did_you_mean_t **const pdym, bool copy_types ) {
   size_t count = 0;
-  FOREACH_KEYWORD( k ) {
-    if ( opt_lang_is_any( k->lang_ids ) && c_tid_tpid( k->tid ) == tpid ) {
+  FOREACH_AD_KEYWORD( k ) {
+    if ( !!k->tid == copy_types ) {
       if ( pdym != NULL )
         (*pdym)++->token = check_strdup( k->literal );
       ++count;
@@ -112,7 +113,7 @@ static size_t copy_keywords( did_you_mean_t **const pdym, c_tpid_t tpid ) {
 }
 
 /**
- * Copies **cdecl** command-line options to the candidate list pointed to by \a
+ * Copies **ad** command-line options to the candidate list pointed to by \a
  * pdym.  If \a pdym is NULL, only counts the number of options.
  *
  * @param pdym A pointer to the current \ref did_you_mean pointer or NULL to
@@ -132,26 +133,25 @@ static size_t copy_cli_options( did_you_mean_t **pdym ) {
 }
 
 /**
- * A \ref c_typedef visitor function to copy names of types that are only valid
- * in the current language to the candidate list pointed to
+ * A \ref ad_typedef visitor function to copy names of types that are only
+ * valid in the current language to the candidate list pointed to
  *
- * @param tdef The c_typedef to visit.
+ * @param tdef The ad_typedef to visit.
  * @param data A pointer to a \ref copy_typedef_visit_data.
  * @return Always returns `false`.
  */
 PJL_DISCARD
-static bool copy_typedef_visitor( c_typedef_t const *tdef, void *data ) {
+static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
   assert( tdef != NULL );
   assert( data != NULL );
 
-  if ( opt_lang_is_any( tdef->lang_ids ) ) {
-    copy_typedef_visit_data_t *const ctvd = data;
-    if ( ctvd->pdym != NULL ) {
-      char const *const name = c_sname_full_name( &tdef->ast->sname );
-      (*ctvd->pdym)++->token = check_strdup( name );
-    }
-    ++ctvd->count;
+  copy_typedef_visit_data_t *const ctvd = data;
+  if ( ctvd->pdym != NULL ) {
+    char const *const name = &tdef->type->name;
+    (*ctvd->pdym)++->token = check_strdup( name );
   }
+  ++ctvd->count;
+
   return false;
 }
 
@@ -166,7 +166,7 @@ static bool copy_typedef_visitor( c_typedef_t const *tdef, void *data ) {
 PJL_DISCARD
 static size_t copy_typedefs( did_you_mean_t **const pdym ) {
   copy_typedef_visit_data_t ctvd = { pdym, 0 };
-  c_typedef_visit( &copy_typedef_visitor, &ctvd );
+  ad_typedef_visit( &copy_typedef_visitor, &ctvd );
   return ctvd.count;
 }
 
@@ -248,10 +248,9 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
     ((kinds & DYM_CLI_OPTIONS) != DYM_NONE ?
       copy_cli_options( /*pdym=*/NULL ) : 0) +
     ((kinds & DYM_KEYWORDS) != DYM_NONE ?
-      copy_keywords( /*pdym=*/NULL, C_TPID_NONE ) +
-      copy_keywords( /*pdym=*/NULL, C_TPID_STORE ) : 0) +
+      copy_keywords( /*pdym=*/NULL, /*copy_types=*/false ) : 0) +
     ((kinds & DYM_TYPES) != DYM_NONE ?
-      copy_keywords( /*pdym=*/NULL, C_TPID_BASE ) +
+      copy_keywords( /*pdym=*/NULL, /*copy_types=*/true ) +
       copy_typedefs( /*pdym=*/NULL ) : 0);
 
   if ( dym_size == 0 )
@@ -265,11 +264,10 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
     copy_cli_options( &dym );
   }
   if ( (kinds & DYM_KEYWORDS) != DYM_NONE ) {
-    copy_keywords( &dym, C_TPID_NONE );
-    copy_keywords( &dym, C_TPID_STORE );
+    copy_keywords( &dym, /*copy_types=*/false );
   }
   if ( (kinds & DYM_TYPES) != DYM_NONE ) {
-    copy_keywords( &dym, C_TPID_BASE );
+    copy_keywords( &dym, /*copy_types=*/true );
     copy_typedefs( &dym );
   }
   MEM_ZERO( dym );                      // one past last is zero'd

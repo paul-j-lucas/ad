@@ -29,7 +29,6 @@
 #include <assert.h>
 #include <ctype.h>                      /* for islower(), toupper() */
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
-#include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
@@ -104,9 +103,9 @@ bool          opt_verbose;
 /**
  * Long command-line options.
  *
- * @sa OPTS_SHORT
+ * @sa OPTIONS_SHORT
  */
-static struct option const OPTS_LONG[] = {
+static struct option const OPTIONS_LONG[] = {
   { "bits",               required_argument,  NULL, COPT(BITS)                },
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
@@ -152,9 +151,9 @@ static struct option const OPTS_LONG[] = {
  * @note It _must_ start with `:` to make `getopt_long()` return `:` when a
  * required argument for a known option is missing.
  *
- * @sa OPTS_LONG
+ * @sa OPTIONS_LONG
  */
-static char const OPTS_SHORT[] = ":"
+static char const OPTIONS_SHORT[] = ":"
   SOPT(NO_ASCII)            SOPT_NO_ARGUMENT
   SOPT(BITS)                SOPT_REQUIRED_ARGUMENT
   SOPT(BYTES)               SOPT_REQUIRED_ARGUMENT
@@ -315,9 +314,10 @@ static char const* opt_format( char short_opt, char buf[], size_t size ) {
  */
 NODISCARD
 static char const* opt_get_long( char short_opt ) {
-  for ( struct option const *long_opt = OPTS_LONG; long_opt->name; ++long_opt )
-    if ( long_opt->val == short_opt )
-      return long_opt->name;
+  FOREACH_CLI_OPTION( opt ) {
+    if ( opt->val == short_opt )
+      return opt->name;
+  } // for
   return "";
 }
 
@@ -636,6 +636,10 @@ PACKAGE_NAME " home page: " PACKAGE_URL "\n",
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+struct option const* cli_option_next( struct option const *opt ) {
+  return opt == NULL ? OPTIONS_LONG : (++opt)->name == NULL ? NULL : opt;
+}
+
 char const* get_offset_fmt_english( void ) {
   switch ( opt_offset_fmt ) {
     case OFMT_NONE: return "none";
@@ -689,7 +693,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   for (;;) {
     int const opt = getopt_long(
-      argc, CONST_CAST( char**, argv ), OPTS_SHORT, OPTS_LONG,
+      argc, CONST_CAST( char**, argv ), OPTIONS_SHORT, OPTIONS_LONG,
       /*longindex=*/NULL
     );
     if ( opt == -1 )

@@ -27,9 +27,30 @@
 #include "types.h"
 
 // standard
+#include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
+
+/**
+ * Checks whether the given \c c_fmt specifies a type.
+ *
+ * @param FMT The \c c_fmt to check.
+ * @return Returns \c true only if \a FMT specifies a type.
+ * @hideinitializer
+ */
+#define CFMT_HAS_TYPE(FMT) \
+  (((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T)) != 0)
+
+/**
+ * Convenience macro for iterating over all **ad** command-line options.
+ *
+ * @param VAR The `struct option` loop variable.
+ *
+ * @sa cli_option_next()
+ */
+#define FOREACH_CLI_OPTION(VAR) \
+  for ( struct option const *VAR = NULL; (VAR = cli_option_next( VAR )) != NULL; )
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -47,16 +68,6 @@ enum c_fmt {
   CFMT_STATIC   = 1 << 7,               ///< Declare variables as `static`.
 };
 typedef unsigned c_fmt_t;               ///< Bitwise-or of c_fmt options.
-
-/**
- * Checks whether the given \c c_fmt specifies a type.
- *
- * @param FMT The \c c_fmt to check.
- * @return Returns \c true only if \a FMT specifies a type.
- * @hideinitializer
- */
-#define CFMT_HAS_TYPE(FMT) \
-  (((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T)) != 0)
 
 /**
  * Whether to print the total number of matches.
@@ -99,6 +110,21 @@ extern char const    *opt_utf8_pad;
 extern bool           opt_verbose;
 
 ////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Iterates to the next **ad** command-line option.
+ *
+ * @param opt A pointer to the previous option. For the first iteration, NULL
+ * should be passed.
+ * @return Returns the next command-line option or NULL for none.
+ *
+ * @note This function isn't normally called directly; use the
+ * #FOREACH_CLI_OPTION() macro instead.
+ *
+ * @sa #FOREACH_CLI_OPTION()
+ */
+NODISCARD
+struct option const* cli_option_next( struct option const *opt );
 
 /**
  * Gets the English word for the current offset format.

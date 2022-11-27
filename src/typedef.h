@@ -116,5 +116,5 @@ ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
 
 /** @} */
 
-#endif /* cdecl_typedef_H */
+#endif /* ad_typedef_H */
 /* vim:set et sw=2 ts=2: */

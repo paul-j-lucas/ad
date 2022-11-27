@@ -1,5 +1,5 @@
 /*
-**      cdecl -- C gibberish translator
+**      ad -- ASCII dump
 **      src/unit_test.h
 **
 **      Copyright (C) 2021-2022  Paul J. Lucas
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef cdecl_unit_test_H
-#define cdecl_unit_test_H
+#ifndef ad_unit_test_H
+#define ad_unit_test_H
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-value"
@@ -67,5 +67,5 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif /* cdecl_unit_test_H */
+#endif /* ad_unit_test_H */
 /* vim:set et sw=2 ts=2: */
