@@ -26,8 +26,8 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "print.h"
+#include "ad.h"
 #include "color.h"
-#include "common.h"
 #include "keyword.h"
 #include "lexer.h"
 #include "options.h"
@@ -84,7 +84,7 @@ static char const* fprint_list_dym_gets( void const **ppelt ) {
   static buf_t bufs[2];
   static unsigned buf_index;
 
-  char *const buf = &bufs[ buf_index++ % ARRAY_SIZE( bufs ) ];
+  char *const buf = bufs[ buf_index++ % ARRAY_SIZE( bufs ) ];
   snprintf( buf, 30, "\"%s\"", dym->token );
   return buf;
 }
@@ -124,33 +124,11 @@ static size_t print_caret( size_t error_column ) {
 #endif /* ENABLE_TERM_SIZE */
     term_columns = TERM_COLUMNS_DEFAULT;
 
-  size_t caret_column;
-
-  if ( opt_interactive ) {
-    //
-    // If we're interactive, we can put the ^ under the already existing token
-    // the user typed for the recent command, but we have to add the length of
-    // the prompt.
-    //
-    caret_column = error_column
-      + strlen( OPT_LANG_IS( C_ANY ) ? CDECL : CPPDECL )
-      + 2 /* "> " */;
-    if ( term_columns > 0 )
-      caret_column %= term_columns;
-  }
-  else {
-    //
-    // Otherwise we have to print out the line containing the error then put
-    // the ^ under that.
-    //
-    print_input_line( &error_column, term_columns );
-    caret_column = error_column;
-  }
-
-  EPRINTF( "%*s", STATIC_CAST( int, caret_column ), "" );
-  SGR_START_COLOR( stderr, caret );
+  print_input_line( &error_column, term_columns );
+  EPRINTF( "%*s", STATIC_CAST( int, error_column ), "" );
+  color_start( stderr, sgr_caret );
   EPUTC( '^' );
-  SGR_END_COLOR( stderr );
+  color_end( stderr, sgr_caret );
   EPUTC( '\n' );
 
   return error_column;
@@ -300,9 +278,9 @@ void fl_print_error( char const *file, int line, ad_loc_t const *loc,
 
   if ( loc != NULL ) {
     print_loc( loc );
-    SGR_START_COLOR( stderr, error );
+    color_start( stderr, sgr_error );
     EPUTS( "error" );
-    SGR_END_COLOR( stderr );
+    color_end( stderr, sgr_error );
     EPUTS( ": " );
   }
 
@@ -342,9 +320,9 @@ void fl_print_warning( char const *file, int line, ad_loc_t const *loc,
 
   if ( loc != NULL )
     print_loc( loc );
-  SGR_START_COLOR( stderr, warning );
+  color_start( stderr, sgr_warning );
   EPUTS( "warning" );
-  SGR_END_COLOR( stderr );
+  coloe_end( stderr, sgr_warning );
   EPUTS( ": " );
 
   print_debug_file_line( file, line );
@@ -380,11 +358,11 @@ void print_hint( char const *format, ... ) {
 void print_loc( ad_loc_t const *loc ) {
   assert( loc != NULL );
   size_t const column = print_caret( STATIC_CAST( size_t, loc->first_column ) );
-  SGR_START_COLOR( stderr, locus );
+  color_start( stderr, sgr_locus );
   if ( print_params.conf_path != NULL )
     EPRINTF( "%s:%d,", print_params.conf_path, loc->first_line + 1 );
   EPRINTF( "%zu", column + 1 );
-  SGR_END_COLOR( stderr );
+  color_end( stderr, sgr_locus );
   EPUTS( ": " );
 }
 

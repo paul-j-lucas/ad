@@ -329,6 +329,25 @@ _GL_INLINE_HEADER_BEGIN
 #define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
 
 /**
+ * Calls **fseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param STREAM The `FILE` stream to check for an error.
+ * @param OFFSET The offset to seek to.
+ * @param WHENCE What \a OFFSET if relative to.
+ */
+#define FSEEK(STREAM,OFFSET,WHENCE) \
+  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+
+/**
+ * Calls **fstat**(3), checks for an error, and exits if there was one.
+ *
+ * @param FD The file descriptor to stat.
+ * @param STAT A pointer to a `struct stat` to receive the result.
+ */
+#define FSTAT(FD,STAT) \
+  PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
+
+/**
  * A special-case of #FATAL_ERR that additionally prints the file and line
  * where an internal error occurred.
  *
@@ -342,6 +361,60 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define INTERNAL_ERR(FORMAT,...) \
   FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
+
+#ifdef __GNUC__
+
+/**
+ * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * magrinally better performance.
+ *
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #unlikely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
+ */
+#define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
+
+/**
+ * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * magrinally better performance.
+ *
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #likely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
+ */
+#define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
+
+#else
+# define likely(EXPR)             (EXPR)
+# define unlikely(EXPR)           (EXPR)
+#endif /* __GNUC__ */
+
+/**
+ * Calls **lseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param FD The file descriptor to seek.
+ * @param OFFSET The file offset to seek to.
+ * @param WHENCE Where \a OFFSET is relative to.
+ */
+#define LSEEK(FD,OFFSET,WHENCE) \
+  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+
+/**
+ * Calls **malloc**(3) and casts the result to \a TYPE.
+ *
+ * @param TYPE The type to allocate.
+ * @param N The number of objects of \a TYPE to allocate.
+ * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
+ *
+ * @sa check_realloc()
+ * @sa #REALLOC()
+ */
+#define MALLOC(TYPE,N) \
+  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
 
 /**
  * Zeros the memory pointed to by \a PTR.  The number of bytes to zero is given
@@ -441,78 +514,10 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define STRINGIFY(X)              STRINGIFY_IMPL(X)
 
-#ifdef __GNUC__
-
 /**
- * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
- * non-zero (true) allowing the compiler to better order code blocks for
- * magrinally better performance.
- *
- * @param EXPR An expression that can be cast to `bool`.
- *
- * @sa #unlikely()
- * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
+ * Whitespace characters.
  */
-#define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
-
-/**
- * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
- * non-zero (true) allowing the compiler to better order code blocks for
- * magrinally better performance.
- *
- * @param EXPR An expression that can be cast to `bool`.
- *
- * @sa #likely()
- * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
- */
-#define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
-
-#else
-# define likely(EXPR)             (EXPR)
-# define unlikely(EXPR)           (EXPR)
-#endif /* __GNUC__ */
-
-/**
- * Calls **fseek**(3), checks for an error, and exits if there was one.
- *
- * @param STREAM The `FILE` stream to check for an error.
- * @param OFFSET The offset to seek to.
- * @param WHENCE What \a OFFSET if relative to.
- */
-#define FSEEK(STREAM,OFFSET,WHENCE) \
-  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
-
-/**
- * Calls **fstat**(3), checks for an error, and exits if there was one.
- *
- * @param FD The file descriptor to stat.
- * @param STAT A pointer to a `struct stat` to receive the result.
- */
-#define FSTAT(FD,STAT) \
-  PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
-
-/**
- * Calls **lseek**(3), checks for an error, and exits if there was one.
- *
- * @param FD The file descriptor to seek.
- * @param OFFSET The file offset to seek to.
- * @param WHENCE Where \a OFFSET is relative to.
- */
-#define LSEEK(FD,OFFSET,WHENCE) \
-  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
-
-/**
- * Calls **malloc**(3) and casts the result to \a TYPE.
- *
- * @param TYPE The type to allocate.
- * @param N The number of objects of \a TYPE to allocate.
- * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
- *
- * @sa check_realloc()
- * @sa #REALLOC()
- */
-#define MALLOC(TYPE,N) \
-  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+#define WS                        " \f\n\r\t\v"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -816,6 +821,14 @@ void regex_free( regex_t *re ) {
  */
 NODISCARD
 bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
+
+/**
+ * Decrements \a *s_len as if to trim whitespace, if any, from the end of \a s.
+ *
+ * @param s The null-terminated string to trim.
+ * @param s_len A pointer to the length of \a s.
+ */
+void str_rtrim_len( char const *s, size_t *s_len );
 
 /**
  * Swaps the endianness of the given 16-bit value.

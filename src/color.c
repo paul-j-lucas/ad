@@ -39,10 +39,16 @@
 // Color capabilities.  Names containing Upper-case are unique to ad and upper-
 // case to avoid conflict with gcc.
 //
+#define CAP_CARET                 "caret"
 #define CAP_BYTE_OFFSET           "bn"
+#define CAP_ERROR                 "error"
+#define CAP_LOCUS                 "locus"
+#define CAP_MATCH_ASCII           "MA"
+#define CAP_MATCH_HEX             "MH"
+#define CAP_MATCH_BOTH            "MB"
 #define CAP_ELIDED_COUNT          "EC"
-#define CAP_MATCHED_BOTH          "MB"
 #define CAP_SEPARATOR             "se"
+#define CAP_WARNING               "warning"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,14 +63,20 @@ struct color_cap {
 };
 typedef struct color_cap color_cap_t;
 
+// extern constant definitions
 char const  COLORS_DEFAULT[] =
+  CAP_CARET         "=" SGR_FG_GREEN    SGR_SEP SGR_BOLD  SGR_CAP_SEP
   CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
   CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
-  CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
-  CAP_SEPARATOR     "=" SGR_FG_CYAN;
+  CAP_ERROR         "=" SGR_FG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+  CAP_LOCUS         "="                         SGR_BOLD  SGR_CAP_SEP
+  CAP_MATCH_BOTH    "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+  CAP_SEPARATOR     "=" SGR_FG_CYAN
+  CAP_WARNING       "=" SGR_FG_YELLOW   SGR_SEP SGR_BOLD  SGR_CAP_SEP;
 
 // extern variable definitions
 bool        colorize;
+char const *sgr_caret;
 char const *sgr_start = SGR_START SGR_EL;
 char const *sgr_end   = SGR_END SGR_EL;
 char const *sgr_error;
@@ -170,19 +182,19 @@ static void sgr_set_cap_ne( char const *sgr_color ) {
 #define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
 
 /**
- * Color capabilities table.  Upper-case names are unique to us and upper-case
- * to avoid conflict with grep.  Lower-case names are for grep compatibility.
+ * Color capabilities table.
  */
 static color_cap_t const COLOR_CAPS[] = {
-  { "bn", SET_SGR( offset       ) },    // grep: byte offset
-  { "EC", SET_SGR( elided       ) },    // elided count
-  { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
-  { "MH", SET_SGR( hex_match    ) },    // matched hex
-  { "MB", CALL_FN( set_cap_MB   ) },    // matched both
-  { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
-  { "se", SET_SGR( sep          ) },    // grep: separator
-  { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
-  { NULL, NULL, NULL              }
+  { CAP_BYTE_OFFSET,  SET_SGR( offset       ) },
+  { CAP_CARET,        SET_SGR( caret        ) },
+  { CAP_ELIDED_COUNT, SET_SGR( elided       ) },
+  { CAP_MATCH_ASCII,  SET_SGR( ascii_match  ) },
+  { CAP_MATCH_HEX,    SET_SGR( hex_match    ) },
+  { CAP_MATCH_BOTH,   CALL_FN( set_cap_MB   ) },
+  { "mt",             CALL_FN( set_cap_MB   ) },  // grep: matched text (both)
+  { CAP_SEPARATOR,    SET_SGR( sep          ) },
+  { "ne",             CALL_FN( set_cap_ne   ) },  // grep: no EL on SGR
+  { NULL,             NULL, NULL              }
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
