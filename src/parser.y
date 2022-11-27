@@ -662,7 +662,7 @@ static void yyerror( char const *msg ) {
                     // Miscellaneous
 %type <list>        argument_expr_list
 %type <expr_kind>   assign_op
-%type <name>        name_exp name_opt
+%type <name>        name_exp
 %type <str_lit>     str_lit str_lit_exp
 //%type <endian_val>     type_endian_opt
 %type <endian_val>  type_endian_exp
@@ -678,7 +678,6 @@ static void yyerror( char const *msg ) {
 
 /* name */
 %destructor { DTRACE; FREE( $$ ); } name_exp
-%destructor { DTRACE; FREE( $$ ); } name_opt
 %destructor { DTRACE; FREE( $$ ); } Y_NAME
 %destructor { DTRACE; FREE( $$ ); } type_name_exp
 
@@ -728,6 +727,51 @@ compound_statement
     }
   ;
 
+/// switch statement //////////////////////////////////////////////////////////
+
+switch_statement
+  : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
+    {
+      @$; // Forces declaration of yylloc. TODO: remove
+    }
+  ;
+
+switch_case_list_opt
+  : /* empty */                   { slist_init( &$$ ); }
+  | switch_case_list
+  ;
+
+switch_case_list
+  : switch_case_list switch_case
+    {
+      $$ = $1;
+      slist_push_back( &$$, &$2 );
+    }
+
+  | switch_case
+    {
+      slist_init( &$$ );
+      slist_push_back( &$$, $1 );
+    }
+  ;
+
+switch_case
+  : Y_case expr_exp colon_exp statement_list_opt
+    {
+      $$ = MALLOC( ad_switch_case_t, 1 );
+      $$->expr = $2;
+      // TODO
+    }
+  | Y_default colon_exp statement_list_opt
+    {
+      $$ = $3;
+    }
+  ;
+
+///////////////////////////////////////////////////////////////////////////////
+//  DECLARATIONS                                                             //
+///////////////////////////////////////////////////////////////////////////////
+
 declaration
   : enum_declaration
   | field_declaration
@@ -773,12 +817,13 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : tid_exp name_exp array_opt
+  : type name_exp array_opt
     {
-      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      ad_field->type = $1;
-      ad_field->name = $2;
-      ad_field->rep = $3;
+      (void)$2;
+      //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
+      //ad_field->type = $1;
+      //ad_field->name = $2;
+      //ad_field->rep = $3;
     }
 
   | Y_TYPEDEF_TYPE name_exp array_opt
@@ -816,46 +861,6 @@ struct_declaration
       ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
       ad_struct->name = $2;
       // TODO
-    }
-  ;
-
-/// switch statement //////////////////////////////////////////////////////////
-
-switch_statement
-  : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
-    {
-    }
-  ;
-
-switch_case_list_opt
-  : /* empty */                   { slist_init( &$$ ); }
-  | switch_case_list
-  ;
-
-switch_case_list
-  : switch_case_list switch_case
-    {
-      $$ = $1;
-      slist_push_back( &$$, &$2 );
-    }
-
-  | switch_case
-    {
-      slist_init( &$$ );
-      slist_push_back( &$$, $1 );
-    }
-  ;
-
-switch_case
-  : Y_case expr_exp colon_exp statement_list_opt
-    {
-      $$ = MALLOC( ad_switch_case_t, 1 );
-      $$->expr = $2;
-      // TODO
-    }
-  | Y_default colon_exp statement_list_opt
-    {
-      $$ = $3;
     }
   ;
 
@@ -980,8 +985,8 @@ equality_expr
   ;
 
 logical_and_expr
-  : logical_or_expr
-  | logical_and_expr "&&" logical_or_expr
+  : bitwise_or_expr
+  | logical_and_expr "&&" bitwise_or_expr
     {
       $$ = ad_expr_new( AD_EXPR_LOG_AND );
       $$->binary.lhs_expr = $1;
@@ -1199,13 +1204,6 @@ type
   : tid '<' expr '>'
   ;
 
-builtin_tid
-  : Y_float                       { $$ = T_FLOAT; }
-  | Y_int                         { $$ = T_INT; }
-  | Y_uint                        { $$ = T_INT; }
-  | Y_utf                         { $$ = T_UTF; }
-  ;
-
 tid
   : builtin_tid lt_exp expr gt_exp type_endian_exp
     {
@@ -1213,6 +1211,13 @@ tid
       // TODO
     }
   | Y_TYPEDEF_TYPE
+  ;
+
+builtin_tid
+  : Y_float                       { $$ = T_FLOAT; }
+  | Y_int                         { $$ = T_INT; }
+  | Y_uint                        { $$ = T_INT; }
+  | Y_utf                         { $$ = T_UTF; }
   ;
 
 tid_exp
@@ -1242,14 +1247,6 @@ colon_exp
   | error
     {
       punct_expected( ':' );
-    }
-  ;
-
-comma_exp
-  : ','
-  | error
-    {
-      punct_expected( ',' );
     }
   ;
 
@@ -1308,11 +1305,6 @@ name_exp
       $$ = NULL;
       elaborate_error( "name expected" );
     }
-  ;
-
-name_opt
-  : /* empty */                   { $$ = NULL; }
-  | Y_NAME
   ;
 
 rbrace_exp
