@@ -322,7 +322,7 @@ void fl_print_warning( char const *file, int line, ad_loc_t const *loc,
     print_loc( loc );
   color_start( stderr, sgr_warning );
   EPUTS( "warning" );
-  coloe_end( stderr, sgr_warning );
+  color_end( stderr, sgr_warning );
   EPUTS( ": " );
 
   print_debug_file_line( file, line );
