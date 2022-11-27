@@ -70,25 +70,6 @@ static double const SIMILAR_ENOUGH_PERCENT = .37;
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Duplicates \a s prefixed by \a prefix.
- *
- * @param prefix The null-terminated prefix string to duplicate.
- * @param s The null-terminated string to duplicate.
- * @return Returns a copy of \a s prefixed by \a prefix.
- */
-NODISCARD
-static char* check_prefix_strdup( char const *prefix, char const *s ) {
-  assert( prefix != NULL );
-  assert( s != NULL );
-
-  size_t const prefix_len = strlen( prefix );
-  char *const dup_s = MALLOC( char, prefix_len + strlen( s ) + 1/*\0*/ );
-  strcpy( dup_s, prefix );
-  strcpy( dup_s + prefix_len, s );
-  return dup_s;
-}
-
-/**
  * Copies C/C++ keywords in the current language to the candidate list pointed
  * to by \a pdym.  If \a pdym is NULL, only counts the number of keywords.
  *
@@ -146,10 +127,8 @@ static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
   assert( data != NULL );
 
   copy_typedef_visit_data_t *const ctvd = data;
-  if ( ctvd->pdym != NULL ) {
-    char const *const name = &tdef->type->name;
-    (*ctvd->pdym)++->token = check_strdup( name );
-  }
+  if ( ctvd->pdym != NULL )
+    (*ctvd->pdym)++->token = check_strdup( tdef->name );
   ++ctvd->count;
 
   return false;

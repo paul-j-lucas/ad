@@ -57,6 +57,7 @@
  * **ad** C/C++ `typedef` information.
  */
 struct ad_typedef {
+  char const      *name;                ///< The type's name.
   ad_type_t const *type;                ///< The underlying type.
 };
 
