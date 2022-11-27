@@ -26,11 +26,10 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
-#include "options.h"
+#include "typedef.h"
+#include "ad.h"
 #include "red_black.h"
 #include "types.h"
-#include "typedef.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -43,13 +42,12 @@
 /// @endcond
 
 /**
- * Convenience macro for specifying a \ref ad_typedef literal with an AST
- * having \a NAME.
+ * Convenience macro for specifying a \ref ad_typedef literal having \a NAME.
  *
  * @param NAME The name.
  */
-#define C_TYPEDEF_NAME_LIT(SNAME) \
-  C_TYPEDEF_AST_LIT( &(c_ast_t const){ .name = (SNAME) } )
+#define AD_TYPEDEF_NAME_LIT(NAME) \
+  (ad_typedef_t const){ .name = (NAME) }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -96,7 +94,7 @@ static int ad_typedef_cmp( void const *i_data, void const *j_data ) {
   assert( j_data != NULL );
   ad_typedef_t const *const i_tdef = i_data;
   ad_typedef_t const *const j_tdef = j_data;
-  return strcmp( &i_tdef->type->name, &j_tdef->type->name );
+  return strcmp( i_tdef->name, j_tdef->name );
 }
 
 /**
@@ -110,6 +108,7 @@ static ad_typedef_t* ad_typedef_new( ad_type_t const *type ) {
   assert( type != NULL );
 
   ad_typedef_t *const tdef = MALLOC( ad_typedef_t, 1 );
+  tdef->name = NULL;
   tdef->type = type;
 
   return tdef;
@@ -154,7 +153,7 @@ ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
 ad_typedef_t const* ad_typedef_find_name( char const *name ) {
   assert( name != NULL );
   rb_node_t const *const found_rb =
-    rb_tree_find( &typedef_set, &C_TYPEDEF_NAME_LIT( *name ) );
+    rb_tree_find( &typedef_set, &AD_TYPEDEF_NAME_LIT( name ) );
   return found_rb != NULL ? found_rb->data : NULL;
 }
 
