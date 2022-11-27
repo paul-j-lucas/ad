@@ -1025,7 +1025,7 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
         case T_BOOL:
         case T_INT:
           ad_expr_set_b( rv,
-            !is_fequal( lhs_expr.ue.f64, rhs_expr.value.i64 )
+            !is_fequal( lhs_expr.value.f64, rhs_expr.value.i64 )
           );
           break;
         case T_FLOAT:
