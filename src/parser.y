@@ -498,9 +498,9 @@ static void yyerror( char const *msg ) {
   char               *name;       // name being declared or explained
   ad_rep_t            rep_val;
   ad_statement_t      statement;
-  char const         *str_lit;    // string literal
+  char               *str_val;    // quoted string value
   ad_switch_case_t    switch_case;
-  ad_typedef_t        tdef;
+  ad_typedef_t const *tdef;
   ad_tid_t            tid;
 }
 
@@ -528,6 +528,9 @@ static void yyerror( char const *msg ) {
                     // themselves directly.  All multi-character operators are
                     // given Y_ names.
                     //
+
+                    // C operators: precedence 17
+%left               Y_COLON2      "::"
 
                     // C operators: precedence 16
 %token  <oper_id>   Y_PLUS2       "++"
@@ -563,7 +566,7 @@ static void yyerror( char const *msg ) {
 
                     // C operators: precedence 8
 %left   <oper_id>   Y_EQ2         "=="
-                    Y_NOT_EQ      "!="
+                    Y_EXCLAM_EQ   "!="
                     // C operators: precedence 7
                     Y_BIT_AND  // '&' -- covered by Y_AMPER
                     // C operators: precedence 6
@@ -575,7 +578,7 @@ static void yyerror( char const *msg ) {
                     // C operators: precedence 3
 %left   <oper_id>   Y_PIPE2       "||"
                     // C operators: precedence 2
-%right  <oper_id>                 '?'
+%right  <oper_id>                 '?' ':'
                                   '='
                     Y_PERCENT_EQ  "%="
                     Y_AMPER_EQ    "&="
@@ -595,11 +598,12 @@ static void yyerror( char const *msg ) {
                     // Miscellaneous
 %token                            ';'
 %token                            '{' '}'
+%token  <str_val>   Y_CHAR_LIT
 %token              Y_END
 %token              Y_ERROR
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
-%token  <str_lit>   Y_STR_LIT
+%token  <str_val>   Y_STR_LIT
 %token  <tid>       Y_TYPEDEF_TYPE
 
                     //
@@ -663,7 +667,7 @@ static void yyerror( char const *msg ) {
 %type <list>        argument_expr_list
 %type <expr_kind>   assign_op
 %type <name>        name_exp
-%type <str_lit>     str_lit str_lit_exp
+%type <str_val>     str_lit str_lit_exp
 //%type <endian_val>     type_endian_opt
 %type <endian_val>  type_endian_exp
 %type <name>        type_name_exp
@@ -751,20 +755,20 @@ switch_case_list
   | switch_case
     {
       slist_init( &$$ );
-      slist_push_back( &$$, $1 );
+      //slist_push_back( &$$, $1 );
     }
   ;
 
 switch_case
   : Y_case expr_exp colon_exp statement_list_opt
     {
-      $$ = MALLOC( ad_switch_case_t, 1 );
-      $$->expr = $2;
+      //$$ = MALLOC( ad_switch_case_t, 1 );
+      //$$->expr = $2;
       // TODO
     }
   | Y_default colon_exp statement_list_opt
     {
-      $$ = $3;
+      //$$ = $3;
     }
   ;
 
@@ -896,13 +900,13 @@ additive_expr
   : multiplicative_expr
   | additive_expr '+' multiplicative_expr
     {
-      $$ = ad_expr_new( AD_EXPR_ADD );
+      $$ = ad_expr_new( AD_EXPR_MATH_ADD );
       $$->binary.lhs_expr = $1;
       $$->binary.rhs_expr = $3;
     }
   | additive_expr '-' multiplicative_expr
     {
-      $$ = ad_expr_new( AD_EXPR_SUB );
+      $$ = ad_expr_new( AD_EXPR_MATH_SUB );
       $$->binary.lhs_expr = $1;
       $$->binary.rhs_expr = $3;
     }
@@ -1091,7 +1095,7 @@ primary_expr
     {
       $$ = ad_expr_new( AD_EXPR_VALUE );
    // $$.value.type = xx;
-      $$.value.i64 = $1;
+      $$->value.i64 = $1;
     }
   | Y_STR_LIT
     {
@@ -1194,7 +1198,7 @@ unary_op
   | '*'                           { $$ = AD_EXPR_PTR_DEREF; }
   | '+'                           { $$ = AD_EXPR_MATH_ADD; }
   | '-'                           { $$ = AD_EXPR_MATH_NEG; }
-  | '~'                           { $$ = AD_EXPR_BIT_COMPL; }
+  | '~'                           { $$ = AD_EXPR_BIT_COMP; }
   | '!'                           { $$ = AD_EXPR_LOG_NOT; }
   ;
 

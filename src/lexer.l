@@ -38,6 +38,7 @@
 #include "keyword.h"
 #include "literals.h"
 #include "options.h"
+#include "print.h"
 #include "strbuf.h"
 #include "typedef.h"
 #include "util.h"
@@ -169,6 +170,9 @@ static int        newline_column;       ///< Column position of newline.
 static strbuf_t   str_lit_buf;          ///< String (or character) literal.
 static ad_loc_t   str_lit_loc;          ///< String literal starting location.
 static int        token_column;         ///< Column position of current token.
+
+/// C++ raw string literal delimiter.
+static char       rstr_delim[ RSTR_DELIM_LEN_MAX + 1/*"*/ + 1/*\0*/ ];
 
 // local functions
 noreturn
@@ -330,30 +334,21 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 1. See if it's an ad keyword.
                 //
-                keyword_t const *const k = ad_keyword_find( lexer_token );
-                if ( k != NULL )
+                ad_keyword_t const *const k = ad_keyword_find( lexer_token );
+                if ( k != NULL ) {
+                  yylval.tid = k->tid;
                   return k->yy_token_id;
+                }
 
                 //
                 // 2. See if it's a typedef'd type.
                 //
-                SLIST_INIT_VAR( typedef_name, lexer_token );
+                SLIST_VAR_INIT( typedef_name, lexer_token );
                 ad_typedef_t const *const tdef =
-                  ad_typedef_find( &typedef_name );
+                  ad_typedef_find_name( &typedef_name );
                 if ( tdef != NULL ) {
                   yylval.tdef = tdef;
                   return Y_TYPEDEF_TYPE;
-                }
-
-                //
-                // 3. See if it's a C/C++ keyword.
-                //
-        find_keyword:
-                NO_OP;
-                keyword_t const *k = ad_keyword_find( lexer_token );
-                if ( k != NULL ) {
-                  yylval.tid = k->tid;
-                  return k->yy_token_id;
                 }
 
                 //
@@ -364,10 +359,10 @@ hex_int       0[xX]{H}+{int_sfx}?
               }
 
               /* Integer literals. */
-{bin_int}     { SET_TOKEN; yylval.number = parse_int(  2 ); return Y_INT_LIT; }
-{oct_int}     { SET_TOKEN; yylval.number = parse_int(  8 ); return Y_INT_LIT; }
-{dec_int}     { SET_TOKEN; yylval.number = parse_int( 10 ); return Y_INT_LIT; }
-{hex_int}     { SET_TOKEN; yylval.number = parse_int( 16 ); return Y_INT_LIT; }
+{bin_int}     { SET_TOKEN; yylval.int_val = parse_int(  2 ); return Y_INT_LIT; }
+{oct_int}     { SET_TOKEN; yylval.int_val = parse_int(  8 ); return Y_INT_LIT; }
+{dec_int}     { SET_TOKEN; yylval.int_val = parse_int( 10 ); return Y_INT_LIT; }
+{hex_int}     { SET_TOKEN; yylval.int_val = parse_int( 16 ); return Y_INT_LIT; }
 
               /* Multi-character operators. */
 "::"          { SET_TOKEN; return Y_COLON2          ; }
@@ -381,19 +376,14 @@ hex_int       0[xX]{H}+{int_sfx}?
 "--"          { SET_TOKEN; return Y_MINUS2          ; }
 "-="          { SET_TOKEN; return Y_MINUS_EQ        ; }
 "->"          { SET_TOKEN; return Y_ARROW           ; }
-"->*"         { SET_TOKEN; return Y_ARROW_STAR      ; }
-".*"          { SET_TOKEN; return Y_DOT_STAR        ; }
 "/="          { SET_TOKEN; return Y_SLASH_EQ        ; }
 "<<"          { SET_TOKEN; return Y_LESS2           ; }
 "<<="         { SET_TOKEN; return Y_LESS2_EQ        ; }
 "<="          { SET_TOKEN; return Y_LESS_EQ         ; }
-"<=>"         { SET_TOKEN; return Y_LESS_EQ_GREATER ; }
 "=="          { SET_TOKEN; return Y_EQ2             ; }
 ">="          { SET_TOKEN; return Y_GREATER_EQ      ; }
 ">>"          { SET_TOKEN; return Y_GREATER2        ; }
 ">>="         { SET_TOKEN; return Y_GREATER2_EQ     ; }
-"?"           { SET_TOKEN; return Y_HELP            ; }
-"?:"          { SET_TOKEN; return Y_QMARK_COLON     ; }
 "^="          { SET_TOKEN; return Y_CIRC_EQ         ; }
 "|="          { SET_TOKEN; return Y_PIPE_EQ         ; }
 "||"          { SET_TOKEN; return Y_PIPE2           ; }
@@ -410,10 +400,12 @@ hex_int       0[xX]{H}+{int_sfx}?
 "-"           |
 "."           |
 "/"           |
+":"           |
 ";"           |
 "<"           |
 "="           |
 ">"           |
+"?"           |
 "["           |
 "]"           |
 "^"           |
