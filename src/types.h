@@ -150,7 +150,9 @@ _GL_INLINE_HEADER_BEGIN
 #define T_FLOAT32   (T_SIGNED  | T_FLOAT | 32u) /**< `float32`          */
 #define T_FLOAT64   (T_SIGNED  | T_FLOAT | 64u) /**< `float64`          */
 
-#define T_STRUCT                 0x4000               /**< `struct`           */
+#define T_STRUCT                 0x4000u              /**< `struct`           */
+
+#define T_SWITCH                 0x8000u
 
 #define T_INT_LIKE  (T_BOOL | T_INT)
 #define T_NUMBER    (T_BOOL | T_INT | T_FLOAT)

@@ -76,15 +76,17 @@ char const  COLORS_DEFAULT[] =
 
 // extern variable definitions
 bool        colorize;
+char const *sgr_ascii_match;
 char const *sgr_caret;
-char const *sgr_start = SGR_START SGR_EL;
+char const *sgr_elided;
 char const *sgr_end   = SGR_END SGR_EL;
 char const *sgr_error;
+char const *sgr_hex_match;
+char const *sgr_locus;
 char const *sgr_offset;
 char const *sgr_sep;
-char const *sgr_elided;
-char const *sgr_hex_match;
-char const *sgr_ascii_match;
+char const *sgr_start = SGR_START SGR_EL;
+char const *sgr_warning;
 
 // local functions
 NODISCARD

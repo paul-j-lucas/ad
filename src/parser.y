@@ -1219,7 +1219,7 @@ tid
 
 builtin_tid
   : Y_float                       { $$ = T_FLOAT; }
-  | Y_int                         { $$ = T_INT; }
+  | Y_int                         { $$ = T_SIGNED | T_INT; }
   | Y_uint                        { $$ = T_INT; }
   | Y_utf                         { $$ = T_UTF; }
   ;
