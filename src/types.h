@@ -422,8 +422,7 @@ struct ad_switch {
   FOREACH_SLIST_NODE( VAR, (SWITCH)->cases )
 
 /**
- * A type.  Every %ad_type at least has the ID that it's a type of and a size
- * in bits.
+ * A type.  Every %ad_type at least has the ID that it's a type of.
  */
 struct ad_type {
   ad_tid_t        tid;
