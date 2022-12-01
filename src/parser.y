@@ -664,13 +664,12 @@ static void yyerror( char const *msg ) {
 //%type <statement>   switch_statement
 
                     // Miscellaneous
-%type <list>        argument_expr_list
+%type <list>        argument_expr_list argument_expr_list_opt
 %type <expr_kind>   assign_op
 %type <name>        name_exp
 %type <str_val>     str_lit str_lit_exp
 //%type <endian_val>     type_endian_opt
 %type <endian_val>  type_endian_exp
-%type <name>        type_name_exp
 %type <expr_kind>   unary_op
 
 /*
@@ -683,7 +682,6 @@ static void yyerror( char const *msg ) {
 /* name */
 %destructor { DTRACE; FREE( $$ ); } name_exp
 %destructor { DTRACE; FREE( $$ ); } Y_NAME
-%destructor { DTRACE; FREE( $$ ); } type_name_exp
 
 /*****************************************************************************/
 %%
@@ -821,7 +819,7 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : type name_exp array_opt
+  : type Y_NAME array_opt
     {
       (void)$2;
       //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
@@ -830,7 +828,7 @@ field_declaration
       //ad_field->rep = $3;
     }
 
-  | Y_TYPEDEF_TYPE name_exp array_opt
+  | Y_TYPEDEF_TYPE Y_NAME array_opt
     {
       //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
       // TODO
@@ -953,7 +951,7 @@ bitwise_or_expr
 
 cast_expr
   : unary_expr
-  | '(' type_name_exp rparen_exp cast_expr
+  | '(' Y_NAME rparen_exp cast_expr
     {
       // TODO
       (void)$2;
@@ -1038,24 +1036,19 @@ postfix_expr
       (void)$1;
       (void)$3;
     }
-  | postfix_expr '(' ')'
-    {
-      // TODO
-      (void)$1;
-    }
-  | postfix_expr '(' argument_expr_list ')'
+  | postfix_expr '(' argument_expr_list_opt ')'
     {
       // TODO
       (void)$1;
       (void)$3;
     }
-  | postfix_expr '.' name_exp
+  | postfix_expr '.' Y_NAME
     {
       // TODO
       (void)$1;
       (void)$3;
     }
-  | postfix_expr "->" name_exp
+  | postfix_expr "->" Y_NAME
     {
       // TODO
       (void)$1;
@@ -1073,15 +1066,20 @@ postfix_expr
     }
   ;
 
+argument_expr_list_opt
+  : /* empty */                   { slist_init( &$$ ); }
+  | argument_expr_list
+  ;
+
 argument_expr_list
-  : assign_expr
+  : argument_expr_list ',' assign_expr
+    {
+      slist_push_back( &$$, $3 );
+    }
+  | assign_expr
     {
       slist_init( &$$ );
       slist_push_back( &$$, $1 );
-    }
-  | argument_expr_list ',' assign_expr
-    {
-      slist_push_back( &$$, $3 );
     }
   ;
 
@@ -1100,7 +1098,7 @@ primary_expr
   | Y_STR_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE );
-      // TODO
+      $$->value.s = $1;
     }
   | '(' expr ')'                  { $$ = $2; }
   ;
@@ -1172,7 +1170,7 @@ unary_expr
       // TODO
       (void)$2;
     }
-  | Y_sizeof '(' type_name_exp rparen_exp
+  | Y_sizeof '(' Y_NAME rparen_exp
     {
       // TODO
       (void)$3;
@@ -1236,10 +1234,6 @@ type_endian_exp
   | '\\' 'l'                      { $$ = ENDIAN_LITTLE; }
   | '\\' 'h'                      { $$ = ENDIAN_HOST; }
   | '\\' '<' expr '>'             { $$ = $3; }
-  ;
-
-type_name_exp
-  : name_exp
   ;
 
 ///////////////////////////////////////////////////////////////////////////////
