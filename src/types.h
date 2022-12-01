@@ -359,21 +359,12 @@ struct ad_rep {
   ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
 };
 
-/**
- * A data field.
- */
-struct ad_field {
-  char const *name;
-  ad_type_t  *type;
-  ad_rep_t    rep;
-};
-
 struct ad_compound_statement {
   slist_t statements;
 };
 
 struct ad_declaration {
-  int PLACEHOLDER;
+  char const *name;
 };
 
 struct ad_switch_statement {
@@ -426,6 +417,7 @@ struct ad_switch {
  */
 struct ad_type {
   ad_tid_t        tid;
+  ad_expr_t      *expr;
 
   union {
     ad_int_t      ad_int;
@@ -433,6 +425,15 @@ struct ad_type {
     ad_struct_t   ad_struct;
     ad_switch_t   ad_switch;
   };
+};
+
+/**
+ * A data field.
+ */
+struct ad_field {
+  char const *name;
+  ad_type_t   type;
+  ad_rep_t    rep;
 };
 
 ////////// extern functions ///////////////////////////////////////////////////

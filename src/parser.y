@@ -438,6 +438,7 @@ static void yyerror( char const *msg ) {
   ad_statement_t      statement;
   char               *str_val;    // quoted string value
   ad_switch_case_t    switch_case;
+  ad_type_t           type;
   ad_typedef_t const *tdef;
   ad_tid_t            tid;
 }
@@ -573,7 +574,6 @@ static void yyerror( char const *msg ) {
 %type <list>        enumerator_list
 %type <switch_case> switch_case
 %type <list>        switch_case_list switch_case_list_opt
-%type <tid>         tid tid_exp
 
                     // Expressions
 %type <expr>        additive_expr
@@ -607,6 +607,7 @@ static void yyerror( char const *msg ) {
 %type <name>        name_exp
 %type <str_val>     str_lit str_lit_exp
 //%type <endian_val>     type_endian_opt
+%type <type>        type
 %type <expr>        type_endian_exp
 %type <expr_kind>   unary_op
 
@@ -722,9 +723,9 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_enum name_exp colon_exp tid_exp lbrace_exp enumerator_list rbrace_exp
+  : Y_enum name_exp colon_exp type lbrace_exp enumerator_list rbrace_exp
     {
-   // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
+      ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
    // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
@@ -759,11 +760,10 @@ enumerator
 field_declaration
   : type Y_NAME array_opt
     {
-      (void)$2;
       ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      //ad_field->type = $1;
       ad_field->name = $2;
       ad_field->rep = $3;
+      ad_field->type = $1;
     }
 
   | Y_TYPEDEF_TYPE Y_NAME array_opt
@@ -893,9 +893,10 @@ cast_expr
   : unary_expr
   | '(' Y_NAME rparen_exp cast_expr
     {
-      // TODO
+      $$ = ad_expr_new( AD_EXPR_CAST );
+      //$$->binary.lhs_expr = $2;
       (void)$2;
-      (void)$4;
+      $$->binary.rhs_expr = $4;
     }
   ;
 
@@ -1143,14 +1144,10 @@ unary_op
 /// type //////////////////////////////////////////////////////////////////////
 
 type
-  : tid '<' expr '>'
-  ;
-
-tid
   : builtin_tid lt_exp expr gt_exp type_endian_exp
     {
-      $$ = $1;
-      // TODO
+      $$.tid = $1;
+      $$.expr = $3;
     }
   | Y_TYPEDEF_TYPE
   ;
@@ -1160,14 +1157,6 @@ builtin_tid
   | Y_int                         { $$ = T_SIGNED | T_INT; }
   | Y_uint                        { $$ = T_INT; }
   | Y_utf                         { $$ = T_UTF; }
-  ;
-
-tid_exp
-  : tid
-  | error
-    {
-      elaborate_error( "type expected" );
-    }
   ;
 
 type_endian_exp
