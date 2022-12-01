@@ -250,26 +250,6 @@ static inline void newline( void ) {
 }
 
 /**
- * Parses a C/C++ identifier.
- *
- * @param s The string to parse.
- * @param end Upon successful return, set to point to one character past the
- * end of the identifier.
- * @return Returns `true` only if an identifier was parsed.
- */
-NODISCARD
-static bool parse_identifier( char const *s, char const **end ) {
-  assert( s != NULL );
-  assert( end != NULL );
-  if ( !(isalpha( s[0] ) || s[0] == '_') )
-    return false;
-  while ( *++s != '\0' && (isalnum( *s ) || *s == '_') )
-    ;
-  *end = s;
-  return true;
-}
-
-/**
  * Parses an integer from <code>\ref lexer_token</code>.
  *
  * @param base The integer base to use.

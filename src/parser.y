@@ -213,27 +213,6 @@
   fl_elaborate_error( __FILE__, __LINE__, (DYM_KINDS), __VA_ARGS__ ); PARSE_ABORT(); )
 
 /**
- * Calls fl_keyword_expected() followed by #PARSE_ABORT().
- *
- * @param KEYWORD A keyword literal.
- *
- * @note This must be used _only_ after an `error` token, e.g.:
- * @code
- *  : Y_virtual
- *  | error
- *    {
- *      keyword_expected( L_virtual );
- *    }
- * @endcode
- *
- * @sa elaborate_error()
- * @sa elaborate_error_dym()
- * @sa punct_expected()
- */
-#define keyword_expected(KEYWORD) BLOCK ( \
-  fl_keyword_expected( __FILE__, __LINE__, (KEYWORD) ); PARSE_ABORT(); )
-
-/**
  * Aborts the current parse (presumably after an error message has been
  * printed).
  */
@@ -308,7 +287,6 @@ static inline char const* printable_token( void ) {
  * @param format A `printf()` style format string.
  * @param ... Arguments to print.
  *
- * @sa fl_keyword_expected()
  * @sa fl_punct_expected()
  * @sa yyerror()
  */
@@ -341,51 +319,6 @@ static void fl_elaborate_error( char const *file, int line,
 
 /**
  * A special case of fl_elaborate_error() that prevents oddly worded error
- * messages where an **ad** keyword is expected, but that keyword isn't a
- * keyword either until a later version of the language or in a different
- * language; hence, the lexer will return the keyword as the `Y_NAME` token
- * instead of the keyword token.
- *
- * For example, if fl_elaborate_error() were used for the following \b ad
- * command when the current language is C, you'd get the following:
- * @code
- * declare f as virtual function returning void
- *              ^
- * 14: syntax error: "virtual": "virtual" expected; not a keyword until C++98
- * @endcode
- * because it's really this:
- * @code
- * ... "virtual" [the name]": "virtual" [the token] expected ...
- * @endcode
- * and that looks odd.
- *
- * @note This function isn't normally called directly; use the
- * #keyword_expected() macro instead.
- *
- * @param file The name of the file where this function was called from.
- * @param line The line number within \a file where this function was called
- * from.
- * @param keyword A keyword literal.
- *
- * @sa fl_elaborate_error()
- * @sa fl_punct_expected()
- * @sa yyerror()
- */
-static void fl_keyword_expected( char const *file, int line,
-                                 char const *keyword ) {
-  assert( keyword != NULL );
-
-  dym_kind_t dym_kinds = DYM_NONE;
-
-  char const *const error_token = printable_token();
-  if ( error_token != NULL )
-    dym_kinds = DYM_KEYWORDS;
-
-  fl_elaborate_error( file, line, dym_kinds, "\"%s\" expected", keyword );
-}
-
-/**
- * A special case of fl_elaborate_error() that prevents oddly worded error
  * messages when a punctuation character is expected by not doing keyword look-
  * ups of the error token.
 
@@ -408,7 +341,6 @@ static void fl_keyword_expected( char const *file, int line,
  * @param punct The punctuation character that was expected.
  *
  * @sa fl_elaborate_error()
- * @sa fl_keyword_expected()
  * @sa yyerror()
  */
 static void fl_punct_expected( char const *file, int line, char punct ) {
@@ -669,7 +601,7 @@ static void yyerror( char const *msg ) {
 %type <name>        name_exp
 %type <str_val>     str_lit str_lit_exp
 //%type <endian_val>     type_endian_opt
-%type <endian_val>  type_endian_exp
+%type <expr>        type_endian_exp
 %type <expr_kind>   unary_op
 
 /*
@@ -1230,9 +1162,24 @@ tid_exp
   ;
 
 type_endian_exp
-  : '\\' 'b'                      { $$ = ENDIAN_BIG; }
-  | '\\' 'l'                      { $$ = ENDIAN_LITTLE; }
-  | '\\' 'h'                      { $$ = ENDIAN_HOST; }
+  : '\\' 'b'
+    {
+      $$ = ad_expr_new( AD_EXPR_VALUE );
+      $$->value.type.tid = T_INT64;
+      $$->value.i64 = ENDIAN_BIG;
+    }
+  | '\\' 'l'
+    {
+      $$ = ad_expr_new( AD_EXPR_VALUE );
+      $$->value.type.tid = T_INT64;
+      $$->value.i64 = ENDIAN_LITTLE;
+    }
+  | '\\' 'h'
+    {
+      $$ = ad_expr_new( AD_EXPR_VALUE );
+      $$->value.type.tid = T_INT64;
+      $$->value.i64 = ENDIAN_HOST;
+    }
   | '\\' '<' expr '>'             { $$ = $3; }
   ;
 
