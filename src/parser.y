@@ -666,7 +666,7 @@ compound_statement
 switch_statement
   : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
     {
-      @$; // Forces declaration of yylloc. TODO: remove
+      (void)@$; // Forces declaration of yylloc. TODO: remove
     }
   ;
 
@@ -847,7 +847,8 @@ assign_expr
   | unary_expr assign_op assign_expr
     {
       $$ = ad_expr_new( $2 );
-      // TODO
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   ;
 
@@ -1105,7 +1106,7 @@ unary_expr
   | Y_sizeof '(' Y_NAME rparen_exp
     {
       // TODO
-      (void)$3;
+      free( $3 );
     }
   ;
 
@@ -1158,6 +1159,7 @@ tid_exp
   : tid
   | error
     {
+      elaborate_error( "type expected" );
     }
   ;
 
