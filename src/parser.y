@@ -760,10 +760,10 @@ field_declaration
   : type Y_NAME array_opt
     {
       (void)$2;
-      //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
+      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
       //ad_field->type = $1;
-      //ad_field->name = $2;
-      //ad_field->rep = $3;
+      ad_field->name = $2;
+      ad_field->rep = $3;
     }
 
   | Y_TYPEDEF_TYPE Y_NAME array_opt
@@ -778,6 +778,7 @@ array_opt
   : /* empty */                   { $$.times = AD_REP_1; }
   | '[' ']' equals_exp str_lit_exp
     {
+      $$.times = AD_REP_1;
     }
   | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
   | '[' '*' rbracket_exp          { $$.times = AD_REP_0_MORE; }
@@ -800,7 +801,7 @@ struct_declaration
     {
       ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
       ad_struct->name = $2;
-      // TODO
+      ad_struct->members = $4;
     }
   ;
 
