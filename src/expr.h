@@ -103,6 +103,7 @@ struct ad_value_expr {
     char32_t      c32;                  ///< UTF-32 character.
 
     // UTF strings.
+    char         *s;                    ///< Any string.
     char8_t      *s8;                   ///< UTF-8 string.
     char16_t     *s16;                  ///< UTF-16 string.
     char32_t     *s32;                  ///< UTF-32 string.

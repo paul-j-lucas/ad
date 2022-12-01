@@ -553,6 +553,60 @@ static bool ad_expr_math_add( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 /**
+ * Performs a post-decrement of a subexpression.
+ *
+ * @param expr The unary expression to perform the post-decrement of.
+ * @param rv A pointer to the return-value expression.
+ * @return Returns `true` only if the evaluation succeeded.
+ */
+static bool ad_expr_math_dec_post( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( unary, sub );
+  GET_BASE_TYPE( sub );
+  CHECK_TYPE( sub, T_BOOL | T_INT );
+
+  // TODO: verify the subexpression is an lvalue
+
+  switch ( sub_tid ) {
+    case T_BOOL:
+      ad_expr_set_i( rv, sub_expr.value.i64 );
+      sub_expr.value.i64 = 0;
+      break;
+    case T_INT:
+      ad_expr_set_i( rv, sub_expr.value.i64 );
+      --sub_expr.value.i64;
+      break;
+  } // switch
+
+  return true;
+}
+
+/**
+ * Performs a pre-decrement of a subexpression.
+ *
+ * @param expr The unary expression to perform the pre-decrement of.
+ * @param rv A pointer to the return-value expression.
+ * @return Returns `true` only if the evaluation succeeded.
+ */
+static bool ad_expr_math_dec_pre( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( unary, sub );
+  GET_BASE_TYPE( sub );
+  CHECK_TYPE( sub, T_BOOL | T_INT );
+
+  // TODO: verify the subexpression is an lvalue
+
+  switch ( sub_tid ) {
+    case T_BOOL:
+      ad_expr_set_i( rv, (sub_expr.value.i64 = 0) );
+      break;
+    case T_INT:
+      ad_expr_set_i( rv, --sub_expr.value.i64 );
+      break;
+  } // switch
+
+  return true;
+}
+
+/**
  * Performs a division of two subexpressions.
  *
  * @param expr The binary expression to perform the division of.
@@ -595,6 +649,60 @@ static bool ad_expr_math_div( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
     default:
       RETURN_ERR( BAD_OPERAND );
+  } // switch
+
+  return true;
+}
+
+/**
+ * Performs a post-increment of a subexpression.
+ *
+ * @param expr The unary expression to perform the post-increment of.
+ * @param rv A pointer to the return-value expression.
+ * @return Returns `true` only if the evaluation succeeded.
+ */
+static bool ad_expr_math_inc_post( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( unary, sub );
+  GET_BASE_TYPE( sub );
+  CHECK_TYPE( sub, T_BOOL | T_INT );
+
+  // TODO: verify the subexpression is an lvalue
+
+  switch ( sub_tid ) {
+    case T_BOOL:
+      ad_expr_set_i( rv, sub_expr.value.i64 );
+      sub_expr.value.i64 = 1;
+      break;
+    case T_INT:
+      ad_expr_set_i( rv, sub_expr.value.i64 );
+      ++sub_expr.value.i64;
+      break;
+  } // switch
+
+  return true;
+}
+
+/**
+ * Performs a pre-increment of a subexpression.
+ *
+ * @param expr The unary expression to perform the pre-increment of.
+ * @param rv A pointer to the return-value expression.
+ * @return Returns `true` only if the evaluation succeeded.
+ */
+static bool ad_expr_math_inc_pre( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( unary, sub );
+  GET_BASE_TYPE( sub );
+  CHECK_TYPE( sub, T_BOOL | T_INT );
+
+  // TODO: verify the subexpression is an lvalue
+
+  switch ( sub_tid ) {
+    case T_BOOL:
+      ad_expr_set_i( rv, (sub_expr.value.i64 = 1) );
+      break;
+    case T_INT:
+      ad_expr_set_i( rv, ++sub_expr.value.i64 );
+      break;
   } // switch
 
   return true;
@@ -1088,20 +1196,32 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_LOG_XOR:
       return ad_expr_log_xor( expr, rv );
 
+    case AD_EXPR_MATH_MOD:
+      return ad_expr_math_mod( expr, rv );
+
+    case AD_EXPR_MATH_ADD:
+      return ad_expr_math_add( expr, rv );
+
+    case AD_EXPR_MATH_DEC_PRE:
+      return ad_expr_math_dec_pre( expr, rv );
+
+    case AD_EXPR_MATH_DEC_POST:
+      return ad_expr_math_dec_post( expr, rv );
+
     case AD_EXPR_MATH_DIV:
       return ad_expr_math_div( expr, rv );
 
-    case AD_EXPR_MATH_MOD:
-      return ad_expr_math_mod( expr, rv );
+    case AD_EXPR_MATH_INC_PRE:
+      return ad_expr_math_inc_post( expr, rv );
+
+    case AD_EXPR_MATH_INC_POST:
+      return ad_expr_math_inc_post( expr, rv );
 
     case AD_EXPR_MATH_MUL:
       return ad_expr_math_mul( expr, rv );
 
     case AD_EXPR_MATH_NEG:
       return ad_expr_math_neg( expr, rv );
-
-    case AD_EXPR_MATH_ADD:
-      return ad_expr_math_add( expr, rv );
 
     case AD_EXPR_MATH_SUB:
       return ad_expr_math_sub( expr, rv );

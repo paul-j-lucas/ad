@@ -205,6 +205,10 @@ enum ad_expr_kind {
   AD_EXPR_MATH_NEG,                     ///< Negation expression.
   AD_EXPR_PTR_ADDR,                     ///< Address-of expression.
   AD_EXPR_PTR_DEREF,                    ///< Dereference expression.
+  AD_EXPR_MATH_DEC_POST,                ///< Post-decrement.
+  AD_EXPR_MATH_DEC_PRE,                 ///< Pre-decrement.
+  AD_EXPR_MATH_INC_POST,                ///< Post-incremeent.
+  AD_EXPR_MATH_INC_PRE,                 ///< Pre-incremeent.
 
   // binary
   AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
