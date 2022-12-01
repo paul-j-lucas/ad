@@ -1212,7 +1212,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       return ad_expr_math_div( expr, rv );
 
     case AD_EXPR_MATH_INC_PRE:
-      return ad_expr_math_inc_post( expr, rv );
+      return ad_expr_math_inc_pre( expr, rv );
 
     case AD_EXPR_MATH_INC_POST:
       return ad_expr_math_inc_post( expr, rv );

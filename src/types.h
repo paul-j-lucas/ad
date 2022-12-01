@@ -74,7 +74,7 @@ _GL_INLINE_HEADER_BEGIN
 //      0 = 8 bits
 //      1 = 16 bits
 //      2 = 32 bits
-//      3 = 4 bits
+//      3 = 64 bits
 //
 
 #define T_END_B                 ENDIAN_BIG
@@ -89,17 +89,24 @@ _GL_INLINE_HEADER_BEGIN
 /** En(D)ian bitmask: `xxxx xxxx xxxx xxDD` */
 #define T_MASK_ENDIAN           0x0006u
 
-// (N)ull:    xxxx xxxx xxxx xNxx
-#define T_NULL                  0x0040u         /**< Null-terminated.   */
+/** (E)rror bitmask: `xxxx xxxx xxxx Exxx` */
+#define T_MASK_ERROR            0x0080u
 
-// (E)rror:   xxxx xxxx xxxx Exxx
-#define T_ERROR                 0x0080u         /**< Error type.        */
+/** (N)ull bitmask: `xxxx xxxx xxxx xNxx` */
+#define T_MASK_NULL             0x0010u
 
-/** (T)ype bitmask: `xxTT TTTT xxxx xxxx` */
+/** (S)igned: `Sxxx xxxx xxxx xxxx` */
+#define T_MASK_SIGN             0x8000u
+
+/** Si(Z)e: `xxxx xxxx xxZZ xxxx` */
+#define T_MASK_SIZE             0x0030u
+
+/** (T)ype bitmask: `xxxx TTTT TTxx xxxx` */
+#define T_MASK_TYPE             0x0F00u
+
+#define T_ERROR                 T_MASK_ERROR
 #define T_NONE                  0u              /**< No type.           */
-
-// (S)igned:  Sxxx xxxx xxxx xxxx
-#define T_SIGNED                0x8000u         /**< Signed type.       */
+#define T_SIGNED                T_MASK_SIGN     /**< Signed type.       */
 
 #define T_BOOL                  0x0400u         /**< Boolean.           */
 #define T_BOOL8     (           T_BOOL | T_08)  /**< `bool`             */
@@ -113,6 +120,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF32BE   (T_END_B  | T_UTF  | T_32)  /**< UTF-32 big.        */
 #define T_UTF32LE   (T_END_L  | T_UTF  | T_32)  /**< UTF-32 little.     */
 
+#define T_NULL                  T_MASK_NULL     /**< Null-terminated.   */
 #define T_UTF_0     (T_NULL   | T_UTF)          /**< UTF string.       */
 
 /**< UTF-8, null-terminated string. */
@@ -157,15 +165,9 @@ _GL_INLINE_HEADER_BEGIN
 #define T_INT_LIKE  (           T_BOOL | T_INT)
 #define T_NUMBER    (           T_BOOL | T_INT | T_FLOAT)
 
-// bit masks
-#define T_MASK_NULL             T_NULL         /**< Null bitmask.      */
-#define T_MASK_SIGN             T_SIGNED       /**< Sign bitmask.      */
-#define T_MASK_SIZE             0x0078u        /**< Size bitmask.      */
-#define T_MASK_TYPE             0x3F00u        /**< Type bitmask.      */
-
 ///////////////////////////////////////////////////////////////////////////////
 
-#define T_GET_SIZE(T)             (((T) & T_MASK_SIZE) + 1u)
+#define T_GET_SIZE(T)             (8u << (((T) & T_MASK_SIZE) >> 4))
 
 ////////// enumerations ///////////////////////////////////////////////////////
 
