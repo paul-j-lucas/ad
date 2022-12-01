@@ -545,7 +545,7 @@ static void yyerror( char const *msg ) {
                                   '!'
                  // Y_UMINUS   // '-' -- covered by '-' below
                  // Y_PLUS     // '+' -- covered by '+' below
-%right  <oper_id>   Y_SIZEOF
+%right  <oper_id>   Y_sizeof
 %right  <oper_id>                 '~'
                     // C operators: precedence 14
                     // C operators: precedence 13
@@ -1167,12 +1167,12 @@ unary_expr
       (void)$1;
       (void)$2;
     }
-  | Y_SIZEOF unary_expr
+  | Y_sizeof unary_expr
     {
       // TODO
       (void)$2;
     }
-  | Y_SIZEOF '(' type_name_exp rparen_exp
+  | Y_sizeof '(' type_name_exp rparen_exp
     {
       // TODO
       (void)$3;
