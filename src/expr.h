@@ -24,7 +24,6 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "types.h"
-#include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -37,96 +36,6 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* AD_EXPR_H_INLINE */
 
 /// @endcond
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**
- * Unary expression; used for:
- *  + Pointer address
- *  + Pointer dereference
- *  + Bitwise complement
- *  + Negation
- */
-struct ad_unary_expr {
-  ad_expr_t *sub_expr;
-};
-
-/**
- * Binary expression; used for:
- *  + Addition
- *  + Bitwise and
- *  + Bitwise or
- *  + Cast
- *  + Division
- *  + Left shift
- *  + Logical and
- *  + Logical or
- *  + Modulus
- *  + Multiplication
- *  + Right shift
- *  + Subtraction
- */
-struct ad_binary_expr {
-#if 1
-  ad_expr_t *lhs_expr;
-  ad_expr_t *rhs_expr;
-#else
-  ad_expr_t *sub_expr[2];
-#endif
-};
-
-/**
- * Ternary expression; used for:
- *  + `?:`
- */
-struct ad_ternary_expr {
-  ad_expr_t *cond_expr;
-  ad_expr_t *sub_expr[2];
-};
-
-/**
- * Constant value expression.
- */
-struct ad_value_expr {
-  ad_type_t       type;                 ///< The type of the value.
-  union {
-    // Integer.
-    int64_t       i64;                  ///< i8, i16, i32, i64
-    uint64_t      u64;                  ///< u8, u16, u32, u64
-
-    // Floating-point.
-    double        f64;                  ///< f32, f64
-
-    // UTF characters.
-    char8_t       c8;                   ///< UTF-8 character.
-    char16_t      c16;                  ///< UTF-16 character.
-    char32_t      c32;                  ///< UTF-32 character.
-
-    // UTF strings.
-    char         *s;                    ///< Any string.
-    char8_t      *s8;                   ///< UTF-8 string.
-    char16_t     *s16;                  ///< UTF-16 string.
-    char32_t     *s32;                  ///< UTF-32 string.
-
-    // Miscellaneous.
-    ad_type_t     cast_type;
-    ad_expr_err_t err;
-  };
-};
-
-/**
- * An expression.
- */
-struct ad_expr {
-  ad_expr_kind_t  expr_kind;            ///< Expression kind.
-
-  union {
-    ad_unary_expr_t   unary;            ///< Unary expression.
-    ad_binary_expr_t  binary;           ///< Binary expression.
-    ad_ternary_expr_t ternary;          ///< Ternary expression.
-    ad_value_expr_t   value;            ///< Value expression.
-  };
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 

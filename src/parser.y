@@ -604,9 +604,9 @@ static void yyerror( char const *msg ) {
                     // Miscellaneous
 %type <list>        argument_expr_list argument_expr_list_opt
 %type <expr_kind>   assign_op
+%type <int_val>     int_exp
 %type <name>        name_exp
 %type <str_val>     str_lit str_lit_exp
-//%type <endian_val>     type_endian_opt
 %type <type>        type
 %type <expr>        type_endian_exp
 %type <expr_kind>   unary_op
@@ -730,6 +730,7 @@ enum_declaration
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
    // ad_enum->base = xx;
+      ad_enum->values = $6;
       (void)$2;
     }
   ;
@@ -738,12 +739,12 @@ enumerator_list
   : enumerator_list ',' enumerator
     {
       $$ = $1;
-      //slist_push_back( &$$, $3 );
+      slist_push_back( &$$, &$3 );
     }
   | enumerator
     {
       slist_init( &$$ );
-      //slist_push_back( &$$, $1 );
+      slist_push_back( &$$, &$1 );
     }
   ;
 
@@ -751,7 +752,7 @@ enumerator
   : Y_NAME equals_exp int_exp
     {
       $$.name = $1;
-   // $$.value = $3;
+      $$.value = $3;
     }
   ;
 
