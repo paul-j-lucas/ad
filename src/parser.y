@@ -252,6 +252,7 @@
 
 // local variables
 static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
+static slist_t        statement_list;
 
 ////////// inline functions ///////////////////////////////////////////////////
 
@@ -435,7 +436,7 @@ static void yyerror( char const *msg ) {
   char const         *literal;    // token literal
   char               *name;       // name being declared or explained
   ad_rep_t            rep_val;
-  ad_statement_t      statement;
+  ad_statement_t     *statement;
   char               *str_val;    // quoted string value
   ad_switch_case_t    switch_case;
   ad_type_t           type;
@@ -543,7 +544,7 @@ static void yyerror( char const *msg ) {
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
 %token  <str_val>   Y_STR_LIT
-%token  <tid>       Y_TYPEDEF_TYPE
+%token  <type>      Y_TYPEDEF_TYPE
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -595,11 +596,15 @@ static void yyerror( char const *msg ) {
 %type <expr>        unary_expr
 
                     // Statements
-//%type <statement>   compound_statement
-//%type <statement>   declaration
-//%type <statement>   statement
+%type <statement>   compound_statement
+%type <statement>   declaration
+%type <statement>   enum_declaration
+%type <statement>   field_declaration
+%type <statement>   statement
 %type <list>        statement_list statement_list_opt
-//%type <statement>   switch_statement
+%type <statement>   struct_declaration
+%type <statement>   switch_statement
+%type <statement>   typedef_declaration
 
                     // Miscellaneous
 %type <list>        argument_expr_list argument_expr_list_opt
@@ -637,8 +642,7 @@ statement_list_opt
 statement_list
   : statement_list statement
     {
-      //$$ = $1;
-      //slist_push_back( &$$, $1 );
+      slist_push_back( &statement_list, $2 );
     }
   | statement
     {
