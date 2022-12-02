@@ -35,6 +35,7 @@
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
 #endif /* ENABLE_AD_DEBUG */
+#include "debug.h"
 #include "did_you_mean.h"
 #include "expr.h"
 #include "keyword.h"
@@ -69,7 +70,7 @@
 /// @cond DOXYGEN_IGNORE
 
 #ifdef ENABLE_AD_DEBUG
-#define IF_DEBUG(...)             BLOCK( if ( opt_debug ) { __VA_ARGS__ } )
+#define IF_DEBUG(...)             BLOCK( if ( opt_ad_debug ) { __VA_ARGS__ } )
 #else
 #define IF_DEBUG(...)             /* nothing */
 #endif /* ENABLE_AD_DEBUG */
@@ -96,7 +97,7 @@
  * called.  It's used to separate items being dumped.
  */
 #define DUMP_COMMA \
-  BLOCK( if ( true_or_set( &dump_comma ) ) PUTS_OUT( ",\n" ); )
+  BLOCK( if ( true_or_set( &dump_comma ) ) FPUTS( ",\n", stdout ); )
 
 /**
  * Dumps a `bool`.
@@ -115,7 +116,7 @@
  * @param EXPR The ad_expr to dump.
  */
 #define DUMP_EXPR(KEY,EXPR) \
-  IF_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), 1, (KEY), stdout ); )
+  IF_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), (KEY), stdout ); )
 
 /**
  * Dumps an `s_list` of ad_expr_t.
@@ -124,7 +125,7 @@
  * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
  */
 #define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_DEBUG( \
-  DUMP_COMMA; PUTS_OUT( "  " KEY " = " );       \
+  DUMP_COMMA; FPUTS( "  " KEY " = ", stdout );  \
   ad_expr_list_dump( &(EXPR_LIST), 1, stdout ); )
 
 /**
@@ -143,7 +144,7 @@
  * @param STR The C string to dump.
  */
 #define DUMP_STR(KEY,NAME) IF_DEBUG(  \
-  DUMP_COMMA; PUTS_OUT( "  " );       \
+  DUMP_COMMA; FPUTS( "  ", stdout );  \
   print_kv( (KEY), (NAME), stdout ); )
 
 #ifdef ENABLE_AD_DEBUG
@@ -157,7 +158,7 @@
  */
 #define DUMP_START(NAME,PROD) \
   bool dump_comma = false;    \
-  IF_DEBUG( PUTS_OUT( "\n" NAME " ::= " PROD " = {\n" ); )
+  IF_DEBUG( FPUTS( "\n" NAME " ::= " PROD " = {\n", stdout ); )
 #else
 #define DUMP_START(NAME,PROD)     /* nothing */
 #endif
@@ -167,10 +168,10 @@
  *
  * @sa DUMP_START
  */
-#define DUMP_END()                IF_DEBUG( PUTS_OUT( "\n}\n" ); )
+#define DUMP_END()                IF_DEBUG( FPUTS( "\n}\n", stdout ); )
 
 #define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
-  DUMP_COMMA; PUTS_OUT( "  " KEY " = " ); c_type_dump( TYPE, stdout ); )
+  DUMP_COMMA; FPUTS( "  " KEY " = ", stdout ); ad_type_dump( TYPE, stdout ); )
 
 /** @} */
 
@@ -430,7 +431,7 @@ static void yyerror( char const *msg ) {
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
   ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
-  ad_field_t          field;
+  ad_field_t         *field;
   int                 int_val;
   slist_t             list;       // multipurpose list
   char const         *literal;    // token literal
@@ -438,7 +439,7 @@ static void yyerror( char const *msg ) {
   ad_rep_t            rep_val;
   ad_statement_t     *statement;
   char               *str_val;    // quoted string value
-  ad_switch_case_t    switch_case;
+  ad_switch_case_t   *switch_case;
   ad_type_t           type;
   ad_typedef_t const *tdef;
   ad_tid_t            tid;
@@ -646,8 +647,8 @@ statement_list
     }
   | statement
     {
-      //slist_init( &$$ );
-      //slist_push_back( &$$, $1 );
+      slist_init( &$$ );
+      slist_push_back( &$$, $1 );
     }
   ;
 
@@ -667,8 +668,8 @@ statement
 compound_statement
   : '{' statement_list_opt '}'
     {
-      //$$.kind = AD_STMT_COMPOUND;
-      //$$.compound.statements = $2;
+      $$->kind = AD_STMT_COMPOUND;
+      $$->compound.statements = $2;
     }
   ;
 
@@ -677,7 +678,10 @@ compound_statement
 switch_statement
   : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
     {
-      (void)@$; // Forces declaration of yylloc. TODO: remove
+      ad_statement_t *st = MALLOC( ad_statement_t, 1 );
+      st->kind = AD_STMT_SWITCH;
+      st->loc = @$;
+      // st->st_switch
     }
   ;
 
@@ -696,20 +700,27 @@ switch_case_list
   | switch_case
     {
       slist_init( &$$ );
-      //slist_push_back( &$$, $1 );
+      slist_push_back( &$$, &$1 );
     }
   ;
 
 switch_case
   : Y_case expr_exp colon_exp statement_list_opt
     {
-      //$$ = MALLOC( ad_switch_case_t, 1 );
-      //$$->expr = $2;
-      // TODO
+      DUMP_START( "switch_case", "CASE expr ':' statement_list_opt" );
+      DUMP_EXPR( "expr", $2 );
+
+      $$ = MALLOC( ad_switch_case_t, 1 );
+      $$->expr = $2;
+      $$->statement_list = $4;
+
+      DUMP_END();
     }
   | Y_default colon_exp statement_list_opt
     {
-      //$$ = $3;
+      $$ = MALLOC( ad_switch_case_t, 1 );
+      $$->expr = NULL;
+      $$->statement_list = $3;
     }
   ;
 

@@ -97,7 +97,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_MASK_SIZE             0x0030u
 
 /** (T)ype bitmask: `xxxx TTTT TTxx xxxx` */
-#define T_MASK_TYPE             0x0F00u
+#define T_MASK_TYPE             0x0FC0u
 
 #define T_ERROR                 T_MASK_ERROR
 #define T_NONE                  0u              /**< No type.           */
@@ -379,6 +379,7 @@ struct ad_statement {
     ad_switch_statement_t   st_switch;  ///< `switch` statement.
   };
   ad_statement_kind_t kind;
+  ad_loc_t loc;
 };
 
 /**
@@ -394,7 +395,7 @@ struct ad_struct {
  */
 struct ad_switch_case {
   ad_expr_t      *expr;
-  ad_type_list_t  case_types;           ///< All the type(s) for the case value.
+  slist_t         statement_list;
 };
 
 /**
@@ -518,6 +519,7 @@ struct ad_value_expr {
  */
 struct ad_expr {
   ad_expr_kind_t  expr_kind;            ///< Expression kind.
+  ad_loc_t        loc;                  ///< Source location.
 
   union {
     ad_unary_expr_t   unary;            ///< Unary expression.
@@ -528,6 +530,17 @@ struct ad_expr {
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Gets whether \a tid is a signed integer.
+ *
+ * @param tid The type ID to use.
+ * @return Returns `true` only if \a tid is signed.
+ */
+NODISCARD AD_TYPES_H_INLINE
+bool ad_is_signed( ad_tid_t tid ) {
+  return 8u << ((tid & T_MASK_SIZE) >> 4);
+}
 
 /**
  * Frees all the memory used by \a type.
