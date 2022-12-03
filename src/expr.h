@@ -71,10 +71,11 @@ bool ad_expr_is_value( ad_expr_t const *expr ) {
  * Creates a new `ad_expr`.
  *
  * @param expr_kind The kind of the expression to create.
+ * @param loc A pointer to the token location data.
  * @return Returns a pointer to a new `ad_expr`.
  */
 NODISCARD
-ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind );
+ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc );
 
 /**
  * Gets the type of \a expr.

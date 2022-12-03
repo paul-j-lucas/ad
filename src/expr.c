@@ -1289,10 +1289,11 @@ bool ad_expr_is_zero( ad_expr_t const *expr ) {
   return false;
 }
 
-ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind ) {
+ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc ) {
   ad_expr_t *const e = MALLOC( ad_expr_t, 1 );
   MEM_ZERO( e );
   e->expr_kind = expr_kind;
+  e->loc = *loc;
   return e;
 }
 
