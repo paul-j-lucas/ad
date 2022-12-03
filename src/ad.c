@@ -77,7 +77,7 @@ static void clean_up( void ) {
  * @param argc The command-line argument count.
  * @param argv The command-line argument values.
  */
-static void init( int argc, char const *argv[] ) {
+static void init( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
   check_atexit( clean_up );
   parse_options( argc, argv );
@@ -104,7 +104,7 @@ static void init( int argc, char const *argv[] ) {
  * @param argv The command-line argument values.
  * @return Returns 0 on success, non-zero on failure.
  */
-int main( int argc, char const *argv[] ) {
+int main( int argc, char const *argv[const] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
