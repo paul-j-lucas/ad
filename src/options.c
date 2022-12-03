@@ -789,11 +789,10 @@ void parse_options( int argc, char const *argv[] ) {
       }
 
       case '?':                         // invalid option
-        EPRINTF(
+        FATAL_ERR( EX_USAGE,
           "%s: '%c': invalid option; use --help or -%c for help\n",
           me, STATIC_CAST( char, optopt ), COPT(HELP)
         );
-        exit( EX_USAGE );
 
       default:
         if ( isprint( opt ) )
