@@ -840,27 +840,125 @@ void parse_options( int argc, char const *argv[] ) {
   }
 
   // check for mutually exclusive options
-  check_mutually_exclusive( "b", "B" );
-  check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
-  check_mutually_exclusive( "d", "ox" );
-  check_mutually_exclusive( "dox", "OP" );
-  check_mutually_exclusive( "e", "EH" );
-  check_mutually_exclusive( "eEH", "sS" );
-  check_mutually_exclusive( "g", "P" );
-  check_mutually_exclusive( "h", "AbBcCdeEgHijmLNoOpPrsStTuUvVx" );
-  check_mutually_exclusive( "L", "N" );
-  check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "o", "dx" );
-  check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
-  check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "AbBcCdeEgHijmLNoOpPrsStTuUvx" );
-  check_mutually_exclusive( "x", "do" );
+  check_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
+  check_mutually_exclusive( SOPT(C_ARRAY),
+    SOPT(BIG_ENDIAN)
+    SOPT(COLOR)
+    SOPT(GROUP_BY)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(PRINTING_ONLY)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
+  check_mutually_exclusive( SOPT(DECIMAL),
+    SOPT(HEXADECIMAL)
+    SOPT(OCTAL)
+  );
+  check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
+    SOPT(NO_OFFSETS)
+    SOPT(PLAIN)
+  );
+  check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
+  check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
+    SOPT(BIG_ENDIAN)
+    SOPT(HOST_ENDIAN)
+  );
+  check_mutually_exclusive(
+    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
+    SOPT(STRING) SOPT(STRING_IGNORE_CASE)
+  );
+  check_mutually_exclusive( SOPT(HELP),
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(CONFIG)
+    SOPT(DECIMAL)
+    SOPT(GROUP_BY)
+    SOPT(HEXADECIMAL)
+    SOPT(HOST_ENDIAN)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_CONFIG)
+    SOPT(NO_OFFSETS)
+    SOPT(OCTAL)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+    SOPT(REVERSE)
+    SOPT(SKIP_BYTES)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+    SOPT(VERSION)
+  );
+  check_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
+  check_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
+  check_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
+    SOPT(VERBOSE)
+  );
+  check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
+  check_mutually_exclusive( SOPT(REVERSE),
+    "AbBcCeEgimLNOpPsStTuUv"
+  );
+  check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
+  check_mutually_exclusive( SOPT(VERSION),
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(CONFIG)
+    SOPT(DECIMAL)
+    SOPT(GROUP_BY)
+    SOPT(HEXADECIMAL)
+    SOPT(HOST_ENDIAN)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_CONFIG)
+    SOPT(NO_OFFSETS)
+    SOPT(OCTAL)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+    SOPT(REVERSE)
+    SOPT(SKIP_BYTES)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
 
   // check for options that require other options
-  check_required( "bB", "eE" );
-  check_required( "i", "s" );
-  check_required( "mtT", "eEsS" );
-  check_required( "U", "u" );
+  check_required( SOPT(BITS) SOPT(BYTES),
+    SOPT(BIG_ENDIAN) SOPT(LITTLE_ENDIAN)
+  );
+  check_required( SOPT(IGNORE_CASE), SOPT(STRING) );
+  check_required(
+    SOPT(MATCHING_ONLY) SOPT(TOTAL_MATCHES) SOPT(TOTAL_MATCHES_ONLY),
+    SOPT(BIG_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+  );
+  check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 
   if ( print_usage )
     usage( argc > 2 ? EX_USAGE : EX_OK );
