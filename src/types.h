@@ -539,6 +539,17 @@ struct ad_expr {
  */
 NODISCARD AD_TYPES_H_INLINE
 bool ad_is_signed( ad_tid_t tid ) {
+  return (tid & T_SIGNED) != 0;
+}
+
+/**
+ * Gets whether \a tid is a signed integer.
+ *
+ * @param tid The type ID to use.
+ * @return Returns `true` only if \a tid is signed.
+ */
+NODISCARD AD_TYPES_H_INLINE
+unsigned ad_tid_size( ad_tid_t tid ) {
   return 8u << ((tid & T_MASK_SIZE) >> 4);
 }
 

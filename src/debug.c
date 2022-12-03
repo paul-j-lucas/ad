@@ -161,15 +161,21 @@ void ad_tid_dump( ad_tid_t tid, FILE *dout ) {
 void ad_tid_name( ad_type_t const *type, FILE *dout ) {
   switch ( type->tid ) {
     case T_BOOL:
-      FPUTS( "bool", dout );
+      FPRINTF( "bool%u", ad_tid_size( type->tid ) );
+      break;
+    case T_ERROR:
+      FPUTS( "error", dout );
+      break;
+    case T_FLOAT:
+      FPRINTF( "float%u", ad_tid_size( type->tid ) );
       break;
     case T_INT:
       if ( !ad_is_signed( type->tid ) )
         FPUTS( "unsigned ", dout );
-      FPUTS( "int", dout );
+      FPRINTF( "int%u", ad_tid_size( type->tid ) );
       break;
-    case T_FLOAT:
-      FPUTS( "float", dout );
+    case T_UTF:
+      FPRINTF( "utf%u", ad_tid_size( type->tid ) );
       break;
   } // switch
 }
