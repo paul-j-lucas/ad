@@ -1,5 +1,33 @@
+2022-12-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, options.c: Added `const`.
+   * options.c: Using SOPT() more.
+   * options.c: Now using FATAL_ERR().
+
+2022-11-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, options.c: Added --host-endian/-H options.
+   * ad.1, options.c: Changed -H to -h.
+   * options.c: Added missing invalid option handling.
+   * ad.1, options.c, test/Makefile.am, ad-x.test: Changed -h to -x.
+
+2022-11-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.h, options.c, util.h: Reworked options.
+   * ad.1, dump.c, options.c, options.h: Added 8 argument for --c-array to make
+     the array type char8_t.
+   * dump.c: Now respecting -O when dumping a C array.
+   * dump.c: Reworked color to use new functions.
+   * color.c, color.h, util.h: Replaced color macros with functions.
+
+2022-11-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c, color.h: Color clean-up.
+
 2022-11-21  Paul J. Lucas <paul@lucasmail.org>
 
+   * src/Makefile.am, ad.c, dump.c, match.c, options.c, options.h, util.c,
+     util.h: s/common/ad/
    * configure.ac: Now requiring C11.
 
 2022-11-20  Paul J. Lucas <paul@lucasmail.org>
