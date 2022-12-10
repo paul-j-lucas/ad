@@ -47,9 +47,9 @@
   BLOCK( if ( EXPR ) color_end( fout, (COLOR) ); )
 
 struct row_buf {
-  char8_t       bytes[ ROW_BYTES_MAX ]; // bytes in buffer, left-to-right
-  size_t        len;                    // length of buffer
-  match_bits_t  match_bits;             // which bytes match, right-to-left
+  char8_t       bytes[ ROW_BYTES_MAX ]; ///< Bytes in buffer, left-to-right.
+  size_t        len;                    ///< Length of buffer.
+  match_bits_t  match_bits;             ///< Which bytes match, right-to-left.
 };
 typedef struct row_buf row_buf_t;
 
@@ -71,7 +71,7 @@ static inline bool print_readability_space( size_t byte_pos ) {
 /**
  * Collects the bytes starting at \a buf_pos into a UTF-8 character.
  *
- * @param cur A pointer to the current row.
+ * @param curr A pointer to the current row.
  * @param buf_pos The position within the row.
  * @param next A pointer to the next row.
  * @param utf8_char A pointer to the buffer to receive the UTF-8 character.
@@ -79,15 +79,15 @@ static inline bool print_readability_space( size_t byte_pos ) {
  * the bytes do not comprise a valid UTF-8 character.
  */
 NODISCARD
-static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
+static size_t utf8_collect( row_buf_t const *curr, size_t buf_pos,
                             row_buf_t const *next, char8_t *utf8_char ) {
-  assert( cur != NULL );
+  assert( curr != NULL );
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( STATIC_CAST( char, cur->bytes[ buf_pos ] ) );
+  size_t const len = utf8_len( STATIC_CAST( char, curr->bytes[ buf_pos ] ) );
   if ( len > 1 ) {
-    row_buf_t const *row = cur;
+    row_buf_t const *row = curr;
     *utf8_char++ = row->bytes[ buf_pos++ ];
 
     for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
@@ -113,13 +113,13 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
  * Dumps a single row of bytes containing the offset and hex and ASCII parts.
  *
  * @param off_fmt The \c printf() format for the offset.
- * @param cur A pointer to the current \a row_buf.
+ * @param curr A pointer to the current \a row_buf.
  * @param next A pointer to the next \a row_buf.
  */
-static void dump_row( char const *off_fmt, row_buf_t const *cur,
+static void dump_row( char const *off_fmt, row_buf_t const *curr,
                       row_buf_t const *next ) {
   assert( off_fmt != NULL );
-  assert( cur != NULL );
+  assert( curr != NULL );
   assert( next != NULL );
 
   static bool   any_dumped = false;     // any data dumped yet?
@@ -166,8 +166,8 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
 
   // dump hex part
   prev_matches = false;
-  for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-    bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
+  for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
+    bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
     bool const matches_changed = matches != prev_matches;
 
     if ( buf_pos % opt_group_by == 0 ) {
@@ -182,7 +182,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       COLOR_START_IF( matches_changed, sgr_hex_match );
     else
       COLOR_END_IF( matches_changed, sgr_hex_match );
-    FPRINTF( fout, "%02X", STATIC_CAST(unsigned, cur->bytes[ buf_pos ]) );
+    FPRINTF( fout, "%02X", STATIC_CAST(unsigned, curr->bytes[ buf_pos ]) );
     prev_matches = matches;
   } // for
   COLOR_END_IF( prev_matches, sgr_hex_match );
@@ -200,10 +200,10 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
     // dump ASCII part
     FPUTS( "  ", fout );
     prev_matches = false;
-    for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-      bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
+    for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
+      bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
       bool const matches_changed = matches != prev_matches;
-      char8_t const byte = cur->bytes[ buf_pos ];
+      char8_t const byte = curr->bytes[ buf_pos ];
 
       if ( matches )
         COLOR_START_IF( matches_changed, sgr_ascii_match );
@@ -217,7 +217,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       } else {
         char8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
         utf8_count = opt_utf8 ?
-          utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
+          utf8_collect( curr, buf_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )
           FPUTS( POINTER_CAST( char*, utf8_char ), fout );
         else
@@ -269,7 +269,7 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
 
 void dump_file( void ) {
   bool        any_matches = false;      // if matching, any data matched yet?
-  row_buf_t   buf[2], *cur = buf, *next = buf + 1;
+  row_buf_t   buf[2], *curr = buf, *next = buf + 1;
   bool        is_same_row = false;      // current row same as previous?
   kmp_t      *kmps = NULL;              // used only by match_byte()
   char8_t    *match_buf = NULL;         // used only by match_byte()
@@ -281,10 +281,10 @@ void dump_file( void ) {
   }
 
   // prime the pump by reading the first row
-  cur->len =
-    match_row( cur->bytes, row_bytes, &cur->match_bits, kmps, match_buf );
+  curr->len =
+    match_row( curr->bytes, row_bytes, &curr->match_bits, kmps, match_buf );
 
-  while ( cur->len > 0 ) {
+  while ( curr->len > 0 ) {
     //
     // We need to know whether the current row is the last row.  The current
     // row is the last if its length < row_bytes.  However, if the file's
@@ -292,13 +292,13 @@ void dump_file( void ) {
     // row is the last.  We therefore have to read the next row: the current
     // row is the last row if the length of the next row is zero.
     //
-    next->len = cur->len < row_bytes ? 0 :
+    next->len = curr->len < row_bytes ? 0 :
       match_row( next->bytes, row_bytes, &next->match_bits, kmps, match_buf );
 
     if ( opt_matches != MATCHES_ONLY_PRINT ) {
       bool const is_last_row = next->len == 0;
 
-      if ( cur->match_bits != 0 || (    // always dump matching rows
+      if ( curr->match_bits != 0 || (   // always dump matching rows
           // Otherwise dump only if:
           //  + for non-matching rows, if not -m
           !opt_only_matching &&
@@ -306,23 +306,23 @@ void dump_file( void ) {
           (opt_verbose || !is_same_row || is_last_row) &&
           //  + and if not -p or any printable bytes
           (!opt_only_printing ||
-            ascii_any_printable( (char*)cur->bytes, cur->len )) ) ) {
+            ascii_any_printable( (char*)curr->bytes, curr->len )) ) ) {
 
-        dump_row( off_fmt, cur, next );
+        dump_row( off_fmt, curr, next );
       }
 
       // Check if the next row is the same as the current row, but only if:
       is_same_row =
         !(opt_verbose || is_last_row) &&// + neither -v or is the last row
-        cur->len == next->len &&        // + the two row lengths are equal
-        memcmp( cur->bytes, next->bytes, row_bytes ) == 0;
+        curr->len == next->len &&       // + the two row lengths are equal
+        memcmp( curr->bytes, next->bytes, row_bytes ) == 0;
     }
 
-    if ( cur->match_bits != 0 )
+    if ( curr->match_bits != 0 )
       any_matches = true;
 
-    row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
-    cur = next;
+    row_buf_t *const temp = curr;       // swap row pointers to avoid memcpy()
+    curr = next;
     next = temp;
 
     fin_offset += STATIC_CAST( off_t, row_bytes );
