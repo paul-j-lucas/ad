@@ -337,10 +337,10 @@ void dump_file( void ) {
 }
 
 void dump_file_c( void ) {
-  size_t      array_len = 0;
-  char const *array_name = NULL;
-  char const *off_fmt = get_offset_fmt_format();
-  size_t      row_len;
+  size_t            array_len = 0;
+  char const *      array_name = NULL;
+  char const *const off_fmt = get_offset_fmt_format();
+  size_t            row_len;
 
   if ( fin == stdin ) {
     array_name = "stdin";
