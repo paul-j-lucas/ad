@@ -193,7 +193,7 @@ static bool         opts_given[ 128 ];
 
 // local functions
 NODISCARD
-static char const*  opt_format( char, char[], size_t ),
+static char const*  opt_format( char, char[const], size_t ),
                  *  opt_get_long( char );
 
 /////////// local functions ///////////////////////////////////////////////////
@@ -297,7 +297,7 @@ static void check_required( char const *opts, char const *req_opts ) {
  * @return Returns \a buf.
  */
 NODISCARD
-static char const* opt_format( char short_opt, char buf[], size_t size ) {
+static char const* opt_format( char short_opt, char buf[const], size_t size ) {
   char const *const long_opt = opt_get_long( short_opt );
   snprintf(
     buf, size, "%s%s%s-%c",
