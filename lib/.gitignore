@@ -1,8 +1,8 @@
+/assert.h
 /errno.h
 /getopt-cdefs.h
 /getopt.h
 /limits.h
-/stdbool.h
 /stddef.h
 /stdint.h
 /stdio.h
@@ -12,4 +12,3 @@
 /sys
 /sysexits.h
 /unistd.h
-/xalloc-oversized.h

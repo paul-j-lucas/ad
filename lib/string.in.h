@@ -347,6 +347,23 @@ _GL_WARN_ON_USE (memrchr, "memrchr is unportable - "
 # endif
 #endif
 
+/* Overwrite a block of memory.  The compiler will not optimize
+   effects away, even if the block is dead after the call.  */
+#if @GNULIB_MEMSET_EXPLICIT@
+# if ! @HAVE_MEMSET_EXPLICIT@
+_GL_FUNCDECL_SYS (memset_explicit, void *,
+                  (void *__dest, int __c, size_t __n) _GL_ARG_NONNULL ((1)));
+# endif
+_GL_CXXALIAS_SYS (memset_explicit, void *, (void *__dest, int __c, size_t __n));
+_GL_CXXALIASWARN (memset_explicit);
+#elif defined GNULIB_POSIXCHECK
+# undef memset_explicit
+# if HAVE_RAW_DECL_MEMSET_EXPLICIT
+_GL_WARN_ON_USE (memset_explicit, "memset_explicit is unportable - "
+                 "use gnulib module memset_explicit for portability");
+# endif
+#endif
+
 /* Find the first occurrence of C in S.  More efficient than
    memchr(S,C,N), at the expense of undefined behavior if C does not
    occur within N bytes.  */
@@ -943,7 +960,9 @@ _GL_FUNCDECL_SYS (mbslen, size_t, (const char *string)
                                   _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_SYS (mbslen, size_t, (const char *string));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (mbslen);
+# endif
 #endif
 
 #if @GNULIB_MBSNLEN@
