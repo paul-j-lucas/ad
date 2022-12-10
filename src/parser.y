@@ -781,20 +781,14 @@ field_declaration
       ad_field->rep = $3;
       ad_field->type = $1;
     }
-
-  | Y_TYPEDEF_TYPE Y_NAME array_opt
-    {
-      //ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      // TODO
-      free( $2 );
-    }
   ;
 
 array_opt
   : /* empty */                   { $$.times = AD_REP_1; }
-  | '[' ']' equals_exp str_lit_exp
+  | '[' ']' equals_exp expr_exp
     {
       $$.times = AD_REP_1;
+      $$.expr = $4;
     }
   | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
   | '[' '*' rbracket_exp          { $$.times = AD_REP_0_MORE; }
@@ -846,6 +840,7 @@ expr_exp
   : expr
   | error
     {
+      elaborate_error( "expression expected" );
     }
   ;
 
@@ -1153,7 +1148,7 @@ unary_op
   | '*'                           { $$ = AD_EXPR_PTR_DEREF; }
   | '+'                           { $$ = AD_EXPR_MATH_ADD; }
   | '-'                           { $$ = AD_EXPR_MATH_NEG; }
-  | '~'                           { $$ = AD_EXPR_BIT_COMP; }
+  | '~'                           { $$ = AD_EXPR_BIT_COMPL; }
   | '!'                           { $$ = AD_EXPR_LOG_NOT; }
   ;
 

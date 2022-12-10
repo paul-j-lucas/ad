@@ -204,7 +204,7 @@ enum ad_expr_kind {
   AD_EXPR_VALUE,                        ///< Constant value expression.
 
   // unary
-  AD_EXPR_BIT_COMP = AD_EXPR_UNARY + 1, ///< Bitwise-complement expression.
+  AD_EXPR_BIT_COMPL = AD_EXPR_UNARY + 1,///< Bitwise-complement expression.
   AD_EXPR_MATH_NEG,                     ///< Negation expression.
   AD_EXPR_PTR_ADDR,                     ///< Address-of expression.
   AD_EXPR_PTR_DEREF,                    ///< Dereference expression.
@@ -433,9 +433,10 @@ struct ad_type {
  * A data field.
  */
 struct ad_field {
-  char const *name;
-  ad_type_t   type;
-  ad_rep_t    rep;
+  char const *name;                     ///< Field name.
+  ad_type_t   type;                     ///< Field type.
+  ad_rep_t    rep;                      ///< Repetitions.
+  ad_expr_t  *match_expr;               ///< Value it must match, if any.
 };
 
 ////////// expressions ////////////////////////////////////////////////////////

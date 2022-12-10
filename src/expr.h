@@ -111,6 +111,15 @@ NODISCARD
 bool ad_expr_is_zero( ad_expr_t const *expr );
 
 /**
+ * Gets the name \a kind.
+ *
+ * @param kind The \ref ad_expr_kind to get the name for.
+ * @return Returns said name.
+ */
+NODISCARD
+char const* ad_expr_kind_name( ad_expr_kind_t kind );
+
+/**
  * Sets the type of \a expr to #T_BOOL and its value to \a bval.
  *
  * @param expr The expression to set.

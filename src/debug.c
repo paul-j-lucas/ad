@@ -27,6 +27,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "debug.h"
 #include "ad.h"
+#include "expr.h"
 #include "types.h"
 #include "literals.h"
 #include "util.h"
@@ -112,11 +113,70 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
 
   //DUMP_SNAME( "sname", &ast->sname );
   FPUTS( ",\n", dout );
+  DUMP_STR( "kind", ad_expr_kind_name( expr->expr_kind ) );
+  FPUTS( ",\n", dout );
   DUMP_LOC( "loc", &expr->loc );
   FPUTS( ",\n", dout );
 
   bool comma = false;
 
+  switch ( expr->expr_kind ) {
+    case AD_EXPR_NONE:
+    case AD_EXPR_ERROR:
+      break;
+
+    case AD_EXPR_VALUE:
+      break;
+
+    // unary
+    case AD_EXPR_BIT_COMPL:
+    case AD_EXPR_MATH_NEG:
+    case AD_EXPR_PTR_ADDR:
+    case AD_EXPR_PTR_DEREF:
+    case AD_EXPR_MATH_DEC_POST:
+    case AD_EXPR_MATH_DEC_PRE:
+    case AD_EXPR_MATH_INC_POST:
+    case AD_EXPR_MATH_INC_PRE:
+      ad_expr_dump_impl( expr->unary.sub_expr, indent, "sub_expr", dout );
+      break;
+
+    // binary
+    case AD_EXPR_ASSIGN:
+    case AD_EXPR_BIT_AND:
+    case AD_EXPR_BIT_OR:
+    case AD_EXPR_BIT_SHIFT_LEFT:
+    case AD_EXPR_BIT_SHIFT_RIGHT:
+    case AD_EXPR_BIT_XOR:
+    case AD_EXPR_CAST:
+    case AD_EXPR_LOG_AND:
+    case AD_EXPR_LOG_NOT:
+    case AD_EXPR_LOG_OR:
+    case AD_EXPR_LOG_XOR:
+    case AD_EXPR_MATH_ADD:
+    case AD_EXPR_MATH_DIV:
+    case AD_EXPR_MATH_MOD:
+    case AD_EXPR_MATH_MUL:
+    case AD_EXPR_MATH_SUB:
+    case AD_EXPR_REL_EQ:
+    case AD_EXPR_REL_GREATER:
+    case AD_EXPR_REL_GREATER_EQ:
+    case AD_EXPR_REL_LESS:
+    case AD_EXPR_REL_LESS_EQ:
+    case AD_EXPR_REL_NOT_EQ:
+      ad_expr_dump_impl( expr->binary.lhs_expr, indent, "lhs_expr", dout );
+      FPUTS( ",\n", dout );
+      ad_expr_dump_impl( expr->binary.rhs_expr, indent, "rhs_expr", dout );
+      break;
+
+    // ternary
+    case AD_EXPR_IF_ELSE:
+      ad_expr_dump_impl( expr->ternary.cond_expr, indent, "cond_expr", dout );
+      FPUTS( ",\n", dout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[0], indent, "sub_expr[0]", dout );
+      FPUTS( ",\n", dout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[1], indent, "sub_expr[1]", dout );
+      break;
+  } // switch
 
   FPUTC( '\n', dout );
   --indent;

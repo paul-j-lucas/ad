@@ -444,9 +444,10 @@ _GL_INLINE_HEADER_BEGIN
  * @param EXPR The expression.
  * @param STATUS The exit status code.
  *
- * @sa #INTERNAL_ERR()
  * @sa #FATAL_ERR()
+ * @sa #INTERNAL_ERR()
  * @sa perror_exit()
+ * @sa #UNEXPECTED_INT_VALUE()
  */
 #define PERROR_EXIT_IF( EXPR, STATUS ) \
   BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
@@ -513,6 +514,19 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #CHARIFY()
  */
 #define STRINGIFY(X)              STRINGIFY_IMPL(X)
+
+/**
+ * A special-case of #INTERNAL_ERR() that prints an unexpected integer value.
+ *
+ * @param EXPR The expression having the unexpected value.
+ *
+ * @sa #FATAL_ERR()
+ * @sa #INTERNAL_ERR()
+ * @sa perror_exit()
+ * @sa #PERROR_EXIT_IF()
+ */
+#define UNEXPECTED_INT_VALUE(EXPR) \
+  INTERNAL_ERR( "%lld (0x%llX): unexpected value for " #EXPR "\n", (long long)(EXPR), (unsigned long long)(EXPR) )
 
 /**
  * Whitespace characters.

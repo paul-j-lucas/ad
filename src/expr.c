@@ -278,7 +278,7 @@ static bool ad_expr_bit_and( ad_expr_t const *expr, ad_expr_t *rv ) {
  * @param rv A pointer to the return-value expression.
  * @return Returns `true` only if the evaluation succeeded.
  */
-static bool ad_expr_bit_comp( ad_expr_t const *expr, ad_expr_t *rv ) {
+static bool ad_expr_bit_compl( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( unary, sub );
   GET_BASE_TYPE( sub );
   CHECK_TYPE( sub, T_BOOL | T_INT | T_UTF );
@@ -1163,8 +1163,8 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_BIT_AND:
       return ad_expr_bit_and( expr, rv );
 
-    case AD_EXPR_BIT_COMP:
-      return ad_expr_bit_comp( expr, rv );
+    case AD_EXPR_BIT_COMPL:
+      return ad_expr_bit_compl( expr, rv );
 
     case AD_EXPR_BIT_SHIFT_LEFT:
       return ad_expr_bit_shift_left( expr, rv );
@@ -1271,6 +1271,48 @@ void ad_expr_free( ad_expr_t *expr ) {
       break;
   } // switch
   free( expr );
+}
+
+char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
+  switch ( kind ) {
+    case AD_EXPR_ASSIGN           : return "=";
+    case AD_EXPR_BIT_AND          : return "bitand";
+    case AD_EXPR_BIT_COMPL        : return "compl";
+    case AD_EXPR_BIT_OR           : return "|";
+    case AD_EXPR_BIT_SHIFT_LEFT   : return "<<";
+    case AD_EXPR_BIT_SHIFT_RIGHT  : return ">>";
+    case AD_EXPR_BIT_XOR          : return "^";
+    case AD_EXPR_CAST             : return "cast";
+    case AD_EXPR_ERROR            : return "error";
+    case AD_EXPR_IF_ELSE          : return "?";
+    case AD_EXPR_LOG_AND          : return "&&";
+    case AD_EXPR_LOG_NOT          : return "!";
+    case AD_EXPR_LOG_OR           : return "||";
+    case AD_EXPR_LOG_XOR          : return "^";
+    case AD_EXPR_MATH_ADD         : return "add";
+    case AD_EXPR_MATH_DEC_POST    : return "post--";
+    case AD_EXPR_MATH_DEC_PRE     : return "--pre";
+    case AD_EXPR_MATH_DIV         : return "/";
+    case AD_EXPR_MATH_INC_POST    : return "post++";
+    case AD_EXPR_MATH_INC_PRE     : return "++pre";
+    case AD_EXPR_MATH_MOD         : return "%";
+    case AD_EXPR_MATH_MUL         : return "mul";
+    case AD_EXPR_MATH_NEG         : return "neg";
+    case AD_EXPR_MATH_SUB         : return "sub";
+    case AD_EXPR_NONE             : return "none";
+    case AD_EXPR_PTR_ADDR         : return "addr";
+    case AD_EXPR_PTR_DEREF        : return "deref";
+    case AD_EXPR_REL_EQ           : return "==";
+    case AD_EXPR_REL_GREATER      : return ">";
+    case AD_EXPR_REL_GREATER_EQ   : return ">=";
+    case AD_EXPR_REL_LESS         : return "<";
+    case AD_EXPR_REL_LESS_EQ      : return "<=";
+    case AD_EXPR_REL_NOT_EQ       : return "!=";
+    case AD_EXPR_VALUE            : return "value";
+  } // switch
+
+  UNEXPECTED_INT_VALUE( kind );
+  return NULL;
 }
 
 bool ad_expr_is_zero( ad_expr_t const *expr ) {
