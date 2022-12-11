@@ -47,14 +47,6 @@
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
- * Dumps a Boolean value (for debugging).
- *
- * @param b The Boolean to dump.
- * @param dout The `FILE` to dump to.
- */
-void bool_dump( bool b, FILE *dout );
-
-/**
  * Dumps \a expr (for debugging).
  *
  * @param expr The expression to dump.  If NULL and \a key is not NULL, dumps
@@ -85,6 +77,23 @@ void ad_tid_dump( ad_tid_t tid, FILE *dout );
  * @sa c_tid_dump()
  */
 void ad_type_dump( ad_type_t const *type, FILE *dout );
+
+/**
+ * Dumps a Boolean value (for debugging).
+ *
+ * @param b The Boolean to dump.
+ * @param dout The `FILE` to dump to.
+ */
+void bool_dump( bool b, FILE *dout );
+
+/**
+ * Gets the name of \a e.
+ *
+ * @param e The \ref endian to get the name of.
+ * @return Returns said name.
+ */
+NODISCARD
+char const* endian_name( endian_t e );
 
 /**
  * Dumps a string value (for debugging).

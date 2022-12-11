@@ -612,7 +612,6 @@ static void yyerror( char const *msg ) {
 %type <expr_kind>   assign_op
 %type <int_val>     int_exp
 %type <name>        name_exp
-%type <str_val>     str_lit str_lit_exp
 %type <type>        type
 %type <expr>        type_endian_exp
 %type <expr_kind>   unary_op
@@ -1044,7 +1043,7 @@ primary_expr
   | Y_INT_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-   // $$.value.type = xx;
+      $$->value.type.tid = T_INT;
       $$->value.i64 = $1;
     }
   | Y_STR_LIT
@@ -1113,9 +1112,8 @@ unary_expr
     }
   | unary_op cast_expr
     {
-      // TODO
-      (void)$1;
-      (void)$2;
+      $$ = ad_expr_new( $1, &@$ );
+      $$->unary.sub_expr = $2;
     }
   | Y_sizeof unary_expr
     {
@@ -1290,24 +1288,6 @@ semi_exp
   | error
     {
       punct_expected( ';' );
-    }
-  ;
-
-str_lit
-  : Y_STR_LIT
-  | Y_LEXER_ERROR
-    {
-      $$ = NULL;
-      PARSE_ABORT();
-    }
-  ;
-
-str_lit_exp
-  : str_lit
-  | error
-    {
-      $$ = NULL;
-      elaborate_error( "string literal expected" );
     }
   ;
 

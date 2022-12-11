@@ -212,6 +212,7 @@ enum ad_expr_kind {
   AD_EXPR_MATH_DEC_PRE,                 ///< Pre-decrement.
   AD_EXPR_MATH_INC_POST,                ///< Post-incremeent.
   AD_EXPR_MATH_INC_PRE,                 ///< Pre-incremeent.
+  AD_EXPR_SIZEOF,                       ///< `sizeof`.
 
   // binary
   AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
@@ -552,6 +553,17 @@ bool ad_is_signed( ad_tid_t tid ) {
 NODISCARD AD_TYPES_H_INLINE
 unsigned ad_tid_size( ad_tid_t tid ) {
   return 8u << ((tid & T_MASK_SIZE) >> 4);
+}
+
+/**
+ * Gets the endianness of \a tid.
+ *
+ * @param tid The type ID to use.
+ * @return Returns said endianness.
+ */
+NODISCARD AD_TYPES_H_INLINE
+endian_t ad_tid_endian( ad_tid_t tid ) {
+  return (endian_t)(tid & T_MASK_ENDIAN);
 }
 
 /**

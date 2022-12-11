@@ -137,6 +137,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_MATH_DEC_PRE:
     case AD_EXPR_MATH_INC_POST:
     case AD_EXPR_MATH_INC_PRE:
+    case AD_EXPR_SIZEOF:
       ad_expr_dump_impl( expr->unary.sub_expr, indent, "sub_expr", dout );
       break;
 
@@ -210,40 +211,43 @@ void ad_expr_dump( ad_expr_t const *ast, char const *key, FILE *dout ) {
 
 void ad_tid_dump( ad_tid_t tid, FILE *dout ) {
   assert( dout != NULL );
-#if 0
-  FPRINTF( dout,
-    "\"%s\" (%s = 0x%" PRIX_C_TID_T ")",
-    c_tid_name_c( tid ), c_tpid_name( c_tid_tpid( tid ) ), tid
-  );
-#endif
-}
-
-void ad_tid_name( ad_type_t const *type, FILE *dout ) {
-  switch ( type->tid ) {
+  switch ( tid ) {
     case T_BOOL:
-      FPRINTF( "bool%u", ad_tid_size( type->tid ) );
+      FPRINTF( dout, "bool%u", ad_tid_size( tid ) );
       break;
     case T_ERROR:
       FPUTS( "error", dout );
       break;
     case T_FLOAT:
-      FPRINTF( "float%u", ad_tid_size( type->tid ) );
+      FPRINTF( dout, "float%u", ad_tid_size( tid ) );
       break;
     case T_INT:
-      if ( !ad_is_signed( type->tid ) )
+      if ( !ad_is_signed( tid ) )
         FPUTS( "unsigned ", dout );
-      FPRINTF( "int%u", ad_tid_size( type->tid ) );
+      FPRINTF( dout, "int%u", ad_tid_size( tid ) );
       break;
     case T_UTF:
-      FPRINTF( "utf%u", ad_tid_size( type->tid ) );
+      FPRINTF( dout, "utf%u", ad_tid_size( tid ) );
       break;
   } // switch
+  FPUTS( endian_name( ad_tid_endian( tid ) ), dout );
 }
 
 void ad_type_dump( ad_type_t const *type, FILE *dout ) {
   assert( type != NULL );
   assert( dout != NULL );
 
+}
+
+char const* endian_name( endian_t e ) {
+  switch ( e ) {
+    case ENDIAN_NONE    : return "none";
+    case ENDIAN_LITTLE  : return "little";
+    case ENDIAN_BIG     : return "big";
+    case ENDIAN_HOST    : return "host";
+  } // switch
+  UNEXPECTED_INT_VALUE( e );
+  return NULL;
 }
 
 void str_dump( char const *value, FILE *dout ) {

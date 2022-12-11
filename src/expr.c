@@ -1226,6 +1226,10 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_MATH_SUB:
       return ad_expr_math_sub( expr, rv );
 
+    case AD_EXPR_SIZEOF:
+      // TODO
+      return true;
+
     case AD_EXPR_PTR_ADDR:
       // TODO
       return true;
@@ -1308,6 +1312,7 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
     case AD_EXPR_REL_LESS         : return "<";
     case AD_EXPR_REL_LESS_EQ      : return "<=";
     case AD_EXPR_REL_NOT_EQ       : return "!=";
+    case AD_EXPR_SIZEOF           : return "sizeof";
     case AD_EXPR_VALUE            : return "value";
   } // switch
 
