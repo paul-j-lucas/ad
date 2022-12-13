@@ -268,14 +268,17 @@ static void check_number_size( size_t given_size, size_t actual_size,
  */
 static void check_required( char const *opts, char const *req_opts ) {
   assert( opts != NULL );
+  assert( opts[0] != '\0' );
   assert( req_opts != NULL );
+  assert( req_opts[0] != '\0' );
+
   for ( char const *opt = opts; *opt; ++opt ) {
     if ( GAVE_OPTION( *opt ) ) {
       for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
         if ( GAVE_OPTION( *req_opt ) )
           return;
       char opt_buf[ OPT_BUF_SIZE ];
-      bool const reqs_multiple = strlen( req_opts ) > 1;
+      bool const reqs_multiple = req_opts[1] != '\0';
       FATAL_ERR( EX_USAGE,
         "%s requires %sthe -%s option%s to be given also\n",
         opt_format( *opt, opt_buf, sizeof opt_buf ),

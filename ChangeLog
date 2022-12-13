@@ -1,3 +1,16 @@
+2022-12-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Added more assert()s.
+   * ad.1: Added that  of --c-array may be combined with either  or .
+   * ad.1: Added "An option argument f means file, ..."
+
+2022-12-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, assert.in.h, intprops-internal.h, intprops.h,
+     stdlib.in.h, strerror.c, string.in.h, unistd.in.h, verify.h,
+     xalloc-oversized.h, assert_h.m4, c-bool.m4, getdelim.m4, gnulib-common.m4,
+     gnulib-comp.m4, string_h.m4, warn-on-use.m4: Updated Gnulib.
+
 2022-12-03  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, options.c: Added `const`.
