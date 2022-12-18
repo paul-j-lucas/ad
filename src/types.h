@@ -420,7 +420,8 @@ struct ad_switch {
  */
 struct ad_type {
   ad_tid_t        tid;
-  ad_expr_t      *expr;
+  ad_expr_t      *size_expr;
+  ad_expr_t      *endian_expr;
 
   union {
     ad_int_t      ad_int;

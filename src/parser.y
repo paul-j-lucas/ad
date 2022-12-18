@@ -450,7 +450,6 @@ static void yyerror( char const *msg ) {
 %token  <expr_kind> Y_bool
 %token              Y_break
 %token              Y_case
-%token  <expr_kind> Y_char
 %token              Y_default
 %token  <expr_kind> Y_enum
 %token  <expr_kind> Y_false
@@ -1150,19 +1149,23 @@ unary_op
   | '!'                           { $$ = AD_EXPR_LOG_NOT; }
   ;
 
-/// type //////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//  TYPES                                                                    //
+///////////////////////////////////////////////////////////////////////////////
 
 type
   : builtin_tid lt_exp expr gt_exp type_endian_exp
     {
       $$.tid = $1;
-      $$.expr = $3;
+      $$.size_expr = $3;
+      $$.endian_expr = $5;
     }
   | Y_TYPEDEF_TYPE
   ;
 
 builtin_tid
-  : Y_float                       { $$ = T_FLOAT; }
+  : Y_bool                        { $$ = T_BOOL; }
+  | Y_float                       { $$ = T_FLOAT; }
   | Y_int                         { $$ = T_SIGNED | T_INT; }
   | Y_uint                        { $$ = T_INT; }
   | Y_utf                         { $$ = T_UTF; }
@@ -1172,22 +1175,29 @@ type_endian_exp
   : '\\' 'b'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT64;
+      $$->value.type.tid = T_INT8;
       $$->value.i64 = ENDIAN_BIG;
     }
   | '\\' 'l'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT64;
+      $$->value.type.tid = T_INT8;
       $$->value.i64 = ENDIAN_LITTLE;
     }
   | '\\' 'h'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT64;
+      $$->value.type.tid = T_INT8;
       $$->value.i64 = ENDIAN_HOST;
     }
-  | '\\' '<' expr '>'             { $$ = $3; }
+  | '\\' '<' expr gt_exp
+    {
+      $$ = $3;
+    }
+  | '\\' error
+    {
+      elaborate_error( "one of 'b', 'l', 'h', or '<expr>' expected" );
+    }
   ;
 
 ///////////////////////////////////////////////////////////////////////////////
