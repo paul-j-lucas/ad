@@ -253,6 +253,13 @@ static void narrow( ad_expr_t *expr ) {
   } // switch
 }
 
+/**
+ * Performs an array element access.
+ *
+ * @param expr The binary expression to perform the array access of.
+ * @param rv A pointer to the return-value expression.
+ * @return Returns `true` only if the evaluation succeeded.
+ */
 static bool ad_expr_array( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( binary, lhs );
   GET_BASE_TYPE( lhs );
