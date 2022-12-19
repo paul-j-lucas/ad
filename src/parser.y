@@ -982,9 +982,9 @@ postfix_expr
   : primary_expr
   | postfix_expr '[' expr ']'
     {
-      // TODO
-      (void)$1;
-      (void)$3;
+      $$ = ad_expr_new( AD_EXPR_ARRAY, &@$ );
+      $$->binary.lhs_expr = $1;
+      $$->binary.rhs_expr = $3;
     }
   | postfix_expr '(' argument_expr_list_opt ')'
     {

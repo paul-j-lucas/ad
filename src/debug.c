@@ -142,6 +142,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
       break;
 
     // binary
+    case AD_EXPR_ARRAY:
     case AD_EXPR_ASSIGN:
     case AD_EXPR_BIT_AND:
     case AD_EXPR_BIT_OR:

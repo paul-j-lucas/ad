@@ -253,6 +253,15 @@ static void narrow( ad_expr_t *expr ) {
   } // switch
 }
 
+static bool ad_expr_array( ad_expr_t const *expr, ad_expr_t *rv ) {
+  EVAL_EXPR( binary, lhs );
+  GET_BASE_TYPE( lhs );
+  EVAL_EXPR( binary, rhs );
+  GET_BASE_TYPE( rhs );
+  // TODO
+  return true;
+}
+
 /**
  * Performs a bitwise and of two subexpressions.
  *
@@ -1152,10 +1161,12 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
 
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
   switch ( expr->expr_kind ) {
-    case AD_EXPR_NONE:
-      break;
+    case AD_EXPR_ARRAY:
+      return ad_expr_array( expr, rv );
+
     case AD_EXPR_ASSIGN:
     case AD_EXPR_ERROR:
+    case AD_EXPR_NONE:
     case AD_EXPR_VALUE:
       *rv = *expr;
       break;
@@ -1279,6 +1290,7 @@ void ad_expr_free( ad_expr_t *expr ) {
 
 char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
   switch ( kind ) {
+    case AD_EXPR_ARRAY            : return "[]";
     case AD_EXPR_ASSIGN           : return "=";
     case AD_EXPR_BIT_AND          : return "bitand";
     case AD_EXPR_BIT_COMPL        : return "compl";
