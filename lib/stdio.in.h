@@ -1,6 +1,6 @@
 /* A GNU-like <stdio.h>.
 
-   Copyright (C) 2004, 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007-2023 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -210,7 +210,9 @@ _GL_FUNCDECL_SYS (dprintf, int, (int fd, const char *restrict format, ...)
 #  endif
 _GL_CXXALIAS_SYS (dprintf, int, (int fd, const char *restrict format, ...));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (dprintf);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef dprintf
 # if HAVE_RAW_DECL_DPRINTF
@@ -882,7 +884,9 @@ _GL_CXXALIAS_SYS (getdelim, ssize_t,
                    int delimiter,
                    FILE *restrict stream));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (getdelim);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef getdelim
 # if HAVE_RAW_DECL_GETDELIM
@@ -921,7 +925,7 @@ _GL_CXXALIAS_SYS (getline, ssize_t,
                   (char **restrict lineptr, size_t *restrict linesize,
                    FILE *restrict stream));
 # endif
-# if @HAVE_DECL_GETLINE@
+# if __GLIBC__ >= 2 && @HAVE_DECL_GETLINE@
 _GL_CXXALIASWARN (getline);
 # endif
 #elif defined GNULIB_POSIXCHECK
@@ -951,9 +955,13 @@ _GL_WARN_ON_USE (gets, "gets is a security hole - use fgets instead");
 #  endif
 _GL_CXXALIAS_MDA (getw, int, (FILE *restrict stream));
 # else
+#  if @HAVE_DECL_GETW@
 _GL_CXXALIAS_SYS (getw, int, (FILE *restrict stream));
+#  endif
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (getw);
+# endif
 #endif
 
 #if @GNULIB_OBSTACK_PRINTF@ || @GNULIB_OBSTACK_PRINTF_POSIX@
@@ -1190,9 +1198,13 @@ _GL_CXXALIASWARN (puts);
 #  endif
 _GL_CXXALIAS_MDA (putw, int, (int w, FILE *restrict stream));
 # else
+#  if @HAVE_DECL_PUTW@
 _GL_CXXALIAS_SYS (putw, int, (int w, FILE *restrict stream));
+#  endif
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (putw);
+# endif
 #endif
 
 #if @GNULIB_REMOVE@

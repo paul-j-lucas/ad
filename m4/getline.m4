@@ -1,6 +1,6 @@
-# getline.m4 serial 30
+# getline.m4 serial 32
 
-dnl Copyright (C) 1998-2003, 2005-2007, 2009-2022 Free Software Foundation,
+dnl Copyright (C) 1998-2003, 2005-2007, 2009-2023 Free Software Foundation,
 dnl Inc.
 dnl
 dnl This file is free software; the Free Software Foundation
@@ -23,12 +23,9 @@ AC_DEFUN([gl_FUNC_GETLINE],
 
   AC_CHECK_DECLS_ONCE([getline])
 
-  gl_getline_needs_run_time_check=no
-  AC_CHECK_FUNC([getline],
-                [dnl Found it in some library.  Verify that it works.
-                 gl_getline_needs_run_time_check=yes],
-                [am_cv_func_working_getline=no])
-  if test $gl_getline_needs_run_time_check = yes; then
+  gl_CHECK_FUNCS_ANDROID([getline], [[#include <stdio.h>]])
+  if test $ac_cv_func_getline = yes; then
+    dnl Found it in some library.  Verify that it works.
     AC_CACHE_CHECK([for working getline function],
       [am_cv_func_working_getline],
       [echo fooNbarN | tr -d '\012' | tr N '\012' > conftest.data
@@ -85,6 +82,11 @@ AC_DEFUN([gl_FUNC_GETLINE],
             ])
          ])
       ])
+  else
+    am_cv_func_working_getline=no
+    case "$gl_cv_onwards_func_getline" in
+      future*) REPLACE_GETLINE=1 ;;
+    esac
   fi
 
   if test $ac_cv_have_decl_getline = no; then

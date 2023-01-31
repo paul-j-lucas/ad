@@ -1,5 +1,5 @@
 # assert-h.m4
-dnl Copyright (C) 2011-2022 Free Software Foundation, Inc.
+dnl Copyright (C) 2011-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -18,7 +18,7 @@ AC_DEFUN([gl_ASSERT_H],
        [AC_LANG_PROGRAM(
           [[#if defined __clang__ && __STDC_VERSION__ < 202311
              #pragma clang diagnostic error "-Wc2x-extensions"
-             #pragma clang diagnostic error "-Wc++17-extensions"
+             #pragma clang diagnostic error "-Wc++1z-extensions"
             #endif
             #ifdef INCLUDE_ASSERT_H
              #include <assert.h>
@@ -60,7 +60,7 @@ AC_DEFUN([gl_ASSERT_H],
  /* Solaris 11.4 <assert.h> defines static_assert as a macro with 2 arguments.
     We need it also to be invocable with a single argument.  */
  #if defined __sun && (__STDC_VERSION__ - 0 >= 201112L) && !defined __cplusplus
-  #undef static_assert
+  #undef/**/static_assert
   #define static_assert _Static_assert
  #endif
 #endif])
