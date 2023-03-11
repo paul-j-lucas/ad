@@ -77,7 +77,7 @@ typedef struct row_buf row_buf_t;
  * Gets whether to print an extra space between byte columns for readability.
  *
  * @param byte_pos The current byte position from the beginning of a line.
- * @return Returns \c true only if
+ * @return Returns \c true only if the extra space should be printed.
  */
 NODISCARD
 static inline bool print_readability_space( size_t byte_pos ) {
