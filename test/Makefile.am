@@ -85,7 +85,6 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-g3.test \
 	tests/ad-g4.test \
 	tests/ad-g8.test \
-	tests/ad-h.test \
 	tests/ad-i-s_01.test \
 	tests/ad-i.test \
 	tests/ad-j1k-N16.test \
@@ -133,7 +132,8 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-u-U8594.test \
 	tests/ad-u-UU+2192.test \
 	tests/ad-v_01.test \
-	tests/ad-V_02.test
+	tests/ad-V_02.test \
+	tests/ad-x.test
 
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .sh .test

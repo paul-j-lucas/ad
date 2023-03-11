@@ -20,8 +20,8 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
-#define AD_UTIL_INLINE _GL_EXTERN_INLINE
+#include "ad.h"
+#define AD_UTIL_H_INLINE _GL_EXTERN_INLINE
 #include "util.h"
 
 // standard
@@ -132,6 +132,19 @@ bool ascii_any_printable( char const *s, size_t s_len ) {
     if ( ascii_is_print( *s ) )
       return true;
   return false;
+}
+
+char const* base_name( char const *path_name ) {
+  assert( path_name != NULL );
+  char const *const slash = strrchr( path_name, '/' );
+  if ( slash != NULL )
+    return slash[1] != '\0' ? slash + 1 : slash;
+  return path_name;
+}
+
+void check_atexit( void (*cleanup_fn)(void) ) {
+  assert( cleanup_fn != NULL );
+  PERROR_EXIT_IF( atexit( cleanup_fn ) != 0, EX_OSERR );
 }
 
 FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
@@ -350,29 +363,6 @@ unsigned long long parse_offset( char const *s ) {
 
 error:
   FATAL_ERR( EX_USAGE, "\"%s\": invalid offset\n", s );
-}
-
-bool parse_sgr( char const *sgr_color ) {
-  if ( sgr_color == NULL )
-    return false;
-  for ( ;; ) {
-    if ( unlikely( !isdigit( *sgr_color ) ) )
-      return false;
-    char *end;
-    errno = 0;
-    unsigned long long const n = strtoull( sgr_color, &end, 10 );
-    if ( unlikely( errno != 0 || n > 255 ) )
-      return false;
-    switch ( end[0] ) {
-      case '\0':
-        return true;
-      case ';':
-        sgr_color = end + 1;
-        continue;
-      default:
-        return false;
-    } // switch
-  } // for
 }
 
 unsigned long long parse_ull( char const *s ) {

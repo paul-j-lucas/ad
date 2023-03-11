@@ -20,8 +20,8 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 #include "color.h"
-#include "common.h"
 #include "match.h"
 #include "options.h"
 #include "unicode.h"
@@ -40,34 +40,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define FFLUSH(F) BLOCK( \
-  if ( unlikely( fflush( F ) == EOF ) ) perror_exit( EX_IOERR ); )
+#define COLOR_START_IF(EXPR,COLOR) \
+  BLOCK( if ( EXPR ) color_start( fout, (COLOR) ); )
 
-#define FPRINTF(...) BLOCK( \
-  if ( unlikely( fprintf( fout, __VA_ARGS__ ) < 0 ) ) perror_exit( EX_IOERR ); )
-
-#define FPUTC(C) BLOCK( \
-  if ( unlikely( fputc( (C), fout ) == EOF ) ) perror_exit( EX_IOERR ); )
-
-#define FPUTS(S) BLOCK( \
-  if ( unlikely( fputs( (S), fout ) == EOF ) ) perror_exit( EX_IOERR ); )
-
-#define SGR_START_IF(EXPR) \
-  BLOCK( if ( colorize && (EXPR) ) FPRINTF( sgr_start, (EXPR) ); )
-
-#define SGR_END_IF(EXPR) \
-  BLOCK( if ( colorize && (EXPR) ) FPRINTF( "%s", sgr_end ); )
-
-#define SGR_HEX_START_IF(EXPR) \
-  BLOCK( if ( EXPR ) SGR_START_IF( sgr_hex_match ); )
-
-#define SGR_ASCII_START_IF(EXPR) \
-  BLOCK( if ( EXPR ) SGR_START_IF( sgr_ascii_match ); )
+#define COLOR_END_IF(EXPR,COLOR) \
+  BLOCK( if ( EXPR ) color_end( fout, (COLOR) ); )
 
 struct row_buf {
-  char8_t       bytes[ ROW_BYTES_MAX ]; // bytes in buffer, left-to-right
-  size_t        len;                    // length of buffer
-  match_bits_t  match_bits;             // which bytes match, right-to-left
+  char8_t       bytes[ ROW_BYTES_MAX ]; ///< Bytes in buffer, left-to-right.
+  size_t        len;                    ///< Length of buffer.
+  match_bits_t  match_bits;             ///< Which bytes match, right-to-left.
 };
 typedef struct row_buf row_buf_t;
 
@@ -89,7 +71,7 @@ static inline bool print_readability_space( size_t byte_pos ) {
 /**
  * Collects the bytes starting at \a buf_pos into a UTF-8 character.
  *
- * @param cur A pointer to the current row.
+ * @param curr A pointer to the current row.
  * @param buf_pos The position within the row.
  * @param next A pointer to the next row.
  * @param utf8_char A pointer to the buffer to receive the UTF-8 character.
@@ -97,15 +79,15 @@ static inline bool print_readability_space( size_t byte_pos ) {
  * the bytes do not comprise a valid UTF-8 character.
  */
 NODISCARD
-static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
+static size_t utf8_collect( row_buf_t const *curr, size_t buf_pos,
                             row_buf_t const *next, char8_t *utf8_char ) {
-  assert( cur != NULL );
+  assert( curr != NULL );
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( STATIC_CAST( char, cur->bytes[ buf_pos ] ) );
+  size_t const len = utf8_len( STATIC_CAST( char, curr->bytes[ buf_pos ] ) );
   if ( len > 1 ) {
-    row_buf_t const *row = cur;
+    row_buf_t const *row = curr;
     *utf8_char++ = row->bytes[ buf_pos++ ];
 
     for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
@@ -131,13 +113,13 @@ static size_t utf8_collect( row_buf_t const *cur, size_t buf_pos,
  * Dumps a single row of bytes containing the offset and hex and ASCII parts.
  *
  * @param off_fmt The \c printf() format for the offset.
- * @param cur A pointer to the current \a row_buf.
+ * @param curr A pointer to the current \a row_buf.
  * @param next A pointer to the next \a row_buf.
  */
-static void dump_row( char const *off_fmt, row_buf_t const *cur,
+static void dump_row( char const *off_fmt, row_buf_t const *curr,
                       row_buf_t const *next ) {
   assert( off_fmt != NULL );
-  assert( cur != NULL );
+  assert( curr != NULL );
   assert( next != NULL );
 
   static bool   any_dumped = false;     // any data dumped yet?
@@ -155,97 +137,101 @@ static void dump_row( char const *off_fmt, row_buf_t const *cur,
       fin_offset - dumped_offset - STATIC_CAST( off_t, row_bytes )
     );
     if ( offset_delta > 0 && any_dumped ) {
-      SGR_START_IF( sgr_elided );
+      color_start( fout, sgr_elided );
       for ( size_t i = get_offset_width(); i > 0; --i )
-        FPUTC( ELIDED_SEP_CHAR );
-      SGR_END_IF( sgr_elided );
-      SGR_START_IF( sgr_sep );
-      FPUTC( ':' );
-      SGR_END_IF( sgr_sep );
-      FPUTC( ' ' );
-      SGR_START_IF( sgr_elided );
-      FPRINTF( "(%" PRIu64 " | 0x%" PRIX64 ")", offset_delta, offset_delta );
-      SGR_END_IF( sgr_elided );
-      FPUTC( '\n' );
+        FPUTC( ELIDED_SEP_CHAR, fout );
+      color_end( fout, sgr_elided );
+      color_start( fout, sgr_sep );
+      FPUTC( ':', fout );
+      color_end( fout, sgr_sep );
+      FPUTC( ' ', fout );
+      color_start( fout, sgr_elided );
+      FPRINTF( fout,
+        "(%" PRIu64 " | 0x%" PRIX64 ")", offset_delta, offset_delta
+      );
+      color_end( fout, sgr_elided );
+      FPUTC( '\n', fout );
     }
   }
 
   // print offset & column separator
   if ( opt_offset_fmt != OFMT_NONE ) {
-    SGR_START_IF( sgr_offset );
-    FPRINTF( off_fmt, STATIC_CAST(uint64_t, fin_offset) );
-    SGR_END_IF( sgr_offset );
-    SGR_START_IF( sgr_sep );
-    FPUTC( ':' );
-    SGR_END_IF( sgr_sep );
+    color_start( fout, sgr_offset );
+    FPRINTF( fout, off_fmt, STATIC_CAST(uint64_t, fin_offset) );
+    color_end( fout, sgr_offset );
+    color_start( fout, sgr_sep );
+    FPUTC( ':', fout );
+    color_end( fout, sgr_sep );
   }
 
   // dump hex part
   prev_matches = false;
-  for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-    bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
+  for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
+    bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
     bool const matches_changed = matches != prev_matches;
 
     if ( buf_pos % opt_group_by == 0 ) {
-      SGR_END_IF( prev_matches );
+      COLOR_END_IF( prev_matches, sgr_hex_match );
       if ( opt_offset_fmt != OFMT_NONE || buf_pos > 0 )
-        FPUTC( ' ' );                   // print space between hex columns
+        FPUTC( ' ', fout );             // print space between hex columns
       if ( print_readability_space( buf_pos ) )
-        FPUTC( ' ' );
-      SGR_HEX_START_IF( prev_matches );
+        FPUTC( ' ', fout );
+      COLOR_START_IF( prev_matches, sgr_hex_match );
     }
     if ( matches )
-      SGR_HEX_START_IF( matches_changed );
+      COLOR_START_IF( matches_changed, sgr_hex_match );
     else
-      SGR_END_IF( matches_changed );
-    FPRINTF( "%02X", STATIC_CAST(unsigned, cur->bytes[ buf_pos ]) );
+      COLOR_END_IF( matches_changed, sgr_hex_match );
+    FPRINTF( fout, "%02X", STATIC_CAST(unsigned, curr->bytes[ buf_pos ]) );
     prev_matches = matches;
   } // for
-  SGR_END_IF( prev_matches );
+  COLOR_END_IF( prev_matches, sgr_hex_match );
 
   if ( opt_print_ascii ) {
     // print padding if necessary (last row only)
     for ( ; buf_pos < row_bytes; ++buf_pos ) {
       if ( buf_pos % opt_group_by == 0 )
-        FPUTC( ' ' );                   // print space between hex columns
+        FPUTC( ' ', fout );             // print space between hex columns
       if ( print_readability_space( buf_pos ) )
-        FPUTC( ' ' );
-      FPUTS( "  " );
+        FPUTC( ' ', fout );
+      FPUTS( "  ", fout );
     } // for
 
     // dump ASCII part
-    FPUTS( "  " );
+    FPUTS( "  ", fout );
     prev_matches = false;
-    for ( buf_pos = 0; buf_pos < cur->len; ++buf_pos ) {
-      bool const matches = (cur->match_bits & (1u << buf_pos)) != 0;
+    for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
+      bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
       bool const matches_changed = matches != prev_matches;
-      char8_t const byte = cur->bytes[ buf_pos ];
+      char8_t const byte = curr->bytes[ buf_pos ];
 
       if ( matches )
-        SGR_ASCII_START_IF( matches_changed );
+        COLOR_START_IF( matches_changed, sgr_ascii_match );
       else
-        SGR_END_IF( matches_changed );
+        COLOR_END_IF( matches_changed, sgr_ascii_match );
 
       static size_t utf8_count;
       if ( utf8_count > 1 ) {
-        FPUTS( opt_utf8_pad );
+        FPUTS( opt_utf8_pad, fout );
         --utf8_count;
       } else {
         char8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
         utf8_count = opt_utf8 ?
-          utf8_collect( cur, buf_pos, next, utf8_char ) : 1;
+          utf8_collect( curr, buf_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )
-          FPUTS( POINTER_CAST( char*, utf8_char ) );
+          FPUTS( POINTER_CAST( char*, utf8_char ), fout );
         else
-          FPUTC( ascii_is_print( STATIC_CAST( char, byte ) ) ? byte : '.' );
+          FPUTC(
+            ascii_is_print( STATIC_CAST( char, byte ) ) ? byte : '.', fout
+          );
       }
 
       prev_matches = matches;
     } // for
-    SGR_END_IF( prev_matches );
+    COLOR_END_IF( prev_matches, sgr_ascii_match );
   }
 
-  FPUTC( '\n' );
+  FPUTC( '\n', fout );
 
   any_dumped = true;
   dumped_offset = fin_offset;
@@ -263,38 +249,42 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
   assert( off_fmt != NULL );
   assert( buf != NULL );
 
-  // print offset
-  FPUTS( "  /* " );
-  FPRINTF( off_fmt, fin_offset );
-  FPUTS( " */" );
+  if ( opt_offset_fmt == OFMT_NONE ) {
+    FPUTC( ' ', fout );
+  } else {
+    // print offset
+    FPUTS( "  /* ", fout );
+    FPRINTF( fout, off_fmt, fin_offset );
+    FPUTS( " */", fout );
+  }
 
   // dump hex part
   char8_t const *const end = buf + buf_len;
   while ( buf < end )
-    FPRINTF( " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
-  FPUTC( '\n' );
+    FPRINTF( fout, " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
+  FPUTC( '\n', fout );
 }
 
 /////////// extern functions //////////////////////////////////////////////////
 
 void dump_file( void ) {
   bool        any_matches = false;      // if matching, any data matched yet?
-  row_buf_t   buf[2], *cur = buf, *next = buf + 1;
+  row_buf_t   buf[2], *curr = buf, *next = buf + 1;
   bool        is_same_row = false;      // current row same as previous?
   kmp_t      *kmps = NULL;              // used only by match_byte()
   char8_t    *match_buf = NULL;         // used only by match_byte()
   char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len > 0 ) {               // searching for anything?
-    kmps = (kmp_t*)free_later( kmp_init( search_buf, search_len ) );
-    match_buf = (char8_t*)free_later( MALLOC( char8_t, search_len ) );
+    kmps = free_later( kmp_init( search_buf, search_len ) );
+    match_buf = free_later( MALLOC( char8_t, search_len ) );
   }
 
   // prime the pump by reading the first row
-  cur->len =
-    match_row( cur->bytes, row_bytes, &cur->match_bits, kmps, match_buf );
+  curr->len =
+    match_row( curr->bytes, row_bytes, &curr->match_bits, kmps, match_buf );
 
-  while ( cur->len > 0 ) {
+  while ( curr->len > 0 ) {
     //
     // We need to know whether the current row is the last row.  The current
     // row is the last if its length < row_bytes.  However, if the file's
@@ -302,13 +292,13 @@ void dump_file( void ) {
     // row is the last.  We therefore have to read the next row: the current
     // row is the last row if the length of the next row is zero.
     //
-    next->len = cur->len < row_bytes ? 0 :
+    next->len = curr->len < row_bytes ? 0 :
       match_row( next->bytes, row_bytes, &next->match_bits, kmps, match_buf );
 
     if ( opt_matches != MATCHES_ONLY_PRINT ) {
       bool const is_last_row = next->len == 0;
 
-      if ( cur->match_bits != 0 || (    // always dump matching rows
+      if ( curr->match_bits != 0 || (   // always dump matching rows
           // Otherwise dump only if:
           //  + for non-matching rows, if not -m
           !opt_only_matching &&
@@ -316,23 +306,23 @@ void dump_file( void ) {
           (opt_verbose || !is_same_row || is_last_row) &&
           //  + and if not -p or any printable bytes
           (!opt_only_printing ||
-            ascii_any_printable( (char*)cur->bytes, cur->len )) ) ) {
+            ascii_any_printable( (char*)curr->bytes, curr->len )) ) ) {
 
-        dump_row( off_fmt, cur, next );
+        dump_row( off_fmt, curr, next );
       }
 
       // Check if the next row is the same as the current row, but only if:
       is_same_row =
         !(opt_verbose || is_last_row) &&// + neither -v or is the last row
-        cur->len == next->len &&        // + the two row lengths are equal
-        memcmp( cur->bytes, next->bytes, row_bytes ) == 0;
+        curr->len == next->len &&       // + the two row lengths are equal
+        memcmp( curr->bytes, next->bytes, row_bytes ) == 0;
     }
 
-    if ( cur->match_bits != 0 )
+    if ( curr->match_bits != 0 )
       any_matches = true;
 
-    row_buf_t *const temp = cur;        // swap row pointers to avoid memcpy()
-    cur = next;
+    row_buf_t *const temp = curr;       // swap row pointers to avoid memcpy()
+    curr = next;
     next = temp;
 
     fin_offset += STATIC_CAST( off_t, row_bytes );
@@ -347,37 +337,39 @@ void dump_file( void ) {
 }
 
 void dump_file_c( void ) {
-  size_t      array_len = 0;
-  char const *array_name = NULL;
-  char const *off_fmt = get_offset_fmt_format();
-  size_t      row_len;
+  size_t            array_len = 0;
+  char const *      array_name = NULL;
+  char const *const off_fmt = get_offset_fmt_format();
+  size_t            row_len;
 
   if ( fin == stdin ) {
     array_name = "stdin";
   } else {
-    char *const temp = (char*)free_later( check_strdup( fin_path ) );
-    array_name = (char*)free_later( identify( basename( temp ) ) );
+    char *const temp = free_later( check_strdup( fin_path ) );
+    array_name = free_later( identify( basename( temp ) ) );
   }
-  FPRINTF(
-    "%sunsigned char %s%s[] = {\n",
-    ((opt_c_fmt & CFMT_STATIC) != 0 ? "static " : ""),
-    ((opt_c_fmt & CFMT_CONST ) != 0 ? "const "  : ""),
+  FPRINTF( fout,
+    "%s%s %s%s[] = {\n",
+    ((opt_c_fmt & CFMT_STATIC ) != 0 ? "static " : ""),
+    ((opt_c_fmt & CFMT_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
+    ((opt_c_fmt & CFMT_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
 
   do {
-    char8_t  bytes[ ROW_BYTES_C ];      // bytes in buffer
-    match_bits_t match_bits;            // not used when dumping in C
+    char8_t       bytes[ ROW_BYTES_C ]; // bytes in buffer
+    match_bits_t  match_bits;           // not used when dumping in C
+
     row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
     dump_row_c( off_fmt, bytes, row_len );
     fin_offset += STATIC_CAST( off_t, row_len );
     array_len += row_len;
   } while ( row_len == ROW_BYTES_C );
 
-  FPUTS( "};\n" );
+  FPUTS( "};\n", fout );
 
   if ( CFMT_HAS_TYPE( opt_c_fmt ) )
-    FPRINTF(
+    FPRINTF( fout,
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
       ((opt_c_fmt & CFMT_STATIC  ) != 0 ? "static "   : ""),
       ((opt_c_fmt & CFMT_UNSIGNED) != 0 ? "unsigned " : ""),

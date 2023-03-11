@@ -20,23 +20,24 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
+#include "ad.h"
 #include "options.h"
 #include "util.h"
 
 // standard
 #include <assert.h>
 #include <stdlib.h>                     /* for atexit() */
+#include <stdnoreturn.h>
 #include <string.h>                     /* for memset(), str...() */
-#include <sysexits.h>
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern function declarations
-extern void dump_file( void );
-extern void dump_file_c( void );
-extern void reverse_dump_file( void );
+noreturn void dump_file( void );
+noreturn void dump_file_c( void );
+noreturn void reverse_dump_file( void );
 
 // extern variable definitions
 FILE       *fin;
@@ -72,9 +73,13 @@ static void clean_up( void ) {
  *  + Parsing command-line options.
  *  + Initializing search variables.
  *  + Initializing the elided separator.
+ *
+ * @param argc The command-line argument count.
+ * @param argv The command-line argument values.
  */
-static void init( int argc, char *argv[] ) {
-  atexit( clean_up );
+static void init( int argc, char const *argv[const] ) {
+  me = base_name( argv[0] );
+  check_atexit( clean_up );
   parse_options( argc, argv );
 
   if ( search_buf != NULL )             // searching for a string?
@@ -92,7 +97,14 @@ static void init( int argc, char *argv[] ) {
 
 /////////// main //////////////////////////////////////////////////////////////
 
-int main( int argc, char *argv[] ) {
+/**
+ * The main entry point.
+ *
+ * @param argc The command-line argument count.
+ * @param argv The command-line argument values.
+ * @return Returns 0 on success, non-zero on failure.
+ */
+int main( int argc, char const *argv[const] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 

@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/common.h
+**      src/ad.h
 **
 **      Copyright (C) 2015-2021  Paul J. Lucas
 **
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_common_H
-#define ad_common_H
+#ifndef ad_ad_H
+#define ad_ad_H
 
 // local
 #include "pjl_config.h"                 /* must go first */
@@ -41,12 +41,13 @@
 #define ROW_BYTES_MAX             32    /**< Maximum bytes dumped on a row. */
 
 /**
- * The endian order for numeric searches.
+ * Byte endian order.
  */
 enum endian {
-  ENDIAN_UNSPECIFIED,
-  ENDIAN_BIG,
-  ENDIAN_LITTLE
+  ENDIAN_NONE,                          ///< No-endian order.
+  ENDIAN_LITTLE,                        ///< Little-endian order.
+  ENDIAN_BIG,                           ///< Big-endian order.
+  ENDIAN_HOST                           ///< Host-endian order.
 };
 typedef enum endian endian_t;
 
@@ -64,5 +65,5 @@ extern uint64_t     search_number;      ///< The number to search for.
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif /* ad_common_H */
+#endif /* ad_ad_H */
 /* vim:set et sw=2 ts=2: */

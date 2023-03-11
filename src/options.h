@@ -23,7 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
+#include "ad.h"
 
 // standard
 #include <stdbool.h>
@@ -37,12 +37,13 @@
  */
 enum c_fmt {
   CFMT_DEFAULT  = 1 << 0,
-  CFMT_CONST    = 1 << 1,               // declare variables as "const"
-  CFMT_STATIC   = 1 << 2,               // declare variables as "static"
-  CFMT_UNSIGNED = 1 << 3,               // declare len type as "unsigned"
-  CFMT_INT      = 1 << 4,               // declare len type as "int"
-  CFMT_LONG     = 1 << 5,               // declare len type as "long"
-  CFMT_SIZE_T   = 1 << 6                // declare len type as "size_t"
+  CFMT_CHAR8_T  = 1 << 1,               ///< Declare array type as `char8_t`.
+  CFMT_UNSIGNED = 1 << 2,               ///< Declare len type as `unsigned`.
+  CFMT_INT      = 1 << 3,               ///< Declare len type as `int`.
+  CFMT_LONG     = 1 << 4,               ///< Declare len type as `long`.
+  CFMT_SIZE_T   = 1 << 5,               ///< Declare len type as `size_t`.
+  CFMT_CONST    = 1 << 6,               ///< Declare variables as `const`.
+  CFMT_STATIC   = 1 << 7,               ///< Declare variables as `static`.
 };
 typedef unsigned c_fmt_t;               ///< Bitwise-or of c_fmt options.
 
@@ -125,7 +126,7 @@ size_t get_offset_width( void );
  * @param argc The argument count from \c main().
  * @param argv The argument values from \c main().
  */
-void parse_options( int argc, char *argv[] );
+void parse_options( int argc, char const *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -15,13 +15,13 @@
 **      GNU General Public License for more details.
 **
 **      You should have received a copy of the GNU General Public License
-**      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**      along with this program.  If not, see <http
 */
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 #include "color.h"
-#include "common.h"
 #include "options.h"
 #include "unicode.h"
 
@@ -31,7 +31,6 @@
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
-#include <libgen.h>                     /* for basename() */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
@@ -41,12 +40,48 @@
 #include <sys/types.h>
 #include <sysexits.h>
 
+// in ascending option character ASCII order; sort using: sort -bdfk3
+#define OPT_NO_ASCII            A
+#define OPT_BITS                b
+#define OPT_BYTES               B
+#define OPT_COLOR               c
+#define OPT_C_ARRAY             C
+#define OPT_DECIMAL             d
+#define OPT_BIG_ENDIAN          E
+#define OPT_LITTLE_ENDIAN       e
+#define OPT_GROUP_BY            g
+#define OPT_HELP                h
+#define OPT_HOST_ENDIAN         H
+#define OPT_IGNORE_CASE         i
+#define OPT_SKIP_BYTES          j
+#define OPT_MAX_LINES           L
+#define OPT_MATCHING_ONLY       m
+#define OPT_MAX_BYTES           N
+#define OPT_NO_OFFSETS          O
+#define OPT_OCTAL               o
+#define OPT_PLAIN               P
+#define OPT_PRINTING_ONLY       p
+#define OPT_REVERSE             r
+#define OPT_STRING              s
+#define OPT_STRING_IGNORE_CASE  S
+#define OPT_TOTAL_MATCHES       t
+#define OPT_TOTAL_MATCHES_ONLY  T
+#define OPT_UTF8                u
+#define OPT_UTF8_PADDING        U
+#define OPT_VERBOSE             v
+#define OPT_VERSION             V
+#define OPT_HEXADECIMAL         x
+
+/// Command-line option character as a character literal.
+#define COPT(X)                   CHARIFY(OPT_##X)
+
+/// Command-line option character as a single-character string literal.
+#define SOPT(X)                   STRINGIFY(OPT_##X)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
-#define OPT_BUF_SIZE        32          /* used for format_opt() */
-#define SET_OPTION(OPT) \
-  (opts_given[ STATIC_CAST( char8_t, (OPT) ) ] = STATIC_CAST( char, (OPT) ))
+#define OPT_BUF_SIZE        32          /* used for opt_format() */
 
 // option extern variable definitions
 bool          opt_case_insensitive;
@@ -63,84 +98,97 @@ bool          opt_utf8;
 char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
 bool          opt_verbose;
 
-// local constant definitions
-static struct option const LONG_OPTS[] = {
-  { "bits",               required_argument,  NULL, 'b' },
-  { "bytes",              required_argument,  NULL, 'B' },
-  { "color",              required_argument,  NULL, 'c' },
-  { "c-array",            optional_argument,  NULL, 'C' },
-  { "decimal",            no_argument,        NULL, 'd' },
-  { "little-endian",      required_argument,  NULL, 'e' },
-  { "big-endian",         required_argument,  NULL, 'E' },
-  { "group-by",           required_argument,  NULL, 'g' },
-  { "help",               no_argument,        NULL, 'H' },
-  { "hexadecimal",        no_argument,        NULL, 'h' },
-  { "ignore-case",        no_argument,        NULL, 'i' },
-  { "skip-bytes",         required_argument,  NULL, 'j' },
-  { "max-lines",          required_argument,  NULL, 'L' },
-  { "matching-only",      no_argument,        NULL, 'm' },
-  { "max-bytes",          required_argument,  NULL, 'N' },
-  { "no-ascii",           no_argument,        NULL, 'A' },
-  { "no-offsets",         no_argument,        NULL, 'O' },
-  { "octal",              no_argument,        NULL, 'o' },
-  { "printable-only",     no_argument,        NULL, 'p' },
-  { "plain",              no_argument,        NULL, 'P' },
-  { "reverse",            no_argument,        NULL, 'r' },
-  { "revert",             no_argument,        NULL, 'r' },
-  { "string",             required_argument,  NULL, 's' },
-  { "string-ignore-case", required_argument,  NULL, 'S' },
-  { "total-matches",      no_argument,        NULL, 't' },
-  { "total-matches-only", no_argument,        NULL, 'T' },
-  { "utf8",               required_argument,  NULL, 'u' },
-  { "utf8-padding",       required_argument,  NULL, 'U' },
-  { "verbose",            no_argument,        NULL, 'v' },
-  { "version",            no_argument,        NULL, 'V' },
-  { NULL,                 0,                  NULL, 0   }
+/**
+ * Long command-line options.
+ *
+ * @sa OPTS_SHORT
+ */
+static struct option const OPTS_LONG[] = {
+  { "bits",               required_argument,  NULL, COPT(BITS)                },
+  { "bytes",              required_argument,  NULL, COPT(BYTES)               },
+  { "color",              required_argument,  NULL, COPT(COLOR)               },
+  { "c-array",            optional_argument,  NULL, COPT(C_ARRAY)             },
+  { "decimal",            no_argument,        NULL, COPT(DECIMAL)             },
+  { "little-endian",      required_argument,  NULL, COPT(LITTLE_ENDIAN)       },
+  { "big-endian",         required_argument,  NULL, COPT(BIG_ENDIAN)          },
+  { "group-by",           required_argument,  NULL, COPT(GROUP_BY)            },
+  { "help",               no_argument,        NULL, COPT(HELP)                },
+  { "hexadecimal",        no_argument,        NULL, COPT(HEXADECIMAL)         },
+  { "ignore-case",        no_argument,        NULL, COPT(IGNORE_CASE)         },
+  { "skip-bytes",         required_argument,  NULL, COPT(SKIP_BYTES)          },
+  { "max-lines",          required_argument,  NULL, COPT(MAX_LINES)           },
+  { "matching-only",      no_argument,        NULL, COPT(MATCHING_ONLY)       },
+  { "max-bytes",          required_argument,  NULL, COPT(MAX_BYTES)           },
+  { "no-ascii",           no_argument,        NULL, COPT(NO_ASCII)            },
+  { "no-offsets",         no_argument,        NULL, COPT(NO_OFFSETS)          },
+  { "octal",              no_argument,        NULL, COPT(OCTAL)               },
+  { "printable-only",     no_argument,        NULL, COPT(PRINTING_ONLY)       },
+  { "plain",              no_argument,        NULL, COPT(PLAIN)               },
+  { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
+  { "revert",             no_argument,        NULL, COPT(REVERSE)             },
+  { "string",             required_argument,  NULL, COPT(STRING)              },
+  { "string-ignore-case", required_argument,  NULL, COPT(STRING_IGNORE_CASE)  },
+  { "total-matches",      no_argument,        NULL, COPT(TOTAL_MATCHES)       },
+  { "total-matches-only", no_argument,        NULL, COPT(TOTAL_MATCHES_ONLY)  },
+  { "utf8",               required_argument,  NULL, COPT(UTF8)                },
+  { "utf8-padding",       required_argument,  NULL, COPT(UTF8_PADDING)        },
+  { "verbose",            no_argument,        NULL, COPT(VERBOSE)             },
+  { "version",            no_argument,        NULL, COPT(VERSION)             },
+  { NULL,                 0,                  NULL, 0                         }
 };
-static char const SHORT_OPTS[] = "Ab:B:c:C:de:E:g:hHij:L:mN:oOpPrs:S:tTu:U:vV";
+
+#define SOPT_NO_ARGUMENT          /* nothing */
+#define SOPT_REQUIRED_ARGUMENT    ":"
+
+/**
+ * Short command-line options.
+ *
+ * @note It _must_ start with `:` to make `getopt_long()` return `:` when a
+ * required argument for a known option is missing.
+ *
+ * @sa OPTS_LONG
+ */
+static char const OPTS_SHORT[] = ":"
+  SOPT(NO_ASCII)            SOPT_NO_ARGUMENT
+  SOPT(BITS)                SOPT_REQUIRED_ARGUMENT
+  SOPT(BYTES)               SOPT_REQUIRED_ARGUMENT
+  SOPT(COLOR)               SOPT_REQUIRED_ARGUMENT
+  SOPT(C_ARRAY)             SOPT_REQUIRED_ARGUMENT
+  SOPT(DECIMAL)             SOPT_NO_ARGUMENT
+  SOPT(LITTLE_ENDIAN)       SOPT_REQUIRED_ARGUMENT
+  SOPT(BIG_ENDIAN)          SOPT_REQUIRED_ARGUMENT
+  SOPT(GROUP_BY)            SOPT_REQUIRED_ARGUMENT
+  SOPT(HEXADECIMAL)         SOPT_NO_ARGUMENT
+  SOPT(HELP)                SOPT_NO_ARGUMENT
+  SOPT(IGNORE_CASE)         SOPT_NO_ARGUMENT
+  SOPT(SKIP_BYTES)          SOPT_REQUIRED_ARGUMENT
+  SOPT(MAX_LINES)           SOPT_REQUIRED_ARGUMENT
+  SOPT(MATCHING_ONLY)       SOPT_NO_ARGUMENT
+  SOPT(MAX_BYTES)           SOPT_REQUIRED_ARGUMENT
+  SOPT(OCTAL)               SOPT_NO_ARGUMENT
+  SOPT(NO_OFFSETS)          SOPT_NO_ARGUMENT
+  SOPT(PRINTING_ONLY)       SOPT_NO_ARGUMENT
+  SOPT(PLAIN)               SOPT_NO_ARGUMENT
+  SOPT(REVERSE)             SOPT_NO_ARGUMENT
+  SOPT(STRING)              SOPT_REQUIRED_ARGUMENT
+  SOPT(STRING_IGNORE_CASE)  SOPT_REQUIRED_ARGUMENT
+  SOPT(TOTAL_MATCHES)       SOPT_NO_ARGUMENT
+  SOPT(TOTAL_MATCHES_ONLY)  SOPT_NO_ARGUMENT
+  SOPT(UTF8)                SOPT_REQUIRED_ARGUMENT
+  SOPT(UTF8_PADDING)        SOPT_REQUIRED_ARGUMENT
+  SOPT(VERBOSE)             SOPT_NO_ARGUMENT
+  SOPT(VERSION)             SOPT_NO_ARGUMENT
+;
 
 // local variable definitions
-static char         opts_given[ 128 ];
+static bool         opts_given[ 128 ];
 
 // local functions
 NODISCARD
-static char const*  get_long_opt( char );
+static char const*  opt_format( char, char[const], size_t ),
+                 *  opt_get_long( char );
 
 /////////// local functions ///////////////////////////////////////////////////
-
-/**
- * Formats an option as <code>[--%s/]-%c</code> where \c %s is the long option
- * (if any) and %c is the short option.
- *
- * @param short_opt The short option (along with its corresponding long option,
- * if any) to format.
- * @param buf The buffer to use.
- * @param buf_size The size of \a buf.
- * @return Returns \a buf.
- */
-NODISCARD
-static char* format_opt( char short_opt, char buf[], size_t size ) {
-  char const *const long_opt = get_long_opt( short_opt );
-  snprintf(
-    buf, size, "%s%s%s-%c",
-    *long_opt ? "--" : "", long_opt, *long_opt ? "/" : "", short_opt
-  );
-  return buf;
-}
-
-/**
- * Gets the corresponding name of the long option for the given short option.
- *
- * @param short_opt The short option to get the corresponding long option for.
- * @return Returns the said option or the empty string if none.
- */
-NODISCARD
-static char const* get_long_opt( char short_opt ) {
-  for ( struct option const *long_opt = LONG_OPTS; long_opt->name; ++long_opt )
-    if ( long_opt->val == short_opt )
-      return long_opt->name;
-  return "";
-}
 
 /**
  * Checks that no options were given that are among the two given mutually
@@ -159,7 +207,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
   char gave_opt1 = '\0';
 
   for ( unsigned i = 0; i < 2; ++i ) {
-    for ( ; *opt; ++opt ) {
+    for ( ; *opt != '\0'; ++opt ) {
       if ( GAVE_OPTION( *opt ) ) {
         if ( ++gave_count > 1 ) {
           char const gave_opt2 = *opt;
@@ -167,8 +215,8 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
           char opt2_buf[ OPT_BUF_SIZE ];
           FATAL_ERR( EX_USAGE,
             "%s and %s are mutually exclusive\n",
-            format_opt( gave_opt1, opt1_buf, sizeof opt1_buf ),
-            format_opt( gave_opt2, opt2_buf, sizeof opt2_buf  )
+            opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
+            opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
           );
         }
         gave_opt1 = *opt;
@@ -196,7 +244,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
     FATAL_ERR( EX_USAGE,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
-      given_size, format_opt( opt, opt_buf, sizeof opt_buf ),
+      given_size, opt_format( opt, opt_buf, sizeof opt_buf ),
       search_number, actual_size
     );
   }
@@ -212,22 +260,59 @@ static void check_number_size( size_t given_size, size_t actual_size,
  */
 static void check_required( char const *opts, char const *req_opts ) {
   assert( opts != NULL );
+  assert( opts[0] != '\0' );
   assert( req_opts != NULL );
+  assert( req_opts[0] != '\0' );
+
   for ( char const *opt = opts; *opt; ++opt ) {
     if ( GAVE_OPTION( *opt ) ) {
       for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
         if ( GAVE_OPTION( *req_opt ) )
           return;
       char opt_buf[ OPT_BUF_SIZE ];
-      bool const reqs_multiple = strlen( req_opts ) > 1;
+      bool const reqs_multiple = req_opts[1] != '\0';
       FATAL_ERR( EX_USAGE,
         "%s requires %sthe -%s option%s to be given also\n",
-        format_opt( *opt, opt_buf, sizeof opt_buf ),
+        opt_format( *opt, opt_buf, sizeof opt_buf ),
         (reqs_multiple ? "one of " : ""),
         req_opts, (reqs_multiple ? "s" : "")
       );
     }
   } // for
+}
+
+/**
+ * Formats an option as <code>[--%s/]-%c</code> where \c %s is the long option
+ * (if any) and %c is the short option.
+ *
+ * @param short_opt The short option (along with its corresponding long option,
+ * if any) to format.
+ * @param buf The buffer to use.
+ * @param buf_size The size of \a buf.
+ * @return Returns \a buf.
+ */
+NODISCARD
+static char const* opt_format( char short_opt, char buf[const], size_t size ) {
+  char const *const long_opt = opt_get_long( short_opt );
+  snprintf(
+    buf, size, "%s%s%s-%c",
+    *long_opt ? "--" : "", long_opt, *long_opt ? "/" : "", short_opt
+  );
+  return buf;
+}
+
+/**
+ * Gets the corresponding name of the long option for the given short option.
+ *
+ * @param short_opt The short option to get the corresponding long option for.
+ * @return Returns the said option or the empty string if none.
+ */
+NODISCARD
+static char const* opt_get_long( char short_opt ) {
+  for ( struct option const *long_opt = OPTS_LONG; long_opt->name; ++long_opt )
+    if ( long_opt->val == short_opt )
+      return long_opt->name;
+  return "";
 }
 
 #define ADD_CFMT(F) \
@@ -250,6 +335,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   if ( s != NULL && s[0] != '\0' ) {
     for ( fmt = s; fmt[0] != '\0'; ++fmt ) {
       switch ( fmt[0] ) {
+        case '8': ADD_CFMT( CHAR8_T );  break;
         case 'c': ADD_CFMT( CONST );    break;
         case 'i': ADD_CFMT( INT );      break;
         case 'l': ADD_CFMT( LONG );     break;
@@ -259,8 +345,8 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         default :
           FATAL_ERR( EX_USAGE,
             "'%c': invalid C format for %s;"
-            " must be one of: [cilstu]\n",
-            *fmt, format_opt( 'C', opt_buf, sizeof opt_buf )
+            " must be one of: [8cilstu]\n",
+            *fmt, opt_format( 'C', opt_buf, sizeof opt_buf )
           );
       } // switch
     } // for
@@ -269,7 +355,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
       FATAL_ERR( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
-        s, format_opt( 'C', opt_buf, sizeof opt_buf )
+        s, opt_format( 'C', opt_buf, sizeof opt_buf )
       );
     }
   }
@@ -279,7 +365,7 @@ dup_format:
   FATAL_ERR( EX_USAGE,
     "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
-    s, format_opt( 'C', opt_buf, sizeof opt_buf ), *fmt
+    s, opt_format( 'C', opt_buf, sizeof opt_buf ), *fmt
   );
 }
 
@@ -316,7 +402,7 @@ static char32_t parse_codepoint( char const *s ) {
   char opt_buf[ OPT_BUF_SIZE ];
   FATAL_ERR( EX_USAGE,
     "\"%s\": invalid Unicode code-point for %s\n",
-    s0, format_opt( 'U', opt_buf, sizeof opt_buf )
+    s0, opt_format( 'U', opt_buf, sizeof opt_buf )
   );
 }
 
@@ -371,7 +457,7 @@ static color_when_t parse_color_when( char const *when ) {
   char opt_buf[ OPT_BUF_SIZE ];
   FATAL_ERR( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
-    when, format_opt( 'c', opt_buf, sizeof opt_buf ), names_buf
+    when, opt_format( 'c', opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -398,7 +484,7 @@ static unsigned parse_group_by( char const *s ) {
   FATAL_ERR( EX_USAGE,
     "\"%llu\": invalid value for %s;"
     " must be one of: 1, 2, 4, 8, 16, or 32\n",
-    group_by, format_opt( 'g', opt_buf, sizeof opt_buf )
+    group_by, opt_format( 'g', opt_buf, sizeof opt_buf )
   );
 }
 
@@ -450,7 +536,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   char opt_buf[ OPT_BUF_SIZE ];
   FATAL_ERR( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
-    when, format_opt( 'u', opt_buf, sizeof opt_buf ), names_buf
+    when, opt_format( 'u', opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -458,45 +544,82 @@ static utf8_when_t parse_utf8_when( char const *when ) {
  * Prints the usage message to standard error and exits.
  */
 noreturn
-static void usage( void ) {
-  printf(
-"usage: " PACKAGE " [options] [+offset] [infile [outfile]]\n"
-"       " PACKAGE " -r [-dho] [infile [outfile]]\n"
-"       " PACKAGE " -H\n"
-"       " PACKAGE " -V\n"
+static void usage( int status ) {
+  fprintf( status == EX_OK ? stdout : stderr,
+"usage: %s [options] [+offset] [infile [outfile]]\n"
+"       %s -%c [-%c%c%c] [infile [outfile]]\n"
+"       %s -%c\n"
+"       %s -%c\n"
 "options:\n"
-"  --big-endian=NUM         (-E) Search for big-endian number.\n"
-"  --bits=NUM               (-b) Number size in bits: 8-64 [default: auto].\n"
-"  --bytes=NUM              (-B) Number size in bytes: 1-8 [default: auto].\n"
-"  --c-array=FMT            (-C) Dump bytes as a C array.\n"
-"  --color=WHEN             (-c) When to colorize output [default: not_file].\n"
-"  --decimal                (-d) Print offsets in decimal.\n"
-"  --group-by=NUM           (-g) Group bytes by 1/2/4/8/16/32 [default: %u].\n"
-"  --help                   (-H) Print this help and exit.\n"
-"  --hexadecimal            (-h) Print offsets in hexadecimal [default].\n"
-"  --ignore-case            (-i) Ignore case for string searches.\n"
-"  --little-endian=NUM      (-e) Search for little-endian number.\n"
-"  --matching-only          (-m) Only dump rows having matches.\n"
-"  --max-bytes=NUM          (-N) Dump max number of bytes [default: unlimited].\n"
-"  --max-lines=NUM          (-L) Dump max number of lines [default: unlimited].\n"
-"  --no-ascii               (-A) Suppress printing the ASCII part.\n"
-"  --no-offsets             (-O) Suppress printing offsets.\n"
-"  --octal                  (-o) Print offsets in octal.\n"
-"  --plain                  (-P) Dump in plain format; same as: -AOg32.\n"
-"  --printing-only          (-p) Only dump rows having printable characters.\n"
-"  --reverse                (-r) Reverse from dump back to binary.\n"
-"  --skip-bytes=NUM         (-j) Jump to offset before dumping [default: 0].\n"
-"  --string=STR             (-s) Search for string.\n"
-"  --string-ignore-case=STR (-S) Search for case-insensitive string.\n"
-"  --total-matches          (-t) Additionally print total number of matches.\n"
-"  --total-matches-only     (-T) Only print total number of matches.\n"
-"  --utf8-padding=NUM       (-U) Set UTF-8 padding character [default: U+2581].\n"
-"  --utf8=WHEN              (-u) When to dump in UTF-8 [default: never].\n"
-"  --verbose                (-v) Dump repeated rows also.\n"
-"  --version                (-V) Print version and exit.\n"
-    , GROUP_BY_DEFAULT
+"  --big-endian=NUM         (-%c) Search for big-endian number.\n"
+"  --bits=NUM               (-%c) Number size in bits: 8-64 [default: auto].\n"
+"  --bytes=NUM              (-%c) Number size in bytes: 1-8 [default: auto].\n"
+"  --c-array=FMT            (-%c) Dump bytes as a C array.\n"
+"  --color=WHEN             (-%c) When to colorize output [default: not_file].\n"
+"  --decimal                (-%c) Print offsets in decimal.\n"
+"  --group-by=NUM           (-%c) Group bytes by 1/2/4/8/16/32 [default: %u].\n"
+"  --help                   (-%c) Print this help and exit.\n"
+"  --hexadecimal            (-%c) Print offsets in hexadecimal [default].\n"
+"  --host-endian=NUM        (-%c) Search for host-endian number.\n"
+"  --ignore-case            (-%c) Ignore case for string searches.\n"
+"  --little-endian=NUM      (-%c) Search for little-endian number.\n"
+"  --matching-only          (-%c) Only dump rows having matches.\n"
+"  --max-bytes=NUM          (-%c) Dump max number of bytes [default: unlimited].\n"
+"  --max-lines=NUM          (-%c) Dump max number of lines [default: unlimited].\n"
+"  --no-ascii               (-%c) Suppress printing the ASCII part.\n"
+"  --no-offsets             (-%c) Suppress printing offsets.\n"
+"  --octal                  (-%c) Print offsets in octal.\n"
+"  --plain                  (-%c) Dump in plain format; same as: -AOg32.\n"
+"  --printing-only          (-%c) Only dump rows having printable characters.\n"
+"  --reverse                (-%c) Reverse from dump back to binary.\n"
+"  --skip-bytes=NUM         (-%c) Jump to offset before dumping [default: 0].\n"
+"  --string=STR             (-%c) Search for string.\n"
+"  --string-ignore-case=STR (-%c) Search for case-insensitive string.\n"
+"  --total-matches          (-%c) Additionally print total number of matches.\n"
+"  --total-matches-only     (-%c) Only print total number of matches.\n"
+"  --utf8=WHEN              (-%c) When to dump in UTF-8 [default: never].\n"
+"  --utf8-padding=NUM       (-%c) Set UTF-8 padding character [default: U+2581].\n"
+"  --verbose                (-%c) Dump repeated rows also.\n"
+"  --version                (-%c) Print version and exit.\n"
+"\n"
+"Report bugs to: " PACKAGE_BUGREPORT "\n"
+PACKAGE_NAME " home page: " PACKAGE_URL "\n",
+    me,
+    me, COPT(REVERSE), COPT(DECIMAL), COPT(OCTAL), COPT(HEXADECIMAL),
+    me, COPT(HELP),
+    me, COPT(VERSION),
+    COPT(BIG_ENDIAN),
+    COPT(BITS),
+    COPT(BYTES),
+    COPT(C_ARRAY),
+    COPT(COLOR),
+    COPT(DECIMAL),
+    COPT(GROUP_BY), GROUP_BY_DEFAULT,
+    COPT(HELP),
+    COPT(HEXADECIMAL),
+    COPT(HOST_ENDIAN),
+    COPT(IGNORE_CASE),
+    COPT(LITTLE_ENDIAN),
+    COPT(MATCHING_ONLY),
+    COPT(MAX_BYTES),
+    COPT(MAX_LINES),
+    COPT(NO_ASCII),
+    COPT(NO_OFFSETS),
+    COPT(OCTAL),
+    COPT(PLAIN),
+    COPT(PRINTING_ONLY),
+    COPT(REVERSE),
+    COPT(SKIP_BYTES),
+    COPT(STRING),
+    COPT(STRING_IGNORE_CASE),
+    COPT(TOTAL_MATCHES),
+    COPT(TOTAL_MATCHES_ONLY),
+    COPT(UTF8),
+    COPT(UTF8_PADDING),
+    COPT(VERBOSE),
+    COPT(VERSION)
   );
-  exit( EX_USAGE );
+  exit( status );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -541,89 +664,283 @@ size_t get_offset_width( void ) {
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
-void parse_options( int argc, char *argv[] ) {
+void parse_options( int argc, char const *argv[] ) {
   color_when_t  color_when = COLOR_WHEN_DEFAULT;
   size_t        max_lines = 0;
+  bool          print_usage = false;
   bool          print_version = false;
   size_t        size_in_bits = 0, size_in_bytes = 0;
   char32_t      utf8_pad = 0;
   utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
 
-  me = basename( argv[0] );
   opterr = 1;
 
-  for ( ;; ) {
-    int const opt = getopt_long( argc, argv, SHORT_OPTS, LONG_OPTS, NULL );
+  for (;;) {
+    int const opt = getopt_long(
+      argc, CONST_CAST( char**, argv ), OPTS_SHORT, OPTS_LONG,
+      /*longindex=*/NULL
+    );
     if ( opt == -1 )
       break;
-    SET_OPTION( opt );
     switch ( opt ) {
-      case 'A': opt_print_ascii = false;                                break;
-      case 'b': size_in_bits = parse_ull( optarg );                     break;
-      case 'B': size_in_bytes = parse_ull( optarg );                    break;
-      case 'c': color_when = parse_color_when( optarg );                break;
-      case 'C': opt_c_fmt = parse_c_fmt( optarg );                      break;
-      case 'd': opt_offset_fmt = OFMT_DEC;                              break;
-      case 'e':
-      case 'E': search_number = parse_ull( optarg );
-                search_endian = opt == 'E' ? ENDIAN_BIG: ENDIAN_LITTLE; break;
-      case 'g': opt_group_by = parse_group_by( optarg );                break;
-      case 'h': opt_offset_fmt = OFMT_HEX;                              break;
-   // case 'H': usage();                // default case handles this
-      case 'S': search_buf = (char*)free_later( check_strdup( optarg ) );
-                FALLTHROUGH;
-      case 'i': opt_case_insensitive = true;                            break;
-      case 'j': fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
-                                                                        break;
-      case 'L': max_lines = parse_ull( optarg );                        break;
-      case 'm': opt_only_matching = true;                               break;
-      case 'N': opt_max_bytes = parse_offset( optarg );                 break;
-      case 'o': opt_offset_fmt = OFMT_OCT;                              break;
-      case 'O': opt_offset_fmt = OFMT_NONE;                             break;
-      case 'p': opt_only_printing = true;                               break;
-      case 'P': opt_group_by = ROW_BYTES_MAX;
-                opt_offset_fmt = OFMT_NONE;
-                opt_print_ascii = false;
-                break;
-      case 'r': opt_reverse = true;                                     break;
-      case 's': search_buf = (char*)free_later( check_strdup( optarg ) );
-                                                                        break;
-      case 't': opt_matches = MATCHES_ALSO_PRINT;                       break;
-      case 'T': opt_matches = MATCHES_ONLY_PRINT;                       break;
-      case 'u': utf8_when = parse_utf8_when( optarg );                  break;
-      case 'U': utf8_pad = parse_codepoint( optarg );                   break;
-      case 'v': opt_verbose = true;                                     break;
-      case 'V': print_version = true;                                   break;
-      default : usage();
+      case COPT(BIG_ENDIAN):
+        search_number = parse_ull( optarg );
+        search_endian = ENDIAN_BIG;
+        break;
+      case COPT(BITS):
+        size_in_bits = parse_ull( optarg );
+        break;
+      case COPT(BYTES):
+        size_in_bytes = parse_ull( optarg );
+        break;
+      case COPT(C_ARRAY):
+        opt_c_fmt = parse_c_fmt( optarg );
+        break;
+      case COPT(COLOR):
+        color_when = parse_color_when( optarg );
+        break;
+      case COPT(DECIMAL):
+        opt_offset_fmt = OFMT_DEC;
+        break;
+      case COPT(GROUP_BY):
+        opt_group_by = parse_group_by( optarg );
+        break;
+      case COPT(HELP):
+        print_usage = true;
+        break;
+      case COPT(HEXADECIMAL):
+        opt_offset_fmt = OFMT_HEX;
+        break;
+      case COPT(HOST_ENDIAN):
+        search_number = parse_ull( optarg );
+#ifdef WORDS_BIGENDIAN
+        search_endian = ENDIAN_BIG;
+#else
+        search_endian = ENDIAN_LITTLE;
+#endif /* WORDS_BIGENDIAN */
+        break;
+      case COPT(STRING_IGNORE_CASE):
+        search_buf = (char*)free_later( check_strdup( optarg ) );
+        FALLTHROUGH;
+      case COPT(IGNORE_CASE):
+        opt_case_insensitive = true;
+        break;
+      case COPT(LITTLE_ENDIAN):
+        search_number = parse_ull( optarg );
+        search_endian = ENDIAN_LITTLE;
+        break;
+      case COPT(MATCHING_ONLY):
+        opt_only_matching = true;
+        break;
+      case COPT(MAX_BYTES):
+        opt_max_bytes = parse_offset( optarg );
+        break;
+      case COPT(MAX_LINES):
+        max_lines = parse_ull( optarg );
+        break;
+      case COPT(NO_ASCII):
+        opt_print_ascii = false;
+        break;
+      case COPT(NO_OFFSETS):
+        opt_offset_fmt = OFMT_NONE;
+        break;
+      case COPT(OCTAL):
+        opt_offset_fmt = OFMT_OCT;
+        break;
+      case COPT(PLAIN):
+        opt_group_by = ROW_BYTES_MAX;
+        opt_offset_fmt = OFMT_NONE;
+        opt_print_ascii = false;
+        break;
+      case COPT(PRINTING_ONLY):
+        opt_only_printing = true;
+        break;
+      case COPT(REVERSE):
+        opt_reverse = true;
+        break;
+      case COPT(SKIP_BYTES):
+        fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
+        break;
+      case COPT(STRING):
+        search_buf = (char*)free_later( check_strdup( optarg ) );
+        break;
+      case COPT(TOTAL_MATCHES):
+        opt_matches = MATCHES_ALSO_PRINT;
+        break;
+      case COPT(TOTAL_MATCHES_ONLY):
+        opt_matches = MATCHES_ONLY_PRINT;
+        break;
+      case COPT(UTF8):
+        utf8_when = parse_utf8_when( optarg );
+        break;
+      case COPT(UTF8_PADDING):
+        utf8_pad = parse_codepoint( optarg );
+        break;
+      case COPT(VERBOSE):
+        opt_verbose = true;
+        break;
+      case COPT(VERSION):
+        print_version = true;
+        break;
+
+      case ':': {                       // option missing required argument
+        char opt_buf[ OPT_BUF_SIZE ];
+        FATAL_ERR( EX_USAGE,
+          "\"%s\" requires an argument\n",
+          opt_format( STATIC_CAST( char, optopt ), opt_buf, sizeof opt_buf )
+        );
+      }
+
+      case '?':                         // invalid option
+        FATAL_ERR( EX_USAGE,
+          "%s: '%c': invalid option; use --help or -%c for help\n",
+          me, STATIC_CAST( char, optopt ), COPT(HELP)
+        );
+
+      default:
+        if ( isprint( opt ) )
+          INTERNAL_ERR(
+            "'%c': unaccounted-for getopt_long() return value\n", opt
+          );
+        INTERNAL_ERR(
+          "%d: unaccounted-for getopt_long() return value\n", opt
+        );
     } // switch
+    opts_given[ opt ] = true;
   } // for
   argc -= optind;
   argv += optind - 1;
 
   // handle special case of +offset option
-  if ( argc && *argv[1] == '+' ) {
+  if ( argc > 0 && *argv[1] == '+' ) {
     fin_offset += STATIC_CAST( off_t, parse_offset( argv[1] ) );
     --argc;
     ++argv;
   }
 
   // check for mutually exclusive options
-  check_mutually_exclusive( "b", "B" );
-  check_mutually_exclusive( "C", "ceEgimpsStTuUv" );
-  check_mutually_exclusive( "d", "hoOP" );
-  check_mutually_exclusive( "eE", "sS" );
-  check_mutually_exclusive( "g", "P" );
-  check_mutually_exclusive( "L", "N" );
-  check_mutually_exclusive( "mp", "v" );
-  check_mutually_exclusive( "r", "AbBcCeEgimLNOpPsStTuUv" );
-  check_mutually_exclusive( "t", "T" );
-  check_mutually_exclusive( "V", "AbBcCdeEghHijmLNoOpPrsStTuUv" );
+  check_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
+  check_mutually_exclusive( SOPT(C_ARRAY),
+    SOPT(BIG_ENDIAN)
+    SOPT(COLOR)
+    SOPT(GROUP_BY)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(PRINTING_ONLY)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
+  check_mutually_exclusive( SOPT(DECIMAL),
+    SOPT(HEXADECIMAL)
+    SOPT(OCTAL)
+  );
+  check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
+    SOPT(NO_OFFSETS)
+    SOPT(PLAIN)
+  );
+  check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
+  check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
+    SOPT(BIG_ENDIAN)
+    SOPT(HOST_ENDIAN)
+  );
+  check_mutually_exclusive(
+    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
+    SOPT(STRING) SOPT(STRING_IGNORE_CASE)
+  );
+  check_mutually_exclusive( SOPT(HELP),
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(CONFIG)
+    SOPT(DECIMAL)
+    SOPT(GROUP_BY)
+    SOPT(HEXADECIMAL)
+    SOPT(HOST_ENDIAN)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_CONFIG)
+    SOPT(NO_OFFSETS)
+    SOPT(OCTAL)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+    SOPT(REVERSE)
+    SOPT(SKIP_BYTES)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+    SOPT(VERSION)
+  );
+  check_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
+  check_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
+  check_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
+    SOPT(VERBOSE)
+  );
+  check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
+  check_mutually_exclusive( SOPT(REVERSE),
+    "AbBcCeEgimLNOpPsStTuUv"
+  );
+  check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
+  check_mutually_exclusive( SOPT(VERSION),
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(CONFIG)
+    SOPT(DECIMAL)
+    SOPT(GROUP_BY)
+    SOPT(HEXADECIMAL)
+    SOPT(HOST_ENDIAN)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_CONFIG)
+    SOPT(NO_OFFSETS)
+    SOPT(OCTAL)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+    SOPT(REVERSE)
+    SOPT(SKIP_BYTES)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
 
   // check for options that require other options
-  check_required( "bB", "eE" );
-  check_required( "i", "s" );
-  check_required( "mtT", "eEsS" );
-  check_required( "U", "u" );
+  check_required( SOPT(BITS) SOPT(BYTES),
+    SOPT(BIG_ENDIAN) SOPT(LITTLE_ENDIAN)
+  );
+  check_required( SOPT(IGNORE_CASE), SOPT(STRING) );
+  check_required(
+    SOPT(MATCHING_ONLY) SOPT(TOTAL_MATCHES) SOPT(TOTAL_MATCHES_ONLY),
+    SOPT(BIG_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(STRING)
+    SOPT(STRING_IGNORE_CASE)
+  );
+  check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
+
+  if ( print_usage )
+    usage( argc > 2 ? EX_USAGE : EX_OK );
 
   if ( print_version ) {
     EPRINTF( "%s\n", PACKAGE_STRING );
@@ -637,7 +954,7 @@ void parse_options( int argc, char *argv[] ) {
       FATAL_ERR( EX_USAGE,
         "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
-        size_in_bits, format_opt( 'b', opt_buf, sizeof opt_buf )
+        size_in_bits, opt_format( 'b', opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bits * 8;
     check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
@@ -647,7 +964,7 @@ void parse_options( int argc, char *argv[] ) {
     if ( size_in_bytes > 8 )
       FATAL_ERR( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
-        size_in_bytes, format_opt( 'B', opt_buf, sizeof opt_buf )
+        size_in_bytes, opt_format( 'B', opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bytes;
     check_number_size( size_in_bytes, int_len( search_number ), 'B' );
@@ -694,7 +1011,7 @@ void parse_options( int argc, char *argv[] ) {
       break;
 
     default:
-      usage();
+      usage( EX_USAGE );
   } // switch
 
   colorize = should_colorize( color_when );

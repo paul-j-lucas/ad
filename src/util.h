@@ -23,7 +23,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "common.h"
+#include "ad.h"
 
 // standard
 #include <errno.h>
@@ -33,20 +33,81 @@
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTIL_INLINE
-# define AD_UTIL_INLINE _GL_INLINE
-#endif /* AD_UTIL_INLINE */
+#ifndef AD_UTIL_H_INLINE
+# define AD_UTIL_H_INLINE _GL_INLINE
+#endif /* AD_UTIL_H_INLINE */
 
 ///////////////////////////////////////////////////////////////////////////////
 
-/** The fseek(3) function to use. */
-#ifdef HAVE_FSEEKO
-# define FSEEK_FN fseeko
-#else
-# define FSEEK_FN fseek
-#endif /* HAVE_FSEEKO */
+#define CHARIFY_0 '0'
+#define CHARIFY_1 '1'
+#define CHARIFY_2 '2'
+#define CHARIFY_3 '3'
+#define CHARIFY_4 '4'
+#define CHARIFY_5 '5'
+#define CHARIFY_6 '6'
+#define CHARIFY_7 '7'
+#define CHARIFY_8 '8'
+#define CHARIFY_9 '9'
+#define CHARIFY_A 'A'
+#define CHARIFY_B 'B'
+#define CHARIFY_C 'C'
+#define CHARIFY_D 'D'
+#define CHARIFY_E 'E'
+#define CHARIFY_F 'F'
+#define CHARIFY_G 'G'
+#define CHARIFY_H 'H'
+#define CHARIFY_I 'I'
+#define CHARIFY_J 'J'
+#define CHARIFY_K 'K'
+#define CHARIFY_L 'L'
+#define CHARIFY_M 'M'
+#define CHARIFY_N 'N'
+#define CHARIFY_O 'O'
+#define CHARIFY_P 'P'
+#define CHARIFY_Q 'Q'
+#define CHARIFY_R 'R'
+#define CHARIFY_S 'S'
+#define CHARIFY_T 'T'
+#define CHARIFY_U 'U'
+#define CHARIFY_V 'V'
+#define CHARIFY_W 'W'
+#define CHARIFY_X 'X'
+#define CHARIFY_Y 'Y'
+#define CHARIFY_Z 'Z'
+#define CHARIFY__ '_'
+#define CHARIFY_a 'a'
+#define CHARIFY_b 'b'
+#define CHARIFY_c 'c'
+#define CHARIFY_d 'd'
+#define CHARIFY_e 'e'
+#define CHARIFY_f 'f'
+#define CHARIFY_g 'g'
+#define CHARIFY_h 'h'
+#define CHARIFY_i 'i'
+#define CHARIFY_j 'j'
+#define CHARIFY_k 'k'
+#define CHARIFY_l 'l'
+#define CHARIFY_m 'm'
+#define CHARIFY_n 'n'
+#define CHARIFY_o 'o'
+#define CHARIFY_p 'p'
+#define CHARIFY_q 'q'
+#define CHARIFY_r 'r'
+#define CHARIFY_s 's'
+#define CHARIFY_t 't'
+#define CHARIFY_u 'u'
+#define CHARIFY_v 'v'
+#define CHARIFY_w 'w'
+#define CHARIFY_x 'x'
+#define CHARIFY_y 'y'
+#define CHARIFY_z 'z'
+
+#define CHARIFY_IMPL(X)           CHARIFY_##X
+#define STRINGIFY_IMPL(X)         #X
 
 /**
  * Embeds the given statements into a compound statement block.
@@ -56,9 +117,39 @@ _GL_INLINE_HEADER_BEGIN
 #define BLOCK(...)                do { __VA_ARGS__ } while (0)
 
 /**
+ * Macro that "char-ifies" its argument, e.g., <code>%CHARIFY(x)</code> becomes
+ * `'x'`.
+ *
+ * @param X The unquoted character to charify.  It can be only in the set
+ * `[0-9_A-Za-z]`.
+ *
+ * @sa #STRINGIFY()
+ */
+#define CHARIFY(X)                CHARIFY_IMPL(X)
+
+/**
+ * C version of C++'s `const_cast`.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @note This macro can't actually implement C++'s `const_cast` because there's
+ * no way to do it in C.  It serves merely as a visual cue for the type of cast
+ * meant.
+ *
+ * @sa #POINTER_CAST()
+ * @sa #STATIC_CAST()
+ */
+#define CONST_CAST(T,EXPR)        ((T)(EXPR))
+
+/**
  * Shorthand for printing to standard error.
  *
  * @param ... The `printf()` arguments.
+ *
+ * @sa #EPUTC()
+ * @sa #EPUTS()
+ * @sa #FPRINTF()
  */
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
@@ -68,9 +159,102 @@ _GL_INLINE_HEADER_BEGIN
  * @param STATUS The status code to **exit**(3) with.
  * @param FORMAT The `printf()` format to use.
  * @param ... The `printf()` arguments.
+ *
+ * @sa #INTERNAL_ERR()
+ * @sa #PERROR_EXIT_IF()
  */
 #define FATAL_ERR(STATUS,FORMAT,...) \
   BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
+
+/**
+ * Calls **fflush(3)** on \a STREAM, checks for an error, and exits if there
+ * was one.
+ *
+ * @param STREAM The `FILE` stream to flush.
+ *
+ * @sa #PERROR_EXIT_IF()
+ */
+#define FFLUSH(STREAM) \
+  PERROR_EXIT_IF( fflush( STREAM ) != 0, EX_IOERR )
+
+/**
+ * Calls **fprintf**(3) on \a STREAM, checks for an error, and exits if there
+ * was one.
+ *
+ * @param STREAM The `FILE` stream to print to.
+ * @param ... The `fprintf()` arguments.
+ *
+ * @sa #EPRINTF()
+ * @sa #FPUTC()
+ * @sa #FPUTS()
+ * @sa #PERROR_EXIT_IF()
+ */
+#define FPRINTF(STREAM,...) \
+  PERROR_EXIT_IF( fprintf( (STREAM), __VA_ARGS__ ) < 0, EX_IOERR )
+
+/**
+ * Calls **putc**(3), checks for an error, and exits if there was one.
+ *
+ * @param C The character to print.
+ * @param STREAM The `FILE` stream to print to.
+ *
+ * @sa #EPUTC()
+ * @sa #FPRINTF()
+ * @sa #FPUTS()
+ * @sa #PERROR_EXIT_IF()
+ */
+#define FPUTC(C,STREAM) \
+  PERROR_EXIT_IF( putc( (C), (STREAM) ) == EOF, EX_IOERR )
+
+/**
+ * Calls **fputs**(3), checks for an error, and exits if there was one.
+ *
+ * @param S The C string to print.
+ * @param STREAM The `FILE` stream to print to.
+ *
+ * @sa #EPUTS()
+ * @sa #FPRINTF()
+ * @sa #FPUTC()
+ * @sa #PERROR_EXIT_IF()
+ */
+#define FPUTS(S,STREAM) \
+  PERROR_EXIT_IF( fputs( (S), (STREAM) ) == EOF, EX_IOERR )
+
+/** The fseek(3) function to use. */
+#ifdef HAVE_FSEEKO
+# define FSEEK_FN fseeko
+#else
+# define FSEEK_FN fseek
+#endif /* HAVE_FSEEKO */
+
+/**
+ * A special-case of #FATAL_ERR that additionally prints the file and line
+ * where an internal error occurred.
+ *
+ * @param FORMAT The `printf()` format to use.
+ * @param ... The `printf()` arguments.
+ *
+ * @sa #FATAL_ERR()
+ * @sa perror_exit()
+ * @sa #PERROR_EXIT_IF()
+ * @sa #UNEXPECTED_INT_VALUE()
+ */
+#define INTERNAL_ERR(FORMAT,...) \
+  FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
+
+/**
+ * If \a EXPR is `true`, prints an error message for `errno` to standard error
+ * and exits with status \a STATUS.
+ *
+ * @param EXPR The expression.
+ * @param STATUS The exit status code.
+ *
+ * @sa #INTERNAL_ERR()
+ * @sa #FATAL_ERR()
+ * @sa perror_exit()
+ */
+#define PERROR_EXIT_IF( EXPR, STATUS ) \
+  BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
 
 /**
  * Cast either from or to a pointer type &mdash; similar to C++'s
@@ -83,6 +267,7 @@ _GL_INLINE_HEADER_BEGIN
  * warning.  In C++, this would be done via `reinterpret_cast`, but it's not
  * possible to implement that in C that works for both pointers and integers.
  *
+ * @sa #CONST_CAST()
  * @sa #STATIC_CAST()
  */
 #define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
@@ -97,6 +282,7 @@ _GL_INLINE_HEADER_BEGIN
  * there's no way to do it in C.  It serves merely as a visual cue for the type
  * of cast meant.
  *
+ * @sa #CONST_CAST()
  * @sa #POINTER_CAST()
  */
 #define STATIC_CAST(T,EXPR)       ((T)(EXPR))
@@ -106,25 +292,42 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define STRERROR                  strerror( errno )
 
+/**
+ * Macro that "string-ifies" its argument, e.g., <code>%STRINGIFY(x)</code>
+ * becomes `"x"`.
+ *
+ * @param X The unquoted string to stringify.
+ *
+ * @note This macro is sometimes necessary in cases where it's mixed with uses
+ * of `##` by forcing re-scanning for token substitution.
+ *
+ * @sa #CHARIFY()
+ */
+#define STRINGIFY(X)              STRINGIFY_IMPL(X)
+
 #ifdef __GNUC__
 
 /**
- * Specifies that \a EXPR is \e very likely (as in 99.99% of the time) to be
+ * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
  * non-zero (true) allowing the compiler to better order code blocks for
  * magrinally better performance.
  *
- * @see http://lwn.net/Articles/255364/
- * @hideinitializer
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #unlikely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
  */
 #define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
 
 /**
- * Specifies that \a EXPR is \e very unlikely (as in .01% of the time) to be
+ * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
  * non-zero (true) allowing the compiler to better order code blocks for
  * magrinally better performance.
  *
- * @see http://lwn.net/Articles/255364/
- * @hideinitializer
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #likely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
  */
 #define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
 
@@ -141,7 +344,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE What \a OFFSET if relative to.
  */
 #define FSEEK(STREAM,OFFSET,WHENCE) \
-  perror_exit_if( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **fstat**(3), checks for an error, and exits if there was one.
@@ -150,7 +353,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param STAT A pointer to a `struct stat` to receive the result.
  */
 #define FSTAT(FD,STAT) \
-  perror_exit_if( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
+  PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
  * Calls **lseek**(3), checks for an error, and exits if there was one.
@@ -160,7 +363,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param WHENCE Where \a OFFSET is relative to.
  */
 #define LSEEK(FD,OFFSET,WHENCE) \
-  perror_exit_if( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
  * Calls **malloc**(3) and casts the result to \a TYPE.
@@ -175,11 +378,11 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Checks whethere there is at least one printable ASCII character in \a s.
+ * Checks whether there is at least one printable ASCII character in \a s.
  *
  * @param s The string to check.
  * @param s_len The number of characters to check.
- * @return Returns \c true only if there is at least one printable character.
+ * @return Returns `true` only if there is at least one printable character.
  */
 NODISCARD
 bool ascii_any_printable( char const *s, size_t s_len );
@@ -190,12 +393,34 @@ bool ascii_any_printable( char const *s, size_t s_len );
  * considers printable.)
  *
  * @param c The characther to check.
- * @return Returns \c true only if \c is an ASCII printable character.
+ * @return Returns `true` only if \a c is an ASCII printable character.
  */
-NODISCARD AD_UTIL_INLINE
+NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
+
+/**
+ * Extracts the base portion of a path-name.
+ * Unlike **basename**(3):
+ *  + Trailing `/` characters are not deleted.
+ *  + \a path_name is never modified (hence can therefore be `const`).
+ *  + Returns a pointer within \a path_name (hence is multi-call safe).
+ *
+ * @param path_name The path-name to extract the base portion of.
+ * @return Returns a pointer to the last component of \a path_name.
+ * If \a path_name consists entirely of `/` characters, a pointer to the string
+ * `/` is returned.
+ */
+NODISCARD
+char const* base_name( char const *path_name );
+
+/**
+ * Calls **atexit**(3) and checks for failure.
+ *
+ * @param cleanup_fn The pointer to the function to call **atexit**(3) with.
+ */
+void check_atexit( void (*cleanup_fn)(void) );
 
 /**
  * Opens the given file and seeks to the given offset
@@ -204,7 +429,7 @@ bool ascii_is_print( char c ) {
  * @param path The full path of the file to open.
  * @param mode The mode to use.
  * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding \c FILE.
+ * @return Returns the corresponding `FILE`.
  */
 NODISCARD
 FILE* check_fopen( char const *path, char const *mode, off_t offset );
@@ -222,7 +447,7 @@ NODISCARD
 int check_open( char const *path, int oflag, off_t offset );
 
 /**
- * Calls \c realloc(3) and checks for failure.
+ * Calls **realloc(3)** and checks for failure.
  * If reallocation fails, prints an error message and exits.
  *
  * @param p The pointer to reallocate.  If NULL, new memory is allocated.
@@ -233,7 +458,7 @@ NODISCARD
 void* check_realloc( void *p, size_t size );
 
 /**
- * Calls \c strdup(3) and checks for failure.
+ * Calls **strdup(3)** and checks for failure.
  * If memory allocation fails, prints an error message and exits.
  *
  * @param s The NULL-terminated string to duplicate.
@@ -294,7 +519,7 @@ NODISCARD
 char* identify( char const *s );
 
 /**
- * Gets the minimum number of bytes required to contain the given \c uint64_t
+ * Gets the minimum number of bytes required to contain the given `uint64_t`
  * value.
  *
  * @param n The number to get the number of bytes for.
@@ -305,7 +530,7 @@ NODISCARD
 size_t int_len( uint64_t n );
 
 /**
- * Rearranges the bytes in the given \c uint64_t such that:
+ * Rearranges the bytes in the given `uint64_t` such that:
  *  + The value is down-cast into the requested number of bytes.
  *  + The bytes have the requested endianness.
  *  + The bytes are shifted to start at the lowest memory address.
@@ -317,7 +542,7 @@ size_t int_len( uint64_t n );
  *  + big, the result in memory would be 00-00-11-22-00-00-00-00.
  *  + little, the result in memory would be 22-11-00-00-00-00-00-00.
  *
- * @param n A pointer to the \c uint64_t to rearrange.
+ * @param n A pointer to the `uint64_t` to rearrange.
  * @param bytes The number of bytes to use; must be 1-8.
  * @param endian The endianness to use.
  */
@@ -327,16 +552,16 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * Checks whether the given file descriptor refers to a regular file.
  *
  * @param fd The file descriptor to check.
- * @return Returns \c true only if \a fd refers to a regular file.
+ * @return Returns `true` only if \a fd refers to a regular file.
  */
 NODISCARD
 bool is_file( int fd );
 
 /**
  * Parses a string into an offset.
- * Unlike \c strtoull(3):
+ * Unlike **strtoull(3)**:
  *  + Insists that \a s is non-negative.
- *  + May be followed by one of \c b, \c k, or \c m
+ *  + May be followed by one of `b`, `k`, or `m`
  *    for 512-byte blocks, kilobytes, and megabytes, respectively.
  *
  * @param s The NULL-terminated string to parse.
@@ -347,21 +572,8 @@ NODISCARD
 unsigned long long parse_offset( char const *s );
 
 /**
- * Parses an SGR (Select Graphic Rendition) value that matches the regular
- * expression of \c n(;n)* or a semicolon-separated list of integers in the
- * range 0-255.
- *
- * See: http://en.wikipedia.org/wiki/ANSI_escape_code
- *
- * @param sgr_color The NULL-terminated allegedly SGR string to parse.
- * @return Returns \c true only only if \a s contains a valid SGR value.
- */
-NODISCARD
-bool parse_sgr( char const *sgr_color );
-
-/**
  * Parses a string into an <code>unsigned long long</code>.
- * Unlike \c strtoull(3), insists that \a s is entirely a non-negative number.
+ * Unlike **strtoull(3)**, insists that \a s is entirely a non-negative number.
  *
  * @param s The NULL-terminated string to parse.
  * @param n A pointer to receive the parsed number.
@@ -372,30 +584,15 @@ NODISCARD
 unsigned long long parse_ull( char const *s );
 
 /**
- * Prints an error message for \c errno to standard error and exits.
+ * Prints an error message for `errno` to standard error and exits.
  *
  * @param status The exit status code.
  *
  * @sa #FATAL_ERR()
- * @sa perror_exit_if()
+ * @sa #INTERNAL_ERR()
+ * @sa #PERROR_EXIT_IF()
  */
 void perror_exit( int status );
-
-/**
- * If \a expr is `true`, prints an error message for `errno` to standard error
- * and exits.
- *
- * @param expr The expression.
- * @param status The exit status code.
- *
- * @sa #FATAL_ERR()
- * @sa perror_exit()
- */
-AD_UTIL_INLINE
-void perror_exit_if( bool expr, int status ) {
-  if ( unlikely( expr ) )
-    perror_exit( status );
-}
 
 /**
  * Gets a printable version of the given character:

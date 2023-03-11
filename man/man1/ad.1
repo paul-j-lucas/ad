@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "July 30, 2022" "PJL TOOLS"
+.TH \f3ad\f1 1 "December 13, 2022" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -76,9 +76,12 @@ and means standard input or standard output,
 depending.
 .SH OPTIONS
 An option argument
+.I f
+means
+.IR file ,
 .I n
 means
-.I "unsigned integer"
+.IR "unsigned integer" ,
 and
 .I s
 means
@@ -153,8 +156,10 @@ based on the argument to one of the
 .BR \-\-little-endian ,
 .BR \-e ,
 .BR \-\-big-endian ,
+.BR \-E ,
+.BR \-\-host-endian ,
 or
-.B \-E
+.B \-H
 options.
 .TP
 .BI \-\-bytes \f1=\fPn "\f1 | \fP" "" \-B " n"
@@ -168,16 +173,21 @@ but in
 bytes.
 Must be in 1\-8.
 .TP
-.BI \-\-c-array \f1=\fPf "\f1 | \fP" "" \-C " f"
+.BI \-\-c-array \f1[=\fPs "]\f1 | \fP" "" \-C "\f1[s]"
 Dumps bytes as C array and length variable definitions.
 The variable names are derived from the input file name, if any,
 or "\f(CWstdin\f1" otherwise.
-The format
-.I f
-is zero or more of the following letters
+If given,
+the format
+.I s
+is one or more of the following letters
 that specify the format of the declarations:
 .RS
 .TP 3
+.B 8
+Declares the array as \f(CWchar8_t\f1.
+The default is \f(CWunsigned char\fP.
+.TP
 .B c
 Declares both the array and length as \f(CWconst\f1.
 .TP
@@ -195,6 +205,10 @@ Declares the length as \f(CWsize_t\f1.
 .TP
 .B u
 Declares the length as \f(CWunsigned\f1.
+May be combined with either
+.B i
+or
+.BR l .
 .RE
 .IP
 If none of
@@ -205,10 +219,14 @@ or
 .B u
 is specified,
 then the array length is not dumped.
+Note that there must not be whitespace separating
+.B \-C
+from its argument,
+if given.
 .TP
-.BI \-\-color \f1=\fPw "\f1 | \fP" "" \-c " w"
+.BI \-\-color \f1=\fPs "\f1 | \fP" "" \-c " s"
 Sets when to colorize output to
-.I w
+.I s
 (which is case-insensitive).
 (See the
 .B AD_COLORS
@@ -235,7 +253,7 @@ is not empty and not equal to
 .BR dumb .
 (This is equivalent to
 .BR grep 's
-.B --color=auto
+.B \-\-color=auto
 option,
 but explicit about what ``auto'' means.)
 .TP
@@ -246,6 +264,8 @@ Note that this greatly diminishes the usefulness of the
 .BR \-e ,
 .BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-host-endian ,
+.BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
 .BR \-\-string-ignore-case ,
@@ -316,12 +336,12 @@ When less than 8,
 an additional space is dumped after the 8th byte
 to aid readability.
 .TP
-.BR \-\-help " | " \-H
+.BR \-\-help " | " \-h
 Prints a help message
 to standard error
 and exits.
 .TP
-.BR \-\-hexadecimal " | " \-h
+.BR \-\-hexadecimal " | " \-x
 Prints offsets in hexadecimal
 (the default).
 For
@@ -331,6 +351,14 @@ or
 .BR \-r ,
 parses offsets in hexadecimal
 (also the default).
+.TP
+.BI \-\-host-endian \f1=\fPn "\f1 | \fP" "" \-H " n"
+Same as the
+.B \-\-big-endian
+or
+.B \-E
+options
+but in host-endian byte order.
 .TP
 .BR \-\-ignore-case " | " \-i
 Performs a case-insensitive search
@@ -449,12 +477,12 @@ to standard error.
 Only prints the total number of matches
 to standard error.
 .TP
-.BI \-\-utf8 \f1=\fPw "\f1 | \fP" "" \-u " w"
+.BI \-\-utf8 \f1=\fPs "\f1 | \fP" "" \-u " s"
 Sets when to dump in UTF-8 rather than ASCII to
-.I w
+.I s
 (which is case-insensitive).
 The choices for
-.I w
+.I s
 are:
 .RS
 .TP 8
@@ -538,8 +566,11 @@ No matches if one of
 .BR \-e ,
 .BR \-\-big-endian ,
 .BR \-E ,
+.BR \-\-host-endian ,
+.BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
+.BR \-\-string-ignore-case ,
 or
 .B \-S
 was specified.

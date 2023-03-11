@@ -42,7 +42,7 @@
   )
 
 #define FWRITE(PTR,SIZE,N,STREAM) \
-  perror_exit_if( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
+  PERROR_EXIT_IF( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 
 enum row_kind {
   ROW_BYTES,
@@ -209,7 +209,7 @@ void reverse_dump_file( void ) {
   char    msg_fmt[ 128 ];
   off_t   new_offset;
 
-  for ( ;; ) {
+  for (;;) {
     size_t row_len;
     char *const row_buf = fgetln( fin, &row_len );
     if ( row_buf == NULL ) {
