@@ -12,3 +12,6 @@
 /sys
 /sysexits.h
 /unistd.h
+/xalloc-oversized.h
+/assert.in.h
+/intprops-internal.h

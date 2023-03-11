@@ -76,8 +76,8 @@ AC_DEFUN([gl_FUNC_GETLINE],
             ],
             [am_cv_func_working_getline="guessing yes"],
             [case "$host_os" in
-               *-musl*) am_cv_func_working_getline="guessing yes" ;;
-               *)       am_cv_func_working_getline="$gl_cross_guess_normal" ;;
+               *-musl* | midipix*) am_cv_func_working_getline="guessing yes" ;;
+               *)                  am_cv_func_working_getline="$gl_cross_guess_normal" ;;
              esac
             ])
          ])
