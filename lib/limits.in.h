@@ -1,6 +1,6 @@
 /* A GNU-like <limits.h>.
 
-   Copyright 2016-2022 Free Software Foundation, Inc.
+   Copyright 2016-2023 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -99,7 +99,7 @@
 # endif
 #endif
 
-/* Macros specified by C2x and by ISO/IEC TS 18661-1:2014.  */
+/* Macros specified by C23 and by ISO/IEC TS 18661-1:2014.  */
 
 #if (! defined ULLONG_WIDTH                                             \
      && (defined _GNU_SOURCE || defined __STDC_WANT_IEC_60559_BFP_EXT__ \
@@ -117,13 +117,16 @@
 # define ULLONG_WIDTH _GL_INTEGER_WIDTH (0, ULLONG_MAX)
 #endif
 
-/* Macros specified by C2x.  */
+/* Macros specified by C23.  */
 
-#if (! defined BOOL_WIDTH \
-     && (defined _GNU_SOURCE \
-         || (defined __STDC_VERSION__ && 201710 < __STDC_VERSION__)))
-# define BOOL_MAX 1
-# define BOOL_WIDTH 1
+#if (defined _GNU_SOURCE \
+     || (defined __STDC_VERSION__ && 201710 < __STDC_VERSION__))
+# if ! defined BOOL_WIDTH
+#  define BOOL_WIDTH 1
+#  define BOOL_MAX 1
+# elif ! defined BOOL_MAX
+#  define BOOL_MAX ((((1U << (BOOL_WIDTH - 1)) - 1) << 1) + 1)
+# endif
 #endif
 
 #endif /* _@GUARD_PREFIX@_LIMITS_H */

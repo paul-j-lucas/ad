@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2022 Free Software Foundation, Inc.
+# Copyright (C) 2002-2023 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
 
   # Code from module absolute-header:
+  # Code from module assert-h:
   # Code from module c99:
   # Code from module errno:
   # Code from module extensions:
@@ -80,7 +81,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module sysexits:
   # Code from module unistd:
   # Code from module vararrays:
-  # Code from module verify:
   # Code from module xalloc-oversized:
 ])
 
@@ -103,6 +103,9 @@ AC_DEFUN([gl_INIT],
   gl_COMMON
   gl_source_base='lib'
   gl_source_base_prefix=
+  gl_ASSERT_H
+  gl_CONDITIONAL_HEADER([assert.h])
+  AC_PROG_MKDIR_P
   gl_HEADER_ERRNO_H
   gl_CONDITIONAL_HEADER([errno.h])
   AC_PROG_MKDIR_P
@@ -147,9 +150,7 @@ AC_DEFUN([gl_INIT],
   gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_MULTIARCH
   gt_TYPE_SSIZE_T
-  gl_STDBOOL_H
-  gl_CONDITIONAL_HEADER([stdbool.h])
-  AC_PROG_MKDIR_P
+  gl_C_BOOL
   gl_STDDEF_H
   gl_STDDEF_H_REQUIRE_DEFAULTS
   gl_CONDITIONAL_HEADER([stddef.h])
@@ -403,6 +404,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 AC_DEFUN([gl_FILE_LIST], [
   lib/_Noreturn.h
   lib/arg-nonnull.h
+  lib/assert.in.h
   lib/c++defs.h
   lib/errno.in.h
   lib/getdelim.c
@@ -417,10 +419,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/getopt1.c
   lib/getopt_int.h
   lib/gettext.h
+  lib/intprops-internal.h
   lib/intprops.h
   lib/limits.in.h
   lib/malloc.c
-  lib/stdbool.in.h
   lib/stddef.in.h
   lib/stdint.in.h
   lib/stdio-read.c
@@ -443,6 +445,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/xalloc-oversized.h
   m4/00gnulib.m4
   m4/absolute-header.m4
+  m4/assert_h.m4
+  m4/c-bool.m4
   m4/errno_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
@@ -459,7 +463,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/pid_t.m4
   m4/ssize_t.m4
   m4/std-gnu11.m4
-  m4/stdbool.m4
   m4/stddef_h.m4
   m4/stdint.m4
   m4/stdio_h.m4
