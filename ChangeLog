@@ -1,5 +1,11 @@
+2023-03-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * stddef.in.h, stdio.in.h, verify.h, gnulib-comp.m4, musl.m4, stddef_h.m4,
+     stdio_h.m4: Updated GnuLib.
+
 2023-03-11  Paul J. Lucas <paul@lucasmail.org>
 
+   * assert.in.h, intprops-internal.h, xalloc-oversized.h: Updated Gnulib.
    * lib/Makefile.am, gnulib-cache.m4, gnulib-comp.m4: Removed deprecated (and
      no longer necessary) stdnoreturn GnuLib module.
    * lib/Makefile.am, _Noreturn.h, arg-nonnull.h, assert.h, c++defs.h,
@@ -19,6 +25,59 @@
      string_h.m4, strsep.m4, sys_socket_h.m4, sys_types_h.m4, sysexits.m4,
      unistd_h.m4, vararrays.m4, warn-on-use.m4, wchar_t.m4, wint_t.m4,
      zzgnulib.m4: Updated Gnulib.
+
+2022-12-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Added more assert()s.
+   * ad.1: Added that  of --c-array may be combined with either  or .
+   * ad.1: Added "An option argument f means file, ..."
+
+2022-12-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, assert.in.h, intprops-internal.h, intprops.h,
+     stdlib.in.h, strerror.c, string.in.h, unistd.in.h, verify.h,
+     xalloc-oversized.h, assert_h.m4, c-bool.m4, getdelim.m4, gnulib-common.m4,
+     gnulib-comp.m4, string_h.m4, warn-on-use.m4: Updated Gnulib.
+
+2022-12-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, options.c: Added `const`.
+   * options.c: Using SOPT() more.
+   * options.c: Now using FATAL_ERR().
+
+2022-11-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, options.c: Added --host-endian/-H options.
+   * ad.1, options.c: Changed -H to -h.
+   * options.c: Added missing invalid option handling.
+   * ad.1, options.c, test/Makefile.am, ad-x.test: Changed -h to -x.
+
+2022-11-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.h, options.c, util.h: Reworked options.
+   * ad.1, dump.c, options.c, options.h: Added 8 argument for --c-array to make
+     the array type char8_t.
+   * dump.c: Now respecting -O when dumping a C array.
+   * dump.c: Reworked color to use new functions.
+   * color.c, color.h, util.h: Replaced color macros with functions.
+
+2022-11-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c, color.h: Color clean-up.
+
+2022-11-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * src/Makefile.am, ad.c, dump.c, match.c, options.c, options.h, util.c,
+     util.h: s/common/ad/
+   * configure.ac: Now requiring C11.
+
+2022-11-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * reverse.c, util.h: s/perror_exit_if/PERROR_EXIT_IF/
+   * unicode.c, unicode.h, util.c, util.h: Inserted "_H" into inline macros.
+   * color.c, color.h, util.c, util.h: Moved parse_sgr() to sgr_is_valid() in
+     color.c.
+   * configure.ac: Added more -W flags.
 
 2022-08-17  Paul J. Lucas <paul@lucasmail.org>
 
@@ -1124,7 +1183,7 @@
    * devclean: Better removal.
    * configure.ac: Added headers; removed AC_C_INLINE; added AC_TYPE_SSIZE_T
      and AC_TYPE_UINT16_T
-   * ad.c: Added [b
+   * ad.c: Added [b|k|m] to usage message.
    * ad.1, src/Makefile.am, ad.c: Major clean-up.
 
 2015-05-29  Paul J. Lucas <paul@lucasmail.org>
