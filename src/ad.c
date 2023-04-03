@@ -26,6 +26,7 @@
 
 // standard
 #include <assert.h>
+#include <stddef.h>
 #include <stdlib.h>                     /* for atexit() */
 #include <stdnoreturn.h>
 #include <string.h>                     /* for memset(), str...() */
@@ -112,7 +113,7 @@ int main( int argc, char const *argv[const] ) {
     dump_file_c();
   else
     dump_file();
-  assert( false );                      // none of the above functions returns
+  unreachable();                        // none of the above functions returns
 }
 
 ///////////////////////////////////////////////////////////////////////////////
