@@ -663,12 +663,12 @@ char* fgetln( FILE *f, size_t *len );
  * array ends with NULL.
  *
  * @warning The string pointer returned by \a gets for a given element _must_
- * remain valid at least until after the _next_ call to fprint_list(), that is
+ * remain valid at least until after the _next_ call to fput_list(), that is
  * upon return, the previously returned string pointer must still be valid
  * also.
  */
-void fprint_list( FILE *out, void const *elt,
-                  char const* (*gets)( void const **ppelt ) );
+void fput_list( FILE *out, void const *elt,
+                char const* (*gets)( void const **ppelt ) );
 
 /**
  * Adds a pointer to the head of the free-later-list.

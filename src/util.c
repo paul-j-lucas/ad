@@ -54,7 +54,7 @@ static slist_t free_later_list;         ///< List of stuff to free later.
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Helper function for fprint_list() that, given a pointer to a pointer to an
+ * Helper function for fput_list() that, given a pointer to a pointer to an
  * array of pointer to `char`, returns the pointer to the associated string.
  *
  * @param ppelt A pointer to the pointer to the element to get the string of.
@@ -62,7 +62,7 @@ static slist_t free_later_list;         ///< List of stuff to free later.
  * @return Returns said string or NULL if none.
  */
 NODISCARD
-static char const* fprint_list_apc_gets( void const **ppelt ) {
+static char const* fputs_list_apc_gets( void const **ppelt ) {
   char const *const *const ps = *ppelt;
   *ppelt = ps + 1;
   return *ps;
@@ -196,13 +196,13 @@ void free_now( void ) {
   slist_cleanup( &free_later_list, &free );
 }
 
-void fprint_list( FILE *out, void const *elt,
-                  char const* (*gets)( void const** ) ) {
+void fputs_list( FILE *out, void const *elt,
+                 char const* (*gets)( void const** ) ) {
   assert( out != NULL );
   assert( elt != NULL );
 
   if ( gets == NULL )
-    gets = &fprint_list_apc_gets;
+    gets = &fputs_list_apc_gets;
 
   char const *s = (*gets)( &elt );
   for ( size_t i = 0; s != NULL; ++i ) {

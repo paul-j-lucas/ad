@@ -65,8 +65,8 @@ print_params_t            print_params;
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Helper function for print_suggestions() and fprint_list() that gets the
- * string for a \ref did_you_mean token.
+ * Helper function for print_suggestions() and fput_list() that gets the string
+ * for a \ref did_you_mean token.
  *
  * @param ppelt A pointer to the pointer to the \ref did_you_mean element to
  * get the string of.  On return, it is advanced to the next element.
@@ -74,7 +74,7 @@ print_params_t            print_params;
  * NULL if none.
  */
 NODISCARD
-static char const* fprint_list_dym_gets( void const **ppelt ) {
+static char const* fput_list_dym_gets( void const **ppelt ) {
   did_you_mean_t const *const dym = *ppelt;
   if ( dym->token == NULL )
     return NULL;
@@ -370,7 +370,7 @@ bool print_suggestions( dym_kind_t kinds, char const *unknown_token ) {
   did_you_mean_t const *const dym = dym_new( kinds, unknown_token );
   if ( dym != NULL ) {
     EPUTS( "; did you mean " );
-    fprint_list( stderr, dym, &fprint_list_dym_gets );
+    fput_list( stderr, dym, &fput_list_dym_gets );
     EPUTC( '?' );
     dym_free( dym );
     return true;
