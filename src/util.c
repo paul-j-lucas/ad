@@ -285,6 +285,8 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
   assert( bytes >= 1 && bytes <= 8 );
 
   switch ( endian ) {
+    case ENDIAN_NONE:
+      break;
 #ifdef WORDS_BIGENDIAN
 
     case ENDIAN_LITTLE:
@@ -299,11 +301,11 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
         case 8: *n = swap_64( *n );           break;
       } // switch
       FALLTHROUGH;
-
     case ENDIAN_BIG:
+    case ENDIAN_HOST:
       // move bytes to start of buffer
       *n <<= (sizeof( uint64_t ) - bytes) * 8;
-      break;
+      return;
 
 #else /* machine words are little endian */
 
@@ -318,17 +320,15 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
         case 7: *n = swap_64( *n );           *n >>=  8;  break;
         case 8: *n = swap_64( *n );                       break;
       } // switch
-      break;
-
+      FALLTHROUGH;
     case ENDIAN_LITTLE:
+    case ENDIAN_HOST:
       // do nothing
-      break;
+      return;
 
 #endif /* WORDS_BIGENDIAN */
-
-    default:
-      assert( false );
   } // switch
+  UNEXPECTED_INT_VALUE( endian );
 }
 
 bool is_file( int fd ) {

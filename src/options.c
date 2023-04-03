@@ -631,8 +631,7 @@ char const* get_offset_fmt_english( void ) {
     case OFMT_HEX : return "hexadecimal";
     case OFMT_OCT : return "octal";
   } // switch
-  assert( false );
-  return NULL;                          // suppress warning (never gets here)
+  UNEXPECTED_INT_VALUE( opt_offset_fmt );
 }
 
 char const* get_offset_fmt_format( void ) {
@@ -651,8 +650,6 @@ char const* get_offset_fmt_format( void ) {
       case OFMT_OCT:
         sprintf( fmt, "%%0%zu" PRIo64, get_offset_width() );
         break;
-      default:
-        assert( false );
     } // switch
   }
   return fmt;
