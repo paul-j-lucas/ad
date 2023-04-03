@@ -1,3 +1,8 @@
+2023-04-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, util.c, util.h: Added UNEXPECTED_INT_VALUE().
+   * ad.c: Now using unreachable().
+
 2023-03-30  Paul J. Lucas <paul@lucasmail.org>
 
    * stddef.in.h, stdio.in.h, verify.h, gnulib-comp.m4, musl.m4, stddef_h.m4,
