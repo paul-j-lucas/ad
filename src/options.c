@@ -401,8 +401,8 @@ static char32_t parse_codepoint( char const *s ) {
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
     // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it
-    char *const t = (char*)free_later( check_strdup( s ) );
-    s = (char*)memcpy( t, "0x", 2 );
+    char *const t = free_later( check_strdup( s ) );
+    s = memcpy( t, "0x", 2 );
   }
   unsigned long long const cp_candidate = parse_ull( s );
   if ( cp_is_valid( cp_candidate ) )
@@ -452,7 +452,7 @@ static color_when_t parse_color_when( char const *when ) {
   } // for
 
   // name not found: construct valid name list for an error message
-  char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
+  char *const names_buf = free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
   for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when != NULL; ++m ) {
     if ( pnames > names_buf ) {
@@ -531,7 +531,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   } // for
 
   // name not found: construct valid name list for an error message
-  char *const names_buf = (char*)free_later( MALLOC( char, names_buf_size ) );
+  char *const names_buf = free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
   for ( utf8_map_t const *m = UTF8_MAP; m->map_when != NULL; ++m ) {
     if ( pnames > names_buf ) {
@@ -741,7 +741,7 @@ void parse_options( int argc, char const *argv[] ) {
 #endif /* WORDS_BIGENDIAN */
         break;
       case COPT(STRING_IGNORE_CASE):
-        search_buf = (char*)free_later( check_strdup( optarg ) );
+        search_buf = free_later( check_strdup( optarg ) );
         FALLTHROUGH;
       case COPT(IGNORE_CASE):
         opt_case_insensitive = true;
@@ -783,7 +783,7 @@ void parse_options( int argc, char const *argv[] ) {
         fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
       case COPT(STRING):
-        search_buf = (char*)free_later( check_strdup( optarg ) );
+        search_buf = free_later( check_strdup( optarg ) );
         break;
       case COPT(TOTAL_MATCHES):
         opt_matches = MATCHES_ALSO_PRINT;
