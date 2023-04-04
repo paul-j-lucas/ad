@@ -196,8 +196,8 @@ void free_now( void ) {
   slist_cleanup( &free_later_list, &free );
 }
 
-void fputs_list( FILE *out, void const *elt,
-                 char const* (*gets)( void const** ) ) {
+void fput_list( FILE *out, void const *elt,
+                char const* (*gets)( void const** ) ) {
   assert( out != NULL );
   assert( elt != NULL );
 
