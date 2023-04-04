@@ -86,7 +86,7 @@ static size_t copy_keywords( did_you_mean_t **const pdym, bool copy_types ) {
   FOREACH_AD_KEYWORD( k ) {
     if ( !!k->tid == copy_types ) {
       if ( pdym != NULL )
-        (*pdym)++->token = check_strdup( k->literal );
+        (*pdym)++->literal = check_strdup( k->literal );
       ++count;
     }
   } // for
@@ -107,7 +107,7 @@ static size_t copy_cli_options( did_you_mean_t **pdym ) {
   size_t count = 0;
   FOREACH_CLI_OPTION( opt ) {
     if ( pdym != NULL )
-      (*pdym)++->token = check_strdup( opt->name );
+      (*pdym)++->literal = check_strdup( opt->name );
     ++count;
   } // for
   return count;
@@ -128,7 +128,7 @@ static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
 
   copy_typedef_visit_data_t *const ctvd = data;
   if ( ctvd->pdym != NULL )
-    (*ctvd->pdym)++->token = check_strdup( tdef->name );
+    (*ctvd->pdym)++->literal = check_strdup( tdef->name );
   ++ctvd->count;
 
   return false;
@@ -162,19 +162,19 @@ static int dym_cmp( did_you_mean_t const *i_dym, did_you_mean_t const *j_dym ) {
   int const cmp =
     STATIC_CAST( int, i_dym->dam_lev_dist ) -
     STATIC_CAST( int, j_dym->dam_lev_dist );
-  return cmp != 0 ? cmp : strcmp( i_dym->token, j_dym->token );
+  return cmp != 0 ? cmp : strcmp( i_dym->literal, j_dym->literal );
 }
 
 /**
  * Frees memory used by \a dym.
  *
  * @param dym A pointer to the first \ref did_you_mean to free and continuing
- * until `token` is NULL.
+ * until `literal` is NULL.
  */
-static void dym_free_tokens( did_you_mean_t const *dym ) {
+static void dym_free_literals( did_you_mean_t const *dym ) {
   assert( dym != NULL );
-  while ( dym->token != NULL )
-    FREE( dym++->token );
+  while ( dym->literal != NULL )
+    FREE( dym++->literal );
 }
 
 /**
@@ -212,15 +212,15 @@ static bool is_similar_enough( size_t dam_lev_dist, double percent,
 
 void dym_free( did_you_mean_t const *dym_array ) {
   if ( dym_array != NULL ) {
-    dym_free_tokens( dym_array );
+    dym_free_literals( dym_array );
     FREE( dym_array );
   }
 }
 
-did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
+did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_literal ) {
   if ( kinds == DYM_NONE )
     return NULL;
-  assert( unknown_token != NULL );
+  assert( unknown_literal != NULL );
 
   // Pre-flight to calculate array size; the order here doesn't matter.
   size_t const dym_size =
@@ -257,8 +257,8 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
    */
 
   // calculate Damerau-Levenshtein edit distance for all candidates
-  for ( dym = dym_array; dym->token != NULL; ++dym )
-    dym->dam_lev_dist = dam_lev_dist( unknown_token, dym->token );
+  for ( dym = dym_array; dym->literal != NULL; ++dym )
+    dym->dam_lev_dist = dam_lev_dist( unknown_literal, dym->literal );
 
   // sort by Damerau-Levenshtein distance
   qsort(
@@ -269,27 +269,27 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_token ) {
   size_t const best_dist = dym_array->dam_lev_dist;
   if ( best_dist == 0 ) {
     //
-    // This means unknown_token was an exact match for a token which means we
-    // shouldn't suggest it for itself.
+    // This means unknown_literal was an exact match for a literal which means
+    // we shouldn't suggest it for itself.
     //
     goto none;
   }
 
-  size_t const best_len = strlen( dym_array->token );
+  size_t const best_len = strlen( dym_array->literal );
   if ( !is_similar_enough( best_dist, SIMILAR_ENOUGH_PERCENT, best_len ) )
     goto none;
 
   // include all candidates that have the same distance
   for ( dym = dym_array;
-        (++dym)->token != NULL && dym->dam_lev_dist == best_dist; )
+        (++dym)->literal != NULL && dym->dam_lev_dist == best_dist; )
     ;
 
   //
-  // Free tokens past the best ones and set the one past the last to NULL to
+  // Free literals past the best ones and set the one past the last to NULL to
   // mark the end.
   //
-  dym_free_tokens( dym );
-  dym->token = NULL;
+  dym_free_literals( dym );
+  dym->literal = NULL;
 
   return dym_array;
 

@@ -116,9 +116,9 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   //
   va_list args;
   va_start( args, format );
-  int rv = vsnprintf( buf, buf_rem, format, args );
+  int raw_len = vsnprintf( buf, buf_rem, format, args );
   va_end( args );
-  PERROR_EXIT_IF( rv < 0, EX_IOERR );
+  PERROR_EXIT_IF( raw_len < 0, EX_IOERR );
 
   //
   // Then reserve that number of characters: if strbuf_reserve() returns false,
@@ -127,13 +127,14 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   // buffer wasn't big enough so all the characters didn't fit, but the buffer
   // was grown so they _will_ fit if we vsnprintf() again.
   //
-  size_t const args_len = STATIC_CAST( size_t, rv );
+  size_t const args_len = STATIC_CAST( size_t, raw_len );
   if ( strbuf_reserve( sbuf, args_len ) ) {
+    buf = sbuf->str + sbuf->len;
     buf_rem = sbuf->cap - sbuf->len;
     va_start( args, format );
-    rv = vsnprintf( sbuf->str + sbuf->len, buf_rem, format, args );
+    raw_len = vsnprintf( buf, buf_rem, format, args );
     va_end( args );
-    PERROR_EXIT_IF( rv < 0, EX_IOERR );
+    PERROR_EXIT_IF( raw_len < 0, EX_IOERR );
   }
 
   sbuf->len += args_len;
@@ -150,16 +151,15 @@ void strbuf_putsn( strbuf_t *sbuf, char const *s, size_t s_len ) {
 bool strbuf_reserve( strbuf_t *sbuf, size_t res_len ) {
   assert( sbuf != NULL );
   size_t const buf_rem = sbuf->cap - sbuf->len;
-  if ( res_len >= buf_rem ) {
-    //
-    // We don't need to add +1 for the terminating '\0' since next_pow_2(n) is
-    // guaranteed to be at least n+1.
-    //
-    sbuf->cap = next_pow_2( sbuf->len + res_len );
-    REALLOC( sbuf->str, char, sbuf->cap );
-    return true;
-  }
-  return false;
+  if ( res_len < buf_rem )
+    return false;
+  //
+  // We don't need to add +1 for the terminating '\0' since next_pow_2(n) is
+  // guaranteed to be at least n+1.
+  //
+  sbuf->cap = next_pow_2( sbuf->len + res_len );
+  REALLOC( sbuf->str, char, sbuf->cap );
+  return true;
 }
 
 void strbuf_reset( strbuf_t *sbuf ) {

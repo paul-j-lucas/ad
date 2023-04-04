@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/slist.h
 **
-**      Copyright (C) 2017-2022  Paul J. Lucas
+**      Copyright (C) 2017-2023  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@
 // standard
 #include <stdbool.h>
 #include <stddef.h>                     /* for NULL, size_t */
-#include <sys/types.h>
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef SLIST_H_INLINE
@@ -46,7 +45,7 @@ _GL_INLINE_HEADER_BEGIN
 
 /**
  * @defgroup slist-group Singly-Linked List
- * Types and functions for manipulating singly-linked lists.
+ * Macros, types, and functions for manipulating singly-linked lists.
  * @{
  */
 
@@ -59,7 +58,7 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #FOREACH_SLIST_NODE_UNTIL()
  */
 #define FOREACH_SLIST_NODE(VAR,SLIST) \
-  FOREACH_SLIST_NODE_UNTIL( VAR, SLIST, /*END=*/NULL )
+  FOREACH_SLIST_NODE_UNTIL( VAR, (SLIST), /*END=*/NULL )
 
 /**
  * Convenience macro for iterating over the nodes of \a SLIST up to but not
@@ -72,7 +71,7 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #FOREACH_SLIST_NODE()
  */
 #define FOREACH_SLIST_NODE_UNTIL(VAR,SLIST,END) \
-  for ( slist_node_t *VAR = CONST_CAST( slist_t*, SLIST )->head; VAR != (END); VAR = VAR->next )
+  for ( slist_node_t *VAR = CONST_CAST( slist_t*, (SLIST) )->head; VAR != (END); VAR = VAR->next )
 
 /**
  * Creates a single-node \ref slist on the stack with \a NODE_DATA.
@@ -418,9 +417,13 @@ size_t slist_len( slist_t const *list ) {
 /**
  * Reinitializes \a list and returns its former value so that it can be "moved"
  * into another list via assignment.  For example:
- * @code
- *  slist new_list = slist_move( old_list );
- * @endcode
+ * ```
+ * slist new_list = slist_move( old_list );
+ * ```
+ *
+ * @remarks In many cases, a simple assignment would be fine; however, if
+ * there's code that modifies `old_list` afterwards, it would interfere with
+ * `new_list` since both point to the same underlying elements.
  *
  * @param list The \ref slist to move.
  * @return Returns the former value of \a list.
@@ -430,7 +433,7 @@ size_t slist_len( slist_t const *list ) {
 NODISCARD SLIST_H_INLINE
 slist_t slist_move( slist_t *list ) {
   slist_t const rv_list = *list;
-  MEM_ZERO( list );
+  slist_init( list );
   return rv_list;
 }
 

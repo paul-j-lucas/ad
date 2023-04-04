@@ -76,7 +76,7 @@ print_params_t            print_params;
 NODISCARD
 static char const* fput_list_dym_gets( void const **ppelt ) {
   did_you_mean_t const *const dym = *ppelt;
-  if ( dym->token == NULL )
+  if ( dym->literal == NULL )
     return NULL;
   *ppelt = dym + 1;
 
@@ -85,7 +85,7 @@ static char const* fput_list_dym_gets( void const **ppelt ) {
   static unsigned buf_index;
 
   char *const buf = bufs[ buf_index++ % ARRAY_SIZE( bufs ) ];
-  snprintf( buf, 30, "\"%s\"", dym->token );
+  snprintf( buf, 30, "\"%s\"", dym->literal );
   return buf;
 }
 

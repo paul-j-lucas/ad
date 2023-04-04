@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/dam_lev.h
 **
-**      Copyright (C) 2022  Paul J. Lucas
+**      Copyright (C) 2020-2023  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
- * Implements the Damerau-Levenshtein algorithm to calculate an _edit distance_
- * between strings, i.e., how many letters need to be transposed within,
- * substituted within, deleted from, or added to \a source to get \a target.
+ * Calculates the _Damerau-Levenshtein distance_ between two strings, that is
+ * the number of letters that need to be transposed within, substituted within,
+ * deleted from, or added to \a source to get \a target.
  *
  * @param source The source string.
  * @param target The target string.
