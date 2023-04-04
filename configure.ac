@@ -73,7 +73,7 @@ PJL_CHECK_TYPEDEF(char32_t,[uchar.h],
   AC_DEFINE([HAVE_CHAR32_T], [1], [Define to 1 if `char32_t' is supported.]),
   AC_DEFINE([HAVE_CHAR32_T], [0], [Define to 1 if `char32_t' is supported.])
 )
-PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute((unused)) = 1;])
+PJL_COMPILE([__typeof__],[],[__typeof__(1) x __attribute__((unused)) = 1;])
 
 # Checks for library functions.
 AC_FUNC_FSEEKO
