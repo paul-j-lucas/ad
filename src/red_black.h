@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/red_black.h
 **
-**      Copyright (C) 2017-2022  Paul J. Lucas, et al.
+**      Copyright (C) 2017-2023  Paul J. Lucas, et al.
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -57,6 +57,9 @@
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
+
+// standard
+#include <stdbool.h>
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef RED_BLACK_H_INLINE
@@ -133,12 +136,12 @@ struct rb_node {
    * the node's position within the tree according to the tree's \ref
    * rb_tree::cmp_fn "cmp_fn".  For example, if `data` points to a `struct`
    * like:
-   * @code
+   * ```
    *  struct word_count {
    *      char     *word;
    *      unsigned  count;
    *  };
-   * @endcode
+   * ```
    * then, assuming the tree's \ref rb_tree::cmp_fn "cmp_fn" compares only
    * `word`, client code may then only safely modify `count`.
    */
@@ -171,7 +174,7 @@ struct rb_tree {
    * \ref rb_node::color "color" _must_ be #RB_BLACK.  Its children, parent,
    * and even data can take on arbitrary values.
    *
-   * @note There is one nil per tree instead of a single static nil for all
+   * @remarks There is one nil per tree instead of a single static nil for all
    * trees because those values can change.  In a multithreaded program,
    * updates to different trees could affect such a single nil that would
    * result in undefined behavior.
@@ -204,7 +207,7 @@ struct rb_insert_rv {
   /**
    * If `true`, \ref node refers to the newly inserted node; if `false`, \ref
    * node refers to the existing node having the same \ref rb_node::data
-   * "data".
+   * "data" according to the tree's \ref rb_tree::cmp_fn "cmp_fn".
    */
   bool inserted;
 };

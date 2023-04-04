@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/red_black.c
 **
-**      Copyright (C) 2017-2022  Paul J. Lucas, et al.
+**      Copyright (C) 2017-2023  Paul J. Lucas, et al.
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -87,6 +87,11 @@
 #include <stdlib.h>                     /* or free(3) */
 
 /// @endcond
+
+/**
+ * @addtogroup red-black-group
+ * @{
+ */
 
 /**
  * Gets an l-value reference to the first node in \a TREE.
@@ -536,7 +541,7 @@ rb_insert_rv_t rb_tree_insert( rb_tree_t *tree, void *data ) {
   while ( node != RB_NIL(tree) ) {
     int const cmp = (*tree->cmp_fn)( data, node->data );
     if ( cmp == 0 )
-      return (rb_insert_rv_t){ node, false };
+      return (rb_insert_rv_t){ node, .inserted = false };
     parent = node;
     node = node->child[ cmp > 0 ];
   } // while
@@ -557,7 +562,7 @@ rb_insert_rv_t rb_tree_insert( rb_tree_t *tree, void *data ) {
   parent->child[dir] = node;
 
   rb_insert_repair( tree, node );
-  return (rb_insert_rv_t){ node, true };
+  return (rb_insert_rv_t){ node, .inserted = true };
 }
 
 rb_node_t* rb_tree_visit( rb_tree_t const *tree, rb_visit_fn_t visit_fn,
@@ -571,4 +576,7 @@ rb_node_t* rb_tree_visit( rb_tree_t const *tree, rb_visit_fn_t visit_fn,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */
