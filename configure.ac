@@ -20,7 +20,8 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-AC_INIT([ad], [3.3.2], [paul@lucasmail.org],,[https://github.com/paul-j-lucas/ad])
+AC_PREREQ([2.69])
+AC_INIT([ad],[3.3.2],[https://github.com/paul-j-lucas/ad/issues],[],[https://github.com/paul-j-lucas/ad])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
