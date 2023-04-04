@@ -1,4 +1,4 @@
-# getdelim.m4 serial 18
+# getdelim.m4 serial 19
 
 dnl Copyright (C) 2005-2007, 2009-2023 Free Software Foundation, Inc.
 dnl

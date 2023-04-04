@@ -1,4 +1,4 @@
-# strerror.m4 serial 23
+# strerror.m4 serial 24
 dnl Copyright (C) 2002, 2007-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,

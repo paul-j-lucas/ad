@@ -1,4 +1,4 @@
-# getline.m4 serial 32
+# getline.m4 serial 33
 
 dnl Copyright (C) 1998-2003, 2005-2007, 2009-2023 Free Software Foundation,
 dnl Inc.
