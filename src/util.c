@@ -154,7 +154,7 @@ FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
   FILE *const file = fopen( path, mode );
   if ( unlikely( file == NULL ) ) {
     bool const create = strpbrk( mode, "aw" );
-    FATAL_ERR( create ? EX_CANTCREAT : EX_NOINPUT,
+    fatal_error( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   }
@@ -168,7 +168,7 @@ int check_open( char const *path, int oflag, off_t offset ) {
   bool const create = (oflag & O_CREAT) != 0;
   int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
   if ( unlikely( fd == -1 ) )
-    FATAL_ERR( create ? EX_CANTCREAT : EX_NOINPUT,
+    fatal_error( create ? EX_CANTCREAT : EX_NOINPUT,
       "\"%s\": can not open: %s\n", path, STRERROR
     );
   if ( offset > 0 )
@@ -198,6 +198,15 @@ char* check_strdup( char const *s ) {
   if ( unlikely( dup == NULL ) )
     perror_exit( EX_OSERR );
   return dup;
+}
+
+void fatal_error( int status, char const *format, ... ) {
+  EPRINTF( "%s: ", me );
+  va_list args;
+  va_start( args, format );
+  vfprintf( stderr, format, args );
+  va_end( args );
+  _Exit( status );
 }
 
 #ifndef HAVE_FGETLN
@@ -242,7 +251,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
-      FATAL_ERR( EX_IOERR, "can not read: %s\n", STRERROR );
+      fatal_error( EX_IOERR, "can not read: %s\n", STRERROR );
     bytes_to_skip -= bytes_read;
   } // while
 }
@@ -362,7 +371,7 @@ unsigned long long parse_offset( char const *s ) {
   } // local scope
 
 error:
-  FATAL_ERR( EX_USAGE, "\"%s\": invalid offset\n", s );
+  fatal_error( EX_USAGE, "\"%s\": invalid offset\n", s );
 }
 
 unsigned long long parse_ull( char const *s ) {
@@ -374,7 +383,7 @@ unsigned long long parse_ull( char const *s ) {
     if ( likely( errno == 0 && *end == '\0' ) )
       return n;
   }
-  FATAL_ERR( EX_USAGE, "\"%s\": invalid integer\n", s );
+  fatal_error( EX_USAGE, "\"%s\": invalid integer\n", s );
 }
 
 void perror_exit( int status ) {
