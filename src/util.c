@@ -29,11 +29,12 @@
 #include <assert.h>
 #include <ctype.h>                      /* for isspace(), isprint() */
 #include <fcntl.h>                      /* for open() */
+#include <stdarg.h>
 #include <stdlib.h>                     /* for exit(), strtoull(), ... */
 #include <string.h>
 #include <sys/stat.h>                   /* for fstat() */
-#include <unistd.h>                     /* for lseek() */
 #include <sysexits.h>
+#include <unistd.h>                     /* for lseek() */
 
 /**
  * An unsigned integer literal of \a N `0xF`s, e.g., `NF(3)` = `0xFFF`.
