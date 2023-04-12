@@ -38,7 +38,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define INVALID_EXIT(FORMAT,...)                                    \
-  FATAL_ERR( EX_DATAERR,                                            \
+  fatal_error( EX_DATAERR,                                          \
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
@@ -215,7 +215,7 @@ void reverse_dump_file( void ) {
     char *const row_buf = fgetln( fin, &row_len );
     if ( row_buf == NULL ) {
       if ( unlikely( ferror( fin ) ) )
-        FATAL_ERR( EX_IOERR, "can not read: %s\n", STRERROR );
+        fatal_error( EX_IOERR, "can not read: %s\n", STRERROR );
       break;
     }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,

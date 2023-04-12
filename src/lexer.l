@@ -185,15 +185,17 @@ static void       lexer_fatal( char const* );
  * @param msg The error message to print.
  */
 static void lexer_fatal( char const *msg ) {
+  if ( msg == NULL ) {
+    // Not reached -- "called" just to silence the "unused function" warning.
+    yy_fatal_error( msg );
+  }
+
   //
   // This is defined down here to avoid having to declare yy_fatal_error
   // ourselves and having to get it right being subject to possible changes in
   // its signature in different flex versions.
   //
-  INTERNAL_ERR( "%s\n", msg );
-
-  // Not reached -- "called" just to silence the "unused function" warning.
-  yy_fatal_error( msg );
+  INTERNAL_ERROR( "%s\n", msg );
 }
 
 /**

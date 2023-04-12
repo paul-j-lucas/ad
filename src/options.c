@@ -221,7 +221,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
           char const gave_opt2 = *opt;
           char opt1_buf[ OPT_BUF_SIZE ];
           char opt2_buf[ OPT_BUF_SIZE ];
-          FATAL_ERR( EX_USAGE,
+          fatal_error( EX_USAGE,
             "%s and %s are mutually exclusive\n",
             opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
             opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
@@ -249,7 +249,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
   if ( given_size < actual_size ) {
     char opt_buf[ OPT_BUF_SIZE ];
-    FATAL_ERR( EX_USAGE,
+    fatal_error( EX_USAGE,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, opt_format( opt, opt_buf, sizeof opt_buf ),
@@ -279,7 +279,7 @@ static void check_required( char const *opts, char const *req_opts ) {
           return;
       char opt_buf[ OPT_BUF_SIZE ];
       bool const reqs_multiple = req_opts[1] != '\0';
-      FATAL_ERR( EX_USAGE,
+      fatal_error( EX_USAGE,
         "%s requires %sthe -%s option%s to be given also\n",
         opt_format( *opt, opt_buf, sizeof opt_buf ),
         (reqs_multiple ? "one of " : ""),
@@ -352,7 +352,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
         case 't': ADD_CFMT( SIZE_T );   break;
         case 'u': ADD_CFMT( UNSIGNED ); break;
         default :
-          FATAL_ERR( EX_USAGE,
+          fatal_error( EX_USAGE,
             "'%c': invalid C format for %s;"
             " must be one of: [8cilstu]\n",
             *fmt, opt_format( 'C', opt_buf, sizeof opt_buf )
@@ -361,7 +361,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
     } // for
     if ( (c_fmt & CFMT_SIZE_T) != 0 &&
          (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != 0 ) {
-      FATAL_ERR( EX_USAGE,
+      fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
         s, opt_format( 'C', opt_buf, sizeof opt_buf )
@@ -371,7 +371,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
   return c_fmt;
 
 dup_format:
-  FATAL_ERR( EX_USAGE,
+  fatal_error( EX_USAGE,
     "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
     s, opt_format( 'C', opt_buf, sizeof opt_buf ), *fmt
@@ -409,7 +409,7 @@ static char32_t parse_codepoint( char const *s ) {
     return STATIC_CAST(char32_t, cp_candidate);
 
   char opt_buf[ OPT_BUF_SIZE ];
-  FATAL_ERR( EX_USAGE,
+  fatal_error( EX_USAGE,
     "\"%s\": invalid Unicode code-point for %s\n",
     s0, opt_format( 'U', opt_buf, sizeof opt_buf )
   );
@@ -464,7 +464,7 @@ static color_when_t parse_color_when( char const *when ) {
   } // for
 
   char opt_buf[ OPT_BUF_SIZE ];
-  FATAL_ERR( EX_USAGE,
+  fatal_error( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
     when, opt_format( 'c', opt_buf, sizeof opt_buf ), names_buf
   );
@@ -490,7 +490,7 @@ static unsigned parse_group_by( char const *s ) {
       return STATIC_CAST(unsigned, group_by);
   } // switch
   char opt_buf[ OPT_BUF_SIZE ];
-  FATAL_ERR( EX_USAGE,
+  fatal_error( EX_USAGE,
     "\"%llu\": invalid value for %s;"
     " must be one of: 1, 2, 4, 8, 16, or 32\n",
     group_by, opt_format( 'g', opt_buf, sizeof opt_buf )
@@ -543,7 +543,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   } // for
 
   char opt_buf[ OPT_BUF_SIZE ];
-  FATAL_ERR( EX_USAGE,
+  fatal_error( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
     when, opt_format( 'u', opt_buf, sizeof opt_buf ), names_buf
   );
@@ -806,24 +806,24 @@ void parse_options( int argc, char const *argv[] ) {
 
       case ':': {                       // option missing required argument
         char opt_buf[ OPT_BUF_SIZE ];
-        FATAL_ERR( EX_USAGE,
+        fatal_error( EX_USAGE,
           "\"%s\" requires an argument\n",
           opt_format( STATIC_CAST( char, optopt ), opt_buf, sizeof opt_buf )
         );
       }
 
       case '?':                         // invalid option
-        FATAL_ERR( EX_USAGE,
+        fatal_error( EX_USAGE,
           "%s: '%c': invalid option; use --help or -%c for help\n",
           me, STATIC_CAST( char, optopt ), COPT(HELP)
         );
 
       default:
         if ( isprint( opt ) )
-          INTERNAL_ERR(
+          INTERNAL_ERROR(
             "'%c': unaccounted-for getopt_long() return value\n", opt
           );
-        INTERNAL_ERR(
+        INTERNAL_ERROR(
           "%d: unaccounted-for getopt_long() return value\n", opt
         );
     } // switch
@@ -972,7 +972,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   if ( GAVE_OPTION( 'b' ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
-      FATAL_ERR( EX_USAGE,
+      fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, opt_format( 'b', opt_buf, sizeof opt_buf )
@@ -983,7 +983,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   if ( GAVE_OPTION( 'B' ) ) {
     if ( size_in_bytes > 8 )
-      FATAL_ERR( EX_USAGE,
+      fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
         size_in_bytes, opt_format( 'B', opt_buf, sizeof opt_buf )
       );

@@ -32,6 +32,7 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */
+#include <stdnoreturn.h>
 #include <string.h>                     /* for strerror() */
 #include <sys/types.h>                  /* for off_t */
 #include <sysexits.h>
@@ -218,21 +219,6 @@ _GL_INLINE_HEADER_BEGIN
 #define EPUTS(S)                  FPUTS( (S), stderr )
 
 /**
- * Prints an error message to standard error and exits with \a STATUS code.
- *
- * @param STATUS The status code to **exit**(3) with.
- * @param FORMAT The `printf()` format to use.
- * @param ... The `printf()` arguments.
- *
- * @sa #INTERNAL_ERR()
- * @sa perror_exit()
- * @sa #PERROR_EXIT_IF()
- * @sa #UNEXPECTED_INT_VALUE()
- */
-#define FATAL_ERR(STATUS,FORMAT,...) \
-  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
-
-/**
  * Calls **ferror**(3) and exits if there was an error on \a STREAM.
  *
  * @param STREAM The `FILE` stream to check for an error.
@@ -304,21 +290,6 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* HAVE_FSEEKO */
 
 /**
- * A special-case of #FATAL_ERR that additionally prints the file and line
- * where an internal error occurred.
- *
- * @param FORMAT The `printf()` format to use.
- * @param ... The `printf()` arguments.
- *
- * @sa #FATAL_ERR()
- * @sa perror_exit()
- * @sa #PERROR_EXIT_IF()
- * @sa #UNEXPECTED_INT_VALUE()
- */
-#define INTERNAL_ERR(FORMAT,...) \
-  FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
-
-/**
  * Frees the given memory.
  *
  * @param PTR The pointer to the memory to free.
@@ -348,19 +319,20 @@ _GL_INLINE_HEADER_BEGIN
   PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
- * A special-case of #FATAL_ERR that additionally prints the file and line
+ * A special-case of fatal_error() that additionally prints the file and line
  * where an internal error occurred.
  *
  * @param FORMAT The `printf()` format to use.
  * @param ... The `printf()` arguments.
  *
- * @sa #FATAL_ERR()
+ * @sa fatal_error()
+ * @sa #INTERNAL_ERROR()
  * @sa perror_exit()
  * @sa #PERROR_EXIT_IF()
  * @sa #UNEXPECTED_INT_VALUE()
  */
-#define INTERNAL_ERR(FORMAT,...) \
-  FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
+#define INTERNAL_ERROR(FORMAT,...) \
+  fatal_error( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
 #ifdef __GNUC__
 
@@ -444,8 +416,8 @@ _GL_INLINE_HEADER_BEGIN
  * @param EXPR The expression.
  * @param STATUS The exit status code.
  *
- * @sa #FATAL_ERR()
- * @sa #INTERNAL_ERR()
+ * @sa fatal_error()
+ * @sa #INTERNAL_ERROR()
  * @sa perror_exit()
  * @sa #UNEXPECTED_INT_VALUE()
  */
@@ -516,17 +488,17 @@ _GL_INLINE_HEADER_BEGIN
 #define STRINGIFY(X)              STRINGIFY_HELPER(X)
 
 /**
- * A special-case of #INTERNAL_ERR() that prints an unexpected integer value.
+ * A special-case of #INTERNAL_ERROR() that prints an unexpected integer value.
  *
  * @param EXPR The expression having the unexpected value.
  *
- * @sa #FATAL_ERR()
- * @sa #INTERNAL_ERR()
+ * @sa fatal_error()
+ * @sa #INTERNAL_ERROR()
  * @sa perror_exit()
  * @sa #PERROR_EXIT_IF()
  */
 #define UNEXPECTED_INT_VALUE(EXPR) \
-  INTERNAL_ERR( "%lld (0x%llX): unexpected value for " #EXPR "\n", (long long)(EXPR), (unsigned long long)(EXPR) )
+  INTERNAL_ERROR( "%lld (0x%llX): unexpected value for " #EXPR "\n", (long long)(EXPR), (unsigned long long)(EXPR) )
 
 /**
  * Whitespace characters.
@@ -627,6 +599,21 @@ void* check_realloc( void *p, size_t size );
  */
 NODISCARD
 char* check_strdup( char const *s );
+
+/**
+ * Prints an error message to standard error and exits with \a status code.
+ *
+ * @param status The status code to exit with.
+ * @param format The `printf()` format string literal to use.
+ * @param ... The `printf()` arguments.
+ *
+ * @sa #INTERNAL_ERROR()
+ * @sa perror_exit()
+ * @sa #PERROR_EXIT_IF()
+ * @sa #UNEXPECTED_INT_VALUE()
+ */
+PJL_PRINTF_LIKE_FUNC(2)
+noreturn void fatal_error( int status, char const *format, ... );
 
 #ifndef HAVE_FGETLN
 /**
@@ -777,8 +764,8 @@ unsigned long long parse_ull( char const *s );
  *
  * @param status The exit status code.
  *
- * @sa #FATAL_ERR()
- * @sa #INTERNAL_ERR()
+ * @sa fatal_error()
+ * @sa #INTERNAL_ERROR()
  * @sa #PERROR_EXIT_IF()
  */
 void perror_exit( int status );
