@@ -29,11 +29,14 @@
 %option warn
 %option yylineno
 
+%top {
+#include "ad.h"                         /* must go first */
+}
+
 %{
 /** @endcond */
 
 // local
-#include "ad.h"                         /* must go first */
 #include "lexer.h"
 #include "keyword.h"
 #include "literals.h"
