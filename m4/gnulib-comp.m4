@@ -442,6 +442,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/absolute-header.m4
   m4/assert_h.m4
   m4/c-bool.m4
+  m4/codeset.m4
   m4/errno_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
@@ -451,6 +452,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/limits-h.m4
+  m4/locale-fr.m4
   m4/malloc.m4
   m4/multiarch.m4
   m4/musl.m4
