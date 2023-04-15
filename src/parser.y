@@ -93,21 +93,19 @@
  */
 
 /**
- * Dumps a comma followed by a newline the _second_ and subsequent times it's
- * called.  It's used to separate items being dumped.
- */
-#define DUMP_COMMA \
-  BLOCK( if ( true_or_set( &dump_comma ) ) FPUTS( ",\n", stdout ); )
-
-/**
  * Dumps a `bool`.
  *
  * @param KEY The key name to print.
  * @param BOOL The `bool` to dump.
  */
-#define DUMP_BOOL(KEY,BOOL)  IF_DEBUG(  \
-  DUMP_COMMA;                           \
-  FPRINTF( stdout, "  " KEY " = %s", ((BOOL) ? "true" : "false") ); )
+#define DUMP_BOOL(KEY,BOOL)  IF_DEBUG( \
+  DUMP_KEY( KEY " = %s", ((BOOL) ? "true" : "false") ); )
+
+/**
+ * Dumps a comma followed by a newline the _second_ and subsequent times it's
+ * called.  It's used to separate items being dumped.
+ */
+#define DUMP_COMMA                fput_sep( ",\n", &dump_comma, stdout )
 
 /**
  * Dumps an ad_expr.
@@ -125,8 +123,16 @@
  * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
  */
 #define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_DEBUG( \
-  DUMP_COMMA; FPUTS( "  " KEY " = ", stdout );  \
-  ad_expr_list_dump( &(EXPR_LIST), 1, stdout ); )
+  DUMP_KEY( KEY " = " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
+
+/**
+ * Possibly dumps a comma and a newline followed by the `printf()` arguments
+ * &mdash; used for printing a key followed by a value.
+ *
+ * @param ... The `printf()` arguments.
+ */
+#define DUMP_KEY(...) IF_DEBUG( \
+  DUMP_COMMA; PRINTF( "  " __VA_ARGS__ ); )
 
 /**
  * Dumps an integer.
@@ -134,8 +140,8 @@
  * @param KEY The key name to print.
  * @param NUM The integer to dump.
  */
-#define DUMP_NUM(KEY,NUM) \
-  IF_DEBUG( DUMP_COMMA; printf( "  " KEY " = %d", (NUM) ); )
+#define DUMP_INT(KEY,NUM) \
+  DUMP_KEY( KEY " = %d", STATIC_CAST( int, (NUM) ) )
 
 /**
  * Dumps a C string.
@@ -143,9 +149,8 @@
  * @param KEY The key name to print.
  * @param STR The C string to dump.
  */
-#define DUMP_STR(KEY,NAME) IF_DEBUG(  \
-  DUMP_COMMA; FPUTS( "  ", stdout );  \
-  print_kv( (KEY), (NAME), stdout ); )
+#define DUMP_STR(KEY,STR) IF_DEBUG( \
+  DUMP_KEY( KEY " = " ); str_dump( (STR), stdout ); )
 
 #ifdef ENABLE_AD_DEBUG
 /**
@@ -158,7 +163,7 @@
  */
 #define DUMP_START(NAME,PROD) \
   bool dump_comma = false;    \
-  IF_DEBUG( FPUTS( "\n" NAME " ::= " PROD " = {\n", stdout ); )
+  IF_DEBUG( FPUTS( NAME " ::= " PROD " = {\n", stdout ); )
 #else
 #define DUMP_START(NAME,PROD)     /* nothing */
 #endif
@@ -168,10 +173,10 @@
  *
  * @sa DUMP_START
  */
-#define DUMP_END()                IF_DEBUG( FPUTS( "\n}\n", stdout ); )
+#define DUMP_END()                IF_DEBUG( FPUTS( "\n}\n\n", stdout ); )
 
 #define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
-  DUMP_COMMA; FPUTS( "  " KEY " = ", stdout ); ad_type_dump( TYPE, stdout ); )
+  DUMP_KEY( KEY " = " ); ad_type_dump( TYPE, stdout ); )
 
 /** @} */
 
