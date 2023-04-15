@@ -238,6 +238,7 @@ void ad_type_dump( ad_type_t const *type, FILE *dout ) {
   assert( type != NULL );
   assert( dout != NULL );
 
+  // TODO
 }
 
 char const* endian_name( endian_t e ) {
@@ -253,10 +254,18 @@ char const* endian_name( endian_t e ) {
 
 void str_dump( char const *value, FILE *dout ) {
   assert( dout != NULL );
-  if ( value == NULL )
+  if ( value == NULL ) {
     FPUTS( "null", dout );
-  else
-    FPRINTF( dout, "\"%s\"", value );
+    return;
+  }
+  FPUTC( '"', dout );
+  for ( char const *p = value; *p != '\0'; ++p ) {
+    if ( *p == '"' )
+      FPUTS( "\\\"", dout );
+    else
+      FPUTC( *p, dout );
+  } // for
+  FPUTC( '"', dout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
