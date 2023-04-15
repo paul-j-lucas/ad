@@ -874,6 +874,20 @@ bool true_or_set( bool *flag ) {
 }
 
 /**
+ * Possibly prints the list separator \a sep based on \a sep_flag.
+ *
+ * @param sep The separator to print.
+ * @param sep_flag A pointer to a flag to know whether to print \a sep.  The
+ * flag should be `false` initially.
+ * @param sout The `FILE` to print to.
+ */
+AD_UTIL_H_INLINE
+void fput_sep( char const *sep, bool *sep_flag, FILE *sout ) {
+  if ( true_or_set( sep_flag ) )
+    FPUTS( sep, sout );
+}
+
+/**
  * Converts a big-endian 16-bit integer to the host's representation.
  *
  * @param n The integer to convert.
