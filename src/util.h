@@ -877,8 +877,8 @@ bool true_or_set( bool *flag ) {
  * Possibly prints the list separator \a sep based on \a sep_flag.
  *
  * @param sep The separator to print.
- * @param sep_flag A pointer to a flag to know whether to print \a sep.  The
- * flag should be `false` initially.
+ * @param sep_flag If `true`, prints \a sep; if `false`, prints nothing, but
+ * sets it flag to `true`.  The flag should be `false` initially.
  * @param sout The `FILE` to print to.
  */
 AD_UTIL_H_INLINE
