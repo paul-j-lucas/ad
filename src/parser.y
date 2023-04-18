@@ -34,8 +34,8 @@
 #include "ad.h"
 #include "color.h"
 #ifdef ENABLE_AD_DEBUG
-#endif /* ENABLE_AD_DEBUG */
 #include "debug.h"
+#endif /* ENABLE_AD_DEBUG */
 #include "did_you_mean.h"
 #include "expr.h"
 #include "keyword.h"
