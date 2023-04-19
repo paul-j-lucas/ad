@@ -202,7 +202,7 @@ expected_hex_digit:
 ////////// extern functions ///////////////////////////////////////////////////
 
 void reverse_dump_file( void ) {
-  char8_t bytes[ row_bytes ];
+  char8_t bytes[ ROW_BYTES_MAX ];
   size_t  bytes_len;
   off_t   fout_offset = -STATIC_CAST( off_t, row_bytes );
   size_t  line = 0;
