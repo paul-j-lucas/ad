@@ -329,9 +329,8 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 2. See if it's a typedef'd type.
                 //
-                SLIST_VAR_INIT( typedef_name, lexer_token );
                 ad_typedef_t const *const tdef =
-                  ad_typedef_find_name( &typedef_name );
+                  ad_typedef_find_name( lexer_token );
                 if ( tdef != NULL ) {
                   yylval.tdef = tdef;
                   return Y_TYPEDEF_TYPE;

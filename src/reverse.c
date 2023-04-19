@@ -42,6 +42,9 @@
     "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
   )
 
+#ifdef FWRITE
+#undef FWRITE
+#endif /* FWRITE */
 #define FWRITE(PTR,SIZE,N,STREAM) \
   PERROR_EXIT_IF( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 

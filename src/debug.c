@@ -39,23 +39,20 @@
 #include <stdlib.h>
 #include <sysexits.h>
 
-#define DUMP_COMMA \
-  BLOCK( if ( false_set( &comma ) ) FPUTS( ",\n", dout ); )
-
 #define DUMP_FORMAT(...) BLOCK( \
-  fprint_spaces( dout, indent * DUMP_INDENT ); FPRINTF( dout, __VA_ARGS__ ); )
+  FPUTNSP( indent * DUMP_INDENT, dout ); FPRINTF( dout, __VA_ARGS__ ); )
 
-#define DUMP_LOC(KEY,LOC)   \
-  DUMP_FORMAT( KEY " = " ); \
-  ad_loc_dump( (LOC), dout )
+#define DUMP_KEY(...) BLOCK( \
+  fput_sep( ",\n", &comma, dout ); DUMP_FORMAT( __VA_ARGS__ ); )
 
-#define DUMP_STR(KEY,VALUE) BLOCK(  \
-  DUMP_FORMAT( KEY " = " );         \
-  str_dump( (VALUE), dout ); )
+#define DUMP_LOC(KEY,LOC) \
+  DUMP_KEY( KEY ": " ); ad_loc_dump( (LOC), dout )
 
-#define DUMP_TYPE(TYPE) BLOCK(  \
-  DUMP_FORMAT( "type = " );     \
-  ad_type_dump( (TYPE), dout ); )
+#define DUMP_STR(KEY,VALUE) BLOCK( \
+  DUMP_KEY( KEY ": " ); str_dump( (VALUE), dout ); )
+
+#define DUMP_TYPE(TYPE) BLOCK( \
+  DUMP_KEY( "type: " ); ad_type_dump( (TYPE), dout ); )
 
 /// @endcond
 
@@ -64,18 +61,6 @@ static void ad_loc_dump( ad_loc_t const*, FILE* );
 
 // local constants
 static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
-
-////////// inline functions ///////////////////////////////////////////////////
-
-/**
- * Prints \a n spaces.
- *
- * @param out The `FILE` to print to.
- * @param n The number of spaces to print.
- */
-static inline void fprint_spaces( FILE *out, unsigned n ) {
-  FPRINTF( out, "%*s", STATIC_CAST( int, n ), "" );
-}
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -109,6 +94,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
   else
     DUMP_FORMAT( "{\n" );
 
+  bool comma = false;
   ++indent;
 
   //DUMP_SNAME( "sname", &ast->sname );
@@ -117,8 +103,6 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
   FPUTS( ",\n", dout );
   DUMP_LOC( "loc", &expr->loc );
   FPUTS( ",\n", dout );
-
-  bool comma = false;
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:

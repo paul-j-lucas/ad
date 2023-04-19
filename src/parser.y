@@ -99,7 +99,7 @@
  * @param BOOL The `bool` to dump.
  */
 #define DUMP_BOOL(KEY,BOOL)  IF_DEBUG( \
-  DUMP_KEY( KEY " = %s", ((BOOL) ? "true" : "false") ); )
+  DUMP_KEY( KEY ": %s", ((BOOL) ? "true" : "false") ); )
 
 /**
  * Dumps a comma followed by a newline the _second_ and subsequent times it's
@@ -123,7 +123,7 @@
  * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
  */
 #define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_DEBUG( \
-  DUMP_KEY( KEY " = " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
+  DUMP_KEY( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
 
 /**
  * Possibly dumps a comma and a newline followed by the `printf()` arguments
@@ -141,7 +141,7 @@
  * @param NUM The integer to dump.
  */
 #define DUMP_INT(KEY,NUM) \
-  DUMP_KEY( KEY " = %d", STATIC_CAST( int, (NUM) ) )
+  DUMP_KEY( KEY ": %d", STATIC_CAST( int, (NUM) ) )
 
 /**
  * Dumps a C string.
@@ -150,7 +150,7 @@
  * @param STR The C string to dump.
  */
 #define DUMP_STR(KEY,STR) IF_DEBUG( \
-  DUMP_KEY( KEY " = " ); str_dump( (STR), stdout ); )
+  DUMP_KEY( KEY ": " ); str_dump( (STR), stdout ); )
 
 #ifdef ENABLE_AD_DEBUG
 /**
@@ -159,7 +159,7 @@
  * @param NAME The grammar production name.
  * @param PROD The grammar production rule.
  *
- * @sa DUMP_END
+ * @sa #DUMP_END
  */
 #define DUMP_START(NAME,PROD) \
   bool dump_comma = false;    \
@@ -171,12 +171,12 @@
 /**
  * Ends a dump block.
  *
- * @sa DUMP_START
+ * @sa #DUMP_START
  */
 #define DUMP_END()                IF_DEBUG( FPUTS( "\n}\n\n", stdout ); )
 
 #define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
-  DUMP_KEY( KEY " = " ); ad_type_dump( TYPE, stdout ); )
+  DUMP_KEY( KEY ": " ); ad_type_dump( TYPE, stdout ); )
 
 /** @} */
 
