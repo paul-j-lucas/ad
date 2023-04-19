@@ -334,7 +334,7 @@ static void fl_elaborate_error( char const *file, int line,
  * A special case of fl_elaborate_error() that prevents oddly worded error
  * messages when a punctuation character is expected by not doing keyword look-
  * ups of the error token.
-
+ *
  * For example, if fl_elaborate_error() were used for the following \b ad
  * command, you'd get the following:
  * @code
@@ -681,10 +681,11 @@ compound_statement
 switch_statement
   : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
     {
-      ad_statement_t *st = MALLOC( ad_statement_t, 1 );
-      st->kind = AD_STMT_SWITCH;
-      st->loc = @$;
-      // st->st_switch
+      $$ = MALLOC( ad_statement_t, 1 );
+      $$->kind = AD_STMT_SWITCH;
+      $$->loc = @$;
+      $$->st_switch.expr = $3;
+      // $$->st_switch
     }
   ;
 

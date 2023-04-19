@@ -119,10 +119,10 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF_0     (T_NULL   | T_UTF)          /**< UTF string.       */
 
 /**< UTF-8, null-terminated string. */
-#define T_UTF8_0    (T_NULL   | T_UTF  |  T_08)
+#define T_UTF8_0    (T_UTF_0           |  T_08)
 
 /** UTF-16 host-endian, null-terminated string. */
-#define T_UTF16HE_0 (T_NULL   | T_UTF  | T_16)
+#define T_UTF16HE_0 (T_UTF_0           | T_16)
 
 /** UTF-16 big-endian, null-terminated string. */
 #define T_UTF16BE_0 (T_END_B  | T_UTF  | T_16 | T_NULL)
@@ -131,7 +131,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UTF16LE_0 (T_END_L  | T_UTF  | T_16 | T_NULL)
 
 /**< UTF-32 host-endian, null-terminated string. */
-#define T_UTF32HE_0 (T_NULL   | T_UTF  | T_32)
+#define T_UTF32HE_0 (T_UTF_0           | T_32)
 
 /**< UTF-32 big-endian null-terminated string. */
 #define T_UTF32BE_0 (T_END_B  | T_UTF  | T_32 | T_NULL)
@@ -371,7 +371,7 @@ struct ad_declaration {
 };
 
 struct ad_switch_statement {
-  int PLACEHOLDER;
+  ad_expr_t  *expr;
 };
 
 struct ad_statement {
