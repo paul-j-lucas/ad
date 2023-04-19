@@ -346,7 +346,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
           fatal_error( EX_USAGE,
             "'%c': invalid C format for %s;"
             " must be one of: [8cilstu]\n",
-            *fmt, opt_format( 'C', opt_buf, sizeof opt_buf )
+            *fmt, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
           );
       } // switch
     } // for
@@ -354,8 +354,8 @@ static c_fmt_t parse_c_fmt( char const *s ) {
          (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != 0 ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
-        " 't' and [ilu] are mutually exclusive\n",
-        s, opt_format( 'C', opt_buf, sizeof opt_buf )
+        " COPT(TOTAL_MATCHES) and [ilu] are mutually exclusive\n",
+        s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
       );
     }
   }
@@ -365,7 +365,7 @@ dup_format:
   fatal_error( EX_USAGE,
     "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
-    s, opt_format( 'C', opt_buf, sizeof opt_buf ), *fmt
+    s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf ), *fmt
   );
 }
 
@@ -402,7 +402,7 @@ static char32_t parse_codepoint( char const *s ) {
   char opt_buf[ OPT_BUF_SIZE ];
   fatal_error( EX_USAGE,
     "\"%s\": invalid Unicode code-point for %s\n",
-    s0, opt_format( 'U', opt_buf, sizeof opt_buf )
+    s0, opt_format( COPT(UTF8_PADDING), opt_buf, sizeof opt_buf )
   );
 }
 
@@ -457,7 +457,7 @@ static color_when_t parse_color_when( char const *when ) {
   char opt_buf[ OPT_BUF_SIZE ];
   fatal_error( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
-    when, opt_format( 'c', opt_buf, sizeof opt_buf ), names_buf
+    when, opt_format( COPT(COLOR), opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -484,7 +484,7 @@ static unsigned parse_group_by( char const *s ) {
   fatal_error( EX_USAGE,
     "\"%llu\": invalid value for %s;"
     " must be one of: 1, 2, 4, 8, 16, or 32\n",
-    group_by, opt_format( 'g', opt_buf, sizeof opt_buf )
+    group_by, opt_format( COPT(GROUP_BY), opt_buf, sizeof opt_buf )
   );
 }
 
@@ -536,7 +536,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   char opt_buf[ OPT_BUF_SIZE ];
   fatal_error( EX_USAGE,
     "\"%s\": invalid value for %s; must be one of:\n\t%s\n",
-    when, opt_format( 'u', opt_buf, sizeof opt_buf ), names_buf
+    when, opt_format( COPT(UTF8), opt_buf, sizeof opt_buf ), names_buf
   );
 }
 
@@ -946,25 +946,25 @@ void parse_options( int argc, char const *argv[] ) {
 
   char opt_buf[ OPT_BUF_SIZE ];
 
-  if ( GAVE_OPTION( 'b' ) ) {
+  if ( GAVE_OPTION( COPT(BITS) ) ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
-        size_in_bits, opt_format( 'b', opt_buf, sizeof opt_buf )
+        size_in_bits, opt_format( COPT(BITS), opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bits * 8;
-    check_number_size( size_in_bits, int_len( search_number ) * 8, 'b' );
+    check_number_size( size_in_bits, int_len( search_number ) * 8, COPT(BITS) );
   }
 
-  if ( GAVE_OPTION( 'B' ) ) {
+  if ( GAVE_OPTION( COPT(BYTES) ) ) {
     if ( size_in_bytes > 8 )
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
-        size_in_bytes, opt_format( 'B', opt_buf, sizeof opt_buf )
+        size_in_bytes, opt_format( COPT(BYTES), opt_buf, sizeof opt_buf )
       );
     search_len = size_in_bytes;
-    check_number_size( size_in_bytes, int_len( search_number ), 'B' );
+    check_number_size( size_in_bytes, int_len( search_number ), COPT(BYTES) );
   }
 
   if ( opt_case_insensitive )
