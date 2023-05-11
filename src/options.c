@@ -101,7 +101,7 @@ char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
 bool          opt_verbose;
 
 /**
- * Long command-line options.
+ * Command-line options.
  */
 static struct option const OPTIONS[] = {
   { "bits",               required_argument,  NULL, COPT(BITS)                },
