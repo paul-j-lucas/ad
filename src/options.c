@@ -99,9 +99,9 @@ char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
 bool          opt_verbose;
 
 /**
- * Long command-line options.
+ * Command-line options.
  */
-static struct option const OPTS_LONG[] = {
+static struct option const OPTIONS[] = {
   { "bits",               required_argument,  NULL, COPT(BITS)                },
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
@@ -302,9 +302,9 @@ static char const* opt_format( char short_opt, char buf[const], size_t size ) {
  */
 NODISCARD
 static char const* opt_get_long( char short_opt ) {
-  for ( struct option const *long_opt = OPTS_LONG; long_opt->name; ++long_opt )
-    if ( long_opt->val == short_opt )
-      return long_opt->name;
+  for ( struct option const *opt = OPTIONS; opt->name; ++opt )
+    if ( opt->val == short_opt )
+      return opt->name;
   return "";
 }
 
@@ -659,7 +659,7 @@ void parse_options( int argc, char const *argv[] ) {
   size_t            max_lines = 0;
   bool              print_usage = false;
   bool              print_version = false;
-  char const *const short_opts = make_short_opts( OPTS_LONG );
+  char const *const short_opts = make_short_opts( OPTIONS );
   size_t            size_in_bits = 0, size_in_bytes = 0;
   char32_t          utf8_pad = 0;
   utf8_when_t       utf8_when = UTF8_WHEN_DEFAULT;
@@ -668,7 +668,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   for (;;) {
     int const opt = getopt_long(
-      argc, CONST_CAST( char**, argv ), short_opts, OPTS_LONG,
+      argc, CONST_CAST( char**, argv ), short_opts, OPTIONS,
       /*longindex=*/NULL
     );
     if ( opt == -1 )
