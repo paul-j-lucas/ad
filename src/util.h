@@ -293,6 +293,16 @@ _GL_INLINE_HEADER_BEGIN
 #define FPUTNSP(N,STREAM) \
   FPRINTF( (STREAM), "%*s", STATIC_CAST( int, (N) ), "" )
 
+/**
+ * Frees the given memory.
+ *
+ * @remarks This macro exists since free'ing a pointer to `const` generates a
+ * warning.
+ *
+ * @param PTR The pointer to the memory to free.
+ */
+#define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
+
 /** The fseek(3) function to use. */
 #ifdef HAVE_FSEEKO
 # define FSEEK_FN fseeko

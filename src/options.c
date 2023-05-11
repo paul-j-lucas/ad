@@ -102,10 +102,8 @@ bool          opt_verbose;
 
 /**
  * Long command-line options.
- *
- * @sa OPTIONS_SHORT
  */
-static struct option const OPTIONS_LONG[] = {
+static struct option const OPTIONS[] = {
   { "bits",               required_argument,  NULL, COPT(BITS)                },
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
@@ -141,52 +139,6 @@ static struct option const OPTIONS_LONG[] = {
   { "version",            no_argument,        NULL, COPT(VERSION)             },
   { NULL,                 0,                  NULL, 0                         }
 };
-
-#define SOPT_NO_ARGUMENT          /* nothing */
-#define SOPT_REQUIRED_ARGUMENT    ":"
-
-/**
- * Short command-line options.
- *
- * @note It _must_ start with `:` to make `getopt_long()` return `:` when a
- * required argument for a known option is missing.
- *
- * @sa OPTIONS_LONG
- */
-static char const OPTIONS_SHORT[] = ":"
-  SOPT(NO_ASCII)            SOPT_NO_ARGUMENT
-  SOPT(BITS)                SOPT_REQUIRED_ARGUMENT
-  SOPT(BYTES)               SOPT_REQUIRED_ARGUMENT
-  SOPT(COLOR)               SOPT_REQUIRED_ARGUMENT
-  SOPT(C_ARRAY)             SOPT_REQUIRED_ARGUMENT
-#ifdef ENABLE_AD_DEBUG
-  SOPT(DEBUG)               SOPT_NO_ARGUMENT
-#endif /* ENABLE_AD_DEBUG */
-  SOPT(DECIMAL)             SOPT_NO_ARGUMENT
-  SOPT(LITTLE_ENDIAN)       SOPT_REQUIRED_ARGUMENT
-  SOPT(BIG_ENDIAN)          SOPT_REQUIRED_ARGUMENT
-  SOPT(GROUP_BY)            SOPT_REQUIRED_ARGUMENT
-  SOPT(HEXADECIMAL)         SOPT_NO_ARGUMENT
-  SOPT(HELP)                SOPT_NO_ARGUMENT
-  SOPT(IGNORE_CASE)         SOPT_NO_ARGUMENT
-  SOPT(SKIP_BYTES)          SOPT_REQUIRED_ARGUMENT
-  SOPT(MAX_LINES)           SOPT_REQUIRED_ARGUMENT
-  SOPT(MATCHING_ONLY)       SOPT_NO_ARGUMENT
-  SOPT(MAX_BYTES)           SOPT_REQUIRED_ARGUMENT
-  SOPT(OCTAL)               SOPT_NO_ARGUMENT
-  SOPT(NO_OFFSETS)          SOPT_NO_ARGUMENT
-  SOPT(PRINTING_ONLY)       SOPT_NO_ARGUMENT
-  SOPT(PLAIN)               SOPT_NO_ARGUMENT
-  SOPT(REVERSE)             SOPT_NO_ARGUMENT
-  SOPT(STRING)              SOPT_REQUIRED_ARGUMENT
-  SOPT(STRING_IGNORE_CASE)  SOPT_REQUIRED_ARGUMENT
-  SOPT(TOTAL_MATCHES)       SOPT_NO_ARGUMENT
-  SOPT(TOTAL_MATCHES_ONLY)  SOPT_NO_ARGUMENT
-  SOPT(UTF8)                SOPT_REQUIRED_ARGUMENT
-  SOPT(UTF8_PADDING)        SOPT_REQUIRED_ARGUMENT
-  SOPT(VERBOSE)             SOPT_NO_ARGUMENT
-  SOPT(VERSION)             SOPT_NO_ARGUMENT
-;
 
 // local variable definitions
 static bool         opts_given[ 128 ];
@@ -287,6 +239,44 @@ static void check_required( char const *opts, char const *req_opts ) {
       );
     }
   } // for
+}
+
+/**
+ * Makes the `optstring` (short option) equivalent of \a opts for the third
+ * argument of `getopt_long()`.
+ *
+ * @param opts An array of options to make the short option string from.  Its
+ * last element must be all zeros.
+ * @return Returns the `optstring` for the third argument of `getopt_long()`.
+ * The caller is responsible for freeing it.
+ */
+NODISCARD
+static char const* make_short_opts( struct option const opts[static const 2] ) {
+  // pre-flight to calculate string length
+  size_t len = 1;                       // for leading ':'
+  for ( struct option const *opt = opts; opt->name != NULL; ++opt ) {
+    assert( opt->has_arg >= 0 && opt->has_arg <= 2 );
+    len += 1 + STATIC_CAST( unsigned, opt->has_arg );
+  } // for
+
+  char *const short_opts = MALLOC( char, len + 1/*\0*/ );
+  char *s = short_opts;
+
+  *s++ = ':';                           // return missing argument as ':'
+  for ( struct option const *opt = opts; opt->name != NULL; ++opt ) {
+    assert( opt->val > 0 && opt->val < 128 );
+    *s++ = STATIC_CAST( char, opt->val );
+    switch ( opt->has_arg ) {
+      case optional_argument:
+        *s++ = ':';
+        FALLTHROUGH;
+      case required_argument:
+        *s++ = ':';
+    } // switch
+  } // for
+  *s = '\0';
+
+  return short_opts;
 }
 
 /**
@@ -640,7 +630,7 @@ PACKAGE_NAME " home page: " PACKAGE_URL "\n",
 ////////// extern functions ///////////////////////////////////////////////////
 
 struct option const* cli_option_next( struct option const *opt ) {
-  return opt == NULL ? OPTIONS_LONG : (++opt)->name == NULL ? NULL : opt;
+  return opt == NULL ? OPTIONS : (++opt)->name == NULL ? NULL : opt;
 }
 
 char const* get_offset_fmt_english( void ) {
@@ -681,19 +671,20 @@ size_t get_offset_width( void ) {
 }
 
 void parse_options( int argc, char const *argv[] ) {
-  color_when_t  color_when = COLOR_WHEN_DEFAULT;
-  size_t        max_lines = 0;
-  bool          print_usage = false;
-  bool          print_version = false;
-  size_t        size_in_bits = 0, size_in_bytes = 0;
-  char32_t      utf8_pad = 0;
-  utf8_when_t   utf8_when = UTF8_WHEN_DEFAULT;
+  color_when_t      color_when = COLOR_WHEN_DEFAULT;
+  size_t            max_lines = 0;
+  bool              print_usage = false;
+  bool              print_version = false;
+  char const *const short_opts = make_short_opts( OPTIONS );
+  size_t            size_in_bits = 0, size_in_bytes = 0;
+  char32_t          utf8_pad = 0;
+  utf8_when_t       utf8_when = UTF8_WHEN_DEFAULT;
 
   opterr = 1;
 
   for (;;) {
     int const opt = getopt_long(
-      argc, CONST_CAST( char**, argv ), OPTIONS_SHORT, OPTIONS_LONG,
+      argc, CONST_CAST( char**, argv ), short_opts, OPTIONS,
       /*longindex=*/NULL
     );
     if ( opt == -1 )
@@ -829,6 +820,9 @@ void parse_options( int argc, char const *argv[] ) {
     } // switch
     opts_given[ opt ] = true;
   } // for
+
+  FREE( short_opts );
+
   argc -= optind;
   argv += optind - 1;
 
