@@ -1,3 +1,41 @@
+2023-05-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, options.c, util.h: No longer using deprecated stdnoreturn.h.
+
+2023-05-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Renaming.
+   * options.c, util.h, ad-Cc.test, ad-Ccc.test, ad-Cci.test, ad-Ci.test,
+     ad-Cii.test, ad-Cilu.test, ad-Cis.test, ad-Cit.test, ad-Ciu.test,
+     ad-Cl.test, ad-Cll.test, ad-Clt.test, ad-Css.test, ad-Ct.test,
+     ad-Ctt.test, ad-Ctu.test, ad-Cu.test, ad-Cuu.test, ad-Cx.test: The
+     argument for -C is now optional (as it was supposed to have been.
+
+2023-04-19  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Using COPT() more.
+   * reverse.c: No longer using VLA.
+
+2023-04-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, stddef.in.h, stdio.in.h, stdlib.in.h,
+     strerror-override.h, string.in.h, unistd.in.h, codeset.m4,
+     gnulib-common.m4, gnulib-comp.m4, locale-fr.m4, stdlib_h.m4, pjl_config.h:
+     Updated GnuLib.
+
+2023-04-12  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: Added missing #include <stdarg.h>.
+   * match.c, options.c, pjl_config.h, reverse.c, util.c, util.h:
+     s/FATAL_ERR()/fatal_error()/
+
+2023-04-04  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c, options.c: Removed unnecessary casts.
+   * lib/Makefile.am, stddef.in.h, stdlib.in.h, stdlib_h.m4: Updated GnuLib.
+   * configure.ac: Fixed __attribute__.
+   * configure.ac: Added AC_PREREQ.
+
 2023-04-03  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, util.c, util.h: Added UNEXPECTED_INT_VALUE().
