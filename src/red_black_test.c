@@ -27,7 +27,6 @@
 // standard
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdnoreturn.h>
 #include <string.h>
 #include <sysexits.h>
 
@@ -79,7 +78,7 @@ static bool test_rb_visitor( void *node_data, void *v_data ) {
 }
 
 // LCOV_EXCL_START
-static noreturn void usage( void ) {
+static _Noreturn void usage( void ) {
   EPRINTF( "usage: %s\n", me );
   exit( EX_USAGE );
 }

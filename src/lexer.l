@@ -54,7 +54,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for strtol(3) */
-#include <stdnoreturn.h>
 #include <string.h>
 
 // Silence these warnings for Flex-generated code.
@@ -177,7 +176,7 @@ static int        token_column;         ///< Column position of current token.
 static char       rstr_delim[ RSTR_DELIM_LEN_MAX + 1/*"*/ + 1/*\0*/ ];
 
 // local functions
-noreturn
+_Noreturn
 static void       lexer_fatal( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
