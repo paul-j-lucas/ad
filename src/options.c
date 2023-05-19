@@ -33,7 +33,6 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
-#include <stdnoreturn.h>
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
@@ -542,7 +541,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
 /**
  * Prints the usage message to standard error and exits.
  */
-noreturn
+_Noreturn
 static void usage( int status ) {
   fprintf( status == EX_OK ? stdout : stderr,
 "usage: %s [options] [+offset] [infile [outfile]]\n"
