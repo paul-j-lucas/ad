@@ -39,6 +39,14 @@
 #include <sys/types.h>
 #include <sysexits.h>
 
+// Undefine these since they clash with our command-line options.
+#ifdef BIG_ENDIAN
+# undef BIG_ENDIAN
+#endif /* BIG_ENDIAN */
+#ifdef LITTLE_ENDIAN
+# undef LITTLE_ENDIAN
+#endif /* LITTLE_ENDIAN */
+
 // in ascending option character ASCII order; sort using: sort -bdfk3
 #define OPT_NO_ASCII            A
 #define OPT_BITS                b
@@ -76,6 +84,10 @@
 
 /// Command-line option character as a single-character string literal.
 #define SOPT(X)                   STRINGIFY(OPT_##X)
+
+/// Command-line short option as a parenthesized, dashed string literal for the
+/// usage message.
+#define UOPT(X)                   " (-" SOPT(X) ") "
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -540,77 +552,77 @@ _Noreturn
 static void usage( int status ) {
   fprintf( status == EX_OK ? stdout : stderr,
 "usage: %s [options] [+offset] [infile [outfile]]\n"
-"       %s -%c [-%c%c%c] [infile [outfile]]\n"
-"       %s -%c\n"
-"       %s -%c\n"
+"       %s -" SOPT(REVERSE) " [-" SOPT(DECIMAL) SOPT(OCTAL) SOPT(HEXADECIMAL) "] [infile [outfile]]\n"
+"       %s -" SOPT(HELP) "\n"
+"       %s -" SOPT(VERSION) "\n"
 "options:\n"
-"  --big-endian=NUM         (-%c) Search for big-endian number.\n"
-"  --bits=NUM               (-%c) Number size in bits: 8-64 [default: auto].\n"
-"  --bytes=NUM              (-%c) Number size in bytes: 1-8 [default: auto].\n"
-"  --c-array=FMT            (-%c) Dump bytes as a C array.\n"
-"  --color=WHEN             (-%c) When to colorize output [default: not_file].\n"
-"  --decimal                (-%c) Print offsets in decimal.\n"
-"  --group-by=NUM           (-%c) Group bytes by 1/2/4/8/16/32 [default: %u].\n"
-"  --help                   (-%c) Print this help and exit.\n"
-"  --hexadecimal            (-%c) Print offsets in hexadecimal [default].\n"
-"  --host-endian=NUM        (-%c) Search for host-endian number.\n"
-"  --ignore-case            (-%c) Ignore case for string searches.\n"
-"  --little-endian=NUM      (-%c) Search for little-endian number.\n"
-"  --matching-only          (-%c) Only dump rows having matches.\n"
-"  --max-bytes=NUM          (-%c) Dump max number of bytes [default: unlimited].\n"
-"  --max-lines=NUM          (-%c) Dump max number of lines [default: unlimited].\n"
-"  --no-ascii               (-%c) Suppress printing the ASCII part.\n"
-"  --no-offsets             (-%c) Suppress printing offsets.\n"
-"  --octal                  (-%c) Print offsets in octal.\n"
-"  --plain                  (-%c) Dump in plain format; same as: -AOg32.\n"
-"  --printing-only          (-%c) Only dump rows having printable characters.\n"
-"  --reverse                (-%c) Reverse from dump back to binary.\n"
-"  --skip-bytes=NUM         (-%c) Jump to offset before dumping [default: 0].\n"
-"  --string=STR             (-%c) Search for string.\n"
-"  --string-ignore-case=STR (-%c) Search for case-insensitive string.\n"
-"  --total-matches          (-%c) Additionally print total number of matches.\n"
-"  --total-matches-only     (-%c) Only print total number of matches.\n"
-"  --utf8=WHEN              (-%c) When to dump in UTF-8 [default: never].\n"
-"  --utf8-padding=NUM       (-%c) Set UTF-8 padding character [default: U+2581].\n"
-"  --verbose                (-%c) Dump repeated rows also.\n"
-"  --version                (-%c) Print version and exit.\n"
+"  --big-endian=NUM        " UOPT(BIG_ENDIAN)
+                            "Search for big-endian number.\n"
+"  --bits=NUM              " UOPT(BITS)
+                            "Number size in bits: 8-64 [default: auto].\n"
+"  --bytes=NUM             " UOPT(BYTES)
+                            "Number size in bytes: 1-8 [default: auto].\n"
+"  --c-array=FMT           " UOPT(C_ARRAY)
+                            "Dump bytes as a C array.\n"
+"  --color=WHEN            " UOPT(COLOR)
+                            "When to colorize output [default: not_file].\n"
+"  --decimal               " UOPT(DECIMAL)
+                            "Print offsets in decimal.\n"
+"  --group-by=NUM          " UOPT(GROUP_BY)
+                            "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "].\n"
+"  --help                  " UOPT(HELP)
+                            "Print this help and exit.\n"
+"  --hexadecimal           " UOPT(HEXADECIMAL)
+                            "Print offsets in hexadecimal [default].\n"
+"  --host-endian=NUM       " UOPT(HOST_ENDIAN)
+                            "Search for host-endian number.\n"
+"  --ignore-case           " UOPT(IGNORE_CASE)
+                            "Ignore case for string searches.\n"
+"  --little-endian=NUM     " UOPT(LITTLE_ENDIAN)
+                            "Search for little-endian number.\n"
+"  --matching-only         " UOPT(MATCHING_ONLY)
+                            "Only dump rows having matches.\n"
+"  --max-bytes=NUM         " UOPT(MAX_BYTES)
+                            "Dump max number of bytes [default: unlimited].\n"
+"  --max-lines=NUM         " UOPT(MAX_LINES)
+                            "Dump max number of lines [default: unlimited].\n"
+"  --no-ascii              " UOPT(NO_ASCII)
+                            "Suppress printing the ASCII part.\n"
+"  --no-offsets            " UOPT(NO_OFFSETS)
+                            "Suppress printing offsets.\n"
+"  --octal                 " UOPT(OCTAL)
+                            "Print offsets in octal.\n"
+"  --plain                 " UOPT(PLAIN)
+                            "Dump in plain format; same as: -AOg32.\n"
+"  --printing-only         " UOPT(PRINTING_ONLY)
+                            "Only dump rows having printable characters.\n"
+"  --reverse               " UOPT(REVERSE)
+                            "Reverse from dump back to binary.\n"
+"  --skip-bytes=NUM        " UOPT(SKIP_BYTES)
+                            "Jump to offset before dumping [default: 0].\n"
+"  --string=STR            " UOPT(STRING)
+                            "Search for string.\n"
+"  --string-ignore-case=STR" UOPT(STRING_IGNORE_CASE)
+                            "Search for case-insensitive string.\n"
+"  --total-matches         " UOPT(TOTAL_MATCHES)
+                            "Additionally print total number of matches.\n"
+"  --total-matches-only    " UOPT(TOTAL_MATCHES_ONLY)
+                            "Only print total number of matches.\n"
+"  --utf8=WHEN             " UOPT(UTF8)
+                            "When to dump in UTF-8 [default: never].\n"
+"  --utf8-padding=NUM      " UOPT(UTF8_PADDING)
+                            "Set UTF-8 padding character [default: U+2581].\n"
+"  --verbose               " UOPT(VERBOSE)
+                            "Dump repeated rows also.\n"
+"  --version               " UOPT(VERSION)
+                            "Print version and exit.\n"
 "\n"
-"Report bugs to: " PACKAGE_BUGREPORT "\n"
-PACKAGE_NAME " home page: " PACKAGE_URL "\n",
+PACKAGE_NAME " home page: " PACKAGE_URL "\n"
+"Report bugs to: " PACKAGE_BUGREPORT "\n",
     me,
-    me, COPT(REVERSE), COPT(DECIMAL), COPT(OCTAL), COPT(HEXADECIMAL),
-    me, COPT(HELP),
-    me, COPT(VERSION),
-    COPT(BIG_ENDIAN),
-    COPT(BITS),
-    COPT(BYTES),
-    COPT(C_ARRAY),
-    COPT(COLOR),
-    COPT(DECIMAL),
-    COPT(GROUP_BY), GROUP_BY_DEFAULT,
-    COPT(HELP),
-    COPT(HEXADECIMAL),
-    COPT(HOST_ENDIAN),
-    COPT(IGNORE_CASE),
-    COPT(LITTLE_ENDIAN),
-    COPT(MATCHING_ONLY),
-    COPT(MAX_BYTES),
-    COPT(MAX_LINES),
-    COPT(NO_ASCII),
-    COPT(NO_OFFSETS),
-    COPT(OCTAL),
-    COPT(PLAIN),
-    COPT(PRINTING_ONLY),
-    COPT(REVERSE),
-    COPT(SKIP_BYTES),
-    COPT(STRING),
-    COPT(STRING_IGNORE_CASE),
-    COPT(TOTAL_MATCHES),
-    COPT(TOTAL_MATCHES_ONLY),
-    COPT(UTF8),
-    COPT(UTF8_PADDING),
-    COPT(VERBOSE),
-    COPT(VERSION)
+    me,
+    me,
+    me
   );
   exit( status );
 }
