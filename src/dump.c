@@ -342,7 +342,7 @@ void dump_file_c( void ) {
   char const *const off_fmt = get_offset_fmt_format();
   size_t            row_len;
 
-  if ( fin == stdin ) {
+  if ( strcmp( fin_path, "-" ) == 0 ) {
     array_name = "stdin";
   } else {
     char *const temp = free_later( check_strdup( fin_path ) );

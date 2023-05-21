@@ -215,9 +215,9 @@ void reverse_dump_file( void ) {
 
   for (;;) {
     size_t row_len;
-    char *const row_buf = fgetln( fin, &row_len );
+    char *const row_buf = fgetln( stdin, &row_len );
     if ( row_buf == NULL ) {
-      if ( unlikely( ferror( fin ) ) )
+      if ( unlikely( ferror( stdin ) ) )
         fatal_error( EX_IOERR, "can not read: %s\n", STRERROR );
       break;
     }

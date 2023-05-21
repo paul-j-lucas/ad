@@ -53,14 +53,14 @@ static void         unget_byte( char8_t );
 NODISCARD
 static bool get_byte( char8_t *pbyte ) {
   if ( likely( total_bytes_read < opt_max_bytes ) ) {
-    int const c = getc( fin );
+    int const c = getchar();
     if ( likely( c != EOF ) ) {
       ++total_bytes_read;
       assert( pbyte != NULL );
       *pbyte = STATIC_CAST(char8_t, c);
       return true;
     }
-    if ( unlikely( ferror( fin ) ) )
+    if ( unlikely( ferror( stdin ) ) )
       fatal_error( EX_IOERR,
         "\"%s\": read byte failed: %s\n", fin_path, STRERROR
       );
@@ -213,7 +213,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
  * @param byte The byte to unget.
  */
 static void unget_byte( char8_t byte ) {
-  if ( unlikely( ungetc( byte, fin ) == EOF ) )
+  if ( unlikely( ungetc( byte, stdin ) == EOF ) )
     fatal_error( EX_IOERR,
       "\"%s\": unget byte failed: %s\n", fin_path, STRERROR
     );
