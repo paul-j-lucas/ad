@@ -40,7 +40,6 @@ _Noreturn void dump_file_c( void );
 _Noreturn void reverse_dump_file( void );
 
 // extern variable definitions
-FILE       *fin;
 off_t       fin_offset;
 char const *fin_path = "-";
 FILE       *fout;
@@ -62,8 +61,6 @@ uint64_t    search_number;
  */
 static void clean_up( void ) {
   free_now();
-  if ( fin != NULL )
-    PJL_IGNORE_RV( fclose( fin ) );
   if ( fout != NULL )
     PJL_IGNORE_RV( fclose( fout ) );
 }

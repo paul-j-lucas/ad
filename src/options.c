@@ -977,7 +977,6 @@ void parse_options( int argc, char const *argv[] ) {
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
 
-  fin  = stdin;
   fout = stdout;
 
   switch ( argc ) {
@@ -1002,10 +1001,13 @@ void parse_options( int argc, char const *argv[] ) {
       FALLTHROUGH;
 
     case 0:
-      if ( strcmp( fin_path, "-" ) == 0 )
+      if ( strcmp( fin_path, "-" ) == 0 ) {
         fskip( STATIC_CAST( size_t, fin_offset ), stdin );
-      else
-        fin = check_fopen( fin_path, "r", fin_offset );
+      } else {
+        FILE *const fin = check_fopen( fin_path, "r", fin_offset );
+        check_dup2( fileno( fin ), STDIN_FILENO );
+        PJL_IGNORE_RV( fclose( fin ) );
+      }
       break;
 
     default:
