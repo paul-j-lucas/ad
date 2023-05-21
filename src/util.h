@@ -253,6 +253,11 @@ _GL_INLINE_HEADER_BEGIN
   FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
 /**
+ * No-operation statement.  (Useful for a `goto` target.)
+ */
+#define NO_OP                     ((void)0)
+
+/**
  * A special-case of #INTERNAL_ERROR() that prints an unexpected integer value.
  *
  * @param EXPR The expression having the unexpected value.

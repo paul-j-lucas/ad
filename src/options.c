@@ -384,10 +384,11 @@ static char32_t parse_codepoint( char const *s ) {
   char const *const s0 = s;
   if ( (s[0] == 'U' || s[0] == 'u') && s[1] == '+' ) {
     // convert [uU]+NNNN to 0xNNNN so strtoull() will grok it
-    char *const t = free_later( check_strdup( s ) );
-    s = memcpy( t, "0x", 2 );
+    s = memcpy( check_strdup( s ), "0x", 2 );
   }
   unsigned long long const cp_candidate = parse_ull( s );
+  if ( s != s0 )
+    FREE( s );
   if ( cp_is_valid( cp_candidate ) )
     return STATIC_CAST(char32_t, cp_candidate);
 
@@ -656,8 +657,9 @@ size_t get_offset_width( void ) {
 void parse_options( int argc, char const *argv[] ) {
   color_when_t      color_when = COLOR_WHEN_DEFAULT;
   size_t            max_lines = 0;
-  bool              print_usage = false;
-  bool              print_version = false;
+  int               opt;
+  bool              opt_help = false;
+  bool              opt_version = false;
   char const *const short_opts = make_short_opts( OPTIONS );
   size_t            size_in_bits = 0, size_in_bytes = 0;
   char32_t          utf8_pad = 0;
@@ -666,7 +668,7 @@ void parse_options( int argc, char const *argv[] ) {
   opterr = 1;
 
   for (;;) {
-    int const opt = getopt_long(
+    opt = getopt_long(
       argc, CONST_CAST( char**, argv ), short_opts, OPTIONS,
       /*longindex=*/NULL
     );
@@ -696,7 +698,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_group_by = parse_group_by( optarg );
         break;
       case COPT(HELP):
-        print_usage = true;
+        opt_help = true;
         break;
       case COPT(HEXADECIMAL):
         opt_offset_fmt = OFMT_HEX;
@@ -770,22 +772,13 @@ void parse_options( int argc, char const *argv[] ) {
         opt_verbose = true;
         break;
       case COPT(VERSION):
-        print_version = true;
+        opt_version = true;
         break;
 
-      case ':': {                       // option missing required argument
-        char opt_buf[ OPT_BUF_SIZE ];
-        fatal_error( EX_USAGE,
-          "\"%s\" requires an argument\n",
-          opt_format( STATIC_CAST( char, optopt ), opt_buf, sizeof opt_buf )
-        );
-      }
-
-      case '?':                         // invalid option
-        fatal_error( EX_USAGE,
-          "%s: '%c': invalid option; use --help or -%c for help\n",
-          me, STATIC_CAST( char, optopt ), COPT(HELP)
-        );
+      case ':':
+        goto missing_arg;
+      case '?':
+        goto invalid_opt;
 
       default:
         if ( isprint( opt ) )
@@ -932,11 +925,11 @@ void parse_options( int argc, char const *argv[] ) {
   );
   check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 
-  if ( print_usage )
+  if ( opt_help )
     usage( argc > 2 ? EX_USAGE : EX_OK );
 
-  if ( print_version ) {
-    EPRINTF( "%s\n", PACKAGE_STRING );
+  if ( opt_version ) {
+    puts( PACKAGE_STRING );
     exit( EX_OK );
   }
 
@@ -1022,6 +1015,29 @@ void parse_options( int argc, char const *argv[] ) {
     utf8_encode( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }
+
+  return;
+
+invalid_opt:
+  NO_OP;
+  // Determine whether the invalid option was short or long.
+  char const *const invalid_opt = argv[ optind - 1 ];
+  EPRINTF( "%s: ", me );
+  if ( invalid_opt != NULL && strncmp( invalid_opt, "--", 2 ) == 0 )
+    EPRINTF( "\"%s\"", invalid_opt + 2/*skip over "--"*/ );
+  else
+    EPRINTF( "'%c'", STATIC_CAST( char, optopt ) );
+  EPRINTF( ": invalid option; use --help or -h for help\n" );
+  exit( EX_USAGE );
+
+missing_arg:
+  fatal_error( EX_USAGE,
+    "\"%s\" requires an argument\n",
+    opt_format(
+      STATIC_CAST( char, opt == ':' ? optopt : opt ),
+      opt_buf, sizeof opt_buf
+    )
+  );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
