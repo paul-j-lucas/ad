@@ -1,5 +1,9 @@
 2023-05-21  Paul J. Lucas <paul@lucasmail.org>
 
+   * ad.c, ad.h, dump.c, match.c, options.c, reverse.c, util.c, util.h:
+     Eliminated fin.
+   * options.c: Now using UOPT().
+   * pjl_config.h: #undef VERSION
    * options.c, util.h: No longer using free_later() in parse_codepoint();
      moved invalid option and missing arg to goto targets.
 
