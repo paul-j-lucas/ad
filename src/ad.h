@@ -52,7 +52,7 @@ enum endian {
 typedef enum endian endian_t;
 
 extern FILE        *fin;                ///< Input file.
-extern off_t        fin_offset;         ///< Curent offset into fin.
+extern off_t        fin_offset;         ///< Current offset into fin.
 extern char const  *fin_path;           ///< Path name of fin.
 extern FILE        *fout;               ///< Output file.
 extern char const  *fout_path;          ///< Path name of fout.
