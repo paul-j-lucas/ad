@@ -247,7 +247,7 @@ bool should_colorize( color_when_t when ) {
   if ( term == NULL || term[0] == '\0' || strcmp( term, "dumb" ) == 0 )
     return false;
 
-  int const fd_out = fileno( fout );
+  int const fd_out = fileno( stdout );
   if ( when == COLOR_ISATTY )           // emulate grep's --color=auto
     return isatty( fd_out );
 
