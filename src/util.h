@@ -188,6 +188,9 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #FPUTC()
  * @sa #FPUTS()
  * @sa #PERROR_EXIT_IF()
+ * @sa #PRINTF()
+ * @sa #PUTC()
+ * @sa #PUTS()
  */
 #define FPRINTF(STREAM,...) \
   PERROR_EXIT_IF( fprintf( (STREAM), __VA_ARGS__ ) < 0, EX_IOERR )
@@ -202,6 +205,8 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #FPRINTF()
  * @sa #FPUTS()
  * @sa #PERROR_EXIT_IF()
+ * @sa #PRINTF()
+ * @sa #PUTC()
  */
 #define FPUTC(C,STREAM) \
   PERROR_EXIT_IF( putc( (C), (STREAM) ) == EOF, EX_IOERR )
@@ -216,6 +221,8 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #FPRINTF()
  * @sa #FPUTC()
  * @sa #PERROR_EXIT_IF()
+ * @sa #PRINTF()
+ * @sa #PUTS()
  */
 #define FPUTS(S,STREAM) \
   PERROR_EXIT_IF( fputs( (S), (STREAM) ) == EOF, EX_IOERR )
@@ -256,6 +263,42 @@ _GL_INLINE_HEADER_BEGIN
  * No-operation statement.  (Useful for a `goto` target.)
  */
 #define NO_OP                     ((void)0)
+
+/**
+ * Calls #FPRINTF() with `stdout`.
+ *
+ * @param ... The `fprintf()` arguments.
+ *
+ * @sa #EPRINTF()
+ * @sa #FPRINTF()
+ * @sa #PUTC()
+ * @sa #PUTS()
+ */
+#define PRINTF(...)               FPRINTF( stdout, __VA_ARGS__ )
+
+/**
+ * Calls #FPUTC() with `stdout`.
+ *
+ * @param C The character to print.
+ *
+ * @sa #EPUTC()
+ * @sa #FPUTC()
+ * @sa #PRINTF()
+ */
+#define PUTC(C)                   FPUTC( (C), stdout )
+
+/**
+ * Calls #FPUTS() with `stdout`.
+ *
+ * @param S The C string to print.
+ *
+ * @note Unlike **puts**(3), does _not_ print a newline.
+ *
+ * @sa #EPUTS()
+ * @sa #FPUTS()
+ * @sa #PRINTF()
+ */
+#define PUTS(S)                   FPUTS( (S), stdout )
 
 /**
  * A special-case of #INTERNAL_ERROR() that prints an unexpected integer value.

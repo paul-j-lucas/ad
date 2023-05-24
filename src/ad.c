@@ -42,7 +42,6 @@ _Noreturn void reverse_dump_file( void );
 // extern variable definitions
 off_t       fin_offset;
 char const *fin_path = "-";
-FILE       *fout;
 char const *fout_path = "-";
 char const *me;
 size_t      row_bytes = ROW_BYTES_DEFAULT;
@@ -61,8 +60,6 @@ uint64_t    search_number;
  */
 static void clean_up( void ) {
   free_now();
-  if ( fout != NULL )
-    PJL_IGNORE_RV( fclose( fout ) );
 }
 
 /**

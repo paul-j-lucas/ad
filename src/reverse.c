@@ -204,7 +204,7 @@ expected_hex_digit:
 void reverse_dump_file( void ) {
   char8_t bytes[ ROW_BYTES_MAX ];
   size_t  bytes_len;
-  off_t   fout_offset = -STATIC_CAST( off_t, row_bytes );
+  off_t   offset = -STATIC_CAST( off_t, row_bytes );
   size_t  line = 0;
   char    msg_fmt[ 128 ];
   off_t   new_offset;
@@ -220,22 +220,21 @@ void reverse_dump_file( void ) {
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES: {
-        off_t const row_end_offset =
-          fout_offset + STATIC_CAST( off_t, row_bytes );
+        off_t const row_end_offset = offset + STATIC_CAST( off_t, row_bytes );
         if ( unlikely( new_offset < row_end_offset ) )
           goto backwards_offset;
         if ( new_offset > row_end_offset )
-          FSEEK( fout, new_offset, SEEK_SET );
-        FWRITE( bytes, 1, bytes_len, fout );
-        fout_offset = new_offset;
+          FSEEK( stdout, new_offset, SEEK_SET );
+        FWRITE( bytes, 1, bytes_len, stdout );
+        offset = new_offset;
         break;
       }
 
       case ROW_ELIDED:
         assert( bytes_len % row_bytes == 0 );
-        fout_offset += STATIC_CAST( off_t, bytes_len / row_bytes );
+        offset += STATIC_CAST( off_t, bytes_len / row_bytes );
         for ( ; bytes_len > 0; bytes_len -= row_bytes )
-          FWRITE( bytes, 1, row_bytes, fout );
+          FWRITE( bytes, 1, row_bytes, stdout );
         break;
 
       case ROW_IGNORE:

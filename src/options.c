@@ -977,8 +977,6 @@ void parse_options( int argc, char const *argv[] ) {
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
 
-  fout = stdout;
-
   switch ( argc ) {
     case 2:                             // infile & outfile
       fout_path = argv[2];
@@ -992,7 +990,10 @@ void parse_options( int argc, char const *argv[] ) {
         // and O_CREAT but not O_TRUNC, then use fdopen(3) to wrap a FILE
         // around it.
         //
-        fout = fdopen( check_open( fout_path, O_WRONLY | O_CREAT, 0 ), "w" );
+        int const fd = check_open( fout_path, O_WRONLY | O_CREAT, 0 );
+        FILE *const fout = fdopen( fd, "w" );
+        check_dup2( fileno( fout ), STDOUT_FILENO );
+        PJL_IGNORE_RV( fclose( fout ) );
       }
       FALLTHROUGH;
 
