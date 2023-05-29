@@ -21,6 +21,7 @@
 bin_PROGRAMS =	ad
 check_PROGRAMS=	red_black_test slist_test
 
+AM_CFLAGS =	$(AD_CFLAGS)
 AM_CPPFLAGS =	-I$(top_srcdir)/lib -I$(top_builddir)/lib
 if ENABLE_FLEX_DEBUG
 AM_LFLAGS =     -d
