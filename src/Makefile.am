@@ -20,6 +20,7 @@
 
 bin_PROGRAMS = ad
 
+AM_CFLAGS = $(AD_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
 LDADD = $(top_builddir)/lib/libgnu.a
 
