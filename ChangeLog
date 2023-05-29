@@ -1,3 +1,13 @@
+2023-05-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, src/Makefile.am: Added AD_CFLAGS so as not to compile GnuLib
+     code with ad CFLAGS.
+
+2023-05-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, ad.h, color.c, dump.c, options.c, reverse.c, util.h: Eliminated
+     fout.
+
 2023-05-21  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, ad.h, dump.c, match.c, options.c, reverse.c, util.c, util.h:
