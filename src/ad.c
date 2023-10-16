@@ -102,7 +102,7 @@ int main( int argc, char const *argv[const] ) {
   init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
-  else if ( opt_c_fmt != 0 )
+  else if ( opt_c_fmt != CFMT_NONE )
     dump_file_c();
   else
     dump_file();

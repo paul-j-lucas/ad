@@ -36,7 +36,8 @@
  * C dump formats.
  */
 enum c_fmt {
-  CFMT_DEFAULT  = 1 << 0,
+  CFMT_NONE     = 0,                    ///< No format.
+  CFMT_DEFAULT  = 1 << 0,               ///< Default format.
   CFMT_CHAR8_T  = 1 << 1,               ///< Declare array type as `char8_t`.
   CFMT_UNSIGNED = 1 << 2,               ///< Declare len type as `unsigned`.
   CFMT_INT      = 1 << 3,               ///< Declare len type as `int`.
