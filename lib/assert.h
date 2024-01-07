@@ -1,6 +1,6 @@
 /* DO NOT EDIT! GENERATED AUTOMATICALLY! */
 /* Substitute for and wrapper around <assert.h>
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -28,7 +28,7 @@
 /* The definition of static_assert is copied here.  */
 /* Compile-time assert-like macros.
 
-   Copyright (C) 2005-2006, 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2009-2024 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -216,9 +216,9 @@ template <int w>
     _gl_static_assert_type<(R) ? 1 : -1>
 #elif defined _GL_HAVE__STATIC_ASSERT
 # define _GL_STATIC_ASSERT_TYPE(R, DIAGNOSTIC) \
-    struct {                                   \
-      _Static_assert (R, DIAGNOSTIC);          \
-      int _gl_dummy;                          \
+    struct { \
+      _Static_assert (R, DIAGNOSTIC); \
+      int _gl_dummy; \
     }
 #else
 # define _GL_STATIC_ASSERT_TYPE(R, DIAGNOSTIC) \
@@ -240,8 +240,8 @@ template <int w>
 #elif defined _GL_HAVE__STATIC_ASSERT
 # define _GL_STATIC_ASSERT(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
 #else
-# define _GL_STATIC_ASSERT(R, DIAGNOSTIC, ...)                                \
-    extern int (*_GL_GENSYM (_gl_static_assert_function) (void))	       \
+# define _GL_STATIC_ASSERT(R, DIAGNOSTIC, ...) \
+    extern int (*_GL_GENSYM (_gl_static_assert_function) (void)) \
       [_GL_STATIC_ASSERT_TRUE (R, DIAGNOSTIC)]
 # if 4 < __GNUC__ + (6 <= __GNUC_MINOR__)
 #  pragma GCC diagnostic ignored "-Wnested-externs"
@@ -269,10 +269,16 @@ template <int w>
 #   define _Static_assert(...) \
       _GL_STATIC_ASSERT (__VA_ARGS__, "static assertion failed", -)
 #  else
-    /* Work around MSVC preprocessor incompatibility with ISO C; see
-       <https://stackoverflow.com/questions/5134523/>.  */
-#   define _Static_assert(R, ...) \
-      _GL_STATIC_ASSERT ((R), "static assertion failed", -)
+#   if defined __cplusplus && _MSC_VER >= 1910
+     /* In MSVC 14.1 or newer, static_assert accepts one or two arguments,
+        but _Static_assert is not defined.  */
+#    define _Static_assert static_assert
+#   else
+     /* Work around MSVC preprocessor incompatibility with ISO C; see
+        <https://stackoverflow.com/questions/5134523/>.  */
+#    define _Static_assert(R, ...) \
+       _GL_STATIC_ASSERT ((R), "static assertion failed", -)
+#   endif
 #  endif
 # endif
 /* Define static_assert if needed.  */
@@ -280,7 +286,7 @@ template <int w>
       && __STDC_VERSION__ < 202311 \
       && (!defined __cplusplus \
           || (__cpp_static_assert < 201411 \
-              && __GNUG__ < 6 && __clang_major__ < 6)))
+              && __GNUG__ < 6 && __clang_major__ < 6 && _MSC_VER < 1910)))
 #  if defined __cplusplus && _MSC_VER >= 1900 && !defined __clang__
 /* MSVC 14 in C++ mode supports the two-arguments static_assert but not
    the one-argument static_assert, and it does not support _Static_assert.
