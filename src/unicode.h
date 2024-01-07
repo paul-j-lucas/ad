@@ -64,9 +64,9 @@ _GL_INLINE_HEADER_BEGIN
  * When to dump in UTF-8.
  */
 enum utf8_when {
-  UTF8_NEVER,                           // never dump in UTF-8
-  UTF8_ENCODING,                        // dump in UTF-8 only if encoding is
-  UTF8_ALWAYS                           // always dump in UTF-8
+  UTF8_NEVER,                           ///< Never dump in UTF-8.
+  UTF8_ENCODING,                        ///< Dump in UTF-8 only if encoding is.
+  UTF8_ALWAYS                           ///< Always dump in UTF-8.
 };
 typedef enum utf8_when utf8_when_t;
 

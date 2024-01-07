@@ -1,5 +1,5 @@
-# stdlib_h.m4 serial 73
-dnl Copyright (C) 2007-2023 Free Software Foundation, Inc.
+# stdlib_h.m4 serial 76
+dnl Copyright (C) 2007-2024 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -66,7 +66,7 @@ int main ()
   return result;
 }]])],
           [gl_cv_macro_MB_CUR_MAX_good=yes],
-          [gl_cv_macro_MB_CUR_MAX_good=no]
+          [gl_cv_macro_MB_CUR_MAX_good=no],
           [:])
       fi
     ])
@@ -134,6 +134,7 @@ AC_DEFUN([gl_STDLIB_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PTSNAME_R])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PUTENV])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_QSORT_R])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RAND])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RANDOM])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RANDOM_R])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REALLOCARRAY])
@@ -175,6 +176,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   HAVE_DECL_FCVT=1;          AC_SUBST([HAVE_DECL_FCVT])
   HAVE_DECL_GCVT=1;          AC_SUBST([HAVE_DECL_GCVT])
   HAVE_DECL_GETLOADAVG=1;    AC_SUBST([HAVE_DECL_GETLOADAVG])
+  HAVE_DECL_PROGRAM_INVOCATION_NAME=1; AC_SUBST([HAVE_DECL_PROGRAM_INVOCATION_NAME])
   HAVE_GETPROGNAME=1;        AC_SUBST([HAVE_GETPROGNAME])
   HAVE_GETSUBOPT=1;          AC_SUBST([HAVE_GETSUBOPT])
   HAVE_GRANTPT=1;            AC_SUBST([HAVE_GRANTPT])
@@ -236,6 +238,7 @@ AC_DEFUN([gl_STDLIB_H_DEFAULTS],
   REPLACE_PTSNAME_R=0;       AC_SUBST([REPLACE_PTSNAME_R])
   REPLACE_PUTENV=0;          AC_SUBST([REPLACE_PUTENV])
   REPLACE_QSORT_R=0;         AC_SUBST([REPLACE_QSORT_R])
+  REPLACE_RAND=0;            AC_SUBST([REPLACE_RAND])
   REPLACE_RANDOM=0;          AC_SUBST([REPLACE_RANDOM])
   REPLACE_RANDOM_R=0;        AC_SUBST([REPLACE_RANDOM_R])
   REPLACE_REALLOC_FOR_REALLOC_GNU=0;    AC_SUBST([REPLACE_REALLOC_FOR_REALLOC_GNU])

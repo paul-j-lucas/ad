@@ -325,8 +325,8 @@ static char const* opt_get_long( char short_opt ) {
   return "";
 }
 
-#define ADD_CFMT(F) \
-  BLOCK( if ( (c_fmt & CFMT_##F) != 0 ) goto dup_format; c_fmt |= CFMT_##F; )
+#define ADD_CFMT(F) BLOCK( \
+  if ( (c_fmt & CFMT_##F) != CFMT_NONE ) goto dup_format; c_fmt |= CFMT_##F; )
 
 /**
  * Parses a C array format value.
@@ -360,8 +360,8 @@ static c_fmt_t parse_c_fmt( char const *s ) {
           );
       } // switch
     } // for
-    if ( (c_fmt & CFMT_SIZE_T) != 0 &&
-         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != 0 ) {
+    if ( (c_fmt & CFMT_SIZE_T) != CFMT_NONE &&
+         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != CFMT_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " COPT(TOTAL_MATCHES) and [ilu] are mutually exclusive\n",
