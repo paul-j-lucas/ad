@@ -53,8 +53,8 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * %strbuf maintains a C-style string that additionally knows its length and
- * capacity and can grow automatically when appended to.
+ * <code>%strbuf</code> maintains a C-style string that additionally knows its
+ * length and capacity and can grow automatically when appended to.
  */
 struct strbuf {
   char   *str;                          ///< String.
@@ -82,13 +82,15 @@ void strbuf_cleanup( strbuf_t *sbuf );
  *
  * @param sbuf A pointer to the \ref strbuf to initialize.
  *
+ * @note This need not be called for either global or `static` buffers.
+ *
  * @sa strbuf_cleanup()
  * @sa strbuf_reset()
  * @sa strbuf_take()
  */
 STRBUF_H_INLINE
 void strbuf_init( strbuf_t *sbuf ) {
-  MEM_ZERO( sbuf );
+  *sbuf = (strbuf_t){ 0 };
 }
 
 /**
@@ -165,6 +167,17 @@ STRBUF_H_INLINE
 void strbuf_puts( strbuf_t *sbuf, char const *s ) {
   strbuf_putsn( sbuf, s, strlen( s ) );
 }
+
+/**
+ * Appends \a s, quoted with \a quote and with non-space whitespace,
+ * backslashes, and \a quote escaped, onto the end of \a sbuf growing the
+ * buffer if necessary.
+ *
+ * @param sbuf A pointer to the \ref strbuf to append onto.
+ * @param quote The quote character to use, either `'` or `"`.
+ * @param s The string to put.
+ */
+void strbuf_puts_quoted( strbuf_t *sbuf, char quote, char const *s );
 
 /**
  * Ensures at least \a res_len additional bytes of capacity exist in \a sbuf.

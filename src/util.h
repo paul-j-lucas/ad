@@ -454,7 +454,7 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #REALLOC()
  */
 #define MALLOC(TYPE,N) \
-  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+  check_realloc( NULL, sizeof(TYPE) * STATIC_CAST( size_t, (N) ) )
 
 /**
  * Zeros the memory pointed to by \a PTR.  The number of bytes to zero is given
@@ -513,14 +513,13 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @param PTR The pointer to memory to reallocate.  It is set to the newly
  * reallocated memory.
- * @param TYPE The type of object to reallocate.
  * @param N The number of objects of \a TYPE to reallocate.
  *
  * @sa check_realloc()
  * @sa #MALLOC()
  */
-#define REALLOC(PTR,TYPE,N) \
-  ((PTR) = check_realloc( (PTR), sizeof(TYPE) * (N) ))
+#define REALLOC(PTR,N) \
+  ((PTR) = check_realloc( (PTR), sizeof(*(PTR)) * (N) ))
 
 /**
  * C version of C++'s `static_cast`.

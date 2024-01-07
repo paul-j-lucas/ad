@@ -29,11 +29,13 @@
 #define SLIST_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "slist.h"
+#include "util.h"
 
 /// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
+#include <stddef.h>                     /* for NULL */
 #include <stdint.h>
 
 /// @endcond
@@ -138,16 +140,18 @@ slist_t slist_dup( slist_t const *src_list, ssize_t n,
   return dst_list;
 }
 
-void slist_free_if( slist_t *list, slist_pred_fn_t pred_fn ) {
+bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn ) {
   assert( list != NULL );
   assert( pred_fn != NULL );
+
+  size_t const len_orig = list->len;
 
   // special case: predicate matches list->head
   for (;;) {
     slist_node_t *const curr = list->head;
     if ( curr == NULL )
-      return;
-    if ( !(*pred_fn)( curr->data ) )
+      goto done;
+    if ( !(*pred_fn)( curr ) )
       break;
     if ( list->tail == curr )
       list->tail = NULL;
@@ -166,7 +170,7 @@ void slist_free_if( slist_t *list, slist_pred_fn_t pred_fn ) {
     slist_node_t *const curr = prev->next;
     if ( curr == NULL )
       break;
-    if ( !(*pred_fn)( curr->data ) ) {
+    if ( !(*pred_fn)( curr ) ) {
       prev = curr;
       continue;
     }
@@ -176,6 +180,37 @@ void slist_free_if( slist_t *list, slist_pred_fn_t pred_fn ) {
     free( curr );
     --list->len;
   } // for
+
+done:
+  return list->len < len_orig;
+}
+
+slist_t slist_move( slist_t *list ) {
+  slist_t rv_list;
+  if ( list != NULL ) {
+    rv_list = *list;
+    slist_init( list );
+  } else {
+    slist_init( &rv_list );
+  }
+  return rv_list;
+}
+
+void* slist_pop_back( slist_t *list ) {
+  assert( list != NULL );
+  if ( list->len < 2 )
+    return slist_pop_front( list );
+
+  slist_node_t *new_tail = list->head;
+  while ( new_tail->next != list->tail )
+    new_tail = new_tail->next;
+  new_tail->next = NULL;
+
+  void *const data = list->tail->data;
+  free( list->tail );
+  list->tail = new_tail;
+  --list->len;
+  return data;
 }
 
 void* slist_pop_front( slist_t *list ) {

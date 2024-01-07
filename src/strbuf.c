@@ -39,6 +39,11 @@
 
 /// @endcond
 
+/**
+ * @addtogroup strbuf-group
+ * @{
+ */
+
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -50,7 +55,7 @@
 NODISCARD
 static size_t next_pow_2( size_t n ) {
   if ( n == 0 )
-    return 1;
+    return 1;                           // LCOV_EXCL_LINE
   while ( (n & (n - 1)) != 0 )
     n &= n - 1;
   return n << 1;
@@ -143,9 +148,54 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
 void strbuf_putsn( strbuf_t *sbuf, char const *s, size_t s_len ) {
   assert( s != NULL );
   strbuf_reserve( sbuf, s_len );
-  strncpy( sbuf->str + sbuf->len, s, s_len );
+
+  // Use memcpy() to eliminate "'strncpy' output truncated before terminating
+  // nul copying 1 byte from a string of the same length" warning.
+  memcpy( sbuf->str + sbuf->len, s, s_len );
+
   sbuf->len += s_len;
   sbuf->str[ sbuf->len ] = '\0';
+}
+
+void strbuf_puts_quoted( strbuf_t *sbuf, char quote, char const *s ) {
+  assert( sbuf != NULL );
+  assert( quote == '\'' || quote == '"' );
+  assert( s != NULL );
+
+  bool in_quote = false;
+  char const other_quote = quote == '\'' ? '"' : '\'';
+
+  strbuf_putc( sbuf, quote );
+  for ( char prev = '\0'; *s != '\0'; prev = *s++ ) {
+    switch ( *s ) {
+      case '\b': strbuf_putsn( sbuf, "\\b", 2 ); continue;
+      case '\f': strbuf_putsn( sbuf, "\\f", 2 ); continue;
+      case '\n': strbuf_putsn( sbuf, "\\n", 2 ); continue;
+      case '\r': strbuf_putsn( sbuf, "\\r", 2 ); continue;
+      case '\t': strbuf_putsn( sbuf, "\\t", 2 ); continue;
+      case '\v': strbuf_putsn( sbuf, "\\v", 2 ); continue;
+      case '\\':
+        if ( in_quote ) {
+          if ( prev != '\\' )
+            strbuf_putsn( sbuf, "\\\\", 2 );
+          continue;
+        }
+        break;
+    } // switch
+
+    if ( prev != '\\' ) {
+      if ( *s == quote ) {
+        strbuf_putc( sbuf, '\\' );
+        in_quote = !in_quote;
+      }
+      else if ( *s == other_quote ) {
+        in_quote = !in_quote;
+      }
+    }
+
+    strbuf_putc( sbuf, *s );
+  } // for
+  strbuf_putc( sbuf, quote );
 }
 
 bool strbuf_reserve( strbuf_t *sbuf, size_t res_len ) {
@@ -158,7 +208,7 @@ bool strbuf_reserve( strbuf_t *sbuf, size_t res_len ) {
   // guaranteed to be at least n+1.
   //
   sbuf->cap = next_pow_2( sbuf->len + res_len );
-  REALLOC( sbuf->str, char, sbuf->cap );
+  REALLOC( sbuf->str, sbuf->cap );
   return true;
 }
 
@@ -184,4 +234,7 @@ void strbuf_sepsn_putsn( strbuf_t *sbuf, char const *sep, size_t sep_len,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */
