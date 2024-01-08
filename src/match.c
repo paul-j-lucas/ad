@@ -104,7 +104,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
 
   *matches = false;
 
-  for ( ;; ) {
+  for (;;) {
     switch ( state ) {
 
 #define GOTO_STATE(S)       { buf_pos = 0; state = (S); continue; }

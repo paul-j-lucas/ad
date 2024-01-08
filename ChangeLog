@@ -1,5 +1,7 @@
 2024-01-08  Paul J. Lucas <paul@lucasmail.org>
 
+   * color.c, match.c, options.c: Now using FOREACH_ARRAY_ELEMENT().
+   * util.h: Added ARRAY_SIZE() and FOREACH_ARRAY_ELEMENT().
    * ad.1, ad.c, color.c, color.h, options.c, options.h, util.h: Made
      color-handling more inline with the way cdecl does color.
 

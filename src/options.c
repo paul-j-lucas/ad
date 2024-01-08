@@ -441,13 +441,12 @@ static color_when_t parse_color_when( char const *when ) {
     { "not_file",  COLOR_NOT_FILE },    // !ISREG( stdout )
     { "not_isreg", COLOR_NOT_FILE },    // synonym for not_isfile
     { "tty",       COLOR_ISATTY   },    // synonym for isatty
-    { NULL,        COLOR_NEVER    }
   };
 
   assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when != NULL; ++m ) {
+  FOREACH_ARRAY_ELEMENT( colorize_map_t, m, COLORIZE_MAP ) {
     if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_colorization;
     // sum sizes of names in case we need to construct an error message
@@ -457,7 +456,7 @@ static color_when_t parse_color_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( colorize_map_t const *m = COLORIZE_MAP; m->map_when != NULL; ++m ) {
+  FOREACH_ARRAY_ELEMENT( colorize_map_t, m, COLORIZE_MAP ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
@@ -520,13 +519,12 @@ static utf8_when_t parse_utf8_when( char const *when ) {
     { "auto",     UTF8_ENCODING },
     { "encoding", UTF8_ENCODING },      // explicit synonym for auto
     { "never",    UTF8_NEVER    },
-    { NULL,       UTF8_NEVER    }
   };
 
   assert( when != NULL );
   size_t names_buf_size = 1;            // for trailing NULL
 
-  for ( utf8_map_t const *m = UTF8_MAP; m->map_when != NULL; ++m ) {
+  FOREACH_ARRAY_ELEMENT( utf8_map_t, m, UTF8_MAP ) {
     if ( strcasecmp( when, m->map_when ) == 0 )
       return m->map_utf8;
     // sum sizes of names in case we need to construct an error message
@@ -536,7 +534,7 @@ static utf8_when_t parse_utf8_when( char const *when ) {
   // name not found: construct valid name list for an error message
   char *const names_buf = free_later( MALLOC( char, names_buf_size ) );
   char *pnames = names_buf;
-  for ( utf8_map_t const *m = UTF8_MAP; m->map_when != NULL; ++m ) {
+  FOREACH_ARRAY_ELEMENT( utf8_map_t, m, UTF8_MAP ) {
     if ( pnames > names_buf ) {
       strcpy( pnames, ", " );
       pnames += 2;
