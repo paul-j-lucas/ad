@@ -172,7 +172,7 @@ static void sgr_set_cap_ne( char const *sgr_color ) {
  */
 NODISCARD
 static bool colors_parse( char const *capabilities ) {
-  bool set_something = false;
+  bool set_any = false;
 
   if ( capabilities != NULL ) {
     // free this later since the sgr_* variables point to substrings
@@ -187,24 +187,23 @@ static bool colors_parse( char const *capabilities ) {
       { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
       { "se", SET_SGR( sep          ) },    // grep: separator
       { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
-      { NULL, NULL, NULL              }
     };
 
     for ( char *cap_name_val;
           (cap_name_val = strsep( &next_cap, ":" )) != NULL; ) {
       char const *const cap_name = strsep( &cap_name_val, "=" );
-      for ( color_cap_t const *cap = COLOR_CAPS; cap->cap_name; ++cap ) {
+      FOREACH_ARRAY_ELEMENT( color_cap_t, cap, COLOR_CAPS ) {
         if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
           char const *const cap_value = strsep( &cap_name_val, "=" );
           if ( sgr_cap_set( cap, cap_value ) )
-            set_something = true;
+            set_any = true;
           break;
         }
       } // for
     } // for
   }
 
-  return set_something;
+  return set_any;
 }
 
 /**
