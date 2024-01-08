@@ -39,10 +39,13 @@
 // Color capabilities.  Names containing Upper-case are unique to cdecl and
 // upper-case to avoid conflict with gcc.
 //
-#define CAP_BYTE_OFFSET           "bn"
-#define CAP_ELIDED_COUNT          "EC"
-#define CAP_MATCHED_BOTH          "MB"
-#define CAP_SEPARATOR             "se"
+#define COLOR_CAP_BYTE_OFFSET     "bn"
+#define COLOR_CAP_ELIDED_COUNT    "EC"
+#define COLOR_CAP_MATCHED_BOTH    "MB"
+#define COLOR_CAP_SEPARATOR       "se"
+
+#define CALL_FN(FN)   NULL, (sgr_ ## FN)
+#define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -57,14 +60,9 @@ struct color_cap {
 };
 typedef struct color_cap color_cap_t;
 
-char const  COLORS_DEFAULT[] =
-  CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
-  CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
-  CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
-  CAP_SEPARATOR     "=" SGR_FG_CYAN;
+///////////////////////////////////////////////////////////////////////////////
 
 // extern variable definitions
-bool        colorize;
 char const *sgr_start = SGR_START SGR_EL;
 char const *sgr_end   = SGR_END SGR_EL;
 char const *sgr_offset;
@@ -165,41 +163,32 @@ static void sgr_set_cap_ne( char const *sgr_color ) {
   sgr_end   = SGR_END;
 }
 
-#define CALL_FN(FN)   NULL, (sgr_ ## FN)
-#define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
-
 /**
- * Color capabilities table.  Upper-case names are unique to us and upper-case
- * to avoid conflict with grep.  Lower-case names are for grep compatibility.
+ * Parses and sets the sequence of grep color capabilities.
+ *
+ * @param capabilities The grep capabilities to parse.
+ * @return Returns \c true only if at least one capability was parsed
+ * successfully.
  */
-static color_cap_t const COLOR_CAPS[] = {
-  { "bn", SET_SGR( offset       ) },    // grep: byte offset
-  { "EC", SET_SGR( elided       ) },    // elided count
-  { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
-  { "MH", SET_SGR( hex_match    ) },    // matched hex
-  { "MB", CALL_FN( set_cap_MB   ) },    // matched both
-  { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
-  { "se", SET_SGR( sep          ) },    // grep: separator
-  { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
-  { NULL, NULL, NULL              }
-};
-
-////////// extern functions ///////////////////////////////////////////////////
-
-bool parse_grep_color( char const *sgr_color ) {
-  if ( sgr_is_valid( sgr_color ) ) {
-    sgr_set_cap_MB( sgr_color );
-    return true;
-  }
-  return false;
-}
-
-bool parse_grep_colors( char const *capabilities ) {
+NODISCARD
+static bool colors_parse( char const *capabilities ) {
   bool set_something = false;
 
   if ( capabilities != NULL ) {
     // free this later since the sgr_* variables point to substrings
     char *next_cap = free_later( check_strdup( capabilities ) );
+
+    static color_cap_t const COLOR_CAPS[] = {
+      { "bn", SET_SGR( offset       ) },    // grep: byte offset
+      { "EC", SET_SGR( elided       ) },    // elided count
+      { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
+      { "MH", SET_SGR( hex_match    ) },    // matched hex
+      { "MB", CALL_FN( set_cap_MB   ) },    // matched both
+      { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
+      { "se", SET_SGR( sep          ) },    // grep: separator
+      { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
+      { NULL, NULL, NULL              }
+    };
 
     for ( char *cap_name_val;
           (cap_name_val = strsep( &next_cap, ":" )) != NULL; ) {
@@ -218,7 +207,14 @@ bool parse_grep_colors( char const *capabilities ) {
   return set_something;
 }
 
-bool should_colorize( color_when_t when ) {
+/**
+ * Determines whether we should emit escape sequences for color.
+ *
+ * @param c The color_when value.
+ * @return Returns \c true only if we should do color.
+ */
+NODISCARD
+static bool should_colorize( color_when_t when ) {
   switch ( when ) {                     // handle easy cases
     case COLOR_ALWAYS: return true;
     case COLOR_NEVER : return false;
@@ -255,6 +251,26 @@ bool should_colorize( color_when_t when ) {
   // Hence, we want to do color _except_ when ISREG=T.
   //
   return !is_file( fd_out );
+}
+
+////////// extern functions ///////////////////////////////////////////////////
+
+void colors_init( void ) {
+  ASSERT_RUN_ONCE();
+
+  if ( !should_colorize( opt_color_when ) )
+    return;
+  if ( colors_parse( getenv( "AD_COLORS" ) ) )
+    return;
+
+  char const COLORS_DEFAULT[] =
+    COLOR_CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
+    COLOR_CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
+    COLOR_CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+    COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN;
+
+  MAYBE_UNUSED bool const ok = colors_parse( COLORS_DEFAULT );
+  assert( ok );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

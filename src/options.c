@@ -96,6 +96,7 @@
 
 // option extern variable definitions
 bool          opt_case_insensitive;
+color_when_t  opt_color_when = COLOR_WHEN_DEFAULT;
 c_fmt_t       opt_c_fmt;
 unsigned      opt_group_by = GROUP_BY_DEFAULT;
 size_t        opt_max_bytes = SIZE_MAX;
@@ -667,7 +668,6 @@ size_t get_offset_width( void ) {
 }
 
 void parse_options( int argc, char const *argv[] ) {
-  color_when_t      color_when = COLOR_WHEN_DEFAULT;
   size_t            max_lines = 0;
   int               opt;
   bool              opt_help = false;
@@ -701,7 +701,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_c_fmt = parse_c_fmt( optarg );
         break;
       case COPT(COLOR):
-        color_when = parse_color_when( optarg );
+        opt_color_when = parse_color_when( optarg );
         break;
       case COPT(DECIMAL):
         opt_offset_fmt = OFMT_DEC;
@@ -1014,15 +1014,6 @@ void parse_options( int argc, char const *argv[] ) {
     default:
       usage( EX_USAGE );
   } // switch
-
-  colorize = should_colorize( color_when );
-  if ( colorize ) {
-    if ( !(parse_grep_colors( getenv( "AD_COLORS"   ) )
-        || parse_grep_colors( getenv( "GREP_COLORS" ) )
-        || parse_grep_color ( getenv( "GREP_COLOR"  ) )) ) {
-      PJL_IGNORE_RV( parse_grep_colors( COLORS_DEFAULT ) );
-    }
-  }
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
