@@ -109,6 +109,17 @@ _GL_INLINE_HEADER_BEGIN
 #define NAME2_HELPER(A,B)         A##B
 #define STRINGIFY_HELPER(X)       #X
 
+/**
+ * Gets the number of elements of the given array.
+ *
+ * @param ARRAY The array to get the number of elements of.
+ *
+ * @note \a ARRAY _must_ be a statically allocated array.
+ *
+ * @sa #FOREACH_ARRAY_ELEMENT()
+ */
+#define ARRAY_SIZE(ARRAY)         (sizeof(ARRAY) / sizeof(0[ARRAY]))
+
 #ifndef NDEBUG
 /**
  * Asserts that this line of code is run at most once --- useful in
@@ -194,6 +205,20 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define FFLUSH(STREAM) \
   PERROR_EXIT_IF( fflush( STREAM ) != 0, EX_IOERR )
+
+/**
+ * Convenience macro for iterating over the elements of a static array.
+ *
+ * @param TYPE The type of element.
+ * @param VAR The element loop variable.
+ * @param ARRAY The array to iterate over.
+ *
+ * @note \a ARRAY _must_ be a statically allocated array.
+ *
+ * @sa #ARRAY_SIZE()
+ */
+#define FOREACH_ARRAY_ELEMENT(TYPE,VAR,ARRAY) \
+  for ( TYPE const *VAR = (ARRAY); VAR < (ARRAY) + ARRAY_SIZE(ARRAY); ++VAR )
 
 /**
  * Calls **fprintf**(3) on \a STREAM, checks for an error, and exits if there
