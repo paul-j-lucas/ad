@@ -21,6 +21,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
+#include "color.h"
 #include "options.h"
 #include "util.h"
 
@@ -75,6 +76,7 @@ static void init( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
   check_atexit( clean_up );
   parse_options( argc, argv );
+  colors_init();
 
   if ( search_buf != NULL )             // searching for a string?
     search_len = strlen( search_buf );

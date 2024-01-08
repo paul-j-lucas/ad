@@ -76,11 +76,7 @@ enum color_when {
 };
 typedef enum color_when color_when_t;
 
-// extern constants
-extern char const   COLORS_DEFAULT[];   ///< Default colors.
-
 // extern variables
-extern bool         colorize;           ///< Dump in color?
 extern char const  *sgr_ascii_match;    ///< ASCII match color.
 extern char const  *sgr_caret;          ///< Color of the caret `^`.
 extern char const  *sgr_elided;         ///< Elided byte count color.
@@ -88,10 +84,6 @@ extern char const  *sgr_end;            ///< End color output.
 extern char const  *sgr_error;          ///< Error color output.
 extern char const  *sgr_hex_match;      ///< Hex match color.
 extern char const  *sgr_locus;          ///< Color of error location.
-extern char const  *sgr_offset;         ///< Offset color.
-extern char const  *sgr_sep;            ///< Separator color.
-extern char const  *sgr_start;          ///< Start color output.
-extern char const  *sgr_warning;        ///< Color of `warning`.
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -106,7 +98,7 @@ extern char const  *sgr_warning;        ///< Color of `warning`.
  */
 COLOR_H_INLINE
 void color_end( FILE *file, char const *sgr_color ) {
-  if ( colorize && sgr_color != NULL )
+  if ( sgr_color != NULL )
     FPUTS( SGR_END SGR_EL, file );
 }
 
@@ -120,37 +112,16 @@ void color_end( FILE *file, char const *sgr_color ) {
  */
 COLOR_H_INLINE
 void color_start( FILE *file, char const *sgr_color ) {
-  if ( colorize && sgr_color != NULL )
+  if ( sgr_color != NULL )
     FPRINTF( file, SGR_START SGR_EL, sgr_color );
 }
 
 /**
- * Parses a single SGR color and, if successful, sets the match color.
+ * Initializes when to print in color and the colors.
  *
- * @param sgr_color An SGR color to parse.
- * @return Returns \c true only if the value was parsed successfully.
+ * @note This function must be called exactly once.
  */
-NODISCARD
-bool parse_grep_color( char const *sgr_color );
-
-/**
- * Parses and sets the sequence of grep color capabilities.
- *
- * @param capabilities The grep capabilities to parse.
- * @return Returns \c true only if at least one capability was parsed
- * successfully.
- */
-NODISCARD
-bool parse_grep_colors( char const *capabilities );
-
-/**
- * Determines whether we should emit escape sequences for color.
- *
- * @param c The color_when value.
- * @return Returns \c true only if we should do color.
- */
-NODISCARD
-bool should_colorize( color_when_t c );
+void colors_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -107,8 +107,26 @@ _GL_INLINE_HEADER_BEGIN
 #define CHARIFY_y 'y'
 #define CHARIFY_z 'z'
 
-#define CHARIFY_HELPER(X)         CHARIFY_##X
+#define NAME2_HELPER(A,B)         A##B
 #define STRINGIFY_HELPER(X)       #X
+
+#ifndef NDEBUG
+/**
+ * Asserts that this line of code is run at most once --- useful in
+ * initialization functions that must be called at most once.  For example:
+ *
+ *      void initialize() {
+ *        ASSERT_RUN_ONCE();
+ *        // ...
+ *      }
+ */
+#define ASSERT_RUN_ONCE() BLOCK(    \
+  static bool UNIQUE_NAME(called);  \
+  assert( !UNIQUE_NAME(called) );   \
+  UNIQUE_NAME(called) = true; )
+#else
+#define ASSERT_RUN_ONCE()         NO_OP
+#endif /* NDEBUG */
 
 /**
  * Gets the number of elements of the given array.
@@ -167,7 +185,7 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @sa #STRINGIFY()
  */
-#define CHARIFY(X)                CHARIFY_HELPER(X)
+#define CHARIFY(X)                NAME2(CHARIFY_,X)
 
 /**
  * C version of C++'s `const_cast`.
@@ -309,6 +327,16 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define FREE(PTR)                 free( CONST_CAST( void*, (PTR) ) )
 
+/**
+ * Calls **fseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param STREAM The `FILE` stream to check for an error.
+ * @param OFFSET The offset to seek to.
+ * @param WHENCE What \a OFFSET if relative to.
+ */
+#define FSEEK(STREAM,OFFSET,WHENCE) \
+  PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+
 /** The fseek(3) function to use. */
 #ifdef HAVE_FSEEKO
 # define FSEEK_FN fseeko
@@ -337,6 +365,7 @@ _GL_INLINE_HEADER_BEGIN
   PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
+>>>>>>> master
  * Calls **fstat**(3), checks for an error, and exits if there was one.
  *
  * @param FD The file descriptor to stat.
@@ -361,12 +390,102 @@ _GL_INLINE_HEADER_BEGIN
 #define INTERNAL_ERROR(FORMAT,...) \
   fatal_error( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
+#ifdef __GNUC__
+
+/**
+ * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * marginally better performance.
+ *
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #unlikely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
+ */
+#define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
+
+/**
+ * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
+ * non-zero (true) allowing the compiler to better order code blocks for
+ * marginally better performance.
+ *
+ * @param EXPR An expression that can be cast to `bool`.
+ *
+ * @sa #likely()
+ * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
+ */
+#define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
+
+#else
+# define likely(EXPR)             (EXPR)
+# define unlikely(EXPR)           (EXPR)
+#endif /* __GNUC__ */
+
+/**
+ * Calls **lseek**(3), checks for an error, and exits if there was one.
+ *
+ * @param FD The file descriptor to seek.
+ * @param OFFSET The file offset to seek to.
+ * @param WHENCE Where \a OFFSET is relative to.
+ */
+#define LSEEK(FD,OFFSET,WHENCE) \
+  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
+
+/**
+ * Calls **malloc**(3) and casts the result to \a TYPE.
+ *
+ * @param TYPE The type to allocate.
+ * @param N The number of objects of \a TYPE to allocate.
+ * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
+ */
+#define MALLOC(TYPE,N) \
+  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+
+/**
+ * Concatenate \a A and \a B together to form a single token.
+ *
+ * @remarks This macro is needed instead of simply using `##` when either
+ * argument needs to be expanded first, e.g., `__LINE__`.
+ *
+ * @param A The first name.
+ * @param B The second name.
+ */
+#define NAME2(A,B)                NAME2_HELPER(A,B)
+
 /**
  * No-operation statement.  (Useful for a `goto` target.)
  */
 #define NO_OP                     ((void)0)
 
-#ifdef __GNUC__
+/**
+ * If \a EXPR is `true`, prints an error message for `errno` to standard error
+ * and exits with status \a STATUS.
+ *
+ * @param EXPR The expression.
+ * @param STATUS The exit status code.
+ *
+ * @sa fatal_error()
+ * @sa #INTERNAL_ERROR()
+ * @sa perror_exit()
+ */
+#define PERROR_EXIT_IF( EXPR, STATUS ) \
+  BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
+
+/**
+ * Cast either from or to a pointer type &mdash; similar to C++'s
+ * `reinterpret_cast`, but for pointers only.
+ *
+ * @param T The type to cast to.
+ * @param EXPR The expression to cast.
+ *
+ * @note This macro silences a "cast to pointer from integer of different size"
+ * warning.  In C++, this would be done via `reinterpret_cast`, but it's not
+ * possible to implement that in C that works for both pointers and integers.
+ *
+ * @sa #CONST_CAST()
+ * @sa #STATIC_CAST()
+ */
+#define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
 
 /**
  * Calls #FPRINTF() with `stdout`.
@@ -405,58 +524,6 @@ _GL_INLINE_HEADER_BEGIN
 #define PUTS(S)                   FPUTS( (S), stdout )
 
 /**
- * Specifies that \a EXPR is _very_ likely (as in 99.99% of the time) to be
- * non-zero (true) allowing the compiler to better order code blocks for
- * magrinally better performance.
- *
- * @param EXPR An expression that can be cast to `bool`.
- *
- * @sa #unlikely()
- * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
- */
-#define likely(EXPR)              __builtin_expect( !!(EXPR), 1 )
-
-/**
- * Specifies that \a EXPR is _very_ unlikely (as in .01% of the time) to be
- * non-zero (true) allowing the compiler to better order code blocks for
- * magrinally better performance.
- *
- * @param EXPR An expression that can be cast to `bool`.
- *
- * @sa #likely()
- * @sa [Memory part 5: What programmers can do](http://lwn.net/Articles/255364/)
- */
-#define unlikely(EXPR)            __builtin_expect( !!(EXPR), 0 )
-
-#else
-# define likely(EXPR)             (EXPR)
-# define unlikely(EXPR)           (EXPR)
-#endif /* __GNUC__ */
-
-/**
- * Calls **lseek**(3), checks for an error, and exits if there was one.
- *
- * @param FD The file descriptor to seek.
- * @param OFFSET The file offset to seek to.
- * @param WHENCE Where \a OFFSET is relative to.
- */
-#define LSEEK(FD,OFFSET,WHENCE) \
-  PERROR_EXIT_IF( lseek( (FD), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
-
-/**
- * Calls **malloc**(3) and casts the result to \a TYPE.
- *
- * @param TYPE The type to allocate.
- * @param N The number of objects of \a TYPE to allocate.
- * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
- *
- * @sa check_realloc()
- * @sa #REALLOC()
- */
-#define MALLOC(TYPE,N) \
-  check_realloc( NULL, sizeof(TYPE) * STATIC_CAST( size_t, (N) ) )
-
-/**
  * Zeros the memory pointed to by \a PTR.  The number of bytes to zero is given
  * by `sizeof *(PTR)`.
  *
@@ -471,42 +538,6 @@ _GL_INLINE_HEADER_BEGIN
 #else
 #define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
 #endif /* HAVE___TYPEOF__ */
-
-/**
- * No-operation statement.  (Useful for a `goto` target.)
- */
-#define NO_OP                     ((void)0)
-
-/**
- * If \a EXPR is `true`, prints an error message for `errno` to standard error
- * and exits with status \a STATUS.
- *
- * @param EXPR The expression.
- * @param STATUS The exit status code.
- *
- * @sa fatal_error()
- * @sa #INTERNAL_ERROR()
- * @sa perror_exit()
- * @sa #UNEXPECTED_INT_VALUE()
- */
-#define PERROR_EXIT_IF( EXPR, STATUS ) \
-  BLOCK( if ( unlikely( EXPR ) ) perror_exit( STATUS ); )
-
-/**
- * Cast either from or to a pointer type &mdash; similar to C++'s
- * `reinterpret_cast`, but for pointers only.
- *
- * @param T The type to cast to.
- * @param EXPR The expression to cast.
- *
- * @note This macro silences a "cast to pointer from integer of different size"
- * warning.  In C++, this would be done via `reinterpret_cast`, but it's not
- * possible to implement that in C that works for both pointers and integers.
- *
- * @sa #CONST_CAST()
- * @sa #STATIC_CAST()
- */
-#define POINTER_CAST(T,EXPR)      ((T)(uintptr_t)(EXPR))
 
 /**
  * Convenience macro for calling check_realloc().
@@ -566,6 +597,19 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define UNEXPECTED_INT_VALUE(EXPR) \
   INTERNAL_ERROR( "%lld (0x%llX): unexpected value for " #EXPR "\n", (long long)(EXPR), (unsigned long long)(EXPR) )
+
+/**
+ * Synthesises a name prefixed by \a PREFIX unique to the line on which it's
+ * used.
+ *
+ * @param PREFIX The prefix of the synthesized name.
+ *
+ * @warning All uses for a given \a PREFIX that refer to the same name _must_
+ * be on the same line.  This is not a problem within macro definitions, but
+ * won't work outside of them since there's no way to refer to a previously
+ * used unique name.
+ */
+#define UNIQUE_NAME(PREFIX)       NAME2(NAME2(PREFIX,_),__LINE__)
 
 /**
  * Whitespace characters.

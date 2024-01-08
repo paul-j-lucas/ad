@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "May 11, 2023" "PJL TOOLS"
+.TH \f3ad\f1 1 "January 8, 2023" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -694,52 +694,11 @@ The default is \f(CW36\f1
 (cyan foreground over current terminal background).
 .RE
 .IP
-Other
-.B grep
-capabilities, if present, are ignored
-because they don't apply in
-.BR ad .
 The term ``color'' is used loosely.
 In addition to colors,
 other character attributes
 such as bold, underlined, reverse video, etc.,
 may be possible depending on the capabilities of the terminal.
-.TP
-.B GREP_COLOR
-This variable is used for compatibility with older versions of
-.BR grep .
-It specifies the colors and other attributes
-used to highlight matched bytes.
-As with
-.BR grep ,
-it is deprecated in favor of
-.BR GREP_COLORS .
-It can only specify the colors used to highlight
-both the matching bytes ASCII and hexadecimal bytes
-(same as the
-.B MB
-capability).
-This variable is used only when it contains a valid SGR value
-and both
-.B AD_COLORS
-and
-.B GREP_COLORS
-are either unset or empty.
-.TP
-.B GREP_COLORS
-This variable is used for compatibility with newer versions of
-.BR grep .
-It is used exactly as
-.B AD_COLORS
-but only when
-.B AD_COLORS
-is either unset or empty.
-Capabilities in
-.B grep
-that are unsupported by
-.B ad
-(because they don't apply)
-are ignored.
 .TP
 .B TERM
 The type of the terminal on which

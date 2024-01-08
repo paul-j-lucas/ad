@@ -29,7 +29,7 @@
 
 #ifdef ad_config_H
 #error "Must #include pjl_config.h instead."
-#endif
+#endif /* ad_config_H */
 
 // local
 #include "config.h"                     /* must go first */
