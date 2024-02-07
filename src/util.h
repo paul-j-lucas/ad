@@ -486,7 +486,7 @@ _GL_INLINE_HEADER_BEGIN
  * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
  */
 #define MALLOC(TYPE,N) \
-  (TYPE*)check_realloc( NULL, sizeof(TYPE) * (N) )
+  check_realloc( NULL, sizeof(TYPE) * STATIC_CAST( size_t, (N) ) )
 
 /**
  * Concatenate \a A and \a B together to form a single token.
