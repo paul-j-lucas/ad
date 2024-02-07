@@ -75,6 +75,9 @@ typedef struct color_cap color_cap_t;
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern variable definitions
+char const *sgr_ascii_match;
+char const *sgr_caret;
+char const *sgr_elided;
 char const *sgr_end   = SGR_END SGR_EL;
 char const *sgr_error;
 char const *sgr_hex_match;
@@ -188,7 +191,6 @@ static bool colors_parse( char const *capabilities ) {
       { "MB", CALL_FN( set_cap_MB   ) },    // matched both
       { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
       { "se", SET_SGR( sep          ) },    // grep: separator
-      { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
     };
 
     for ( char *cap_name_val;

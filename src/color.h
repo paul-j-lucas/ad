@@ -84,6 +84,9 @@ extern char const  *sgr_end;            ///< End color output.
 extern char const  *sgr_error;          ///< Error color output.
 extern char const  *sgr_hex_match;      ///< Hex match color.
 extern char const  *sgr_locus;          ///< Color of error location.
+extern char const  *sgr_offset;         ///< Offset color.
+extern char const  *sgr_sep;            ///< Separator color.
+extern char const  *sgr_warning;        ///< Warning color output.
 
 ///////////////////////////////////////////////////////////////////////////////
 
