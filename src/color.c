@@ -63,13 +63,11 @@ typedef struct color_cap color_cap_t;
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern variable definitions
-char const *sgr_start = SGR_START SGR_EL;
-char const *sgr_end   = SGR_END SGR_EL;
-char const *sgr_offset;
-char const *sgr_sep;
+char const *sgr_ascii_match;
 char const *sgr_elided;
 char const *sgr_hex_match;
-char const *sgr_ascii_match;
+char const *sgr_offset;
+char const *sgr_sep;
 
 // local functions
 NODISCARD
@@ -151,19 +149,6 @@ static void sgr_set_cap_MB( char const *sgr_color ) {
 }
 
 /**
- * Turns off using the EL (Erase in Line) sequence.
- * (This function is needed for the color capabilities table to support the
- * "ne" capability.)
- *
- * @param sgr_color Not used.
- */
-static void sgr_set_cap_ne( char const *sgr_color ) {
-  (void)sgr_color;                      // suppress warning
-  sgr_start = SGR_START;
-  sgr_end   = SGR_END;
-}
-
-/**
  * Parses and sets the sequence of grep color capabilities.
  *
  * @param capabilities The grep capabilities to parse.
@@ -186,7 +171,6 @@ static bool colors_parse( char const *capabilities ) {
       { "MB", CALL_FN( set_cap_MB   ) },    // matched both
       { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
       { "se", SET_SGR( sep          ) },    // grep: separator
-      { "ne", CALL_FN( set_cap_ne   ) },    // grep: no EL on SGR
     };
 
     for ( char *cap_name_val;

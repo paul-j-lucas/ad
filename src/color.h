@@ -77,11 +77,11 @@ enum color_when {
 typedef enum color_when color_when_t;
 
 // extern variables
-extern char const  *sgr_offset;         ///< Offset color.
-extern char const  *sgr_sep;            ///< Separator color.
+extern char const  *sgr_ascii_match;    ///< ASCII match color.
 extern char const  *sgr_elided;         ///< Elided byte count color.
 extern char const  *sgr_hex_match;      ///< Hex match color.
-extern char const  *sgr_ascii_match;    ///< ASCII match color.
+extern char const  *sgr_offset;         ///< Offset color.
+extern char const  *sgr_sep;            ///< Separator color.
 
 ///////////////////////////////////////////////////////////////////////////////
 
