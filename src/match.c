@@ -62,7 +62,7 @@ static bool get_byte( char8_t *pbyte ) {
     }
     if ( unlikely( ferror( stdin ) ) )
       fatal_error( EX_IOERR,
-        "\"%s\": read byte failed: %s\n", fin_path, STRERROR
+        "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
       );
   }
   return false;
@@ -215,7 +215,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
 static void unget_byte( char8_t byte ) {
   if ( unlikely( ungetc( byte, stdin ) == EOF ) )
     fatal_error( EX_IOERR,
-      "\"%s\": unget byte failed: %s\n", fin_path, STRERROR
+      "\"%s\": unget byte failed: %s\n", fin_path, STRERROR()
     );
   --total_bytes_read;
 }

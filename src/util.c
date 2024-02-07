@@ -122,40 +122,6 @@ void check_atexit( void (*cleanup_fn)(void) ) {
   PERROR_EXIT_IF( atexit( cleanup_fn ) != 0, EX_OSERR );
 }
 
-void check_dup2( int old_fd, int new_fd ) {
-  int const dup_fd = dup2( old_fd, new_fd );
-  PERROR_EXIT_IF( dup_fd != new_fd, EX_OSERR );
-}
-
-FILE* check_fopen( char const *path, char const *mode, off_t offset ) {
-  assert( path != NULL );
-  assert( mode != NULL );
-
-  FILE *const file = fopen( path, mode );
-  if ( unlikely( file == NULL ) ) {
-    bool const create = strpbrk( mode, "aw" );
-    fatal_error( create ? EX_CANTCREAT : EX_NOINPUT,
-      "\"%s\": can not open: %s\n", path, STRERROR
-    );
-  }
-  if ( offset > 0 )
-    FSEEK( file, offset, SEEK_SET );
-  return file;
-}
-
-int check_open( char const *path, int oflag, off_t offset ) {
-  assert( path != NULL );
-  bool const create = (oflag & O_CREAT) != 0;
-  int const fd = create ? open( path, oflag, 0644 ) : open( path, oflag );
-  if ( unlikely( fd == -1 ) )
-    fatal_error( create ? EX_CANTCREAT : EX_NOINPUT,
-      "\"%s\": can not open: %s\n", path, STRERROR
-    );
-  if ( offset > 0 )
-    LSEEK( fd, offset, SEEK_SET );
-  return fd;
-}
-
 void* check_realloc( void *p, size_t size ) {
   //
   // Autoconf, 5.5.1:
@@ -242,7 +208,7 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
       bytes_to_read = bytes_to_skip;
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
-      fatal_error( EX_IOERR, "can not read: %s\n", STRERROR );
+      fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
     bytes_to_skip -= bytes_read;
   } // while
 }

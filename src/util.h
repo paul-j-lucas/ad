@@ -119,7 +119,9 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @sa #FOREACH_ARRAY_ELEMENT()
  */
-#define ARRAY_SIZE(ARRAY)         (sizeof(ARRAY) / sizeof(0[ARRAY]))
+#define ARRAY_SIZE(ARRAY) (         \
+  sizeof(ARRAY) / sizeof(0[ARRAY])  \
+  * STATIC_ASSERT_EXPR( IS_ARRAY(ARRAY), #ARRAY " must be an array" ))
 
 #ifndef NDEBUG
 /**
@@ -138,13 +140,6 @@ _GL_INLINE_HEADER_BEGIN
 #else
 #define ASSERT_RUN_ONCE()         NO_OP
 #endif /* NDEBUG */
-
-/**
- * Gets the number of elements of the given array.
- *
- * @param A The array to get the number of elements of.
- */
-#define ARRAY_SIZE(A)             (sizeof(A) / sizeof(A[0]))
 
 /**
  * Gets a value where all bits that are less than or equal to the one bit set
@@ -212,6 +207,15 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #STATIC_CAST()
  */
 #define CONST_CAST(T,EXPR)        ((T)(EXPR))
+
+/**
+ * Calls **dup2**(2) and checks for failure.
+ *
+ * @param OLD_FD The old file descriptor to duplicate.
+ * @param NEW_FD The new file descriptor to duplicate to.
+ */
+#define DUP2(OLD_FD,NEW_FD) \
+  PERROR_EXIT_IF( dup2( (OLD_FD), (NEW_FD) ) != (NEW_FD), EX_OSERR )
 
 /**
  * Shorthand for printing to standard error.
@@ -415,6 +419,24 @@ _GL_INLINE_HEADER_BEGIN
 #define INTERNAL_ERROR(FORMAT,...) \
   fatal_error( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
+/**
+ * Checks (at compile-time) whether \a A is an array.
+ *
+ * @param A The alleged array to check.
+ * @return Returns 1 (true) only if \a A is an array; 0 (false) otherwise.
+ *
+ * @sa https://stackoverflow.com/a/77881417/99089
+ */
+#ifdef HAVE___TYPEOF__
+# define IS_ARRAY(A)            \
+    _Generic( &(A),             \
+      __typeof__(*A) (*)[]: 1,  \
+      default             : 0   \
+    )
+#else
+# define IS_ARRAY(A)              1
+#endif /* HAVE___TYPEOF__ */
+
 #ifdef __GNUC__
 
 /**
@@ -549,22 +571,6 @@ _GL_INLINE_HEADER_BEGIN
 #define PUTS(S)                   FPUTS( (S), stdout )
 
 /**
- * Zeros the memory pointed to by \a PTR.  The number of bytes to zero is given
- * by `sizeof *(PTR)`.
- *
- * @param PTR The pointer to the start of memory to zero.  \a PTR must be a
- * pointer.  If it's an array, it'll generate a compile-time error.
- */
-#ifdef HAVE___TYPEOF__
-#define MEM_ZERO(PTR) BLOCK(                                            \
-  /* "error: array initializer must be an initializer list" if array */ \
-  MAYBE_UNUSED __typeof__(PTR) _tmp = 0;                                \
-  memset( (PTR), 0, sizeof *(PTR) ); )
-#else
-#define MEM_ZERO(PTR)             memset( (PTR), 0, sizeof *(PTR) )
-#endif /* HAVE___TYPEOF__ */
-
-/**
  * Convenience macro for calling check_realloc().
  *
  * @param PTR The pointer to memory to reallocate.  It is set to the newly
@@ -576,6 +582,17 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define REALLOC(PTR,N) \
   ((PTR) = check_realloc( (PTR), sizeof(*(PTR)) * (N) ))
+
+/**
+ * Like C11's `_Static_assert()` except that it can be used in an expression.
+ *
+ * @param EXPR The expression to check.
+ * @param MSG The string literal of the error message to print only if \a EXPR
+ * evaluates to 0 (false).
+ * @return Always returns 1.
+ */
+#define STATIC_ASSERT_EXPR(EXPR,MSG) \
+  (!!sizeof( struct { static_assert( (EXPR), MSG ); char c; } ))
 
 /**
  * C version of C++'s `static_cast`.
@@ -595,7 +612,7 @@ _GL_INLINE_HEADER_BEGIN
 /**
  * Shorthand for calling **strerror**(3).
  */
-#define STRERROR                  strerror( errno )
+#define STRERROR()                strerror( errno )
 
 /**
  * Macro that "string-ifies" its argument, e.g., <code>%STRINGIFY(x)</code>
@@ -695,30 +712,6 @@ void check_atexit( void (*cleanup_fn)(void) );
  * @param new_fd The new file descriptor to duplicate to.
  */
 void check_dup2( int old_fd, int new_fd );
-
-/**
- * Opens the given file and seeks to the given offset
- * or prints an error message and exits if there was an error.
- *
- * @param path The full path of the file to open.
- * @param mode The mode to use.
- * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding `FILE`.
- */
-NODISCARD
-FILE* check_fopen( char const *path, char const *mode, off_t offset );
-
-/**
- * Opens the given file and seeks to the given offset
- * or prints an error message and exits if there was an error.
- *
- * @param path The full path of the file to open.
- * @param oflag The open flags to use.
- * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding file descriptor.
- */
-NODISCARD
-int check_open( char const *path, int oflag, off_t offset );
 
 /**
  * Calls **realloc(3)** and checks for failure.

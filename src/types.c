@@ -50,7 +50,7 @@ ad_type_t* ad_type_new( ad_tid_t tid ) {
   assert( tid != T_NONE );
 
   ad_type_t *const type = MALLOC( ad_type_t, 1 );
-  MEM_ZERO( type );
+  *type = (ad_type_t){ 0 };
 
   return type;
 }
