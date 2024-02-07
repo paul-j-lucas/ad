@@ -78,13 +78,11 @@ typedef struct color_cap color_cap_t;
 char const *sgr_ascii_match;
 char const *sgr_caret;
 char const *sgr_elided;
-char const *sgr_end   = SGR_END SGR_EL;
 char const *sgr_error;
 char const *sgr_hex_match;
 char const *sgr_locus;
 char const *sgr_offset;
 char const *sgr_sep;
-char const *sgr_start = SGR_START SGR_EL;
 char const *sgr_warning;
 
 // local functions
@@ -165,8 +163,6 @@ static void sgr_set_cap_MB( char const *sgr_color ) {
     sgr_color = NULL;
   sgr_ascii_match = sgr_hex_match = sgr_color;
 }
-
-////////// extern functions ///////////////////////////////////////////////////
 
 /**
  * Parses and sets the sequence of grep color capabilities.
