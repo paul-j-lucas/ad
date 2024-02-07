@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/slist_test.c
 **
-**      Copyright (C) 2021-2022  Paul J. Lucas
+**      Copyright (C) 2021-2024  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 // standard
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
@@ -41,8 +42,9 @@ static unsigned     test_failures;
 
 ////////// local functions ////////////////////////////////////////////////////
 
-static bool slist_node_str_equal( void *data ) {
-  char const *const s = data;
+static bool slist_node_str_equal( slist_node_t *node, void *user_data ) {
+  (void)user_data;
+  char const *const s = node->data;
   return strcmp( s, str_equal_to ) == 0;
 }
 
@@ -53,35 +55,35 @@ static bool test_slist_cmp( void ) {
   slist_init( &list2 );
 
   // test 2 empty lists
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) == 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) == 0 );
 
   // test empty and non-empty lists
   slist_push_back( &list2, (void*)"A" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) != 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) != 0 );
   slist_cleanup( &list2, /*free_fn=*/NULL );
 
   // test non-empty and empty lists
   slist_push_back( &list, (void*)"A" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) != 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) != 0 );
   slist_cleanup( &list, /*free_fn=*/NULL );
 
   // test matching 1,2,3-element lists
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list2, (void*)"A" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) == 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) == 0 );
   slist_push_back( &list, (void*)"B" );
   slist_push_back( &list2, (void*)"B" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) == 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) == 0 );
   slist_push_back( &list, (void*)"C" );
   slist_push_back( &list2, (void*)"C" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) == 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) == 0 );
   slist_cleanup( &list, /*free_fn=*/NULL );
   slist_cleanup( &list2, /*free_fn=*/NULL );
 
   // test 1-element non-matching lists
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list2, (void*)"B" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) < 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) < 0 );
   slist_cleanup( &list, /*free_fn=*/NULL );
   slist_cleanup( &list2, /*free_fn=*/NULL );
 
@@ -89,7 +91,7 @@ static bool test_slist_cmp( void ) {
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list2, (void*)"A" );
   slist_push_back( &list2, (void*)"B" );
-  TEST( slist_cmp( &list, &list2, (slist_cmp_fn_t)&strcmp ) < 0 );
+  TEST( slist_cmp( &list, &list2, POINTER_CAST( slist_cmp_fn_t, &strcmp ) ) < 0 );
   slist_cleanup( &list, /*free_fn=*/NULL );
   slist_cleanup( &list2, /*free_fn=*/NULL );
 
@@ -152,7 +154,7 @@ static bool test_slist_dup( void ) {
 
   // check data_dup_fn
   slist_push_back( &list, (void*)&X );
-  list2 = slist_dup( &list, -1, (slist_dup_fn_t)&strdup );
+  list2 = slist_dup( &list, -1, POINTER_CAST( slist_dup_fn_t, &strdup ) );
   TEST( !slist_empty( &list2 ) );
   TEST( slist_len( &list2 ) == 1 );
   if ( TEST( (p = slist_front( &list2 )) != NULL ) ) {
@@ -175,21 +177,21 @@ static bool test_slist_free_if( void ) {
   // test match list[0] with list->len == 1
   slist_push_back( &list, (void*)"A" );
   str_equal_to = "A";
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_empty( &list ) );
   TEST( slist_len( &list ) == 0 );
 
   // test match list[0] and list[1] with list->len == 2
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"A" );
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_empty( &list ) );
   TEST( slist_len( &list ) == 0 );
 
   // test match list[0] with list->len == 2
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"B" );
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_len( &list ) == 1 );
   if ( TEST( (p = slist_front( &list )) != NULL ) )
     TEST( *p == 'B' );
@@ -201,7 +203,7 @@ static bool test_slist_free_if( void ) {
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"B" );
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_len( &list ) == 1 );
   if ( TEST( (p = slist_front( &list )) != NULL ) )
     TEST( *p == 'B' );
@@ -214,7 +216,7 @@ static bool test_slist_free_if( void ) {
   slist_push_back( &list, (void*)"B" );
   slist_push_back( &list, (void*)"C" );
   str_equal_to = "B";
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_len( &list ) == 2 );
   if ( TEST( (p = slist_front( &list )) != NULL ) )
     TEST( *p == 'A' );
@@ -225,7 +227,7 @@ static bool test_slist_free_if( void ) {
   // test match list[1] with list->len == 2
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"B" );
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_len( &list ) == 1 );
   if ( TEST( (p = slist_front( &list )) != NULL ) )
     TEST( *p == 'A' );
@@ -237,7 +239,7 @@ static bool test_slist_free_if( void ) {
   slist_push_back( &list, (void*)"A" );
   slist_push_back( &list, (void*)"B" );
   slist_push_back( &list, (void*)"B" );
-  slist_free_if( &list, &slist_node_str_equal );
+  slist_free_if( &list, &slist_node_str_equal, NULL );
   TEST( slist_len( &list ) == 1 );
   if ( TEST( (p = slist_front( &list )) != NULL ) )
     TEST( *p == 'A' );
@@ -634,7 +636,8 @@ static bool test_slist_push_back( void ) {
 }
 
 // LCOV_EXCL_START
-static _Noreturn void usage( void ) {
+_Noreturn
+static void usage( void ) {
   EPRINTF( "usage: %s\n", me );
   exit( EX_USAGE );
 }
@@ -642,7 +645,7 @@ static _Noreturn void usage( void ) {
 
 ////////// main ///////////////////////////////////////////////////////////////
 
-int main( int argc, char const *argv[] ) {
+int main( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
   if ( --argc != 0 )
     usage();                            // LCOV_EXCL_LINE

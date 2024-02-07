@@ -1,7 +1,10 @@
 /*.dSYM
+/*.gcda
+/*.gcno
 /*.output
 /*.tab.[ch]
 /*.vcg
+/*_test
 /ad
 /config.h
 /lexer.c
