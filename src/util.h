@@ -172,6 +172,15 @@ _GL_INLINE_HEADER_BEGIN
 #define CONST_CAST(T,EXPR)        ((T)(EXPR))
 
 /**
+ * Calls **dup2**(2) and checks for failure.
+ *
+ * @param OLD_FD The old file descriptor to duplicate.
+ * @param NEW_FD The new file descriptor to duplicate to.
+ */
+#define DUP2(OLD_FD,NEW_FD) \
+  PERROR_EXIT_IF( dup2( (OLD_FD), (NEW_FD) ) != (NEW_FD), EX_OSERR )
+
+/**
  * Shorthand for printing to standard error.
  *
  * @param ... The `printf()` arguments.
@@ -567,30 +576,6 @@ void check_atexit( void (*cleanup_fn)(void) );
  * @param new_fd The new file descriptor to duplicate to.
  */
 void check_dup2( int old_fd, int new_fd );
-
-/**
- * Opens the given file and seeks to the given offset
- * or prints an error message and exits if there was an error.
- *
- * @param path The full path of the file to open.
- * @param mode The mode to use.
- * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding `FILE`.
- */
-NODISCARD
-FILE* check_fopen( char const *path, char const *mode, off_t offset );
-
-/**
- * Opens the given file and seeks to the given offset
- * or prints an error message and exits if there was an error.
- *
- * @param path The full path of the file to open.
- * @param oflag The open flags to use.
- * @param offset The number of bytes to skip, if any.
- * @return Returns the corresponding file descriptor.
- */
-NODISCARD
-int check_open( char const *path, int oflag, off_t offset );
 
 /**
  * Calls **realloc(3)** and checks for failure.

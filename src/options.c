@@ -984,14 +984,14 @@ void parse_options( int argc, char const *argv[] ) {
         // a file for writing and NOT truncating it to zero length if it
         // exists.
         //
-        // Hence we have to use open(2) first so we can specify only O_WRONLY
-        // and O_CREAT but not O_TRUNC, then use fdopen(3) to wrap a FILE
-        // around it.
+        // Hence we have to use open(2) so we can specify only O_WRONLY and
+        // O_CREAT but not O_TRUNC.
         //
-        int const fd = check_open( fout_path, O_WRONLY | O_CREAT, 0 );
-        FILE *const fout = fdopen( fd, "w" );
-        check_dup2( fileno( fout ), STDOUT_FILENO );
-        PJL_IGNORE_RV( fclose( fout ) );
+        int const fd = open( fout_path, O_WRONLY | O_CREAT, 0644 );
+        if ( fd == -1 )
+          fatal_error( EX_CANTCREAT, "\"%s\": %s\n", fout_path, STRERROR );
+        DUP2( fd, STDOUT_FILENO );
+        close( fd );
       }
       FALLTHROUGH;
 
@@ -1003,9 +1003,10 @@ void parse_options( int argc, char const *argv[] ) {
       if ( strcmp( fin_path, "-" ) == 0 ) {
         fskip( STATIC_CAST( size_t, fin_offset ), stdin );
       } else {
-        FILE *const fin = check_fopen( fin_path, "r", fin_offset );
-        check_dup2( fileno( fin ), STDIN_FILENO );
-        PJL_IGNORE_RV( fclose( fin ) );
+        if ( !freopen( fin_path, "r", stdin ) )
+          fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR );
+        if ( fin_offset > 0 )
+          FSEEK( stdin, fin_offset, SEEK_SET );
       }
       break;
 
