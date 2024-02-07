@@ -214,7 +214,7 @@ void reverse_dump_file( void ) {
     char *const row_buf = fgetln( stdin, &row_len );
     if ( row_buf == NULL ) {
       if ( unlikely( ferror( stdin ) ) )
-        fatal_error( EX_IOERR, "can not read: %s\n", STRERROR );
+        fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
       break;
     }
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,

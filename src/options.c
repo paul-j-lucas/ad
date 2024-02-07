@@ -989,7 +989,7 @@ void parse_options( int argc, char const *argv[] ) {
         //
         int const fd = open( fout_path, O_WRONLY | O_CREAT, 0644 );
         if ( fd == -1 )
-          fatal_error( EX_CANTCREAT, "\"%s\": %s\n", fout_path, STRERROR );
+          fatal_error( EX_CANTCREAT, "\"%s\": %s\n", fout_path, STRERROR() );
         DUP2( fd, STDOUT_FILENO );
         close( fd );
       }
@@ -1004,7 +1004,7 @@ void parse_options( int argc, char const *argv[] ) {
         fskip( STATIC_CAST( size_t, fin_offset ), stdin );
       } else {
         if ( !freopen( fin_path, "r", stdin ) )
-          fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR );
+          fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
         if ( fin_offset > 0 )
           FSEEK( stdin, fin_offset, SEEK_SET );
       }
