@@ -10,7 +10,7 @@
 #
 # LICENSE
 #
-#   Copyright (C) 2019 Paul J. Lucas <paul@lucasmail.org>
+#   Copyright (C) 2019-2024 Paul J. Lucas <paul@lucasmail.org>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
