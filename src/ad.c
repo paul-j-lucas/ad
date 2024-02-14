@@ -74,7 +74,7 @@ static void clean_up( void ) {
  */
 static void init( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
-  check_atexit( clean_up );
+  ATEXIT( clean_up );
   parse_options( argc, argv );
   colors_init();
 
