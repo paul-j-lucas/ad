@@ -120,9 +120,7 @@ static struct option const OPTIONS[] = {
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
   { "c-array",            optional_argument,  NULL, COPT(C_ARRAY)             },
-#ifdef ENABLE_AD_DEBUG
   { "--debug",            no_argument,        NULL, COPT(DEBUG)               },
-#endif /* ENABLE_AD_DEBUG */
   { "decimal",            no_argument,        NULL, COPT(DECIMAL)             },
   { "little-endian",      required_argument,  NULL, COPT(LITTLE_ENDIAN)       },
   { "big-endian",         required_argument,  NULL, COPT(BIG_ENDIAN)          },
@@ -711,11 +709,9 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(COLOR):
         opt_color_when = parse_color_when( optarg );
         break;
-#ifdef ENABLE_AD_DEBUG
       case COPT(DEBUG):
         opt_ad_debug = true;
         break;
-#endif /* ENABLE_AD_DEBUG */
       case COPT(DECIMAL):
         opt_offset_fmt = OFMT_DEC;
         break;

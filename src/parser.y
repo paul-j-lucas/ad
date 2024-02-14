@@ -33,9 +33,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
-#ifdef ENABLE_AD_DEBUG
 #include "debug.h"
-#endif /* ENABLE_AD_DEBUG */
 #include "did_you_mean.h"
 #include "expr.h"
 #include "keyword.h"
@@ -69,11 +67,7 @@
 
 /// @cond DOXYGEN_IGNORE
 
-#ifdef ENABLE_AD_DEBUG
 #define IF_DEBUG(...)             BLOCK( if ( opt_ad_debug ) { __VA_ARGS__ } )
-#else
-#define IF_DEBUG(...)             /* nothing */
-#endif /* ENABLE_AD_DEBUG */
 
 // Developer aid for tracing when Bison %destructors are called.
 #if 0
@@ -152,7 +146,6 @@
 #define DUMP_STR(KEY,STR) IF_DEBUG( \
   DUMP_KEY( KEY ": " ); str_dump( (STR), stdout ); )
 
-#ifdef ENABLE_AD_DEBUG
 /**
  * Starts a dump block.
  *
@@ -164,9 +157,6 @@
 #define DUMP_START(NAME,PROD) \
   bool dump_comma = false;    \
   IF_DEBUG( FPUTS( NAME " ::= " PROD " = {\n", stdout ); )
-#else
-#define DUMP_START(NAME,PROD)     /* nothing */
-#endif
 
 /**
  * Ends a dump block.

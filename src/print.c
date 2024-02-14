@@ -334,15 +334,10 @@ void fl_print_warning( char const *file, int line, ad_loc_t const *loc,
 }
 
 void print_debug_file_line( char const *file, int line ) {
-#ifdef ENABLE_AD_DEBUG
   assert( file != NULL );
   assert( line > 0 );
   if ( opt_ad_debug )
     EPRINTF( "[%s:%d] ", file, line );
-#else
-  (void)file;
-  (void)line;
-#endif /* ENABLE_AD_DEBUG */
 }
 
 void print_hint( char const *format, ... ) {

@@ -117,17 +117,6 @@ AC_FUNC_FSEEKO
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([basename fgetln getline nl_langinfo setlocale strdup strerror strsep])
 
-# Program feature: ad-debug (enabled by default)
-AC_ARG_ENABLE([ad-debug],
-  AS_HELP_STRING([--disable-ad-debug], [disable support for ad debugging]),
-  [],
-  [enable_ad_debug=yes]
-)
-AS_IF([test x$enable_ad_debug = xyes],
-  [AC_DEFINE([ENABLE_AD_DEBUG], [1],
-    [Define to 1 if ad debugging is enabled.])]
-)
-
 # Program feature: Flex debug (disabled by default)
 AC_ARG_ENABLE([flex-debug],
   AS_HELP_STRING([--enable-flex-debug], [enable Flex debugging]),
@@ -151,7 +140,6 @@ AS_IF([test x$enable_bison_debug = xyes],
 )
 
 # Makefile conditionals.
-AM_CONDITIONAL([ENABLE_AD_DEBUG],     [test x$enable_ad_debug     = xyes])
 AM_CONDITIONAL([ENABLE_BISON_DEBUG],  [test x$enable_bison_debug  = xyes])
 AM_CONDITIONAL([ENABLE_FLEX_DEBUG],   [test x$enable_flex_debug   = xyes])
 

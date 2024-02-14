@@ -94,9 +94,7 @@ typedef enum offset_fmt offset_fmt_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-#ifdef ENABLE_AD_DEBUG
 extern bool           opt_ad_debug;
-#endif /* ENABLE_AD_DEBUG */
 extern bool           opt_case_insensitive;
 extern color_when_t   opt_color_when;
 extern unsigned       opt_c_fmt;
