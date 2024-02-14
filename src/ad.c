@@ -60,7 +60,7 @@ uint64_t    search_number;
  *  + Closing files.
  * This function is called via \c atexit().
  */
-static void clean_up( void ) {
+static void ad_cleanup( void ) {
   free_now();
 }
 
@@ -73,9 +73,9 @@ static void clean_up( void ) {
  * @param argc The command-line argument count.
  * @param argv The command-line argument values.
  */
-static void init( int argc, char const *argv[const] ) {
+static void ad_init( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
-  ATEXIT( clean_up );
+  ATEXIT( ad_cleanup );
   parse_options( argc, argv );
   colors_init();
   ad_typedefs_init();
@@ -103,7 +103,7 @@ static void init( int argc, char const *argv[const] ) {
  * @return Returns 0 on success, non-zero on failure.
  */
 int main( int argc, char const *argv[const] ) {
-  init( argc, argv );
+  ad_init( argc, argv );
   if ( opt_reverse )
     reverse_dump_file(); 
   else if ( opt_c_fmt != CFMT_NONE )
