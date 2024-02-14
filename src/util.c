@@ -143,11 +143,6 @@ char const* base_name( char const *path_name ) {
   return path_name;
 }
 
-void check_atexit( void (*cleanup_fn)(void) ) {
-  assert( cleanup_fn != NULL );
-  PERROR_EXIT_IF( atexit( cleanup_fn ) != 0, EX_OSERR );
-}
-
 void* check_realloc( void *p, size_t size ) {
   //
   // Autoconf, 5.5.1:

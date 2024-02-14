@@ -141,6 +141,13 @@ _GL_INLINE_HEADER_BEGIN
 #endif /* NDEBUG */
 
 /**
+ * Calls **atexit**(3) and checks for failure.
+ *
+ * @param FN The pointer to the function to call **atexit**(3) with.
+ */
+#define ATEXIT(FN)                PERROR_EXIT_IF( atexit( FN ) != 0, EX_OSERR )
+
+/**
  * Embeds the given statements into a compound statement block.
  *
  * @param ... The statement(s) to embed.
@@ -592,13 +599,6 @@ bool ascii_is_print( char c ) {
  */
 NODISCARD
 char const* base_name( char const *path_name );
-
-/**
- * Calls **atexit**(3) and checks for failure.
- *
- * @param cleanup_fn The pointer to the function to call **atexit**(3) with.
- */
-void check_atexit( void (*cleanup_fn)(void) );
 
 /**
  * Calls **dup2**(2) and checks for failure.
