@@ -68,9 +68,9 @@ static rb_tree_t    typedef_set;        ///< Global set of `typedef`s.
 /**
  * Cleans up \ref ad_typedef data.
  *
- * @sa ad_typedef_init()
+ * @sa ad_typedefs_init()
  */
-static void ad_typedef_cleanup( void ) {
+static void ad_typedefs_cleanup( void ) {
   // There is no ad_typedef_free() function because ad_typedef_add() adds only
   // ad_typedef_t nodes pointing to pre-existing AST nodes.  The AST nodes are
   // freed independently in parser_cleanup().  Hence, this function frees only
@@ -157,9 +157,10 @@ ad_typedef_t const* ad_typedef_find_name( char const *name ) {
   return found_rb != NULL ? found_rb->data : NULL;
 }
 
-void ad_typedef_init( void ) {
+void ad_typedefs_init( void ) {
+  ASSERT_RUN_ONCE();
   rb_tree_init( &typedef_set, &ad_typedef_cmp );
-  check_atexit( &ad_typedef_cleanup );
+  ATEXIT( &ad_typedefs_cleanup );
 }
 
 ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,

@@ -97,11 +97,6 @@ NODISCARD
 ad_typedef_t const* ad_typedef_find_name( char const *name );
 
 /**
- * Initializes all \ref ad_typedef data.
- */
-void ad_typedef_init( void );
-
-/**
  * Does an in-order traversal of all \ref ad_typedef.
  *
  * @param visit_fn The visitor function to use.
@@ -112,6 +107,13 @@ void ad_typedef_init( void );
 PJL_DISCARD
 ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
                                       void *v_data );
+
+/**
+ * Initializes all \ref ad_typedef data.
+ *
+ * @note This function must be called exactly once.
+ */
+void ad_typedefs_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
 
