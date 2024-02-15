@@ -401,7 +401,6 @@ _GL_INLINE_HEADER_BEGIN
   PERROR_EXIT_IF( FSEEK_FN( (STREAM), (OFFSET), (WHENCE) ) == -1, EX_IOERR )
 
 /**
->>>>>>> master
  * Calls **fstat**(3), checks for an error, and exits if there was one.
  *
  * @param FD The file descriptor to stat.
