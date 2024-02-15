@@ -80,6 +80,27 @@ void lexer_reset( bool hard_reset );
 NODISCARD
 int yylex( void );
 
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+  // Declare yyrestart() so it can be called from anywhere.  However, Flex
+  // declares yyrestart() in the generated .c file before it #includes headers,
+  // so we'd get a redundant declaration warning -- so suppress that.
+# pragma GCC diagnostic ignored "-Wredundant-decls"
+#endif /* __GNUC__ */
+
+/**
+ * Flex: immediately switch to reading \a file.
+ *
+ * @param in_file The `FILE` to read from.
+ *
+ * @note The definition is provided by Flex.
+ */
+void yyrestart( FILE *in_file );
+
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif /* __GNUC__ */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif /* ad_lexer_H */

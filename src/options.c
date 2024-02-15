@@ -22,7 +22,9 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
+#include "lexer.h"
 #include "options.h"
+#include "parser.h"
 #include "unicode.h"
 
 // standard
@@ -1039,6 +1041,25 @@ void parse_options( int argc, char const *argv[] ) {
     default:
       usage( EX_USAGE );
   } // switch
+
+  if ( opt_format_file != NULL ) {
+    FILE *const file = fopen( opt_format_file, "r" );
+    PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
+    yyrestart( file );
+    int const rv = yyparse();
+    PJL_IGNORE_RV( fclose( file ) );
+    if ( unlikely( rv == 2 ) ) {
+      //
+      // Bison has already printed "memory exhausted" via yyerror() that
+      // doesn't print a newline, so print one now.
+      //
+      EPUTC( '\n' );
+      _Exit( EX_SOFTWARE );
+    }
+
+    if ( rv != 0 )
+      exit( rv );
+  }
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
