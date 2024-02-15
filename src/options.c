@@ -839,6 +839,7 @@ void parse_options( int argc, char const *argv[] ) {
   check_mutually_exclusive( SOPT(C_ARRAY),
     SOPT(BIG_ENDIAN)
     SOPT(COLOR)
+    SOPT(FORMAT)
     SOPT(GROUP_BY)
     SOPT(IGNORE_CASE)
     SOPT(LITTLE_ENDIAN)
@@ -853,6 +854,7 @@ void parse_options( int argc, char const *argv[] ) {
     SOPT(VERBOSE)
   );
   check_mutually_exclusive( SOPT(DECIMAL),
+    SOPT(FORMAT)
     SOPT(HEXADECIMAL)
     SOPT(OCTAL)
   );
@@ -863,10 +865,12 @@ void parse_options( int argc, char const *argv[] ) {
   check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
   check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
     SOPT(BIG_ENDIAN)
+    SOPT(FORMAT)
     SOPT(HOST_ENDIAN)
   );
   check_mutually_exclusive(
     SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
+    SOPT(FORMAT)
     SOPT(STRING) SOPT(STRING_IGNORE_CASE)
   );
   check_mutually_exclusive( SOPT(HELP),
@@ -875,6 +879,7 @@ void parse_options( int argc, char const *argv[] ) {
     SOPT(BYTES)
     SOPT(CONFIG)
     SOPT(DECIMAL)
+    SOPT(FORMAT)
     SOPT(GROUP_BY)
     SOPT(HEXADECIMAL)
     SOPT(HOST_ENDIAN)
@@ -916,6 +921,7 @@ void parse_options( int argc, char const *argv[] ) {
     SOPT(BYTES)
     SOPT(CONFIG)
     SOPT(DECIMAL)
+    SOPT(FORMAT)
     SOPT(GROUP_BY)
     SOPT(HEXADECIMAL)
     SOPT(HOST_ENDIAN)
