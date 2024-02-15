@@ -295,6 +295,16 @@ typedef struct  ad_int                ad_int_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
 typedef struct  ad_loc                ad_loc_t;
+
+/**
+ * Underlying source location numeric type for \ref c_loc.
+ *
+ * @remarks This should be an unsigned type, but Flex & Bison generate code
+ * that assumes it's signed.  Making it unsigned generates warnings; hence this
+ * is kept as signed to prevent the warnings.
+ */
+typedef short                         ad_loc_num_t;
+
 typedef struct  ad_rep                ad_rep_t;
 typedef enum    ad_rep_times          ad_rep_times_t;
 typedef struct  ad_statement          ad_statement_t;
@@ -340,18 +350,13 @@ struct ad_int {
 };
 
 /**
- * The source location used by Bison.
+ * The source location used by Flex & Bison.
  */
 struct ad_loc {
-  //
-  // These should be either unsigned or size_t, but Bison generates code that
-  // tests these for >= 0 which is always true for unsigned types so it
-  // generates warnings; hence these are kept as int to eliminate the warnings.
-  //
-  int first_line;                       ///< First line of location range.
-  int first_column;                     ///< First column of location range.
-  int last_line;                        ///< Last line of location range.
-  int last_column;                      ///< Last column of location range.
+  ad_loc_num_t first_line;              ///< First line of location range.
+  ad_loc_num_t first_column;            ///< First column of location range.
+  ad_loc_num_t last_line;               ///< Last line of location range.
+  ad_loc_num_t last_column;             ///< Last column of location range.
 };
 
 /**
