@@ -36,8 +36,8 @@
 #include <unistd.h>                     /* for isatty() */
 
 //
-// Color capabilities.  Names containing Upper-case are unique to cdecl and
-// upper-case to avoid conflict with gcc.
+// Color capabilities.  Names containing Upper-case are unique to ad and upper-
+// case to avoid conflict with gcc.
 //
 #define COLOR_CAP_BYTE_OFFSET     "bn"
 #define COLOR_CAP_ELIDED_COUNT    "EC"
