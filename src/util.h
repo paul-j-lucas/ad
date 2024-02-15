@@ -325,7 +325,7 @@ _GL_INLINE_HEADER_BEGIN
   PERROR_EXIT_IF( fstat( (FD), (STAT) ) < 0 , EX_IOERR )
 
 /**
- * A special-case of fatal_error*( that additionally prints the file and line
+ * A special-case of fatal_error() that additionally prints the file and line
  * where an internal error occurred.
  *
  * @param FORMAT The `printf()` format to use.
