@@ -56,7 +56,6 @@
 #define OPT_DECIMAL             d
 #define OPT_BIG_ENDIAN          E
 #define OPT_LITTLE_ENDIAN       e
-#define OPT_LITTLE_ENDIAN       e
 #define OPT_GROUP_BY            g
 #define OPT_HELP                h
 #define OPT_HOST_ENDIAN         H
