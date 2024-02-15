@@ -56,6 +56,7 @@
 #define OPT_DECIMAL             d
 #define OPT_BIG_ENDIAN          E
 #define OPT_LITTLE_ENDIAN       e
+#define OPT_FORMAT              f
 #define OPT_GROUP_BY            g
 #define OPT_HELP                h
 #define OPT_HOST_ENDIAN         H
@@ -122,6 +123,7 @@ static struct option const OPTIONS[] = {
   { "--debug",            no_argument,        NULL, COPT(DEBUG)               },
   { "decimal",            no_argument,        NULL, COPT(DECIMAL)             },
   { "little-endian",      required_argument,  NULL, COPT(LITTLE_ENDIAN)       },
+  { "format",             required_argument,  NULL, COPT(FORMAT)              },
   { "big-endian",         required_argument,  NULL, COPT(BIG_ENDIAN)          },
   { "group-by",           required_argument,  NULL, COPT(GROUP_BY)            },
   { "help",               no_argument,        NULL, COPT(HELP)                },
@@ -570,6 +572,8 @@ static void usage( int status ) {
                             "When to colorize output [default: not_file].\n"
 "  --decimal               " UOPT(DECIMAL)
                             "Print offsets in decimal.\n"
+"  --format=FILE           " UOPT(FORMAT)
+                            "Dump according to file format.\n"
 "  --group-by=NUM          " UOPT(GROUP_BY)
                             "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "].\n"
 "  --help                  " UOPT(HELP)
@@ -675,6 +679,7 @@ size_t get_offset_width( void ) {
 void parse_options( int argc, char const *argv[] ) {
   size_t            max_lines = 0;
   int               opt;
+  char const       *opt_format = NULL;
   bool              opt_help = false;
   bool              opt_version = false;
   char const *const short_opts = make_short_opts( OPTIONS );
@@ -713,6 +718,11 @@ void parse_options( int argc, char const *argv[] ) {
         break;
       case COPT(DECIMAL):
         opt_offset_fmt = OFMT_DEC;
+        break;
+      case COPT(FORMAT):
+        if ( *SKIP_WS( optarg ) == '\0' )
+          goto missing_arg;
+        opt_format = optarg;
         break;
       case COPT(GROUP_BY):
         opt_group_by = parse_group_by( optarg );
