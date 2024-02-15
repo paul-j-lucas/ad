@@ -401,11 +401,12 @@ void regex_compile( regex_t *re, char const *pattern ) {
   assert( re != NULL );
   assert( pattern != NULL );
   int const rv = regcomp( re, pattern, REG_EXTENDED );
-  if ( rv != 0 )
+  if ( rv != 0 ) {
     fatal_error( EX_DATAERR,
       "\"%s\": invalid regular expression (%d): %s\n",
       pattern, rv, regex_error( re, rv )
     );
+  }
 }
 
 bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range ) {
@@ -419,11 +420,12 @@ bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range ) {
 
   if ( err_code == REG_NOMATCH )
     return false;
-  if ( err_code < 0 )
+  if ( err_code < 0 ) {
     fatal_error( EX_SOFTWARE,
       "regular expression error (%d): %s\n",
       err_code, regex_error( re, err_code )
     );
+  }
 
   if ( range != NULL ) {
     range[0] = (size_t)match[0].rm_so + offset;
