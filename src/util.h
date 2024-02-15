@@ -590,6 +590,27 @@ _GL_INLINE_HEADER_BEGIN
   ((PTR) = check_realloc( (PTR), sizeof(*(PTR)) * (N) ))
 
 /**
+ * Advances \a S over all \a CHARS.
+ *
+ * @param S The string pointer to advance.
+ * @param CHARS A string containing the characters to skip over.
+ * @return Returns the updated \a S.
+ *
+ * @sa #SKIP_WS()
+ */
+#define SKIP_CHARS(S,CHARS)       ((S) += strspn( (S), (CHARS) ))
+
+/**
+ * Advances \a S over all whitespace.
+ *
+ * @param S The string pointer to advance.
+ * @return Returns the updated \a S.
+ *
+ * @sa #SKIP_CHARS()
+ */
+#define SKIP_WS(S)                SKIP_CHARS( (S), WS_CHARS )
+
+/**
  * Like C11's `_Static_assert()` except that it can be used in an expression.
  *
  * @param EXPR The expression to check.
@@ -662,7 +683,7 @@ _GL_INLINE_HEADER_BEGIN
 /**
  * Whitespace characters.
  */
-#define WS                        " \f\n\r\t\v"
+#define WS_CHARS                  " \f\n\r\t\v"
 
 ///////////////////////////////////////////////////////////////////////////////
 

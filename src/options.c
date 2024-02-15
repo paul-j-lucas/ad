@@ -679,7 +679,7 @@ size_t get_offset_width( void ) {
 void parse_options( int argc, char const *argv[] ) {
   size_t            max_lines = 0;
   int               opt;
-  char const       *opt_format = NULL;
+  char const       *opt_format_file = NULL;
   bool              opt_help = false;
   bool              opt_version = false;
   char const *const short_opts = make_short_opts( OPTIONS );
@@ -722,7 +722,7 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(FORMAT):
         if ( *SKIP_WS( optarg ) == '\0' )
           goto missing_arg;
-        opt_format = optarg;
+        opt_format_file = optarg;
         break;
       case COPT(GROUP_BY):
         opt_group_by = parse_group_by( optarg );
