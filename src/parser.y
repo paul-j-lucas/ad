@@ -465,74 +465,74 @@ static void yyerror( char const *msg ) {
                     //
 
                     // C operators: precedence 17
-%left               Y_COLON2      "::"
+%left               Y_COLON_COLON           "::"
 
                     // C operators: precedence 16
-%token  <oper_id>   Y_PLUS2       "++"
-%token  <oper_id>   Y_MINUS2      "--"
-%left   <oper_id>                 '(' ')'
-                                  '[' ']'
-%token  <oper_id>                 '.'
-%token  <oper_id>   Y_ARROW       "->"
+%token  <oper_id>   Y_PLUS_PLUS             "++"
+%token  <oper_id>   Y_MINUS_MINUS           "--"
+%left   <oper_id>                           '(' ')'
+                                            '[' ']'
+%token  <oper_id>                           '.'
+%token  <oper_id>   Y_ARROW                 "->"
                     // C operators: precedence 15
-%token  <oper_id>                 '&'
-                                  '*'
-                                  '!'
-                 // Y_UMINUS   // '-' -- covered by '-' below
-                 // Y_PLUS     // '+' -- covered by '+' below
+%token  <oper_id>                           '&'
+                                            '*'
+                                            '!'
+                 // Y_UMINUS             // '-' -- covered by '-' below
+                 // Y_PLUS               // '+' -- covered by '+' below
 %right  <oper_id>   Y_sizeof
-%right  <oper_id>                 '~'
+%right  <oper_id>                           '~'
                     // C operators: precedence 14
                     // C operators: precedence 13
-                               // '*' -- covered by '*' above
-%left   <oper_id>                 '/'
-                                  '%'
+                                         // '*' -- covered by '*' above
+%left   <oper_id>                           '/'
+                                            '%'
                     // C operators: precedence 12
-%left   <oper_id>                 '+'
-                                  '-'
+%left   <oper_id>                           '+'
+                                            '-'
                     // C operators: precedence 11
-%left   <oper_id>   Y_LESS2       "<<"
-                    Y_GREATER2    ">>"
+%left   <oper_id>   Y_LESS_LESS             "<<"
+                    Y_GREATER_GREATER       ">>"
                     // C operators: precedence 10
                     // C operators: precedence 9
-%left   <oper_id>                 '<' '>'
-                    Y_LESS_EQ     "<="
-                    Y_GREATER_EQ  ">="
+%left   <oper_id>                           '<' '>'
+                    Y_LESS_EQUAL            "<="
+                    Y_GREATER_EQUAL         ">="
 
                     // C operators: precedence 8
-%left   <oper_id>   Y_EQ2         "=="
-                    Y_EXCLAM_EQ   "!="
+%left   <oper_id>   Y_EQUAL_EQUAL           "=="
+                    Y_EXCLAM_EQUAL          "!="
                     // C operators: precedence 7
-                    Y_BIT_AND  // '&' -- covered by Y_AMPER
+                    Y_BIT_AND            // '&' -- covered by Y_AMPER
                     // C operators: precedence 6
-%left   <oper_id>                 '^'
+%left   <oper_id>                           '^'
                     // C operators: precedence 5
-%left   <oper_id>                 '|'
+%left   <oper_id>                           '|'
                     // C operators: precedence 4
-%token  <oper_id>   Y_AMPER2      "&&"
+%token  <oper_id>   Y_AMPER_AMPER           "&&"
                     // C operators: precedence 3
-%left   <oper_id>   Y_PIPE2       "||"
+%left   <oper_id>   Y_PIPE_PIPE             "||"
                     // C operators: precedence 2
-%right  <oper_id>                 '?' ':'
-                                  '='
-                    Y_PERCENT_EQ  "%="
-                    Y_AMPER_EQ    "&="
-                    Y_STAR_EQ     "*="
-                    Y_PLUS_EQ     "+="
-                    Y_MINUS_EQ    "-="
-                    Y_SLASH_EQ    "/="
-                    Y_LESS2_EQ    "<<="
-                    Y_GREATER2_EQ ">>="
-                    Y_CIRC_EQ     "^="
-                    Y_PIPE_EQ     "|="
+%right  <oper_id>                           '?' ':'
+                                            '='
+                    Y_PERCENT_EQUAL         "%="
+                    Y_AMPER_EQUAL           "&="
+                    Y_STAR_EQUAL            "*="
+                    Y_PLUS_EQUAL            "+="
+                    Y_MINUS_EQUAL           "-="
+                    Y_SLASH_EQUAL           "/="
+                    Y_LESS_LESS_EQUAL       "<<="
+                    Y_GREATER_GREATER_EQUAL ">>="
+                    Y_CIRC_EQUAL            "^="
+                    Y_PIPE_EQUAL            "|="
 
                     // C operators: precedence 1
-%left   <oper_id>                 ','
+%left   <oper_id>                           ','
 
 
                     // Miscellaneous
-%token                            ';'
-%token                            '{' '}'
+%token                                      ';'
+%token                                      '{' '}'
 %token  <str_val>   Y_CHAR_LIT
 %token              Y_END
 %token              Y_ERROR

@@ -44,6 +44,15 @@
 // extern variables
 extern char const  *lexer_token;        ///< Text of current token.
 
+////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Initializes the lexer.
+ *
+ * @note This function must be called exactly once.
+ */
+void lexer_init( void );
+
 /**
  * Gets the current input line.
  *

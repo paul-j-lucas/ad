@@ -38,7 +38,6 @@
  *
  * @param FMT The \c c_fmt to check.
  * @return Returns \c true only if \a FMT specifies a type.
- * @hideinitializer
  */
 #define CFMT_HAS_TYPE(FMT) \
   (((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T)) != 0)

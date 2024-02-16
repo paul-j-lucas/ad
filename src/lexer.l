@@ -52,6 +52,7 @@
 // standard
 #include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for strtol(3) */
 #include <string.h>
@@ -89,47 +90,10 @@
 #define SET_TOKEN_TO(S)           (lexer_token = (S))
 
 /**
- * Sets <code>\ref lexer_token</code> to \a S and returns \a T.
- *
- * @param S The string to set the token to.
- * @param T The token to return.
- */
-#define SET_TOKEN_TO_AND_RETURN(S,T) \
-  BLOCK( SET_TOKEN_TO(S); return (T); )
-
-/**
- * Sets <code>\ref lexer_token</code> to \a S and returns \a S[0].
- *
- * @param S The string to set the token to.
- */
-#define SET_TOKEN_TO_AND_RETURN_IT(S) \
-  SET_TOKEN_TO_AND_RETURN( (S), lexer_token[0] )
-
-/**
- * Advances \a S over all \a CHARS.
- *
- * @param S The string pointer to advance.
- * @param CHARS A string containing the characters to skip over.
- * @return Returns the updated \a S.
- * @hideinitializer
- */
-#define SKIP_CHARS(S,CHARS)       ((S) += strspn( (S), (CHARS) ))
-
-/**
- * Advances \a S over all whitespace.
- *
- * @param S The string pointer to advance.
- * @return Returns the updated \a S.
- * @hideinitializer
- */
-#define SKIP_WS(S)                SKIP_CHARS( (S), " \f\r\t\v" )
-
-/**
  * Overrides flex's fatal error message to print the message in our format and
  * also exit with the status code we want.
  *
  * @param MSG The error message to print.
- * @hideinitializer
  */
 #define YY_FATAL_ERROR(MSG)       lexer_fatal( (MSG) )
 
@@ -139,16 +103,13 @@
  * @param BUF The buffer to use.
  * @param BYTES_READ Set to the number of bytes read.
  * @param BYTES_MAX The maximum number of bytes to read.
- * @hideinitializer
  */
 #define YY_INPUT(BUF,BYTES_READ,BYTES_MAX) \
-  (BYTES_READ) = lexer_get_input( (BUF), (BYTES_MAX) )
+  (BYTES_READ) = lexer_get_input( (BUF), STATIC_CAST( yy_size_t, (BYTES_MAX) ) )
 
 /**
  * This code is inserted by flex at the beginning of each rule to set the
  * current token location information.
- *
- * @hideinitializer
  */
 #define YY_USER_ACTION            lexer_update_loc(); /* must include ';' */
 
@@ -175,27 +136,33 @@ static int        token_column;         ///< Column position of current token.
 /// C++ raw string literal delimiter.
 static char       rstr_delim[ RSTR_DELIM_LEN_MAX + 1/*"*/ + 1/*\0*/ ];
 
-// local functions
-_Noreturn
-static void       lexer_fatal( char const* );
-
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Cleans up lexer data.
+ *
+ * @sa lexer_init()
+ */
+static void lexer_cleanup( void ) {
+  strbuf_cleanup( &str_lit_buf );
+}
 
 /**
  * Called by flex only when there's a fatal error.
  *
  * @param msg The error message to print.
  */
+_Noreturn
 static void lexer_fatal( char const *msg ) {
   if ( msg == NULL ) {
-    // Not reached -- "called" just to silence the "unused function" warning.
+    // Never true -- here just to silence the "unused function" warning.
     yy_fatal_error( msg );
   }
 
   //
   // This is defined down here to avoid having to declare yy_fatal_error
   // ourselves and having to get it right being subject to possible changes in
-  // its signature in different flex versions.
+  // its signature in different Flex versions.
   //
   INTERNAL_ERROR( "%s\n", msg );
 }
@@ -313,6 +280,10 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 %%
 
+  /***************************************************************************/
+  /*  IDENTIFIERS                                                            */
+  /***************************************************************************/
+
 {identifier}  {
                 SET_TOKEN;
 
@@ -342,35 +313,42 @@ hex_int       0[xX]{H}+{int_sfx}?
                 return Y_NAME;
               }
 
-              /* Integer literals. */
+  /***************************************************************************/
+  /*  NUMERIC LITERALS                                                       */
+  /***************************************************************************/
+
 {bin_int}     { SET_TOKEN; yylval.int_val = parse_int(  2 ); return Y_INT_LIT; }
 {oct_int}     { SET_TOKEN; yylval.int_val = parse_int(  8 ); return Y_INT_LIT; }
 {dec_int}     { SET_TOKEN; yylval.int_val = parse_int( 10 ); return Y_INT_LIT; }
 {hex_int}     { SET_TOKEN; yylval.int_val = parse_int( 16 ); return Y_INT_LIT; }
 
+  /***************************************************************************/
+  /*  OPERATORS & PUNCTUATION                                                */
+  /***************************************************************************/
+
               /* Multi-character operators. */
-"::"          { SET_TOKEN; return Y_COLON2          ; }
-"!="          { SET_TOKEN; return Y_EXCLAM_EQ       ; }
-"%="          { SET_TOKEN; return Y_PERCENT_EQ      ; }
-"&&"          { SET_TOKEN; return Y_AMPER2          ; }
-"&="          { SET_TOKEN; return Y_AMPER_EQ        ; }
-"*="          { SET_TOKEN; return Y_STAR_EQ         ; }
-"++"          { SET_TOKEN; return Y_PLUS2           ; }
-"+="          { SET_TOKEN; return Y_PLUS_EQ         ; }
-"--"          { SET_TOKEN; return Y_MINUS2          ; }
-"-="          { SET_TOKEN; return Y_MINUS_EQ        ; }
-"->"          { SET_TOKEN; return Y_ARROW           ; }
-"/="          { SET_TOKEN; return Y_SLASH_EQ        ; }
-"<<"          { SET_TOKEN; return Y_LESS2           ; }
-"<<="         { SET_TOKEN; return Y_LESS2_EQ        ; }
-"<="          { SET_TOKEN; return Y_LESS_EQ         ; }
-"=="          { SET_TOKEN; return Y_EQ2             ; }
-">="          { SET_TOKEN; return Y_GREATER_EQ      ; }
-">>"          { SET_TOKEN; return Y_GREATER2        ; }
-">>="         { SET_TOKEN; return Y_GREATER2_EQ     ; }
-"^="          { SET_TOKEN; return Y_CIRC_EQ         ; }
-"|="          { SET_TOKEN; return Y_PIPE_EQ         ; }
-"||"          { SET_TOKEN; return Y_PIPE2           ; }
+"::"          { SET_TOKEN; return Y_COLON_COLON           ; }
+"!="          { SET_TOKEN; return Y_EXCLAM_EQUAL          ; }
+"%="          { SET_TOKEN; return Y_PERCENT_EQUAL         ; }
+"&&"          { SET_TOKEN; return Y_AMPER_AMPER           ; }
+"&="          { SET_TOKEN; return Y_AMPER_EQUAL           ; }
+"*="          { SET_TOKEN; return Y_STAR_EQUAL            ; }
+"++"          { SET_TOKEN; return Y_PLUS_PLUS             ; }
+"+="          { SET_TOKEN; return Y_PLUS_EQUAL            ; }
+"--"          { SET_TOKEN; return Y_MINUS_MINUS           ; }
+"-="          { SET_TOKEN; return Y_MINUS_EQUAL           ; }
+"->"          { SET_TOKEN; return Y_ARROW                 ; }
+"/="          { SET_TOKEN; return Y_SLASH_EQUAL           ; }
+"<<"          { SET_TOKEN; return Y_LESS_LESS             ; }
+"<<="         { SET_TOKEN; return Y_LESS_LESS_EQUAL       ; }
+"<="          { SET_TOKEN; return Y_LESS_EQUAL            ; }
+"=="          { SET_TOKEN; return Y_EQUAL_EQUAL           ; }
+">="          { SET_TOKEN; return Y_GREATER_EQUAL         ; }
+">>"          { SET_TOKEN; return Y_GREATER_GREATER       ; }
+">>="         { SET_TOKEN; return Y_GREATER_GREATER_EQUAL ; }
+"^="          { SET_TOKEN; return Y_CIRC_EQUAL            ; }
+"|="          { SET_TOKEN; return Y_PIPE_EQUAL            ; }
+"||"          { SET_TOKEN; return Y_PIPE_PIPE             ; }
 
               /* Single-character operators and miscellaneous punctuation. */
 "!"           |
@@ -397,6 +375,10 @@ hex_int       0[xX]{H}+{int_sfx}?
 "|"           |
 "}"           |
 "~"           { SET_TOKEN; return lexer_token[0]; }
+
+  /***************************************************************************/
+  /*  RAW STRING LITERALS                                                    */
+  /***************************************************************************/
 
 {rstr_pfx}    { // e.g.: u8R"abc(...)abc"
                 // find:    ^   ^
@@ -480,7 +462,11 @@ hex_int       0[xX]{H}+{int_sfx}?
                   return Y_STR_LIT;
                 }
               }
-}
+} /* <X_RSTR> */
+
+  /***************************************************************************/
+  /*  STRING LITERALS & CHARACTER LITERALS                                   */
+  /***************************************************************************/
 
 {cstr_pfx}?['"] {
                 strbuf_init( &str_lit_buf );
@@ -509,7 +495,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 strbuf_reset( &str_lit_buf );
                 return Y_LEXER_ERROR;
               }
-}
+} /* <X_CHAR,X_STR> */
 
 <X_CHAR>{
   [^'\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
@@ -520,7 +506,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 BEGIN( INITIAL );
                 return Y_CHAR_LIT;
               }
-}
+} /* <X_CHAR> */
 
 <X_STR>{      /* X_STR is the same as X_CHAR except " replaces '. */
   [^"\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
@@ -531,11 +517,15 @@ hex_int       0[xX]{H}+{int_sfx}?
                 BEGIN( INITIAL );
                 return Y_STR_LIT;
               }
-}
+} /* <X_STR> */
+
+  /***************************************************************************/
+  /*  COMMENTS                                                               */
+  /***************************************************************************/
 
 "/*"          {                         /* ignore C-style comments */
                 for ( int c = input(), prev = '\0'; ; prev = c, c = input() ) {
-                  if ( c == '\0' || c == EOF ) {
+                  if ( c == EOF ) {
                     print_error( &yylloc, "unterminated comment\n" );
                     return Y_LEXER_ERROR;
                   }
@@ -549,23 +539,34 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 "//".*        ;                         /* ignore C++-style comments */
 #.*           ;                         /* ignore preprocessor directives */
+
+  /***************************************************************************/
+  /*  WHITESPACE                                                             */
+  /***************************************************************************/
+
 {S}+          ;                         /* ignore all other whitespace */
 \\\n          ;                         /* eat escaped newlines */
 
 \n            {
                 SET_TOKEN;
                 newline();
+                BEGIN( INITIAL );
                 return Y_END;
               }
+
+  /***************************************************************************/
+  /*  NON-MATCH & EOF                                                        */
+  /***************************************************************************/
 
 .             {
                 SET_TOKEN;
                 return Y_ERROR;
               }
 
-<<EOF>>       {
+<*><<EOF>>    {
                 SET_TOKEN;
                 newline();
+                BEGIN( INITIAL );
                 //
                 // The first time we encounter EOF, we want to treat it as if
                 // it were a newline by returning Y_END so commands in the
@@ -584,6 +585,11 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+void lexer_init( void ) {
+  ASSERT_RUN_ONCE();
+  ATEXIT( &lexer_cleanup );
+}
+
 char const* lexer_input_line( size_t *plen ) {
   if ( plen != NULL )
     *plen = input_len;
@@ -598,8 +604,15 @@ ad_loc_t lexer_loc( void ) {
     rv_loc.first_column = newline_column;
   else if ( lexer_token[0] == '\n' )
     rv_loc.first_column = token_column;
-  else
-    rv_loc.first_column = token_column - (int)strlen( lexer_token );
+  else {
+    //
+    // This has to be the original yytext, not lexer_token, since lexer_token
+    // could have been set to something else via SET_TOKEN_TO().
+    //
+    rv_loc.first_column =
+      token_column - STATIC_CAST( ad_loc_num_t, strlen( yytext ) );
+    assert( rv_loc.first_column >= 0 );
+  }
 
   rv_loc.last_line = rv_loc.first_line;
   rv_loc.last_column = rv_loc.first_column;
@@ -609,10 +622,12 @@ ad_loc_t lexer_loc( void ) {
 void lexer_reset( bool hard_reset ) {
   if ( hard_reset ) {
     is_eof = false;
+    newline();
     yylineno = 0;
   }
+  BEGIN( INITIAL );
   input_len = input_sent = 0;
-  newline();
+  strbuf_reset( &str_lit_buf );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

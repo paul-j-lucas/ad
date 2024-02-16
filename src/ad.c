@@ -22,6 +22,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
+#include "lexer.h"
 #include "options.h"
 #include "typedef.h"
 #include "util.h"
@@ -78,6 +79,7 @@ static void ad_init( int argc, char const *argv[const] ) {
   ATEXIT( ad_cleanup );
   parse_options( argc, argv );
   colors_init();
+  lexer_init();
   ad_typedefs_init();
 
   if ( search_buf != NULL )             // searching for a string?
