@@ -54,8 +54,8 @@
 #define COLOR_CAP_SEPARATOR       "se"
 #define COLOR_CAP_WARNING         "warning"
 
-#define CALL_FN(FN)   NULL, (sgr_ ## FN)
-#define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
+#define CALL_FN(FN)               NULL, (sgr_ ## FN)
+#define SET_SGR(VAR)              &(sgr_ ## VAR), NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
