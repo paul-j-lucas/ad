@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines functions for parsing color specifications.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 /// @cond DOXYGEN_IGNORE
@@ -45,8 +50,8 @@
 #define COLOR_CAP_MATCHED_BOTH    "MB"
 #define COLOR_CAP_SEPARATOR       "se"
 
-#define CALL_FN(FN)   NULL, (sgr_ ## FN)
-#define SET_SGR(VAR)  &(sgr_ ## VAR), NULL
+#define CALL_FN(FN)               NULL, (sgr_ ## FN)
+#define SET_SGR(VAR)              &(sgr_ ## VAR), NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
