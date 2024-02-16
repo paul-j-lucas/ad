@@ -80,7 +80,6 @@ typedef enum color_when color_when_t;
 extern char const  *sgr_ascii_match;    ///< ASCII match color.
 extern char const  *sgr_caret;          ///< Color of the caret `^`.
 extern char const  *sgr_elided;         ///< Elided byte count color.
-extern char const  *sgr_end;            ///< End color output.
 extern char const  *sgr_error;          ///< Error color output.
 extern char const  *sgr_hex_match;      ///< Hex match color.
 extern char const  *sgr_locus;          ///< Color of error location.
