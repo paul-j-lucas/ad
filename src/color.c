@@ -49,10 +49,8 @@
 #define COLOR_CAP_BYTE_OFFSET     "bn"
 #define COLOR_CAP_ERROR           "error"
 #define COLOR_CAP_LOCUS           "locus"
-#define COLOR_CAP_MATCH_ASCII     "MA"
-#define COLOR_CAP_MATCH_HEX       "MH"
-#define COLOR_CAP_MATCH_BOTH      "MB"
 #define COLOR_CAP_ELIDED_COUNT    "EC"
+#define COLOR_CAP_MATCHED_BOTH    "MB"
 #define COLOR_CAP_SEPARATOR       "se"
 #define COLOR_CAP_WARNING         "warning"
 
@@ -268,7 +266,7 @@ void colors_init( void ) {
     COLOR_CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
     COLOR_CAP_ERROR         "=" SGR_FG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
     COLOR_CAP_LOCUS         "="                         SGR_BOLD  SGR_CAP_SEP
-    COLOR_CAP_MATCH_BOTH    "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+    COLOR_CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
     COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN
     COLOR_CAP_WARNING       "=" SGR_FG_YELLOW   SGR_SEP SGR_BOLD  SGR_CAP_SEP;
 
