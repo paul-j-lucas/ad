@@ -176,6 +176,21 @@ _GL_INLINE_HEADER_BEGIN
 // allow forward declarations of enums.
 
 /**
+ * **ad** debug mode.
+ */
+enum ad_debug {
+  AD_DEBUG_NO            = 0u,          ///< Do not print debug output.
+  AD_DEBUG_YES           = (1u << 0),   ///< Print JSON5 debug output.
+
+  /**
+   * Include `unique_id` values in debug output.
+   *
+   * @note May be used _only_ in combination with #AD_DEBUG_YES.
+   */
+  AD_DEBUG_OPT_EXPR_UNIQUE_ID = (1u << 1)
+};
+
+/**
  * Enumeration value.
  *
  * @sa ad_enum
@@ -283,6 +298,7 @@ enum ad_statement_kind {
 typedef struct  ad_binary_expr        ad_binary_expr_t;
 typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
+typedef enum    ad_debug              ad_debug_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_char               ad_char_t;
 typedef struct  ad_enum               ad_enum_t;

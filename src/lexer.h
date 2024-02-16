@@ -72,6 +72,14 @@ NODISCARD
 ad_loc_t lexer_loc( void );
 
 /**
+ * Gets a printable string of \ref lexer_token.
+ *
+ * @return Returns said string or NULL if \ref lexer_token is the empty string.
+ */
+NODISCARD
+char const* lexer_printable_token( void );
+
+/**
  * Resets the lexer to its initial state.
  *
  * @param hard_reset If `true`, does a "hard" reset that currently resets the

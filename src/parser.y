@@ -57,8 +57,9 @@
 
 #ifdef __GNUC__
 // Silence these warnings for Bison-generated code.
-#pragma GCC diagnostic ignored "-Wconversion"
-#pragma GCC diagnostic ignored "-Wunreachable-code"
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+# pragma GCC diagnostic ignored "-Wunreachable-code"
 #endif /* __GNUC__ */
 
 /// @endcond
@@ -67,7 +68,7 @@
 
 /// @cond DOXYGEN_IGNORE
 
-#define IF_DEBUG(...)             BLOCK( if ( opt_ad_debug ) { __VA_ARGS__ } )
+#define IF_AD_DEBUG(...)          BLOCK( if ( opt_ad_debug ) { __VA_ARGS__ } )
 
 // Developer aid for tracing when Bison %destructors are called.
 #if 0
@@ -79,98 +80,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * @defgroup parser-dump-group Debugging Macros
- * Macros that are used to dump a trace during parsing when `opt_ad_debug` is
- * `true`.
- * @ingroup parser-group
+ * @defgroup parser-group Parser
+ * Helper macros, data structures, variables, functions, and the grammar for
+ * **ad** declarations.
  * @{
  */
-
-/**
- * Dumps a `bool`.
- *
- * @param KEY The key name to print.
- * @param BOOL The `bool` to dump.
- */
-#define DUMP_BOOL(KEY,BOOL)  IF_DEBUG( \
-  DUMP_KEY( KEY ": %s", ((BOOL) ? "true" : "false") ); )
-
-/**
- * Dumps a comma followed by a newline the _second_ and subsequent times it's
- * called.  It's used to separate items being dumped.
- */
-#define DUMP_COMMA                fput_sep( ",\n", &dump_comma, stdout )
-
-/**
- * Dumps an ad_expr.
- *
- * @param KEY The key name to print.
- * @param EXPR The ad_expr to dump.
- */
-#define DUMP_EXPR(KEY,EXPR) \
-  IF_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), (KEY), stdout ); )
-
-/**
- * Dumps an `s_list` of ad_expr_t.
- *
- * @param KEY The key name to print.
- * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
- */
-#define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_DEBUG( \
-  DUMP_KEY( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
-
-/**
- * Possibly dumps a comma and a newline followed by the `printf()` arguments
- * &mdash; used for printing a key followed by a value.
- *
- * @param ... The `printf()` arguments.
- */
-#define DUMP_KEY(...) IF_DEBUG( \
-  DUMP_COMMA; PRINTF( "  " __VA_ARGS__ ); )
-
-/**
- * Dumps an integer.
- *
- * @param KEY The key name to print.
- * @param NUM The integer to dump.
- */
-#define DUMP_INT(KEY,NUM) \
-  DUMP_KEY( KEY ": %d", STATIC_CAST( int, (NUM) ) )
-
-/**
- * Dumps a C string.
- *
- * @param KEY The key name to print.
- * @param STR The C string to dump.
- */
-#define DUMP_STR(KEY,STR) IF_DEBUG( \
-  DUMP_KEY( KEY ": " ); str_dump( (STR), stdout ); )
-
-/**
- * Starts a dump block.
- *
- * @param NAME The grammar production name.
- * @param PROD The grammar production rule.
- *
- * @sa #DUMP_END
- */
-#define DUMP_START(NAME,PROD) \
-  bool dump_comma = false;    \
-  IF_DEBUG( FPUTS( NAME " ::= " PROD " = {\n", stdout ); )
-
-/**
- * Ends a dump block.
- *
- * @sa #DUMP_START
- */
-#define DUMP_END()                IF_DEBUG( FPUTS( "\n}\n\n", stdout ); )
-
-#define DUMP_TYPE(KEY,TYPE) IF_DEBUG( \
-  DUMP_KEY( KEY ": " ); ad_type_dump( TYPE, stdout ); )
-
-/** @} */
-
-///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Calls #elaborate_error_dym() with a \ref dym_kind_t of #DYM_NONE.
@@ -198,14 +112,13 @@
  * @param DYM_KINDS The bitwise-or of the kind(s) of things possibly meant.
  * @param ... Arguments passed to fl_elaborate_error().
  *
- * @note
- * This must be used _only_ after an `error` token, e.g.:
- * @code
+ * @note This must be used _only_ after an `error` token, e.g.:
+ * ```
  *  | error
  *    {
  *      elaborate_error_dym( DYM_COMMANDS, "unexpected token" );
  *    }
- * @endcode
+ * ```
  *
  * @sa elaborate_error()
  * @sa keyword_expected()
@@ -220,6 +133,13 @@
  */
 #define PARSE_ABORT() \
   BLOCK( parse_cleanup( /*fatal_error=*/true ); YYABORT; )
+
+/**
+ * Evaluates \a EXPR: if `false`, calls #PARSE_ABORT().
+ *
+ * @param EXPR The expression to evalulate.
+ */
+#define PARSE_ASSERT(EXPR)        BLOCK( if ( !(EXPR) ) PARSE_ABORT(); )
 
 /**
  * Calls fl_punct_expected() followed by #PARSE_ABORT().
@@ -242,9 +162,115 @@
 #define punct_expected(PUNCT) BLOCK( \
   fl_punct_expected( __FILE__, __LINE__, (PUNCT) ); PARSE_ABORT(); )
 
+/** @} */
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @defgroup parser-dump-group Debugging Macros
+ * Macros that are used to dump a trace during parsing when `opt_ad_debug` is
+ * `true`.
+ * @ingroup parser-group
+ * @{
+ */
+
+/**
+ * Dumps a `bool`.
+ *
+ * @param KEY The key name to print.
+ * @param BOOL The `bool` to dump.
+ */
+#define DUMP_BOOL(KEY,BOOL)  IF_AD_DEBUG( \
+  DUMP_KEY( KEY ": %s", ((BOOL) ? "true" : "false") ); )
+
+/**
+ * Dumps a comma followed by a newline the _second_ and subsequent times it's
+ * called.  It's used to separate items being dumped.
+ */
+#define DUMP_COMMA                fput_sep( ",\n", &dump_comma, stdout )
+
+/**
+ * Dumps an ad_expr.
+ *
+ * @param KEY The key name to print.
+ * @param EXPR The ad_expr to dump.
+ */
+#define DUMP_EXPR(KEY,EXPR) \
+  IF_AD_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), (KEY), stdout ); )
+
+/**
+ * Dumps an `s_list` of ad_expr_t.
+ *
+ * @param KEY The key name to print.
+ * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
+ */
+#define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_AD_DEBUG( \
+  DUMP_KEY( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
+
+/**
+ * Possibly dumps a comma and a newline followed by the `printf()` arguments
+ * &mdash; used for printing a key followed by a value.
+ *
+ * @param ... The `printf()` arguments.
+ */
+#define DUMP_KEY(...) IF_AD_DEBUG( \
+  DUMP_COMMA; PRINTF( "  " __VA_ARGS__ ); )
+
+/**
+ * Dumps an integer.
+ *
+ * @param KEY The key name to print.
+ * @param NUM The integer to dump.
+ */
+#define DUMP_INT(KEY,NUM) \
+  DUMP_KEY( KEY ": %d", STATIC_CAST( int, (NUM) ) )
+
+/**
+ * Dumps a C string.
+ *
+ * @param KEY The key name to print.
+ * @param STR The C string to dump.
+ */
+#define DUMP_STR(KEY,STR) IF_AD_DEBUG( \
+  DUMP_KEY( KEY ": " ); str_dump( (STR), stdout ); )
+
+/**
+ * Starts a dump block.
+ *
+ * @param NAME The grammar production name.
+ * @param PROD The grammar production rule.
+ *
+ * @sa #DUMP_END
+ */
+#define DUMP_START(NAME,PROD) \
+  bool dump_comma = false;    \
+  IF_AD_DEBUG( FPUTS( NAME " ::= " PROD " = {\n", stdout ); )
+
+/**
+ * Ends a dump block.
+ *
+ * @sa #DUMP_START
+ */
+#define DUMP_END()                IF_AD_DEBUG( FPUTS( "\n}\n\n", stdout ); )
+
+#define DUMP_TYPE(KEY,TYPE) IF_AD_DEBUG( \
+  DUMP_KEY( KEY ": " ); ad_type_dump( TYPE, stdout ); )
+
+/** @} */
+
 /// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @addtogroup parser-group
+ * @{
+ */
+
+// local functions
+PJL_PRINTF_LIKE_FUNC(4)
+static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
+                                ... );
 
 // local variables
 static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
@@ -267,58 +293,6 @@ static inline char const* printable_token( void ) {
 }
 
 ////////// local functions ////////////////////////////////////////////////////
-
-/**
- * Prints an additional parsing error message including a newline to standard
- * error that continues from where yyerror() left off.  Additionally:
- *
- * + If the printable_token() isn't NULL:
- *     + Checks to see if it's a keyword: if it is, mentions that it's a
- *       keyword in the error message.
- *     + May print "did you mean ...?" \a dym_kinds suggestions.
- *
- * + In debug mode, also prints the file & line where the function was called
- *   from.
- *
- * @note This function isn't normally called directly; use the
- * #elaborate_error() macro instead.
- *
- * @param file The name of the file where this function was called from.
- * @param line The line number within \a file where this function was called
- * from.
- * @param dym_kinds The bitwise-or of the kind(s) of things possibly meant.
- * @param format A `printf()` style format string.
- * @param ... Arguments to print.
- *
- * @sa fl_punct_expected()
- * @sa yyerror()
- */
-static void fl_elaborate_error( char const *file, int line,
-                                dym_kind_t dym_kinds, char const *format,
-                                ... ) {
-  assert( format != NULL );
-
-  EPUTS( ": " );
-  print_debug_file_line( file, line );
-
-  char const *const error_token = printable_token();
-  if ( error_token != NULL )
-    EPRINTF( "\"%s\": ", printable_token() );
-
-  va_list args;
-  va_start( args, format );
-  vfprintf( stderr, format, args );
-  va_end( args );
-
-  if ( error_token != NULL ) {
-    ad_keyword_t const *const k = ad_keyword_find( error_token );
-    if ( k != NULL )
-      EPRINTF( " (\"%s\" is a keyword)", error_token );
-    print_suggestions( dym_kinds, error_token );
-  }
-
-  EPUTC( '\n' );
-}
 
 /**
  * A special case of fl_elaborate_error() that prevents oddly worded error
@@ -421,7 +395,6 @@ static void yyerror( char const *msg ) {
 %}
 
 %union {
-  unsigned            bitmask;    // multipurpose bitmask (used by show)
   endian_t            endian_val;
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
@@ -1301,6 +1274,83 @@ semi_exp
 
 /// @endcond
 
+// Re-enable warnings.
+#ifdef __GNUC__
+# pragma GCC diagnostic pop
+#endif /* __GNUC__ */
+
+////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Prints an additional parsing error message including a newline to standard
+ * error that continues from where yyerror() left off.  Additionally:
+ *
+ * + If the lexer_printable_token() isn't NULL:
+ *     + Checks to see if it's a keyword: if it is, mentions that it's a
+ *       keyword in the error message.
+ *     + May print "did you mean ...?" \a dym_kinds suggestions.
+ *
+ * + In debug mode, also prints the file & line where the function was called
+ *   from as well as the ID of the lookahead token, if any.
+ *
+ * @note A newline _is_ printed.
+ * @note This function isn't normally called directly; use the
+ * #elaborate_error() or #elaborate_error_dym() macros instead.
+ *
+ * @param file The name of the file where this function was called from.
+ * @param line The line number within \a file where this function was called
+ * from.
+ * @param dym_kinds The bitwise-or of the kind(s) of things possibly meant.
+ * @param format A `printf()` style format string.  It _must not_ end in a
+ * newline since this function prints its own newline.
+ * @param ... Arguments to print.
+ *
+ * @sa #elaborate_error()
+ * @sa #elaborate_error_dym()
+ * @sa fl_keyword_expected()
+ * @sa fl_punct_expected()
+ * @sa yyerror()
+ */
+PJL_PRINTF_LIKE_FUNC(4)
+static void fl_elaborate_error( char const *file, int line,
+                                dym_kind_t dym_kinds, char const *format,
+                                ... ) {
+  assert( format != NULL );
+
+  EPUTS( ": " );
+  print_debug_file_line( file, line );
+
+  char const *const error_token = lexer_printable_token();
+  if ( error_token != NULL ) {
+    EPRINTF( "\"%s\"", error_token );
+    if ( opt_ad_debug != AD_DEBUG_NO ) {
+      switch ( yychar ) {
+        case YYEMPTY:
+          EPUTS( " [<empty>]" );
+          break;
+        case YYEOF:
+          EPUTS( " [<EOF>]" );
+          break;
+        default:
+          EPRINTF( " [%d]", yychar );
+      } // switch
+    }
+    EPUTS( ": " );
+  }
+
+  va_list args;
+  va_start( args, format );
+  vfprintf( stderr, format, args );
+  va_end( args );
+
+  if ( error_token != NULL ) {
+    //print_error_token_is_a( error_token );
+    print_suggestions( dym_kinds, error_token );
+  }
+
+  EPUTC( '\n' );
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
@@ -1311,4 +1361,7 @@ void parser_cleanup( void ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */
