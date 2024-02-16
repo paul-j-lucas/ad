@@ -30,6 +30,7 @@
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for isdigit() */
+#include <stdbool.h>
 #include <stdio.h>                      /* for fileno() */
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
