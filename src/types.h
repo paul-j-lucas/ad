@@ -170,6 +170,11 @@ _GL_INLINE_HEADER_BEGIN
 
 #define T_GET_SIZE(T)             (8u << (((T) & T_MASK_SIZE) >> 4))
 
+/**
+ * Decimal print conversion specifier for \ref ad_loc_num_t.
+ */
+#define PRI_ad_loc_num_t          "%u"
+
 ////////// enumerations ///////////////////////////////////////////////////////
 
 // Enumerations have to be declared before typedefs of them since ISO C doesn't

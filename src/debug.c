@@ -170,7 +170,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
 }
 
 /**
- * Dumps \a loc (for debugging).
+ * Dumps \a loc in [JSON5](https://json5.org) format (for debugging).
  *
  * @param loc The location to dump.
  * @param fout The `FILE` to dump to.
@@ -178,9 +178,21 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
 static void ad_loc_dump( ad_loc_t const *loc, FILE *fout ) {
   assert( loc != NULL );
   assert( fout != NULL );
-  FPRINTF( fout, "%d", loc->first_column );
+
+  FPUTS( "{ ", fout );
+
+  if ( loc->first_line > 1 )
+    FPRINTF( fout, "first_line: " PRI_ad_loc_num_t ", ", loc->first_line );
+
+  FPRINTF( fout, "first_column: " PRI_ad_loc_num_t, loc->first_column );
+
+  if ( loc->last_line != loc->first_line )
+    FPRINTF( fout, ", last_line: " PRI_ad_loc_num_t, loc->last_line );
+
   if ( loc->last_column != loc->first_column )
-    FPRINTF( fout, "-%d", loc->last_column );
+    FPRINTF( fout, ", last_column: " PRI_ad_loc_num_t, loc->last_column );
+
+  FPUTS( " }", fout );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
