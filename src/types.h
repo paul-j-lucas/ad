@@ -440,6 +440,9 @@ struct ad_declaration {
   char const *name;
 };
 
+/**
+ * An individual `case` for an \ref ad_switch_statement.
+ */
 struct ad_switch_case {
   ad_expr_t                *expr;
   ad_compound_statement_t   compound_statement;
