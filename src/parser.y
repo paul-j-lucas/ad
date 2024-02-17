@@ -1344,7 +1344,7 @@ static void fl_elaborate_error( char const *file, int line,
   va_end( args );
 
   if ( error_token != NULL ) {
-    //print_error_token_is_a( error_token );
+    print_error_token_is_a( error_token );
     print_suggestions( dym_kinds, error_token );
   }
 

@@ -201,6 +201,20 @@ PJL_PRINTF_LIKE_FUNC(1)
 void print_hint( char const *format, ... );
 
 /**
+ * If \a error_token is:
+ *
+ * + A **ad** keyword, prints `"(\"___\" is an ad keyword)"` where `___`
+ *   is \a error_token.
+ *
+ * + NULL, does nothing.
+ *
+ * @note A newline is _not_ printed.
+ *
+ * @param error_token The current error token. May be NULL.
+ */
+void print_error_token_is_a( char const *error_token );
+
+/**
  * Prints the location of the error including:
  *
  *  + The error line (if neither a TTY nor interactive).

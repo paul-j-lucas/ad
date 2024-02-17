@@ -340,6 +340,15 @@ void print_debug_file_line( char const *file, int line ) {
     EPRINTF( "[%s:%d] ", file, line );
 }
 
+void print_error_token_is_a( char const *error_token ) {
+  if ( error_token == NULL )
+    return;
+
+  ad_keyword_t const *const ak = ad_keyword_find( error_token );
+  if ( ak != NULL )
+    EPRINTF( " (\"%s\" is an " PACKAGE " keyword)", error_token );
+}
+
 void print_hint( char const *format, ... ) {
   assert( format != NULL );
   EPUTS( "; did you mean " );
