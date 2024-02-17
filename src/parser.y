@@ -684,12 +684,12 @@ declaration
 enum_declaration
   : Y_enum name_exp colon_exp type lbrace_exp enumerator_list rbrace_exp
     {
-      ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
+   // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
    // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
    // ad_enum->base = xx;
-      ad_enum->values = $6;
+   // ad_enum->values = $6;
       (void)$2;
     }
   ;
@@ -753,9 +753,9 @@ array_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp statement_list_opt[st_list] rbrace_exp
     {
-      ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
-      ad_struct->name = $name;
-      ad_struct->members = $st_list;
+      //ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
+      //ad_struct->name = $name;
+      //ad_struct->members = $st_list;
     }
   ;
 

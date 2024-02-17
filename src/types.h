@@ -198,7 +198,7 @@ enum ad_debug {
 /**
  * Enumeration value.
  *
- * @sa ad_enum
+ * @sa ad_enum_type
  */
 struct ad_enum_value {
   char const *name;
@@ -317,19 +317,19 @@ typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef enum    ad_debug              ad_debug_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_char               ad_char_t;
-typedef struct  ad_enum               ad_enum_t;
+typedef struct  ad_enum_type          ad_enum_type_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
 typedef enum    ad_expr_err           ad_expr_err_t;
 typedef enum    ad_expr_kind          ad_expr_kind_t;
 typedef struct  ad_field              ad_field_t;
-typedef struct  ad_int                ad_int_t;
+typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
 typedef struct  ad_loc                ad_loc_t;
 
 /**
- * Underlying source location numeric type for \ref c_loc.
+ * Underlying source location numeric type for \ref ad_loc.
  *
  * @remarks This should be an unsigned type, but Flex & Bison generate code
  * that assumes it's signed.  Making it unsigned generates warnings; hence this
@@ -341,8 +341,8 @@ typedef struct  ad_rep                ad_rep_t;
 typedef enum    ad_rep_times          ad_rep_times_t;
 typedef struct  ad_statement          ad_statement_t;
 typedef enum    ad_statement_kind     ad_statement_kind_t;
-typedef struct  ad_struct             ad_struct_t;
-typedef struct  ad_switch             ad_switch_t;
+typedef struct  ad_struct_type        ad_struct_type_t;
+typedef struct  ad_switch_type        ad_switch_type_t;
 typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  slist                 ad_switch_cases_t;
@@ -362,24 +362,7 @@ typedef ad_loc_t YYLTYPE;               ///< Source location type for Bison.
 #define YYLTYPE_IS_TRIVIAL        1
 /// @endcond
 
-/**
- * Enumeration type.
- */
-struct ad_enum {
-  ad_bits_t       bits;                 ///< Value number of bits.
-  endian_t        endian;               ///< Endianness of values.
-  ad_int_base_t   base;                 ///< Base of values.
-  slist_t         values;               ///< List of ad_enum_value.
-};
-
-/**
- * Integer type.
- */
-struct ad_int {
-  ad_bits_t       bits;                 ///< Value number of bits.
-  endian_t        endian;               ///< Endianness of value.
-  ad_int_base_t   base;                 ///< Base of value.
-};
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * The source location used by Flex & Bison.
@@ -397,6 +380,67 @@ struct ad_loc {
 struct ad_rep {
   ad_rep_times_t  times;
   ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
+};
+
+////////// ad types ///////////////////////////////////////////////////////////
+
+/**
+ * Enumeration type.
+ */
+struct ad_enum_type {
+  ad_bits_t       bits;                 ///< Value number of bits.
+  endian_t        endian;               ///< Endianness of values.
+  ad_int_base_t   base;                 ///< Base of values.
+  slist_t         values;               ///< List of ad_enum_value.
+};
+
+/**
+ * Integer type.
+ */
+struct ad_int_type {
+  ad_bits_t       bits;                 ///< Value number of bits.
+  endian_t        endian;               ///< Endianness of value.
+  ad_int_base_t   base;                 ///< Base of value.
+};
+
+/**
+ * struct type.
+ */
+struct ad_struct_type {
+  char const     *name;
+  ad_type_list_t  members;              ///< Structure members.
+};
+
+/**
+ * `switch` `case` type.
+ */
+struct ad_switch_case {
+  ad_expr_t      *expr;
+  slist_t         statement_list;
+};
+
+/**
+ * `switch` type.
+ */
+struct ad_switch_type {
+  ad_expr_t        *expr;
+  ad_switch_cases_t cases;
+};
+
+/**
+ * A type.  Every %ad_type at least has the ID that it's a type of.
+ */
+struct ad_type {
+  ad_tid_t        tid;
+  ad_expr_t      *size_expr;
+  ad_expr_t      *endian_expr;
+
+  union {
+    ad_int_type_t     ad_int;
+    ad_enum_type_t    ad_enum;
+    ad_struct_type_t  ad_struct;
+    ad_switch_type_t  ad_switch;
+  };
 };
 
 /**
@@ -431,52 +475,12 @@ struct ad_statement {
 };
 
 /**
- * struct type.
- */
-struct ad_struct {
-  char const     *name;
-  ad_type_list_t  members;              ///< Structure members.
-};
-
-/**
- * `switch` `case` type.
- */
-struct ad_switch_case {
-  ad_expr_t      *expr;
-  slist_t         statement_list;
-};
-
-/**
- * `switch` type.
- */
-struct ad_switch {
-  ad_expr_t        *expr;
-  ad_switch_cases_t cases;
-};
-
-/**
  * TODO
  *
  * @param VAR The `slist_node` loop variable.
  */
 #define FOREACH_CASE(VAR,SWITCH) \
   FOREACH_SLIST_NODE( VAR, (SWITCH)->cases )
-
-/**
- * A type.  Every %ad_type at least has the ID that it's a type of.
- */
-struct ad_type {
-  ad_tid_t        tid;
-  ad_expr_t      *size_expr;
-  ad_expr_t      *endian_expr;
-
-  union {
-    ad_int_t      ad_int;
-    ad_enum_t     ad_enum;
-    ad_struct_t   ad_struct;
-    ad_switch_t   ad_switch;
-  };
-};
 
 /**
  * A data field.
