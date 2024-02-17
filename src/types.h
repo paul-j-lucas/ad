@@ -285,12 +285,23 @@ enum ad_rep_times {
 };
 
 /**
- * TODO
+ * Kinds of statements in the **ad** language.
  */
 enum ad_statement_kind {
-  AD_STMT_COMPOUND,
-  AD_STMT_DECLARATION,
-  AD_STMT_SWITCH
+  /**
+   * A single declaration statement.
+   */
+  AD_ST_DECLARATION,
+
+  /**
+   * A compound statement, i.e. zero or more statements between `{` `}`.
+   */
+  AD_ST_COMPOUND,
+
+  /**
+   * A `switch` statement.
+   */
+  AD_ST_SWITCH
 };
 
 ////////// typedefs ///////////////////////////////////////////////////////////
@@ -383,6 +394,9 @@ struct ad_rep {
   ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
 };
 
+/**
+ * Compound statement.
+ */
 struct ad_compound_statement {
   slist_t statements;
 };
@@ -391,10 +405,16 @@ struct ad_declaration {
   char const *name;
 };
 
+/**
+ * `switch` statement.
+ */
 struct ad_switch_statement {
-  ad_expr_t  *expr;
+  ad_expr_t                *expr;
+  ad_compound_statement_t   cases;
 };
 
+/**
+ */
 struct ad_statement {
   union {
     ad_compound_statement_t compound;   ///< Compound statement.
@@ -402,7 +422,7 @@ struct ad_statement {
     ad_switch_statement_t   st_switch;  ///< `switch` statement.
   };
   ad_statement_kind_t kind;
-  ad_loc_t loc;
+  ad_loc_t            loc;
 };
 
 /**

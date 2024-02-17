@@ -611,7 +611,7 @@ statement
 compound_statement
   : '{' statement_list_opt '}'
     {
-      $$->kind = AD_STMT_COMPOUND;
+      $$->kind = AD_ST_COMPOUND;
       $$->compound.statements = $2;
     }
   ;
@@ -622,9 +622,9 @@ switch_statement
   : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
     {
       $$ = MALLOC( ad_statement_t, 1 );
-      $$->kind = AD_STMT_SWITCH;
+      $$->kind = AD_ST_SWITCH;
       $$->loc = @$;
-      $$->st_switch.expr = $3;
+      $$->st_switch.expr = $expr;
       // $$->st_switch
     }
   ;
@@ -635,10 +635,10 @@ switch_case_list_opt
   ;
 
 switch_case_list
-  : switch_case_list switch_case
+  : switch_case_list[case_list] switch_case[case]
     {
-      $$ = $1;
-      slist_push_back( &$$, &$2 );
+      $$ = $case_list;
+      slist_push_back( &$$, &$case );
     }
 
   | switch_case
@@ -649,10 +649,10 @@ switch_case_list
   ;
 
 switch_case
-  : Y_case expr_exp colon_exp statement_list_opt
+  : Y_case expr_exp[expr] colon_exp statement_list_opt
     {
       DUMP_START( "switch_case", "CASE expr ':' statement_list_opt" );
-      DUMP_EXPR( "expr", $2 );
+      DUMP_EXPR( "expr", $expr );
 
       $$ = MALLOC( ad_switch_case_t, 1 );
       $$->expr = $2;
@@ -718,21 +718,21 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : type Y_NAME array_opt
+  : type name_exp[name] array_opt[array]
     {
       ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      ad_field->name = $2;
-      ad_field->rep = $3;
-      ad_field->type = $1;
+      ad_field->name = $name;
+      ad_field->rep = $array;
+      ad_field->type = $type;
     }
   ;
 
 array_opt
   : /* empty */                   { $$.times = AD_REP_1; }
-  | '[' ']' equals_exp expr_exp
+  | '[' ']' equals_exp expr_exp[expr]
     {
       $$.times = AD_REP_1;
-      $$.expr = $4;
+      $$.expr = $expr;
     }
   | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
   | '[' '*' rbracket_exp          { $$.times = AD_REP_0_MORE; }
@@ -740,7 +740,7 @@ array_opt
   | '[' expr ']'
     {
       $$.times = AD_REP_EXPR;
-      $$.expr = $2;
+      $$.expr = $expr;
     }
   | '[' error ']'
     {
@@ -751,11 +751,11 @@ array_opt
 /// struct declaration ////////////////////////////////////////////////////////
 
 struct_declaration
-  : Y_struct name_exp lbrace_exp statement_list_opt rbrace_exp
+  : Y_struct name_exp[name] lbrace_exp statement_list_opt[st_list] rbrace_exp
     {
       ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
-      ad_struct->name = $2;
-      ad_struct->members = $4;
+      ad_struct->name = $name;
+      ad_struct->members = $st_list;
     }
   ;
 
@@ -776,6 +776,7 @@ expr
   : assign_expr
   | expr ',' assign_expr
     {
+      ad_expr_free( $1 );
       $$ = $3;
     }
   ;
@@ -846,23 +847,23 @@ bitwise_or_expr
 
 cast_expr
   : unary_expr
-  | '(' Y_NAME rparen_exp cast_expr
+  | '(' Y_NAME rparen_exp cast_expr[expr]
     {
       $$ = ad_expr_new( AD_EXPR_CAST, &@$ );
       //$$->binary.lhs_expr = $2;
       (void)$2;
-      $$->binary.rhs_expr = $4;
+      $$->binary.rhs_expr = $expr;
     }
   ;
 
 conditional_expr
   : logical_or_expr
-  | logical_or_expr '?' expr ':' conditional_expr
+  | logical_or_expr[c_expr] '?' expr[t_expr] ':' conditional_expr[f_expr]
     {
       $$ = ad_expr_new( AD_EXPR_IF_ELSE, &@$ );
-      $$->ternary.cond_expr = $1;
-      $$->ternary.sub_expr[0] = $3;
-      $$->ternary.sub_expr[1] = $5;
+      $$->ternary.cond_expr = $c_expr;
+      $$->ternary.sub_expr[0] = $t_expr;
+      $$->ternary.sub_expr[1] = $f_expr;
     }
   ;
 
@@ -930,13 +931,13 @@ postfix_expr
     {
       $$ = ad_expr_new( AD_EXPR_ARRAY, &@$ );
       $$->binary.lhs_expr = $1;
-      $$->binary.rhs_expr = $3;
+      $$->binary.rhs_expr = $expr;
     }
-  | postfix_expr '(' argument_expr_list_opt ')'
+  | postfix_expr '(' argument_expr_list_opt[arg_list] ')'
     {
       // TODO
       (void)$1;
-      (void)$3;
+      (void)$arg_list;
     }
   | postfix_expr '.' Y_NAME
     {
@@ -968,14 +969,15 @@ argument_expr_list_opt
   ;
 
 argument_expr_list
-  : argument_expr_list ',' assign_expr
+  : argument_expr_list[list] ',' assign_expr[expr]
     {
-      slist_push_back( &$$, $3 );
+      $$ = $list;
+      slist_push_back( &$$, $expr );
     }
-  | assign_expr
+  | assign_expr[expr]
     {
       slist_init( &$$ );
-      slist_push_back( &$$, $1 );
+      slist_push_back( &$$, $expr );
     }
   ;
 
@@ -1045,30 +1047,30 @@ shift_expr
 
 unary_expr
   : postfix_expr
-  | "++" unary_expr
+  | "++" unary_expr[expr]
     {
       // TODO
-      (void)$2;
+      (void)$expr;
     }
-  | "--" unary_expr
+  | "--" unary_expr[expr]
     {
       // TODO
-      (void)$2;
+      (void)$expr;
     }
-  | unary_op cast_expr
+  | unary_op[op] cast_expr[expr]
     {
-      $$ = ad_expr_new( $1, &@$ );
-      $$->unary.sub_expr = $2;
+      $$ = ad_expr_new( $op, &@$ );
+      $$->unary.sub_expr = $expr;
     }
-  | Y_sizeof unary_expr
-    {
-      // TODO
-      (void)$2;
-    }
-  | Y_sizeof '(' Y_NAME rparen_exp
+  | Y_sizeof unary_expr[expr]
     {
       // TODO
-      free( $3 );
+      (void)$expr;
+    }
+  | Y_sizeof '(' Y_NAME[name] rparen_exp
+    {
+      // TODO
+      free( $name );
     }
   ;
 
@@ -1100,11 +1102,11 @@ unary_op
 ///////////////////////////////////////////////////////////////////////////////
 
 type
-  : builtin_tid lt_exp expr gt_exp type_endian_exp
+  : builtin_tid[tid] lt_exp expr[size] gt_exp type_endian_exp[endian]
     {
-      $$.tid = $1;
-      $$.size_expr = $3;
-      $$.endian_expr = $5;
+      $$.tid = $tid;
+      $$.size_expr = $size;
+      $$.endian_expr = $endian;
     }
   | Y_TYPEDEF_TYPE
   ;
