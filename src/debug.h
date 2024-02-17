@@ -52,39 +52,39 @@
  * @param expr The expression to dump.  If NULL and \a key is not NULL, dumps
  * only \a key followed by `=&nbsp;NULL`.
  * @param key The key for which \a ast is the value, or NULL for none.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  *
  * @sa ad_expr_list_dump()
  */
-void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *dout );
+void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *fout );
 
 /**
  * Dumps \a tid (for debugging).
  *
  * @param tid The \ref ad_tid_t to dump.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  *
  * @sa ad_type_dump()
  */
-void ad_tid_dump( ad_tid_t tid, FILE *dout );
+void ad_tid_dump( ad_tid_t tid, FILE *fout );
 
 /**
  * Dumps \a type (for debugging).
  *
  * @param type The \ref ad_type to dump.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  *
  * @sa c_tid_dump()
  */
-void ad_type_dump( ad_type_t const *type, FILE *dout );
+void ad_type_dump( ad_type_t const *type, FILE *fout );
 
 /**
  * Dumps a Boolean value (for debugging).
  *
  * @param b The Boolean to dump.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  */
-void bool_dump( bool b, FILE *dout );
+void bool_dump( bool b, FILE *fout );
 
 /**
  * Gets the name of \a e.
@@ -99,9 +99,9 @@ char const* endian_name( endian_t e );
  * Dumps a string value (for debugging).
  *
  * @param s The string to dump, if any.  If NULL, `null` is printed instead.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  */
-void str_dump( char const *s, FILE *dout );
+void str_dump( char const *s, FILE *fout );
 
 ///////////////////////////////////////////////////////////////////////////////
 

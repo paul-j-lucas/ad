@@ -40,19 +40,19 @@
 #include <sysexits.h>
 
 #define DUMP_FORMAT(...) BLOCK( \
-  FPUTNSP( indent * DUMP_INDENT, dout ); FPRINTF( dout, __VA_ARGS__ ); )
+  FPUTNSP( indent * DUMP_INDENT, fout ); FPRINTF( fout, __VA_ARGS__ ); )
 
 #define DUMP_KEY(...) BLOCK( \
-  fput_sep( ",\n", &comma, dout ); DUMP_FORMAT( __VA_ARGS__ ); )
+  fput_sep( ",\n", &comma, fout ); DUMP_FORMAT( __VA_ARGS__ ); )
 
 #define DUMP_LOC(KEY,LOC) \
-  DUMP_KEY( KEY ": " ); ad_loc_dump( (LOC), dout )
+  DUMP_KEY( KEY ": " ); ad_loc_dump( (LOC), fout )
 
 #define DUMP_STR(KEY,VALUE) BLOCK( \
-  DUMP_KEY( KEY ": " ); str_dump( (VALUE), dout ); )
+  DUMP_KEY( KEY ": " ); str_dump( (VALUE), fout ); )
 
 #define DUMP_TYPE(TYPE) BLOCK( \
-  DUMP_KEY( "type: " ); ad_type_dump( (TYPE), dout ); )
+  DUMP_KEY( "type: " ); ad_type_dump( (TYPE), fout ); )
 
 /// @endcond
 
@@ -72,25 +72,25 @@ static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
  * @param indent The current indent.
  * @param key If not NULL, prints \a key followed by ` = ` before dumping the
  * value of \a expr.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  *
  * @sa ad_expr_list_dump()
  */
 static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
-                               char const *key, FILE *dout ) {
-  assert( dout != NULL );
+                               char const *key, FILE *fout ) {
+  assert( fout != NULL );
   bool const has_key = key != NULL && key[0] != '\0';
 
   if ( has_key )
     DUMP_FORMAT( "%s = ", key );
 
   if ( expr == NULL ) {
-    FPUTS( "NULL", dout );
+    FPUTS( "NULL", fout );
     return;
   }
 
   if ( has_key )
-    FPUTS( "{\n", dout );
+    FPUTS( "{\n", fout );
   else
     DUMP_FORMAT( "{\n" );
 
@@ -98,11 +98,11 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
   ++indent;
 
   //DUMP_SNAME( "sname", &ast->sname );
-  FPUTS( ",\n", dout );
+  FPUTS( ",\n", fout );
   DUMP_STR( "kind", ad_expr_kind_name( expr->expr_kind ) );
-  FPUTS( ",\n", dout );
+  FPUTS( ",\n", fout );
   DUMP_LOC( "loc", &expr->loc );
-  FPUTS( ",\n", dout );
+  FPUTS( ",\n", fout );
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
@@ -122,7 +122,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_MATH_INC_POST:
     case AD_EXPR_MATH_INC_PRE:
     case AD_EXPR_SIZEOF:
-      ad_expr_dump_impl( expr->unary.sub_expr, indent, "sub_expr", dout );
+      ad_expr_dump_impl( expr->unary.sub_expr, indent, "sub_expr", fout );
       break;
 
     // binary
@@ -149,22 +149,22 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_REL_LESS:
     case AD_EXPR_REL_LESS_EQ:
     case AD_EXPR_REL_NOT_EQ:
-      ad_expr_dump_impl( expr->binary.lhs_expr, indent, "lhs_expr", dout );
-      FPUTS( ",\n", dout );
-      ad_expr_dump_impl( expr->binary.rhs_expr, indent, "rhs_expr", dout );
+      ad_expr_dump_impl( expr->binary.lhs_expr, indent, "lhs_expr", fout );
+      FPUTS( ",\n", fout );
+      ad_expr_dump_impl( expr->binary.rhs_expr, indent, "rhs_expr", fout );
       break;
 
     // ternary
     case AD_EXPR_IF_ELSE:
-      ad_expr_dump_impl( expr->ternary.cond_expr, indent, "cond_expr", dout );
-      FPUTS( ",\n", dout );
-      ad_expr_dump_impl( expr->ternary.sub_expr[0], indent, "sub_expr[0]", dout );
-      FPUTS( ",\n", dout );
-      ad_expr_dump_impl( expr->ternary.sub_expr[1], indent, "sub_expr[1]", dout );
+      ad_expr_dump_impl( expr->ternary.cond_expr, indent, "cond_expr", fout );
+      FPUTS( ",\n", fout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[0], indent, "sub_expr[0]", fout );
+      FPUTS( ",\n", fout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[1], indent, "sub_expr[1]", fout );
       break;
   } // switch
 
-  FPUTC( '\n', dout );
+  FPUTC( '\n', fout );
   --indent;
   DUMP_FORMAT( "}" );
 }
@@ -173,54 +173,54 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
  * Dumps \a loc (for debugging).
  *
  * @param loc The location to dump.
- * @param dout The `FILE` to dump to.
+ * @param fout The `FILE` to dump to.
  */
-static void ad_loc_dump( ad_loc_t const *loc, FILE *dout ) {
+static void ad_loc_dump( ad_loc_t const *loc, FILE *fout ) {
   assert( loc != NULL );
-  assert( dout != NULL );
-  FPRINTF( dout, "%d", loc->first_column );
+  assert( fout != NULL );
+  FPRINTF( fout, "%d", loc->first_column );
   if ( loc->last_column != loc->first_column )
-    FPRINTF( dout, "-%d", loc->last_column );
+    FPRINTF( fout, "-%d", loc->last_column );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-void bool_dump( bool value, FILE *dout ) {
-  assert( dout != NULL );
-  FPUTS( value ? "true" : "false", dout );
+void bool_dump( bool value, FILE *fout ) {
+  assert( fout != NULL );
+  FPUTS( value ? "true" : "false", fout );
 }
 
-void ad_expr_dump( ad_expr_t const *ast, char const *key, FILE *dout ) {
-  ad_expr_dump_impl( ast, 1, key, dout );
+void ad_expr_dump( ad_expr_t const *ast, char const *key, FILE *fout ) {
+  ad_expr_dump_impl( ast, 1, key, fout );
 }
 
-void ad_tid_dump( ad_tid_t tid, FILE *dout ) {
-  assert( dout != NULL );
+void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
+  assert( fout != NULL );
   switch ( tid ) {
     case T_BOOL:
-      FPRINTF( dout, "bool%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "bool%u", ad_tid_size( tid ) );
       break;
     case T_ERROR:
-      FPUTS( "error", dout );
+      FPUTS( "error", fout );
       break;
     case T_FLOAT:
-      FPRINTF( dout, "float%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "float%u", ad_tid_size( tid ) );
       break;
     case T_INT:
       if ( !ad_is_signed( tid ) )
-        FPUTS( "unsigned ", dout );
-      FPRINTF( dout, "int%u", ad_tid_size( tid ) );
+        FPUTS( "unsigned ", fout );
+      FPRINTF( fout, "int%u", ad_tid_size( tid ) );
       break;
     case T_UTF:
-      FPRINTF( dout, "utf%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "utf%u", ad_tid_size( tid ) );
       break;
   } // switch
-  FPUTS( endian_name( ad_tid_endian( tid ) ), dout );
+  FPUTS( endian_name( ad_tid_endian( tid ) ), fout );
 }
 
-void ad_type_dump( ad_type_t const *type, FILE *dout ) {
+void ad_type_dump( ad_type_t const *type, FILE *fout ) {
   assert( type != NULL );
-  assert( dout != NULL );
+  assert( fout != NULL );
 
   // TODO
 }
@@ -236,20 +236,20 @@ char const* endian_name( endian_t e ) {
   return NULL;
 }
 
-void str_dump( char const *value, FILE *dout ) {
-  assert( dout != NULL );
+void str_dump( char const *value, FILE *fout ) {
+  assert( fout != NULL );
   if ( value == NULL ) {
-    FPUTS( "null", dout );
+    FPUTS( "null", fout );
     return;
   }
-  FPUTC( '"', dout );
+  FPUTC( '"', fout );
   for ( char const *p = value; *p != '\0'; ++p ) {
     if ( *p == '"' )
-      FPUTS( "\\\"", dout );
+      FPUTS( "\\\"", fout );
     else
-      FPUTC( *p, dout );
+      FPUTC( *p, fout );
   } // for
-  FPUTC( '"', dout );
+  FPUTC( '"', fout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
