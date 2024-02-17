@@ -276,22 +276,6 @@ static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
 static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
 static slist_t        statement_list;
 
-////////// inline functions ///////////////////////////////////////////////////
-
-/**
- * Gets a printable string of the lexer's current token.
- *
- * @return Returns said string.
- */
-NODISCARD
-static inline char const* printable_token( void ) {
-  switch ( lexer_token[0] ) {
-    case '\0': return NULL;
-    case '\n': return "\\n";
-    default  : return lexer_token;
-  } // switch
-}
-
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -324,7 +308,7 @@ static void fl_punct_expected( char const *file, int line, char punct ) {
   EPUTS( ": " );
   print_debug_file_line( file, line );
 
-  char const *const error_token = printable_token();
+  char const *const error_token = lexer_printable_token();
   if ( error_token != NULL )
     EPRINTF( "\"%s\": ", error_token );
 
@@ -403,13 +387,13 @@ static void yyerror( char const *msg ) {
   int                 int_val;
   slist_t             list;       // multipurpose list
   char const         *literal;    // token literal
-  char               *name;       // name being declared or explained
+  char               *name;       // name being declared
   ad_rep_t            rep_val;
   ad_statement_t     *statement;
   char               *str_val;    // quoted string value
   ad_switch_case_t   *switch_case;
   ad_type_t           type;
-  ad_typedef_t const *tdef;
+  ad_typedef_t const *tdef;       // typedef
   ad_tid_t            tid;
 }
 
@@ -583,16 +567,9 @@ static void yyerror( char const *msg ) {
 %type <expr>        type_endian_exp
 %type <expr_kind>   unary_op
 
-/*
- * Bison %destructors.  We don't use the <identifier> syntax because older
- * versions of Bison don't support it.
- *
- * Clean-up of expr nodes is done via garbage collection using expr_gc_list.
- */
-
-/* name */
-%destructor { DTRACE; FREE( $$ ); } name_exp
-%destructor { DTRACE; FREE( $$ ); } Y_NAME
+// Bison %destructors.
+%destructor { DTRACE; FREE( $$ ); } <name>
+%destructor { DTRACE; FREE( $$ ); } <str_val>
 
 /*****************************************************************************/
 %%
@@ -624,7 +601,7 @@ statement
   | switch_statement
   | error
     {
-      if ( printable_token() != NULL )
+      if ( lexer_printable_token() != NULL )
         elaborate_error( "unexpected token" );
       else
         elaborate_error( "unexpected end of statement" );
