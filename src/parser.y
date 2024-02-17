@@ -649,22 +649,22 @@ switch_case_list
   ;
 
 switch_case
-  : Y_case expr_exp[expr] colon_exp statement_list_opt
+  : Y_case expr_exp[expr] colon_exp statement_list_opt[statements]
     {
       DUMP_START( "switch_case", "CASE expr ':' statement_list_opt" );
       DUMP_EXPR( "expr", $expr );
 
       $$ = MALLOC( ad_switch_case_t, 1 );
-      $$->expr = $2;
-      $$->statement_list = $4;
+      $$->expr = $expr;
+      $$->compound_statement.statements = slist_move( &$statements );
 
       DUMP_END();
     }
-  | Y_default colon_exp statement_list_opt
+  | Y_default colon_exp statement_list_opt[statements]
     {
       $$ = MALLOC( ad_switch_case_t, 1 );
       $$->expr = NULL;
-      $$->statement_list = $3;
+      $$->compound_statement.statements = slist_move( &$statements );
     }
   ;
 

@@ -342,10 +342,8 @@ typedef enum    ad_rep_times          ad_rep_times_t;
 typedef struct  ad_statement          ad_statement_t;
 typedef enum    ad_statement_kind     ad_statement_kind_t;
 typedef struct  ad_struct_type        ad_struct_type_t;
-typedef struct  ad_switch_type        ad_switch_type_t;
 typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
-typedef struct  slist                 ad_switch_cases_t;
 typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
 typedef uint16_t                      ad_tid_t;
@@ -412,22 +410,6 @@ struct ad_struct_type {
 };
 
 /**
- * `switch` `case` type.
- */
-struct ad_switch_case {
-  ad_expr_t      *expr;
-  slist_t         statement_list;
-};
-
-/**
- * `switch` type.
- */
-struct ad_switch_type {
-  ad_expr_t        *expr;
-  ad_switch_cases_t cases;
-};
-
-/**
  * A type.  Every %ad_type at least has the ID that it's a type of.
  */
 struct ad_type {
@@ -439,9 +421,10 @@ struct ad_type {
     ad_int_type_t     ad_int;
     ad_enum_type_t    ad_enum;
     ad_struct_type_t  ad_struct;
-    ad_switch_type_t  ad_switch;
   };
 };
+
+////////// ad statements //////////////////////////////////////////////////////
 
 /**
  * Compound statement.
@@ -450,16 +433,24 @@ struct ad_compound_statement {
   slist_t statements;
 };
 
+/**
+ * Declaration.
+ */
 struct ad_declaration {
   char const *name;
+};
+
+struct ad_switch_case {
+  ad_expr_t                *expr;
+  ad_compound_statement_t   compound_statement;
 };
 
 /**
  * `switch` statement.
  */
 struct ad_switch_statement {
-  ad_expr_t                *expr;
-  ad_compound_statement_t   cases;
+  ad_expr_t  *expr;
+  slist_t     case_list;
 };
 
 /**
@@ -480,7 +471,7 @@ struct ad_statement {
  * @param VAR The `slist_node` loop variable.
  */
 #define FOREACH_CASE(VAR,SWITCH) \
-  FOREACH_SLIST_NODE( VAR, (SWITCH)->cases )
+  FOREACH_SLIST_NODE( VAR, (SWITCH)->case_list )
 
 /**
  * A data field.
