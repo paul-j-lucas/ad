@@ -327,6 +327,17 @@ _GL_INLINE_HEADER_BEGIN
   PERROR_EXIT_IF( putc( (C), (STREAM) ) == EOF, EX_IOERR )
 
 /**
+ * Prints \a N spaces to \a STREAM.
+ *
+ * @param N The number of spaces to print.
+ * @param STREAM The `FILE` stream to print to.
+ *
+ * @sa #FPUTS()
+ */
+#define FPUTNSP(N,STREAM) \
+  FPRINTF( (STREAM), "%*s", STATIC_CAST( int, (N) ), "" )
+
+/**
  * Calls **fputs**(3), checks for an error, and exits if there was one.
  *
  * @param S The C string to print.

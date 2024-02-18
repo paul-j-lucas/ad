@@ -186,17 +186,20 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
   COLOR_END_IF( prev_matches, sgr_hex_match );
 
   if ( opt_print_ascii ) {
-    // print padding if necessary (last row only)
+    unsigned spaces = 2;
+
+    // add padding spaces if necessary (last row only)
     for ( ; buf_pos < row_bytes; ++buf_pos ) {
       if ( buf_pos % opt_group_by == 0 )
-        PUTC( ' ' );                    // print space between hex columns
+        ++spaces;                       // print space between hex columns
       if ( print_readability_space( buf_pos ) )
-        PUTC( ' ' );
-      PUTS( "  " );
+        ++spaces;
+      spaces += 2;
     } // for
 
+    FPUTNSP( spaces, stdout );
+
     // dump ASCII part
-    PUTS( "  " );
     prev_matches = false;
     for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
       bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
