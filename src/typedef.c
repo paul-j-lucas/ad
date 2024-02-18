@@ -163,12 +163,10 @@ void ad_typedefs_init( void ) {
   ATEXIT( &ad_typedefs_cleanup );
 }
 
-ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
-                                      void *v_data ) {
+void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
   assert( visit_fn != NULL );
   tdef_rb_visit_data_t trvd = { visit_fn, v_data };
-  rb_node_t const *const rb = rb_tree_visit( &typedef_set, &rb_visitor, &trvd );
-  return rb != NULL ? rb->data : NULL;
+  rb_tree_visit( &typedef_set, &rb_visitor, &trvd );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

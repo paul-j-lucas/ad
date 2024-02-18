@@ -101,12 +101,8 @@ ad_typedef_t const* ad_typedef_find_name( char const *name );
  *
  * @param visit_fn The visitor function to use.
  * @param v_data Optional data passed to \a visit_fn.
- * @return Returns a pointer to the \ref ad_typedef the visitor stopped on or
- * NULL.
  */
-PJL_DISCARD
-ad_typedef_t const* ad_typedef_visit( ad_typedef_visit_fn_t visit_fn,
-                                      void *v_data );
+void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data );
 
 /**
  * Initializes all \ref ad_typedef data.
