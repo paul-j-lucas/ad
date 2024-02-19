@@ -64,7 +64,8 @@ _GL_INLINE_HEADER_BEGIN
 //      1 = UTF
 //      2 = int
 //      3 = float
-//      4 = struct
+//      4 = enum
+//      5 = struct
 //    Z = size in bits:
 //      0 = 8 bits
 //      1 = 16 bits
@@ -85,7 +86,7 @@ _GL_INLINE_HEADER_BEGIN
 #define T_MASK_ENDIAN           0x0006u
 
 /** (E)rror bitmask: `xxxx xxxx xxxx Exxx` */
-#define T_MASK_ERROR            0x0080u
+#define T_MASK_ERROR            0x0008u
 
 /** (N)ull bitmask: `xxxx xxxx xxxx xNxx` */
 #define T_MASK_NULL             0x0010u
@@ -103,10 +104,10 @@ _GL_INLINE_HEADER_BEGIN
 #define T_NONE                  0u              /**< No type.           */
 #define T_SIGNED                T_MASK_SIGN     /**< Signed type.       */
 
-#define T_BOOL                  0x0400u         /**< Boolean.           */
+#define T_BOOL                  0x0040u         /**< Boolean.           */
 #define T_BOOL8     (           T_BOOL | T_08)  /**< `bool`             */
 
-#define T_UTF                   0x0800u         /**< Unicode.           */
+#define T_UTF                   0x0080u         /**< Unicode.           */
 #define T_UTF8      (           T_UTF  | T_08)  /**< UTF-8 (multibyte). */
 #define T_UTF16HE   (           T_UTF  | T_16)  /**< UTF-16 host.       */
 #define T_UTF16BE   (T_END_B  | T_UTF  | T_16)  /**< UTF-16 big.        */
@@ -139,7 +140,7 @@ _GL_INLINE_HEADER_BEGIN
 /** UTF-32 little-endian, null-terminated string. */
 #define T_UTF32LE_0 (T_END_L  | T_UTF  | T_32 | T_NULL)
 
-#define T_INT       (            0x1000u     )  /**< Integer.           */
+#define T_INT       (            0x0100u    )   /**< Integer.           */
 #define T_INT8      (T_SIGNED | T_INT  | T_08)  /**< `signed int8`      */
 #define T_INT16     (T_SIGNED | T_INT  | T_16)  /**< `signed int16`     */
 #define T_INT32     (T_SIGNED | T_INT  | T_32)  /**< `signed int32`     */
@@ -149,13 +150,13 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UINT32    (           T_INT  | T_32)  /**< `unsigned int32`   */
 #define T_UINT64    (           T_INT  | T_64)  /**< `unsigned int64`   */
 
-#define T_FLOAT                 0x2000          /**< Floating point.    */
+#define T_FLOAT                 0x0200          /**< Floating point.    */
 #define T_FLOAT32   (T_SIGNED | T_FLOAT | T_32) /**< `float32`          */
 #define T_FLOAT64   (T_SIGNED | T_FLOAT | T_64) /**< `float64`          */
 
-#define T_STRUCT                0x4000u         /**< `struct`           */
+#define T_ENUM                  0x0400u         /**< `enum`             */
 
-#define T_SWITCH                0x8000u
+#define T_STRUCT                0x0800u         /**< `struct`           */
 
 #define T_INT_LIKE  (           T_BOOL | T_INT)
 #define T_NUMBER    (           T_BOOL | T_INT | T_FLOAT)

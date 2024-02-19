@@ -32,9 +32,9 @@
 
 void ad_type_free( ad_type_t *type ) {
   switch ( type->tid & T_MASK_TYPE ) {
-    case T_STRUCT:
+    case T_ENUM:
       break;
-    case T_SWITCH:
+    case T_STRUCT:
       break;
     case T_BOOL:
     case T_ERROR:

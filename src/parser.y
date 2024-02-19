@@ -586,12 +586,12 @@ statement_list_opt
 statement_list
   : statement_list statement
     {
-      slist_push_back( &statement_list, $2 );
+      slist_push_back( &statement_list, $statement );
     }
   | statement
     {
       slist_init( &$$ );
-      slist_push_back( &$$, $1 );
+      slist_push_back( &$$, $statement );
     }
   ;
 
@@ -619,7 +619,8 @@ compound_statement
 /// switch statement //////////////////////////////////////////////////////////
 
 switch_statement
-  : Y_switch lparen_exp expr rparen_exp lbrace_exp switch_case_list_opt '}'
+  : Y_switch lparen_exp expr rparen_exp
+    lbrace_exp switch_case_list_opt[case_list] '}'
     {
       $$ = MALLOC( ad_statement_t, 1 );
       $$->kind = AD_ST_SWITCH;
@@ -682,9 +683,16 @@ declaration
 /// enum declaration //////////////////////////////////////////////////////////
 
 enum_declaration
-  : Y_enum name_exp colon_exp type lbrace_exp enumerator_list rbrace_exp
+  : Y_enum name_exp[name] colon_exp type
+    lbrace_exp enumerator_list[value_list] rbrace_exp
     {
-   // ad_enum_t *const ad_enum = MALLOC( ad_enum_t, 1 );
+      /*
+      ad_type_t *const enum_type = MALLOC( ad_type_t, 1 );
+      *enum_type = (ad_type){
+        .tid = T_ENUM,
+        .values = slist_move( &$value_list )
+      };
+      */
    // ad_enum->name = $2;
    // ad_enum->bits = XX;
    // ad_enum->endian = XX;
