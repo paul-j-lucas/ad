@@ -1057,13 +1057,13 @@ unary_expr
   : postfix_expr
   | "++" unary_expr[expr]
     {
-      // TODO
-      (void)$expr;
+      $$ = ad_expr_new( AD_EXPR_MATH_INC_PRE, &@$ );
+      $$->unary.sub_expr = $expr;
     }
   | "--" unary_expr[expr]
     {
-      // TODO
-      (void)$expr;
+      $$ = ad_expr_new( AD_EXPR_MATH_DEC_PRE, &@$ );
+      $$->unary.sub_expr = $expr;
     }
   | unary_op[op] cast_expr[expr]
     {
@@ -1072,12 +1072,22 @@ unary_expr
     }
   | Y_sizeof unary_expr[expr]
     {
-      // TODO
-      (void)$expr;
+      $$ = ad_expr_new( AD_EXPR_SIZEOF, &@$ );
+      $$->unary.sub_expr = $expr;
     }
   | Y_sizeof '(' Y_NAME[name] rparen_exp
     {
-      // TODO
+      ad_typedef_t const *const tdef = ad_typedef_find_name( $name );
+      if ( tdef == NULL ) {
+        print_error( &@name, "\"%s\": no such type\n", $name );
+        free( $name );
+        PARSE_ABORT();
+      }
+      ad_expr_t *const expr = ad_expr_new( AD_EXPR_VALUE, &@$ );
+      expr->value = (ad_value_expr_t){
+        .type = (ad_type_t){ .tid = T_UINT64 },
+        .u64 = ad_type_size( tdef->type->tid )
+      };
       free( $name );
     }
   ;
