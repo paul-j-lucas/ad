@@ -416,6 +416,7 @@ hex_int       0[xX]{H}+{int_sfx}?
               }
 
 <X_RSTR>{
+
   [^)]+       { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
   ")"         {
                 char const *d;
@@ -426,32 +427,31 @@ hex_int       0[xX]{H}+{int_sfx}?
                     strbuf_reset( &str_lit_buf );
                     return Y_LEXER_ERROR;
                   }
-                  if ( c != *d ) {
-                    //
-                    // Found a mismatch with the delimiter, e.g.:
-                    //
-                    //      )abc"       // delimiter
-                    //      )abx"       // what was found
-                    //
-                    // Hence, it's not the actual delimiter, but part of the
-                    // string literal: append the part that matched (")ab").
-                    //
-                    strbuf_printf( &str_lit_buf,
-                      ")%.*s", (int)(d - rstr_delim), rstr_delim
-                    );
-                    //
-                    // Unput the character that caused the mismatch since it
-                    // could be ')' that could potentially start a real match,
-                    // e.g.:
-                    //
-                    //      R"abc(X)ab)abc"
-                    //                ^
-                    //
-                    // Hence the raw string is "X)ab".
-                    //
-                    unput( c );
-                    break;
-                  }
+                  if ( c == *d )
+                    continue;
+                  //
+                  // Found a mismatch with the delimiter, e.g.:
+                  //
+                  //      )abc"       // delimiter
+                  //      )abx"       // what was found
+                  //
+                  // Hence, it's not the actual delimiter, but part of the
+                  // string literal: append the part that matched (")ab").
+                  //
+                  int const part_len = STATIC_CAST( int, d - rstr_delim );
+                  strbuf_printf( &str_lit_buf, ")%.*s", part_len, rstr_delim );
+                  //
+                  // Unput the character that caused the mismatch since it
+                  // could be ')' that could potentially start a real match,
+                  // e.g.:
+                  //
+                  //      R"abc(X)ab)abc"
+                  //                ^
+                  //
+                  // Hence the raw string is "X)ab".
+                  //
+                  unput( c );
+                  break;
                 } // for
 
                 if ( *d == '\0' ) {     // found delimiter
@@ -462,6 +462,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                   return Y_STR_LIT;
                 }
               }
+
 } /* <X_RSTR> */
 
   /***************************************************************************/
@@ -485,6 +486,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                * are legal, but implementation-defined.
                */
 <X_CHAR,X_STR>{
+
               /* Escaped characters are copied verbatim, not interpreted. */
   \\(.|\n)    { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
   \n          {
@@ -495,9 +497,11 @@ hex_int       0[xX]{H}+{int_sfx}?
                 strbuf_reset( &str_lit_buf );
                 return Y_LEXER_ERROR;
               }
+
 } /* <X_CHAR,X_STR> */
 
 <X_CHAR>{
+
   [^'\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
   \'          {
                 yylloc.first_line   = str_lit_loc.first_line;
@@ -506,9 +510,11 @@ hex_int       0[xX]{H}+{int_sfx}?
                 BEGIN( INITIAL );
                 return Y_CHAR_LIT;
               }
+
 } /* <X_CHAR> */
 
 <X_STR>{      /* X_STR is the same as X_CHAR except " replaces '. */
+
   [^"\\\n]+   { strbuf_putsn( &str_lit_buf, yytext, yyleng ); }
   \"          {
                 yylloc.first_line   = str_lit_loc.first_line;
@@ -517,6 +523,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 BEGIN( INITIAL );
                 return Y_STR_LIT;
               }
+
 } /* <X_STR> */
 
   /***************************************************************************/
