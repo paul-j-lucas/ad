@@ -1120,7 +1120,7 @@ unary_op
 ///////////////////////////////////////////////////////////////////////////////
 
 type
-  : builtin_tid[tid] lt_exp expr[size] gt_exp type_endian_exp[endian]
+  : builtin_tid[tid] lt_exp expr_exp[size] gt_exp type_endian_exp[endian]
     {
       $$.tid = $tid;
       $$.size_expr = $size;
