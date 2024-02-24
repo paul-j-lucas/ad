@@ -1141,20 +1141,20 @@ type_endian_exp
   : '\\' 'b'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT8;
-      $$->value.i64 = ENDIAN_BIG;
+      $$->value.type.tid = T_UINT8;
+      $$->value.u64 = ENDIAN_BIG;
     }
   | '\\' 'l'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT8;
-      $$->value.i64 = ENDIAN_LITTLE;
+      $$->value.type.tid = T_UINT8;
+      $$->value.u64 = ENDIAN_LITTLE;
     }
   | '\\' 'h'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT8;
-      $$->value.i64 = ENDIAN_HOST;
+      $$->value.type.tid = T_UINT8;
+      $$->value.u64 = ENDIAN_HOST;
     }
   | '\\' '<' expr gt_exp
     {
