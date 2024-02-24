@@ -640,10 +640,10 @@ bool ad_is_signed( ad_tid_t tid ) {
 }
 
 /**
- * Gets whether \a tid is a signed integer.
+ * Gets the size (in bits) of the type represented by \a tid.
  *
  * @param tid The type ID to use.
- * @return Returns `true` only if \a tid is signed.
+ * @return Returns said size.
  */
 NODISCARD AD_TYPES_H_INLINE
 unsigned ad_tid_size( ad_tid_t tid ) {
@@ -658,7 +658,7 @@ unsigned ad_tid_size( ad_tid_t tid ) {
  */
 NODISCARD AD_TYPES_H_INLINE
 endian_t ad_tid_endian( ad_tid_t tid ) {
-  return (endian_t)(tid & T_MASK_ENDIAN);
+  return STATIC_CAST( endian_t, tid & T_MASK_ENDIAN );
 }
 
 /**
@@ -675,17 +675,6 @@ void ad_type_free( ad_type_t *type );
  */
 NODISCARD
 ad_type_t* ad_type_new( ad_tid_t tid );
-
-/**
- * Gets the size (in bits) of the type represented by \a tid.
- *
- * @param tid The ID of the type to get the size of.
- * @return Returns said size.
- */
-NODISCARD AD_TYPES_H_INLINE
-size_t ad_type_size( ad_tid_t tid ) {
-  return tid & T_MASK_SIZE;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

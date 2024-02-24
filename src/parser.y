@@ -1086,7 +1086,7 @@ unary_expr
       ad_expr_t *const expr = ad_expr_new( AD_EXPR_VALUE, &@$ );
       expr->value = (ad_value_expr_t){
         .type = (ad_type_t){ .tid = T_UINT64 },
-        .u64 = ad_type_size( tdef->type->tid )
+        .u64 = ad_tid_size( tdef->type->tid )
       };
       free( $name );
     }
