@@ -41,70 +41,66 @@ _GL_INLINE_HEADER_BEGIN
 // The bits (right to left) are used as follows:
 //
 //    F-DC BA98 7654 3210
-//    S--- TTTT TTZZ ENDD
+//    SZZZ ZZZZ -TTT ENDD
 //
 // where:
 //
-//    D = endianness:
+//    D(2) = endianness:
 //      0 = none
 //      1 = little
 //      2 = big
 //      3 = host
-//    E = error:
+//    E(1) = error:
 //      0 = no error
 //      1 = error
-//    N = null terminated:
+//    N(1) = null terminated:
 //      0 = not null terminated
 //      1 = null terminated
-//    S = sign:
+//    S(1) = sign:
 //      0 = unsigned
 //      1 = signed
-//    T = type (at most one set)
+//    T(3) = type:
 //      0 = bool
 //      1 = UTF
 //      2 = int
 //      3 = float
 //      4 = enum
 //      5 = struct
-//    Z = size in bits:
-//      0 = 8 bits
-//      1 = 16 bits
-//      2 = 32 bits
-//      3 = 64 bits
+//    Z(7) = size in bits
 //
 
 #define T_END_B                 ENDIAN_BIG
 #define T_END_L                 ENDIAN_LITTLE
 #define T_END_H                 ENDIAN_HOST
 
-#define T_08                    (0u)
-#define T_16                    (1u << 4)
-#define T_32                    (2u << 4)
-#define T_64                    (3u << 4)
+#define T_08                    ( 8u << 8)
+#define T_16                    (16u << 8)
+#define T_32                    (32u << 8)
+#define T_64                    (64u << 8)
 
 /** En(D)ian bitmask: `xxxx xxxx xxxx xxDD` */
-#define T_MASK_ENDIAN           0x0006u
+#define T_MASK_ENDIAN           0x0003u
 
 /** (E)rror bitmask: `xxxx xxxx xxxx Exxx` */
 #define T_MASK_ERROR            0x0008u
 
 /** (N)ull bitmask: `xxxx xxxx xxxx xNxx` */
-#define T_MASK_NULL             0x0010u
+#define T_MASK_NULL             0x0004u
 
 /** (S)igned: `Sxxx xxxx xxxx xxxx` */
 #define T_MASK_SIGN             0x8000u
 
 /** Si(Z)e: `xxxx xxxx xxZZ xxxx` */
-#define T_MASK_SIZE             0x0030u
+#define T_MASK_SIZE             0x7F00u
 
 /** (T)ype bitmask: `xxxx TTTT TTxx xxxx` */
-#define T_MASK_TYPE             0x0FC0u
+#define T_MASK_TYPE             0x0070u
 
 #define T_ERROR                 T_MASK_ERROR
 #define T_NONE                  0u              /**< No type.           */
 #define T_SIGNED                T_MASK_SIGN     /**< Signed type.       */
 
-#define T_BOOL                  0x0040u         /**< Boolean.           */
+#define T_BOOL                  0x0000u         /**< Boolean.           */
 #define T_BOOL8     (           T_BOOL | T_08)  /**< `bool`             */
 
 #define T_UTF                   0x0080u         /**< Unicode.           */

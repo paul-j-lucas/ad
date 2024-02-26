@@ -1,5 +1,5 @@
 struct SOI {
-  uint<16>\b marker == 0xFFD8;
+  uint<16,b> marker == 0xFFD8;
 };
 
 struct APP0 {
@@ -9,12 +9,12 @@ struct APP0 {
     DOTS_CM   = 2
   };
 
-  uint16\b marker == 0xFFE0;
-  uint16\b size;                     %u
-  utf<8>   jfif[] == "JFIF";
-  uint<8>  major;
-  uint<8>  minor;
-  units_t  units;
+  uint<16,b>  marker == 0xFFE0;
+  uint<16,b>  size                      %u;
+  utf<8>      jfif[] == "JFIF";
+  uint<8>     major;
+  uint<8>     minor;
+  units_t     units;
 
   switch ( units ) {
     case NONE:
@@ -59,8 +59,8 @@ struct extension_APP0 {
     THUMB_3BPP  = 0x13
   };
 
-  uint<16>\b  marker == 0xFFE0;
-  uint<16>\b  size;                     %u
+  uint<16,b>  marker == 0xFFE0;
+  uint<16,b>  size                      %u;
   utf<8>      jfxx[] == "JFXX";
   thumbnail_format thumb_fmt;
 
@@ -82,11 +82,11 @@ struct extension_APP0 {
 };
 
 struct SOS {
-  uint<16>\b marker == 0xFFDA;
+  uint<16,b> marker == 0xFFDA;
 };
 
 struct EOI {
-  uint<16>\b marker == 0xFFD9;
+  uint<16,b> marker == 0xFFD9;
 };
 
 union body {

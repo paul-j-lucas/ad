@@ -564,7 +564,7 @@ static void yyerror( char const *msg ) {
 %type <int_val>     int_exp
 %type <name>        name_exp
 %type <type>        type
-%type <expr>        type_endian_exp
+%type <expr>        type_endian type_endian_opt
 %type <expr_kind>   unary_op
 
 // Bison %destructors.
@@ -1120,7 +1120,7 @@ unary_op
 ///////////////////////////////////////////////////////////////////////////////
 
 type
-  : builtin_tid[tid] lt_exp expr_exp[size] gt_exp type_endian_exp[endian]
+  : builtin_tid[tid] lt_exp expr_exp[size] type_endian_opt[endian] gt_exp
     {
       $$.tid = $tid;
       $$.size_expr = $size;
@@ -1137,30 +1137,35 @@ builtin_tid
   | Y_utf                         { $$ = T_UTF; }
   ;
 
-type_endian_exp
-  : '\\' 'b'
+type_endian_opt
+  : /* empty */                   { $$ = NULL; }
+  | type_endian
+  ;
+
+type_endian
+  : ',' 'b'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
       $$->value.type.tid = T_UINT8;
       $$->value.u64 = ENDIAN_BIG;
     }
-  | '\\' 'l'
+  | ',' 'l'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
       $$->value.type.tid = T_UINT8;
       $$->value.u64 = ENDIAN_LITTLE;
     }
-  | '\\' 'h'
+  | ',' 'h'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
       $$->value.type.tid = T_UINT8;
       $$->value.u64 = ENDIAN_HOST;
     }
-  | '\\' '<' expr gt_exp
+  | ',' '<' expr gt_exp
     {
       $$ = $3;
     }
-  | '\\' error
+  | ',' error
     {
       elaborate_error( "one of 'b', 'l', 'h', or '<expr>' expected" );
     }
