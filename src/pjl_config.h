@@ -69,7 +69,7 @@
 #ifdef HAVE___TYPEOF__
 /**
  * Ignore the return value of a function even if it was declared with
- * #AD_WARN_UNUSED_RESULT.
+ * `NODISCARD`.
  *
  * @param FN_CALL The function call.
  */
