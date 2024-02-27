@@ -31,6 +31,8 @@
 ////////// extern functions ///////////////////////////////////////////////////
 
 void ad_type_free( ad_type_t *type ) {
+  if ( type == NULL )
+    return;
   switch ( type->tid & T_MASK_TYPE ) {
     case T_ENUM:
       break;
