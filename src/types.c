@@ -23,6 +23,7 @@
 /// @cond DOXYGEN_IGNORE
 #define AD_TYPES_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
+#include "expr.h"
 #include "types.h"
 
 // standard
@@ -55,6 +56,14 @@ ad_type_t* ad_type_new( ad_tid_t tid ) {
   *type = (ad_type_t){ 0 };
 
   return type;
+}
+
+unsigned ad_type_size( ad_type_t const *t ) {
+  unsigned const bits = ad_tid_size( t->tid );
+  if ( bits != 0 )
+    return bits;
+  assert( ad_expr_is_value( t->size_expr ) );
+  return t->size_expr->value.u32;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

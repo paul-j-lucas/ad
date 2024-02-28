@@ -40,13 +40,13 @@ _GL_INLINE_HEADER_BEGIN
 //
 // The bits (right to left) are used as follows:
 //
-//    F-DC BA98 7654 3210
+//    FEDC BA98 7654 3210
 //    SZZZ ZZZZ -TTT ENDD
 //
 // where:
 //
 //    D(2) = endianness:
-//      0 = none
+//      0 = expr
 //      1 = little
 //      2 = big
 //      3 = host
@@ -67,6 +67,7 @@ _GL_INLINE_HEADER_BEGIN
 //      4 = enum
 //      5 = struct
 //    Z(7) = size in bits
+//      0 = expr
 //
 
 #define T_END_B                 ENDIAN_BIG
@@ -383,8 +384,6 @@ struct ad_rep {
  * Enumeration type.
  */
 struct ad_enum_type {
-  ad_bits_t       bits;                 ///< Value number of bits.
-  endian_t        endian;               ///< Endianness of values.
   ad_int_base_t   base;                 ///< Base of values.
   slist_t         values;               ///< List of ad_enum_value.
 };
@@ -393,8 +392,6 @@ struct ad_enum_type {
  * Integer type.
  */
 struct ad_int_type {
-  ad_bits_t       bits;                 ///< Value number of bits.
-  endian_t        endian;               ///< Endianness of value.
   ad_int_base_t   base;                 ///< Base of value.
 };
 
@@ -534,10 +531,22 @@ struct ad_ternary_expr {
  */
 struct ad_value_expr {
   ad_type_t       type;                 ///< The type of the value.
+
+  /**
+   * The value.
+   */
   union {
-    // Integer.
-    int64_t       i64;                  ///< i8, i16, i32, i64
-    uint64_t      u64;                  ///< u8, u16, u32, u64
+    // Signed integer.
+    int8_t        i8;                   ///< `int8_t` value.
+    int16_t       i16;                  ///< `int16_t` value.
+    int32_t       i32;                  ///< `int32_t` value.
+    int64_t       i64;                  ///< `int64_t` value.
+
+    // Unsigned integer.
+    uint8_t       u8;                   ///< `uint8_t` value.
+    uint16_t      u16;                  ///< `uint16_t` value.
+    uint32_t      u32;                  ///< `uint32_t` value.
+    uint64_t      u64;                  ///< `uint64_t` value.
 
     // Floating-point.
     double        f64;                  ///< f32, f64
@@ -643,7 +652,7 @@ bool ad_is_signed( ad_tid_t tid ) {
  */
 NODISCARD AD_TYPES_H_INLINE
 unsigned ad_tid_size( ad_tid_t tid ) {
-  return 8u << ((tid & T_MASK_SIZE) >> 4);
+  return (tid & T_MASK_SIZE) >> 8;
 }
 
 /**
@@ -671,6 +680,15 @@ void ad_type_free( ad_type_t *type );
  */
 NODISCARD
 ad_type_t* ad_type_new( ad_tid_t tid );
+
+/**
+ * Gets the size in bits of \a t.
+ *
+ * @param t A pointer to the \ref ad_type to get the size of.
+ * @return Returns said size.
+ */
+NODISCARD
+unsigned ad_type_size( ad_type_t const *t );
 
 ///////////////////////////////////////////////////////////////////////////////
 

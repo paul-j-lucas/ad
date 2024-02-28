@@ -265,6 +265,7 @@ static bool ad_expr_array( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( lhs );
   EVAL_EXPR( binary, rhs );
   GET_BASE_TYPE( rhs );
+  (void)rv;
   // TODO
   return true;
 }
@@ -1402,7 +1403,7 @@ void ad_value_free( ad_value_expr_t *value ) {
   // that must be free'd.  (It doesn't matter which pointer type we free.)
   //
   if ( (value->type.tid & T_NULL) != T_NONE )
-    FREE( value->s8 );
+    free( value->s );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

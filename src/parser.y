@@ -761,6 +761,7 @@ array_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp statement_list_opt[st_list] rbrace_exp
     {
+      (void)$name;
       //ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
       //ad_struct->name = $name;
       //ad_struct->members = $st_list;
@@ -1086,7 +1087,7 @@ unary_expr
       ad_expr_t *const expr = ad_expr_new( AD_EXPR_VALUE, &@$ );
       expr->value = (ad_value_expr_t){
         .type = (ad_type_t){ .tid = T_UINT64 },
-        .u64 = ad_tid_size( tdef->type->tid )
+        .u64 = ad_type_size( tdef->type )
       };
       free( $name );
     }
