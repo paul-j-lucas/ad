@@ -1279,6 +1279,8 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
 }
 
 void ad_expr_free( ad_expr_t *expr ) {
+  if ( expr == NULL )
+    return;
   switch ( expr->expr_kind & AD_EXPR_MASK ) {
     case AD_EXPR_TERNARY:
       ad_expr_free( expr->ternary.sub_expr[1] );
