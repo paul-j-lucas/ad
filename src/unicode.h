@@ -90,6 +90,18 @@ NODISCARD
 bool should_utf8( utf8_when_t when );
 
 /**
+ * Encodes a Unicode code-point into UTF-8.
+ *
+ * @param cp The Unicode code-point to encode.
+ * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
+ * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
+ * @return Returns the number of bytes comprising the code-point encoded as
+ * UTF-8.
+ */
+PJL_DISCARD
+size_t utf32_8( char32_t cp, char *utf8_buf );
+
+/**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
  * comprising an encoded character.  Note that this is not equivalent to
  * !utf8_is_cont(c).
@@ -133,18 +145,6 @@ size_t utf8_len( char start ) {
     size_t, UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ]
   );
 }
-
-/**
- * Encodes a Unicode code-point into UTF-8.
- *
- * @param cp The Unicode code-point to encode.
- * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
- * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
- * @return Returns the number of bytes comprising the code-point encoded as
- * UTF-8.
- */
-PJL_DISCARD
-size_t utf32_8( char32_t cp, char *utf8_buf );
 
 ///////////////////////////////////////////////////////////////////////////////
 
