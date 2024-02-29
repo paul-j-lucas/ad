@@ -130,7 +130,7 @@ bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
-NODISCARD
+PJL_DISCARD
 size_t utf32_8( char32_t cp, char *utf8_buf );
 
 /**
