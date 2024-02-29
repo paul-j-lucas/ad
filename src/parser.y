@@ -686,18 +686,6 @@ statement
     }
   ;
 
-compound_statement
-  : '{' statement_list_opt[statements] '}'
-    {
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
-        .kind = AD_ST_COMPOUND,
-        .loc = @$,
-        .compound = { .statements = slist_move( &$statements ) }
-      };
-    }
-  ;
-
 /// break statement ///////////////////////////////////////////////////////////
 
 break_statement
@@ -711,6 +699,20 @@ break_statement
     }
   ;
 
+/// compound statement ////////////////////////////////////////////////////////
+
+compound_statement
+  : '{' statement_list_opt[statements] '}'
+    {
+      $$ = MALLOC( ad_statement_t, 1 );
+      *$$ = (ad_statement_t){
+        .kind = AD_ST_COMPOUND,
+        .loc = @$,
+        .st_compound = { .statements = slist_move( &$statements ) }
+      };
+    }
+  ;
+
 /// switch statement //////////////////////////////////////////////////////////
 
 switch_statement
@@ -718,10 +720,14 @@ switch_statement
     lbrace_exp switch_case_list_opt[case_list] '}'
     {
       $$ = MALLOC( ad_statement_t, 1 );
-      $$->kind = AD_ST_SWITCH;
-      $$->loc = @$;
-      $$->st_switch.expr = $expr;
-      // $$->st_switch
+      *$$ = (ad_statement_t){
+        .kind = AD_ST_SWITCH,
+        .loc = @$,
+        .st_switch = (ad_switch_statement_t){
+          .expr = $expr,
+          .case_list = slist_move( &$case_list )
+        }
+      };
     }
   ;
 

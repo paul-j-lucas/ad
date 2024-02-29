@@ -452,15 +452,15 @@ struct ad_switch_case {
  * `switch` statement.
  */
 struct ad_switch_statement {
-  ad_expr_t  *expr;
-  slist_t     case_list;
+  ad_expr_t  *expr;                     ///< `switch` expression.
+  slist_t     case_list;                ///< `switch` cases.
 };
 
 /**
  */
 struct ad_statement {
   union {
-    ad_compound_statement_t compound;   ///< Compound statement.
+    ad_compound_statement_t st_compound;///< Compound statement.
     ad_declaration_t        declaration;///< Declaration.
     ad_switch_statement_t   st_switch;  ///< `switch` statement.
   };
