@@ -76,42 +76,42 @@ bool should_utf8( utf8_when_t when ) {
 #endif
 }
 
-size_t utf32_8( char32_t cp, char *utf8_buf ) {
-  assert( utf8_buf != NULL );
+size_t utf32_8( char32_t cp, char *u8 ) {
+  assert( u8 != NULL );
 
   static unsigned const Mask1 = 0x80;
   static unsigned const Mask2 = 0xC0;
   static unsigned const Mask3 = 0xE0;
   static unsigned const Mask4 = 0xF0;
 
-  char *const buf_orig = utf8_buf;
+  char *const u8_orig = u8;
   if ( cp < 0x80 ) {
     // 0xxxxxxx
-    *utf8_buf++ = STATIC_CAST( char, cp );
+    *u8++ = STATIC_CAST( char, cp );
   }
   else if ( cp < 0x800 ) {
     // 110xxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST( char, Mask2 |  (cp >>  6)         );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask2 |  (cp >>  6)         );
+    *u8++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else if ( cp < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST( char, Mask3 |  (cp >> 12)         );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask3 |  (cp >> 12)         );
+    *u8++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else if ( cp < 0x200000 ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *utf8_buf++ = STATIC_CAST( char, Mask4 |  (cp >> 18)         );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >> 12) & 0x3F) );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
-    *utf8_buf++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask4 |  (cp >> 18)         );
+    *u8++ = STATIC_CAST( char, Mask1 | ((cp >> 12) & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask1 | ((cp >>  6) & 0x3F) );
+    *u8++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else {
     return STATIC_CAST( size_t, -1 );
   }
 
-  return STATIC_CAST( size_t, utf8_buf - buf_orig );
+  return STATIC_CAST( size_t, u8 - u8_orig );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
