@@ -1,3 +1,7 @@
+2024-02-29  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, unicode.c, unicode.h: s/utf8_encode/utf32_8/
+
 2024-02-18  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c, util.h: Now using FPUTNSP().
