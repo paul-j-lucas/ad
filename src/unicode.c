@@ -160,13 +160,13 @@ char32_t utf8_32_impl( char const *s ) {
   assert( len >= 1 );
 
   char32_t cp = 0;
-  uint8_t const *u = (uint8_t const*)s;
+  uint8_t const *u8 = POINTER_CAST( uint8_t const*, s );
 
   switch ( len ) {
-    case 4: cp += *u++; cp <<= 6; FALLTHROUGH;
-    case 3: cp += *u++; cp <<= 6; FALLTHROUGH;
-    case 2: cp += *u++; cp <<= 6; FALLTHROUGH;
-    case 1: cp += *u;
+    case 4: cp += *u8++; cp <<= 6; FALLTHROUGH;
+    case 3: cp += *u8++; cp <<= 6; FALLTHROUGH;
+    case 2: cp += *u8++; cp <<= 6; FALLTHROUGH;
+    case 1: cp += *u8;
   } // switch
 
   static char32_t const OFFSET_TABLE[] = {
