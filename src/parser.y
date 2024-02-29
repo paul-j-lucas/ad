@@ -26,6 +26,9 @@
 
 /** @cond DOXYGEN_IGNORE */
 
+%define api.header.include { "parser.h" }
+%expect 6
+
 %{
 /** @endcond */
 
@@ -68,14 +71,15 @@
 
 /// @cond DOXYGEN_IGNORE
 
-#define IF_AD_DEBUG(...)          BLOCK( if ( opt_ad_debug ) { __VA_ARGS__ } )
-
 // Developer aid for tracing when Bison %destructors are called.
 #if 0
 #define DTRACE                    EPRINTF( "%d: destructor\n", __LINE__ )
 #else
 #define DTRACE                    NO_OP
 #endif
+
+#define IF_AD_DEBUG(...) \
+  BLOCK( if ( opt_ad_debug != AD_DEBUG_NO ) { __VA_ARGS__ } )
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -962,13 +966,13 @@ postfix_expr
     }
   | postfix_expr[expr] "++"
     {
-      // TODO
-      (void)$expr;
+      $$ = ad_expr_new( AD_EXPR_MATH_INC_POST, &@$ );
+      $$->unary.sub_expr = $expr;
     }
   | postfix_expr[expr] "--"
     {
-      // TODO
-      (void)$expr;
+      $$ = ad_expr_new( AD_EXPR_MATH_DEC_POST, &@$ );
+      $$->unary.sub_expr = $expr;
     }
   ;
 
@@ -999,12 +1003,13 @@ primary_expr
   | Y_INT_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT;
+      $$->value.type.tid = T_INT64;
       $$->value.i64 = $1;
     }
   | Y_STR_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
+      $$->value.type.tid = T_UTF8_0;
       $$->value.s = $1;
     }
   | '(' expr ')'                  { $$ = $expr; }
@@ -1162,9 +1167,9 @@ type_endian
       $$->value.type.tid = T_UINT8;
       $$->value.u64 = ENDIAN_HOST;
     }
-  | ',' '<' expr gt_exp
+  | ',' expr
     {
-      $$ = $3;
+      $$ = $expr;
     }
   | ',' error
     {
