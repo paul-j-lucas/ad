@@ -125,13 +125,13 @@ bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
  * Encodes a Unicode code-point into UTF-8.
  *
  * @param cp The Unicode code-point to encode.
- * @param utf8_buf A pointer to the start of a buffer to receive the UTF-8
- * bytes; must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
+ * @param u8 A pointer to the start of a buffer to receive the UTF-8 bytes;
+ * must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
 PJL_DISCARD
-size_t utf32_8( char32_t cp, char *utf8_buf );
+size_t utf32_8( char32_t cp, char *u8 );
 
 /**
  * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
@@ -144,7 +144,7 @@ size_t utf32_8( char32_t cp, char *utf8_buf );
 NODISCARD AD_UNICODE_H_INLINE
 char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
-  char32_t const cp = (uint8_t)*s;
+  char32_t const cp = STATIC_CAST( uint8_t, *s );
   return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
 }
 
