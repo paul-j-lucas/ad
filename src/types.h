@@ -200,8 +200,8 @@ enum ad_debug {
  * @sa ad_enum_type
  */
 struct ad_enum_value {
-  char const *name;
-  int64_t     value;
+  char const *name;                     ///< Name.
+  int64_t     value;                    ///< Value.
 };
 
 /**
@@ -293,14 +293,19 @@ enum ad_rep_times {
  */
 enum ad_statement_kind {
   /**
-   * A single declaration statement.
+   * A `break` statement.
    */
-  AD_ST_DECLARATION,
+  AD_ST_BREAK,
 
   /**
    * A compound statement, i.e. zero or more statements between `{` `}`.
    */
   AD_ST_COMPOUND,
+
+  /**
+   * A single declaration statement.
+   */
+  AD_ST_DECLARATION,
 
   /**
    * A `switch` statement.
@@ -386,7 +391,6 @@ struct ad_rep {
  * Enumeration type.
  */
 struct ad_enum_type {
-  ad_int_base_t   base;                 ///< Base of values.
   slist_t         values;               ///< List of ad_enum_value.
 };
 

@@ -24,10 +24,25 @@
 #define AD_TYPES_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "expr.h"
+#include "slist.h"
 #include "types.h"
 
 // standard
 #include <assert.h>
+
+////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Frees all memory used by \a value _including_ \a value itself.
+ *
+ * @param value The \ref ad_enum_value to free.
+ */
+static void ad_enum_value_free( ad_enum_value_t *value ) {
+  if ( value != NULL ) {
+    FREE( value->name );
+    free( value );
+  }
+}
 
 ////////// extern functions ///////////////////////////////////////////////////
 
@@ -47,6 +62,10 @@ void ad_type_free( ad_type_t *type ) {
     return;
   switch ( type->tid & T_MASK_TYPE ) {
     case T_ENUM:
+      slist_cleanup(
+        &type->ad_enum.values,
+        POINTER_CAST( slist_free_fn_t, &ad_enum_value_free )
+      );
       break;
     case T_STRUCT:
       break;

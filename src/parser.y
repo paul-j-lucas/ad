@@ -21,7 +21,7 @@
 /**
  * @file
  * Defines helper macros, data structures, variables, functions, and the
- * grammar ad C declarations.
+ * **ad** grammar.
  */
 
 /** @cond DOXYGEN_IGNORE */
@@ -258,6 +258,12 @@
  */
 #define DUMP_END()                IF_AD_DEBUG( FPUTS( "\n}\n\n", stdout ); )
 
+/**
+ * Dumps a \ref ad_type.
+ *
+ * @param KEY The key name to print.
+ * @param TYPE The \ref ad_type to dump.
+ */
 #define DUMP_TYPE(KEY,TYPE) IF_AD_DEBUG( \
   DUMP_KEY( KEY ": " ); ad_type_dump( TYPE, stdout ); )
 
@@ -618,6 +624,7 @@ static void yyerror( char const *msg ) {
 %type <expr>        unary_expr
 
                     // Statements
+%type <statement>   break_statement
 %type <statement>   compound_statement
 %type <statement>   declaration
 %type <statement>   enum_declaration
@@ -666,7 +673,8 @@ statement_list
   ;
 
 statement
-  : compound_statement
+  : break_statement semi_exp
+  | compound_statement
   | declaration semi_exp
   | switch_statement
   | error
@@ -679,10 +687,27 @@ statement
   ;
 
 compound_statement
-  : '{' statement_list_opt '}'
+  : '{' statement_list_opt[statements] '}'
     {
-      $$->kind = AD_ST_COMPOUND;
-      $$->compound.statements = slist_move( &$2 );
+      $$ = MALLOC( ad_statement_t, 1 );
+      *$$ = (ad_statement_t){
+        .kind = AD_ST_COMPOUND,
+        .loc = @$,
+        .compound = { .statements = slist_move( &$statements ) }
+      };
+    }
+  ;
+
+/// break statement ///////////////////////////////////////////////////////////
+
+break_statement
+  : Y_break
+    {
+      $$ = MALLOC( ad_statement_t, 1 );
+      *$$ = (ad_statement_t){
+        .kind = AD_ST_BREAK,
+        .loc = @$
+      };
     }
   ;
 
@@ -764,7 +789,9 @@ enum_declaration
       ad_type_t *const enum_type = MALLOC( ad_type_t, 1 );
       *enum_type = (ad_type_t){
         .sname = sname_move( &sname ),
-        .tid = T_ENUM,
+        .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
+        .size_expr = $type.size_expr,
+        .endian_expr = $type.endian_expr,
         .ad_enum = { .values = slist_move( &$value_list ) }
       };
       PARSE_ASSERT( define_type( enum_type ) );
@@ -772,23 +799,23 @@ enum_declaration
   ;
 
 enumerator_list
-  : enumerator_list ',' enumerator
+  : enumerator_list[enum_list] ',' enumerator[enum]
     {
-      $$ = $1;
-      slist_push_back( &$$, &$3 );
+      $$ = $enum_list;
+      slist_push_back( &$$, &$enum );
     }
-  | enumerator
+  | enumerator[enum]
     {
       slist_init( &$$ );
-      slist_push_back( &$$, &$1 );
+      slist_push_back( &$$, &$enum );
     }
   ;
 
 enumerator
-  : Y_NAME equals_exp int_exp
+  : Y_NAME[name] equals_exp int_exp[value]
     {
-      $$.name = $1;
-      $$.value = $3;
+      $$.name = $name;
+      $$.value = $value;
     }
   ;
 
