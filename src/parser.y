@@ -45,6 +45,7 @@
 #include "options.h"
 #include "print.h"
 #include "slist.h"
+#include "sname.h"
 #include "types.h"
 #include "typedef.h"
 #include "util.h"
@@ -271,13 +272,28 @@
  * @{
  */
 
+/**
+ * Inherited attributes.
+ *
+ * @remarks These are grouped into a `struct` (rather than having them as
+ * separate global variables) so that they can all be reset (mostly) via a
+ * single assignment from `{0}`.
+ *
+ * @sa ia_cleanup()
+ */
+struct in_attr {
+  sname_t scope_sname;                  ///< Current scope name, if any.
+};
+typedef struct in_attr in_attr_t;
+
 // local functions
 PJL_PRINTF_LIKE_FUNC(4)
 static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
                                 ... );
 
 // local variables
-static slist_t        expr_gc_list;     ///< `expr` nodes freed after parse.
+static slist_t        gc_expr_list;     ///< `expr` nodes freed after parse.
+static in_attr_t      in_attr;          ///< Inherited attributes.
 static slist_t        statement_list;
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -320,6 +336,14 @@ static void fl_punct_expected( char const *file, int line, char punct ) {
 }
 
 /**
+ * Cleans-up all resources used by \ref in_attr "inherited attributes".
+ */
+static void ia_cleanup( void ) {
+  sname_cleanup( &in_attr.scope_sname );
+  in_attr = (in_attr_t){ 0 };
+}
+
+/**
  * Cleans-up parser data after each parse.
  *
  * @param fatal_error Must be `true` only if a fatal semantic error has
@@ -334,27 +358,40 @@ static void parse_cleanup( bool fatal_error ) {
   //
   lexer_reset( /*hard_reset=*/fatal_error );
 
-  slist_cleanup( &expr_gc_list, (slist_free_fn_t)&ad_expr_free );
+  slist_cleanup( &gc_expr_list, (slist_free_fn_t)&ad_expr_free );
+  ia_cleanup();
 }
 
 /**
- * Prints a parsing error message to standard error.  This function is called
- * directly by Bison to print just `syntax error` (usually).
+ * Called by Bison to print a parsing error message to standard error.
  *
- * @note A newline is \e not printed since the error message will be appended
- * to by `elaborate_error()`.  For example, the parts of an error message are
+ * @remarks A custom error printing function via `%%define parse.error custom`
+ * and
+ * [`yyreport_syntax_error()`](https://www.gnu.org/software/bison/manual/html_node/Syntax-Error-Reporting-Function.html)
+ * is not done because printing a (perhaps long) list of all the possible
+ * expected tokens isn't helpful.
+ * @par
+ * It's also more flexible to be able to call one of #elaborate_error(),
+ * #keyword_expected(), or #punct_expected() at the point of the error rather
+ * than having a single function try to figure out the best type of error
+ * message to print.
+ *
+ * @note A newline is _not_ printed since the error message will be appended to
+ * by fl_elaborate_error().  For example, the parts of an error message are
  * printed by the functions shown:
  *
  *      42: syntax error: "int": "into" expected
  *      |--||----------||----------------------|
  *      |   |           |
- *      |   yyerror()   elaborate_error()
+ *      |   yyerror()   fl_elaborate_error()
  *      |
  *      print_loc()
  *
- * @param msg The error message to print.
+ * @param msg The error message to print.  Bison invariably passes `syntax
+ * error`.
  *
  * @sa fl_elaborate_error()
+ * @sa fl_punct_expected()
  * @sa print_loc()
  */
 static void yyerror( char const *msg ) {
@@ -690,19 +727,12 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[value_list] rbrace_exp
     {
-      /*
       ad_type_t *const enum_type = MALLOC( ad_type_t, 1 );
-      *enum_type = (ad_type){
+      *enum_type = (ad_type_t){
+        .name = $name,
         .tid = T_ENUM,
-        .values = slist_move( &$value_list )
+        .ad_enum = { .values = slist_move( &$value_list ) }
       };
-      */
-   // ad_enum->name = $2;
-   // ad_enum->bits = XX;
-   // ad_enum->endian = XX;
-   // ad_enum->base = xx;
-   // ad_enum->values = $6;
-      (void)$2;
     }
   ;
 
@@ -1315,7 +1345,6 @@ semi_exp
  *
  * @sa #elaborate_error()
  * @sa #elaborate_error_dym()
- * @sa fl_keyword_expected()
  * @sa fl_punct_expected()
  * @sa yyerror()
  */

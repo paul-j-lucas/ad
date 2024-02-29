@@ -49,6 +49,7 @@ ad_SOURCES =	parser.y\
 		red_black.c red_black.h \
 		reverse.c \
 		slist.c slist.h \
+		sname.c sname.h \
 		strbuf.c strbuf.h \
 		typedef.c typedef.h \
 		types.c types.h \

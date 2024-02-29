@@ -26,6 +26,8 @@
 #include "ad.h"
 
 // standard
+#include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <regex.h>
 #include <stdbool.h>
@@ -764,9 +766,35 @@ void* check_realloc( void *p, size_t size );
  *
  * @param s The NULL-terminated string to duplicate.
  * @return Returns a copy of \a s.
+ *
+ * @sa check_strndup()
  */
 NODISCARD
 char* check_strdup( char const *s );
+
+/**
+ * Calls **strndup**(3) and checks for failure.
+ * If memory allocation fails, prints an error message and exits.
+ *
+ * @param s The null-terminated string to duplicate or NULL.
+ * @param n The number of characters of \a s to duplicate.
+ * @return Returns a copy of \a n characters of \a s or NULL if \a s is NULL.
+ *
+ * @sa check_strdup()
+ */
+NODISCARD
+char* check_strndup( char const *s, size_t n );
+
+/**
+ * Checks whether \a s is null: if so, returns the empty string.
+ *
+ * @param s The pointer to check.
+ * @return If \a s is null, returns the empty string; otherwise returns \a s.
+ */
+NODISCARD AD_UTIL_H_INLINE
+char const* empty_if_null( char const *s ) {
+  return s == NULL ? "" : s;
+}
 
 /**
  * Prints an error message to standard error and exits with \a status code.
@@ -900,6 +928,45 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  */
 NODISCARD
 bool is_file( int fd );
+
+/**
+ * Checks whether \a c is an identifier character.
+ *
+ * @param c The character to check.
+ * @return Returns `true` only if \a c is either an alphanumeric or `_`
+ * character.
+ *
+ * @sa is_ident_first()
+ */
+NODISCARD AD_UTIL_H_INLINE
+bool is_ident( char c ) {
+  return isalnum( c ) || c == '_';
+}
+
+/**
+ * Checks whether \a c is an identifier first character.
+ *
+ * @param c The character to check.
+ * @return Returns `true` only if \a c is either an alphabetic or `_`
+ * character.
+ *
+ * @sa is_ident()
+ */
+NODISCARD AD_UTIL_H_INLINE
+bool is_ident_first( char c ) {
+  return isalpha( c ) || c == '_';
+}
+
+/**
+ * Parses an identifier.
+ *
+ * @param s The NULL-terminated string to parse.
+ * @return Returns a pointer to the first character that is not an identifier
+ * character only if an identifier was parsed or NULL if an identifier was not
+ * parsed.
+ */
+NODISCARD
+char const* parse_identifier( char const *s );
 
 /**
  * Parses a string into an offset.

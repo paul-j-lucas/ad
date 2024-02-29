@@ -351,6 +351,7 @@ typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
+typedef struct  slist                 sname_t;
 
 typedef ad_loc_t YYLTYPE;               ///< Source location type for Bison.
 /// @cond DOXYGEN_IGNORE
@@ -399,7 +400,6 @@ struct ad_int_type {
  * struct type.
  */
 struct ad_struct_type {
-  char const     *name;
   ad_type_list_t  members;              ///< Structure members.
 };
 
@@ -407,6 +407,7 @@ struct ad_struct_type {
  * A type.  Every %ad_type at least has the ID that it's a type of.
  */
 struct ad_type {
+  char const     *name;
   ad_tid_t        tid;
   ad_expr_t      *size_expr;
   ad_expr_t      *endian_expr;

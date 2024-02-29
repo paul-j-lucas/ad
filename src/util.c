@@ -141,6 +141,14 @@ char* check_strdup( char const *s ) {
   return dup;
 }
 
+char* check_strndup( char const *s, size_t n ) {
+  if ( s == NULL )
+    return NULL;                        // LCOV_EXCL_LINE
+  char *const dup_s = strndup( s, n );
+  PERROR_EXIT_IF( dup_s == NULL, EX_OSERR );
+  return dup_s;
+}
+
 void fatal_error( int status, char const *format, ... ) {
   EPRINTF( "%s: ", me );
   va_list args;
@@ -296,6 +304,15 @@ bool is_file( int fd ) {
   struct stat fd_stat;
   FSTAT( fd, &fd_stat );
   return S_ISREG( fd_stat.st_mode );
+}
+
+char const* parse_identifier( char const *s ) {
+  assert( s != NULL );
+  if ( !is_ident_first( s[0] ) )
+    return NULL;
+  while ( is_ident( *++s ) )
+    ;
+  return s;
 }
 
 unsigned long long parse_offset( char const *s ) {
