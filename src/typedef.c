@@ -94,7 +94,7 @@ static int ad_typedef_cmp( void const *i_data, void const *j_data ) {
   assert( j_data != NULL );
   ad_typedef_t const *const i_tdef = i_data;
   ad_typedef_t const *const j_tdef = j_data;
-  return strcmp( i_tdef->name, j_tdef->name );
+  return sname_cmp( &i_tdef->type->sname, &j_tdef->type->sname );
 }
 
 /**
@@ -108,9 +108,7 @@ static ad_typedef_t* ad_typedef_new( ad_type_t const *type ) {
   assert( type != NULL );
 
   ad_typedef_t *const tdef = MALLOC( ad_typedef_t, 1 );
-  tdef->name = NULL;
-  tdef->type = type;
-
+  *tdef = (ad_typedef_t){ .type = type };
   return tdef;
 }
 
@@ -152,8 +150,19 @@ ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
 
 ad_typedef_t const* ad_typedef_find_name( char const *name ) {
   assert( name != NULL );
-  rb_node_t const *const found_rb =
-    rb_tree_find( &typedef_set, &AD_TYPEDEF_NAME_LIT( name ) );
+  sname_t sname;
+  if ( sname_parse( name, &sname ) ) {
+    ad_typedef_t const *const tdef = ad_typedef_find_sname( &sname );
+    sname_cleanup( &sname );
+    return tdef;
+  }
+  return NULL;
+}
+
+ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname ) {
+  assert( sname != NULL );
+  ad_typedef_t const tdef = { .type = &(ad_type_t const){ .sname = *sname } };
+  rb_node_t const *const found_rb = rb_tree_find( &typedef_set, &tdef );
   return found_rb != NULL ? found_rb->data : NULL;
 }
 

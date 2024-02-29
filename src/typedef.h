@@ -29,6 +29,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "sname.h"
 #include "types.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -57,7 +58,6 @@
  * **ad** C/C++ `typedef` information.
  */
 struct ad_typedef {
-  char const      *name;                ///< The type's name.
   ad_type_t const *type;                ///< The underlying type.
 };
 
@@ -92,9 +92,23 @@ ad_typedef_t const* ad_typedef_add( ad_type_t const *type );
  * @param name The name to find.  It may contain `::`.
  * @return Returns a pointer to the corresponding \ref ad_typedef or NULL for
  * none.
+ *
+ * @sa ad_typedef_find_sname()
  */
 NODISCARD
 ad_typedef_t const* ad_typedef_find_name( char const *name );
+
+/**
+ * Gets the \ref ad_typedef for \a sname.
+ *
+ * @param sname The scoped name to find.
+ * @return Returns a pointer to the corresponding \ref ad_typedef or NULL for
+ * none.
+ *
+ * @sa ad_typedef_find_name()
+ */
+NODISCARD
+ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname );
 
 /**
  * Does an in-order traversal of all \ref ad_typedef.

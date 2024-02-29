@@ -24,6 +24,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "slist.h"
+#include "sname.h"
 #include "unicode.h"
 
 // standard
@@ -407,7 +408,7 @@ struct ad_struct_type {
  * A type.  Every %ad_type at least has the ID that it's a type of.
  */
 struct ad_type {
-  char const     *name;
+  sname_t         sname;
   ad_tid_t        tid;
   ad_expr_t      *size_expr;
   ad_expr_t      *endian_expr;
@@ -666,6 +667,17 @@ NODISCARD AD_TYPES_H_INLINE
 endian_t ad_tid_endian( ad_tid_t tid ) {
   return STATIC_CAST( endian_t, tid & T_MASK_ENDIAN );
 }
+
+/**
+ * Checks whether two types are equal _except_ for their names.
+ *
+ * @param i_ast The first type; may be NULL.
+ * @param j_ast The second type; may be NULL.
+ * @return Returns `true` only if the two types are equal _except_ for their
+ * names.
+ */
+NODISCARD
+bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type );
 
 /**
  * Frees all the memory used by \a type.

@@ -299,6 +299,35 @@ static slist_t        statement_list;
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
+ * Defines a type by adding it to the global set.
+ *
+ * @param type The type to define.
+ * @return Returns `true` either if the type was defined or it's equivalent to
+ * an existing type; `false` if a different type already exists having the same
+ * name.
+ */
+NODISCARD
+static bool define_type( ad_type_t const *type ) {
+  assert( type != NULL );
+
+  ad_typedef_t const *const tdef = ad_typedef_add( type );
+  if ( tdef->type == type ) {
+    //
+    // Type was added.
+    //
+  }
+  else {
+    //
+    // Type was NOT added because a previously decared type having the sname
+    // name was returned.
+    //
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * A special case of fl_elaborate_error() that prevents oddly worded error
  * messages when a punctuation character is expected by not doing keyword look-
  * ups of the error token.
@@ -653,7 +682,7 @@ compound_statement
   : '{' statement_list_opt '}'
     {
       $$->kind = AD_ST_COMPOUND;
-      $$->compound.statements = $2;
+      $$->compound.statements = slist_move( &$2 );
     }
   ;
 
@@ -727,12 +756,18 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[value_list] rbrace_exp
     {
+      sname_t sname;
+      sname_init( &sname );
+      sname_append_sname( &sname, &in_attr.scope_sname );
+      sname_append_name( &sname, $name );
+
       ad_type_t *const enum_type = MALLOC( ad_type_t, 1 );
       *enum_type = (ad_type_t){
-        .name = $name,
+        .sname = sname_move( &sname ),
         .tid = T_ENUM,
         .ad_enum = { .values = slist_move( &$value_list ) }
       };
+      PARSE_ASSERT( define_type( enum_type ) );
     }
   ;
 

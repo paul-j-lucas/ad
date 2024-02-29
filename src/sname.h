@@ -30,7 +30,6 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "slist.h"
-#include "types.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -106,16 +105,15 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+typedef struct slist        sname_t;
+typedef struct sname_scope  sname_scope_t;
+
 /**
  * Data for each scope of an \ref sname_t.
  */
 struct sname_scope {
-  /**
-   * The scope's name.
-   */
-  char const *name;
+  char const *name;                     ///< The scope's name.
 };
-typedef struct sname_scope sname_scope_t;
 
 ////////// extern functions ///////////////////////////////////////////////////
 
@@ -129,7 +127,7 @@ typedef struct sname_scope sname_scope_t;
  */
 NODISCARD
 int sname_scope_cmp( sname_scope_t const *i_data,
-                      sname_scope_t const *j_data );
+                     sname_scope_t const *j_data );
 
 /**
  * Duplicates \a data.

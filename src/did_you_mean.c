@@ -127,8 +127,10 @@ static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
   assert( data != NULL );
 
   copy_typedef_visit_data_t *const ctvd = data;
-  if ( ctvd->pdym != NULL )
-    (*ctvd->pdym)++->literal = check_strdup( tdef->name );
+  if ( ctvd->pdym != NULL ) {
+    char const *const name = sname_full_name( &tdef->type->sname );
+    (*ctvd->pdym)++->literal = check_strdup( name );
+  }
   ++ctvd->count;
 
   return false;

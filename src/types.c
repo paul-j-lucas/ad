@@ -31,6 +31,17 @@
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
+  if ( i_type == j_type )
+    return true;
+  if ( i_type == NULL || j_type == NULL )
+    return false;
+
+  // ...
+
+  return true;
+}
+
 void ad_type_free( ad_type_t *type ) {
   if ( type == NULL )
     return;
