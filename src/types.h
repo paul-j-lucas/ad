@@ -53,65 +53,64 @@ _GL_INLINE_HEADER_BEGIN
 /** (N)ull bitmask: `xxxx xxxx xxxx xNxx` */
 #define T_MASK_NULL             0x0004u
 
-/** (S)igned: `Sxxx xxxx xxxx xxxx` */
+/** (S)igned bitmask: `Sxxx xxxx xxxx xxxx` */
 #define T_MASK_SIGN             0x8000u
 
-/** Si(Z)e: `xZZZ ZZZZ xxxx xxxx` */
+/** Si(Z)e bitmask: `xZZZ ZZZZ xxxx xxxx` */
 #define T_MASK_SIZE             0x7F00u
 
 /** (T)ype bitmask: `xxxx xxxx xTTT xxxx` */
 #define T_MASK_TYPE             0x0070u
 
-#define T_SIGNED                T_MASK_SIGN     /**< Signed type.       */
+#define T_BOOL8     (           T_BOOL  | T_08) /**< `bool`             */
 
-#define T_BOOL8     (           T_BOOL | T_08)  /**< `bool`             */
+#define T_UTF8      (           T_UTF   | T_08) /**< UTF-8 (multibyte). */
+#define T_UTF16HE   (T_END_H    T_UTF   | T_16) /**< UTF-16 host.       */
+#define T_UTF16BE   (T_END_B  | T_UTF   | T_16) /**< UTF-16 big.        */
+#define T_UTF16LE   (T_END_L  | T_UTF   | T_16) /**< UTF-16 little.     */
+#define T_UTF32HE   (T_END_H    T_UTF   | T_32) /**< UTF-32 host.       */
+#define T_UTF32BE   (T_END_B  | T_UTF   | T_32) /**< UTF-32 big.        */
+#define T_UTF32LE   (T_END_L  | T_UTF   | T_32) /**< UTF-32 little.     */
 
-#define T_UTF8      (           T_UTF  | T_08)  /**< UTF-8 (multibyte). */
-#define T_UTF16HE   (           T_UTF  | T_16)  /**< UTF-16 host.       */
-#define T_UTF16BE   (T_END_B  | T_UTF  | T_16)  /**< UTF-16 big.        */
-#define T_UTF16LE   (T_END_L  | T_UTF  | T_16)  /**< UTF-16 little.     */
-#define T_UTF32HE   (           T_UTF  | T_32)  /**< UTF-32 host.       */
-#define T_UTF32BE   (T_END_B  | T_UTF  | T_32)  /**< UTF-32 big.        */
-#define T_UTF32LE   (T_END_L  | T_UTF  | T_32)  /**< UTF-32 little.     */
+#define T_NULL      T_MASK_NULL                 /**< Null-terminated.   */
+#define T_UTF_0     (T_NULL   | T_UTF)          /**< UTF string.        */
 
-#define T_NULL                  T_MASK_NULL     /**< Null-terminated.   */
-#define T_UTF_0     (T_NULL   | T_UTF)          /**< UTF string.       */
-
-/**< UTF-8, null-terminated string. */
-#define T_UTF8_0    (T_UTF_0           |  T_08)
+/** UTF-8, null-terminated string. */
+#define T_UTF8_0    (           T_UTF_0 | T_08)
 
 /** UTF-16 host-endian, null-terminated string. */
-#define T_UTF16HE_0 (T_UTF_0           | T_16)
+#define T_UTF16HE_0 (T_END_H  | T_UTF_0 | T_16)
 
 /** UTF-16 big-endian, null-terminated string. */
-#define T_UTF16BE_0 (T_END_B  | T_UTF  | T_16 | T_NULL)
+#define T_UTF16BE_0 (T_END_B  | T_UTF_0 | T_16)
 
 /** UTF-16 little-endian, null-terminated string. */
-#define T_UTF16LE_0 (T_END_L  | T_UTF  | T_16 | T_NULL)
+#define T_UTF16LE_0 (T_END_L  | T_UTF_0 | T_16)
 
-/**< UTF-32 host-endian, null-terminated string. */
-#define T_UTF32HE_0 (T_UTF_0           | T_32)
+/** UTF-32 host-endian, null-terminated string. */
+#define T_UTF32HE_0 (T_END_H  | T_UTF_0 | T_32)
 
-/**< UTF-32 big-endian null-terminated string. */
-#define T_UTF32BE_0 (T_END_B  | T_UTF  | T_32 | T_NULL)
+/** UTF-32 big-endian null-terminated string. */
+#define T_UTF32BE_0 (T_END_B  | T_UTF_0 | T_32)
 
 /** UTF-32 little-endian, null-terminated string. */
-#define T_UTF32LE_0 (T_END_L  | T_UTF  | T_32 | T_NULL)
+#define T_UTF32LE_0 (T_END_L  | T_UTF_0 | T_32)
 
-#define T_INT8      (T_SIGNED | T_INT  | T_08)  /**< `signed int8`      */
-#define T_INT16     (T_SIGNED | T_INT  | T_16)  /**< `signed int16`     */
-#define T_INT32     (T_SIGNED | T_INT  | T_32)  /**< `signed int32`     */
-#define T_INT64     (T_SIGNED | T_INT  | T_64)  /**< `signed int64`     */
-#define T_UINT8     (           T_INT  | T_08)  /**< `unsigned int8`    */
-#define T_UINT16    (           T_INT  | T_16)  /**< `unsigned int16`   */
-#define T_UINT32    (           T_INT  | T_32)  /**< `unsigned int32`   */
-#define T_UINT64    (           T_INT  | T_64)  /**< `unsigned int64`   */
+#define T_SIGNED    T_MASK_SIGN                 /**< Signed type.       */
+#define T_INT8      (T_SIGNED | T_INT   | T_08) /**< `signed int8`      */
+#define T_INT16     (T_SIGNED | T_INT   | T_16) /**< `signed int16`     */
+#define T_INT32     (T_SIGNED | T_INT   | T_32) /**< `signed int32`     */
+#define T_INT64     (T_SIGNED | T_INT   | T_64) /**< `signed int64`     */
+#define T_UINT8     (           T_INT   | T_08) /**< `unsigned int8`    */
+#define T_UINT16    (           T_INT   | T_16) /**< `unsigned int16`   */
+#define T_UINT32    (           T_INT   | T_32) /**< `unsigned int32`   */
+#define T_UINT64    (           T_INT   | T_64) /**< `unsigned int64`   */
 
 #define T_FLOAT32   (T_SIGNED | T_FLOAT | T_32) /**< `float32`          */
 #define T_FLOAT64   (T_SIGNED | T_FLOAT | T_64) /**< `float64`          */
 
-#define T_INT_LIKE  (           T_BOOL | T_INT)
-#define T_NUMBER    (           T_INT_LIKE | T_FLOAT)
+#define T_INT_LIKE  (           T_BOOL  | T_INT)
+#define T_NUMBER    (           T_FLOAT | T_INT_LIKE)
 
 ///////////////////////////////////////////////////////////////////////////////
 
