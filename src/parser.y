@@ -723,7 +723,7 @@ switch_statement
       *$$ = (ad_statement_t){
         .kind = AD_ST_SWITCH,
         .loc = @$,
-        .st_switch = (ad_switch_statement_t){
+        .st_switch = {
           .expr = $expr,
           .case_list = slist_move( &$case_list )
         }
@@ -743,10 +743,10 @@ switch_case_list
       slist_push_back( &$$, &$case );
     }
 
-  | switch_case
+  | switch_case[case]
     {
       slist_init( &$$ );
-      slist_push_back( &$$, &$1 );
+      slist_push_back( &$$, &$case );
     }
   ;
 
@@ -757,16 +757,20 @@ switch_case
       DUMP_EXPR( "expr", $expr );
 
       $$ = MALLOC( ad_switch_case_t, 1 );
-      $$->expr = $expr;
-      $$->compound_statement.statements = slist_move( &$statements );
+      *$$ = (ad_switch_case_t){
+        .expr = $expr,
+        .compound_statement = { .statements = slist_move( &$statements ) }
+      };
 
       DUMP_END();
     }
+
   | Y_default colon_exp statement_list_opt[statements]
     {
       $$ = MALLOC( ad_switch_case_t, 1 );
-      $$->expr = NULL;
-      $$->compound_statement.statements = slist_move( &$statements );
+      *$$ = (ad_switch_case_t){
+        .compound_statement = { .statements = slist_move( &$statements ) }
+      };
     }
   ;
 
