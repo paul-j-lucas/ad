@@ -272,7 +272,6 @@ enum ad_tid_kind {
 
 typedef struct  ad_binary_expr        ad_binary_expr_t;
 typedef unsigned                      ad_bits_t;
-typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef enum    ad_debug              ad_debug_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_enum_type          ad_enum_type_t;
@@ -299,6 +298,7 @@ typedef struct  ad_rep                ad_rep_t;
 typedef enum    ad_rep_kind           ad_rep_kind_t;
 typedef struct  ad_statement          ad_statement_t;
 typedef enum    ad_statement_kind     ad_statement_kind_t;
+typedef struct  slist                 ad_statement_list_t;
 typedef struct  ad_struct_type        ad_struct_type_t;
 typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
@@ -393,14 +393,14 @@ struct ad_rep {
 ////////// ad types ///////////////////////////////////////////////////////////
 
 /**
- * Enumeration type.
+ * `enum` type.
  */
 struct ad_enum_type {
   slist_t         values;               ///< List of ad_enum_value.
 };
 
 /**
- * Enumeration value.
+ * `enum` value.
  *
  * @sa ad_enum_type
  */
@@ -410,14 +410,7 @@ struct ad_enum_value {
 };
 
 /**
- * Integer type.
- */
-struct ad_int_type {
-  ad_int_base_t   base;                 ///< Base of value.
-};
-
-/**
- * struct type.
+ * `struct` type.
  */
 struct ad_struct_type {
   ad_type_list_t  members;              ///< Structure members.
@@ -433,7 +426,7 @@ struct ad_type {
   ad_expr_t      *endian_expr;
 
   union {
-    ad_int_type_t     ad_int;
+    char const   *printf_fmt;
     ad_enum_type_t    ad_enum;
     ad_struct_type_t  ad_struct;
   };
@@ -442,17 +435,11 @@ struct ad_type {
 ////////// ad statements //////////////////////////////////////////////////////
 
 /**
- * Compound statement.
- */
-struct ad_compound_statement {
-  slist_t statements;
-};
-
-/**
  * Declaration.
  */
 struct ad_declaration {
   char const *name;
+  ad_type_t   type;
 };
 
 /**
@@ -460,7 +447,7 @@ struct ad_declaration {
  */
 struct ad_switch_case {
   ad_expr_t                *expr;
-  ad_compound_statement_t   compound_statement;
+  ad_statement_list_t       statement_list;
 };
 
 /**
@@ -475,7 +462,6 @@ struct ad_switch_statement {
  */
 struct ad_statement {
   union {
-    ad_compound_statement_t st_compound;///< Compound statement.
     ad_declaration_t        declaration;///< Declaration.
     ad_switch_statement_t   st_switch;  ///< `switch` statement.
   };

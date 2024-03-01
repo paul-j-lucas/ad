@@ -626,7 +626,6 @@ static void yyerror( char const *msg ) {
 
                     // Statements
 %type <statement>   break_statement
-%type <statement>   compound_statement
 %type <statement>   declaration
 %type <statement>   enum_declaration
 %type <statement>   field_declaration
@@ -675,7 +674,6 @@ statement_list
 
 statement
   : break_statement semi_exp
-  | compound_statement
   | declaration semi_exp
   | switch_statement
   | error
@@ -696,20 +694,6 @@ break_statement
       *$$ = (ad_statement_t){
         .kind = AD_ST_BREAK,
         .loc = @$
-      };
-    }
-  ;
-
-/// compound statement ////////////////////////////////////////////////////////
-
-compound_statement
-  : '{' statement_list_opt[statements] '}'
-    {
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
-        .kind = AD_ST_COMPOUND,
-        .loc = @$,
-        .st_compound = { .statements = slist_move( &$statements ) }
       };
     }
   ;
@@ -752,7 +736,7 @@ switch_case_list
   ;
 
 switch_case
-  : Y_case expr_exp[expr] colon_exp statement_list_opt[statements]
+  : Y_case expr_exp[expr] colon_exp statement_list_opt[statement_list]
     {
       DUMP_START( "switch_case", "CASE expr ':' statement_list_opt" );
       DUMP_EXPR( "expr", $expr );
@@ -760,17 +744,17 @@ switch_case
       $$ = MALLOC( ad_switch_case_t, 1 );
       *$$ = (ad_switch_case_t){
         .expr = $expr,
-        .compound_statement = { .statements = slist_move( &$statements ) }
+        .statement_list = $statement_list
       };
 
       DUMP_END();
     }
 
-  | Y_default colon_exp statement_list_opt[statements]
+  | Y_default colon_exp statement_list_opt[statement_list]
     {
       $$ = MALLOC( ad_switch_case_t, 1 );
       *$$ = (ad_switch_case_t){
-        .compound_statement = { .statements = slist_move( &$statements ) }
+        .statement_list = $statement_list
       };
     }
   ;
