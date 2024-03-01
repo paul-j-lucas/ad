@@ -219,9 +219,9 @@ enum ad_int_base {
 };
 
 /**
- * Repetition values.
+ * Repetition kind.
  */
-enum ad_rep_times {
+enum ad_rep_kind {
   AD_REP_1,                             ///< Repeats once (no repetition).
   AD_REP_EXPR,                          ///< Repeats _expr_ times.
   AD_REP_0_1,                           ///< Repeats 0 or 1 times (optional).
@@ -296,7 +296,7 @@ typedef struct  ad_loc                ad_loc_t;
 typedef short                         ad_loc_num_t;
 
 typedef struct  ad_rep                ad_rep_t;
-typedef enum    ad_rep_times          ad_rep_times_t;
+typedef enum    ad_rep_kind           ad_rep_kind_t;
 typedef struct  ad_statement          ad_statement_t;
 typedef enum    ad_statement_kind     ad_statement_kind_t;
 typedef struct  ad_struct_type        ad_struct_type_t;
@@ -386,7 +386,7 @@ struct ad_loc {
  * Repetition.
  */
 struct ad_rep {
-  ad_rep_times_t  times;
+  ad_rep_kind_t   times;
   ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
 };
 
