@@ -38,39 +38,6 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-//
-// The bits (right to left) are used as follows:
-//
-//    FEDC BA98 7654 3210
-//    SZZZ ZZZZ -TTT ENDD
-//
-// where:
-//
-//    D(2) = endianness:
-//      0 = expr
-//      1 = little
-//      2 = big
-//      3 = host
-//    E(1) = error:
-//      0 = no error
-//      1 = error
-//    N(1) = null terminated:
-//      0 = not null terminated
-//      1 = null terminated
-//    S(1) = sign:
-//      0 = unsigned
-//      1 = signed
-//    T(3) = type:
-//      0 = bool
-//      1 = UTF
-//      2 = int
-//      3 = float
-//      4 = enum
-//      5 = struct
-//    Z(7) = size in bits
-//      0 = expr
-//
-
 #define T_END_B                 ENDIAN_BIG
 #define T_END_L                 ENDIAN_LITTLE
 #define T_END_H                 ENDIAN_HOST
@@ -80,11 +47,8 @@ _GL_INLINE_HEADER_BEGIN
 #define T_32                    (32u << 8)
 #define T_64                    (64u << 8)
 
-/** En(D)ian bitmask: `xxxx xxxx xxxx xxDD` */
+/** (E)ndian bitmask: `xxxx xxxx xxxx xxEE` */
 #define T_MASK_ENDIAN           0x0003u
-
-/** (E)rror bitmask: `xxxx xxxx xxxx Exxx` */
-#define T_MASK_ERROR            0x0008u
 
 /** (N)ull bitmask: `xxxx xxxx xxxx xNxx` */
 #define T_MASK_NULL             0x0004u
@@ -92,20 +56,16 @@ _GL_INLINE_HEADER_BEGIN
 /** (S)igned: `Sxxx xxxx xxxx xxxx` */
 #define T_MASK_SIGN             0x8000u
 
-/** Si(Z)e: `xxxx xxxx xxZZ xxxx` */
+/** Si(Z)e: `xZZZ ZZZZ xxxx xxxx` */
 #define T_MASK_SIZE             0x7F00u
 
-/** (T)ype bitmask: `xxxx TTTT TTxx xxxx` */
+/** (T)ype bitmask: `xxxx xxxx xTTT xxxx` */
 #define T_MASK_TYPE             0x0070u
 
-#define T_ERROR                 T_MASK_ERROR
-#define T_NONE                  0u              /**< No type.           */
 #define T_SIGNED                T_MASK_SIGN     /**< Signed type.       */
 
-#define T_BOOL                  0x0000u         /**< Boolean.           */
 #define T_BOOL8     (           T_BOOL | T_08)  /**< `bool`             */
 
-#define T_UTF                   0x0080u         /**< Unicode.           */
 #define T_UTF8      (           T_UTF  | T_08)  /**< UTF-8 (multibyte). */
 #define T_UTF16HE   (           T_UTF  | T_16)  /**< UTF-16 host.       */
 #define T_UTF16BE   (T_END_B  | T_UTF  | T_16)  /**< UTF-16 big.        */
@@ -138,7 +98,6 @@ _GL_INLINE_HEADER_BEGIN
 /** UTF-32 little-endian, null-terminated string. */
 #define T_UTF32LE_0 (T_END_L  | T_UTF  | T_32 | T_NULL)
 
-#define T_INT       (            0x0100u    )   /**< Integer.           */
 #define T_INT8      (T_SIGNED | T_INT  | T_08)  /**< `signed int8`      */
 #define T_INT16     (T_SIGNED | T_INT  | T_16)  /**< `signed int16`     */
 #define T_INT32     (T_SIGNED | T_INT  | T_32)  /**< `signed int32`     */
@@ -148,16 +107,11 @@ _GL_INLINE_HEADER_BEGIN
 #define T_UINT32    (           T_INT  | T_32)  /**< `unsigned int32`   */
 #define T_UINT64    (           T_INT  | T_64)  /**< `unsigned int64`   */
 
-#define T_FLOAT                 0x0200          /**< Floating point.    */
 #define T_FLOAT32   (T_SIGNED | T_FLOAT | T_32) /**< `float32`          */
 #define T_FLOAT64   (T_SIGNED | T_FLOAT | T_64) /**< `float64`          */
 
-#define T_ENUM                  0x0400u         /**< `enum`             */
-
-#define T_STRUCT                0x0800u         /**< `struct`           */
-
 #define T_INT_LIKE  (           T_BOOL | T_INT)
-#define T_NUMBER    (           T_BOOL | T_INT | T_FLOAT)
+#define T_NUMBER    (           T_INT_LIKE | T_FLOAT)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -166,8 +120,6 @@ _GL_INLINE_HEADER_BEGIN
 #define AD_EXPR_TERNARY     0x0400      /**< Ternary expression.  */
 
 #define AD_EXPR_MASK        0x0F00      /**< Expression type bitmask. */
-
-#define T_GET_SIZE(T)             (8u << (((T) & T_MASK_SIZE) >> 4))
 
 /**
  * Decimal print conversion specifier for \ref ad_loc_num_t.
@@ -195,21 +147,11 @@ enum ad_debug {
 };
 
 /**
- * Enumeration value.
- *
- * @sa ad_enum_type
- */
-struct ad_enum_value {
-  char const *name;                     ///< Name.
-  int64_t     value;                    ///< Value.
-};
-
-/**
  * Expression errors.
  */
 enum ad_expr_err {
   AD_ERR_NONE,                          ///< No error.
-  AD_ERR_BAD_OPERAND,                   ///< Bad operand, e.g., & for double.
+  AD_ERR_BAD_OPERAND,                   ///< Bad operand, e.g., `&` for double.
   AD_ERR_DIV_0,                         ///< Divide by 0.
 };
 
@@ -313,6 +255,20 @@ enum ad_statement_kind {
   AD_ST_SWITCH
 };
 
+/**
+ * Kinds of types.
+ */
+enum ad_tid_kind {
+  T_NONE    = 0,                        ///< None.
+  T_ERROR   = 1 << 4,                   ///< Error.
+  T_BOOL    = 2 << 4,                   ///< Boolean.
+  T_UTF     = 3 << 4,                   ///< Unicode character or string.
+  T_INT     = 4 << 4,                   ///< Integer.
+  T_FLOAT   = 5 << 4,                   ///< Floating point.
+  T_ENUM    = 6 << 4,                   ///< Enumeration.
+  T_STRUCT  = 7 << 4,                   ///< Structure.
+};
+
 ////////// typedefs ///////////////////////////////////////////////////////////
 
 typedef struct  ad_binary_expr        ad_binary_expr_t;
@@ -320,7 +276,6 @@ typedef unsigned                      ad_bits_t;
 typedef struct  ad_compound_statement ad_compound_statement_t;
 typedef enum    ad_debug              ad_debug_t;
 typedef struct  ad_declaration        ad_declaration_t;
-typedef struct  ad_char               ad_char_t;
 typedef struct  ad_enum_type          ad_enum_type_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
@@ -350,8 +305,59 @@ typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
+
+/**
+ * Type ID.
+ *
+ * @remarks
+ * @parblock
+ * The bits are used as follows:
+ *
+ *      FEDC BA98 7654 3210
+ *      SZZZ ZZZZ -TTT -NEE
+ *
+ * where:
+ *
+ *      S[1] = sign:
+ *         0 = unsigned
+ *         1 = signed
+ *
+ *      Z[7] = size:
+ *         0 = expr
+ *         n = size in bits
+ *
+ *      T[3] = type:
+ *         0 = none
+ *         1 = error
+ *         2 = bool
+ *         3 = UTF
+ *         4 = int
+ *         5 = float
+ *         6 = enum
+ *         7 = struct
+ *
+ *      N[1] = null terminated:
+ *         0 = single character
+ *         1 = null terminated string
+ *
+ *      E[2] = endianness:
+ *         0 = expr
+ *         1 = little
+ *         2 = big
+ *         3 = host
+ * @endparblock
+ *
+ * @sa ad_endian
+ * @sa ad_tid_kind
+ * @sa #T_MASK_ENDIAN
+ * @sa #T_MASK_NULL
+ * @sa #T_MASK_SIGN
+ * @sa #T_MASK_SIZE
+ * @sa #T_MASK_TYPE
+ */
 typedef uint16_t                      ad_tid_t;
-typedef unsigned short                ad_type_size_t;
+
+typedef enum    ad_tid_kind           ad_tid_kind_t;
 typedef struct  slist                 ad_type_list_t;
 typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
@@ -395,6 +401,16 @@ struct ad_enum_type {
 };
 
 /**
+ * Enumeration value.
+ *
+ * @sa ad_enum_type
+ */
+struct ad_enum_value {
+  char const *name;                     ///< Name.
+  int64_t     value;                    ///< Value.
+};
+
+/**
  * Integer type.
  */
 struct ad_int_type {
@@ -409,11 +425,11 @@ struct ad_struct_type {
 };
 
 /**
- * A type.  Every %ad_type at least has the ID that it's a type of.
+ * A type.
  */
 struct ad_type {
-  sname_t         sname;
-  ad_tid_t        tid;
+  sname_t         sname;                ///< Name of type.
+  ad_tid_t        tid;                  ///< Type of type.
   ad_expr_t      *size_expr;
   ad_expr_t      *endian_expr;
 

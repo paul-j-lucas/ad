@@ -27,7 +27,7 @@
 /** @cond DOXYGEN_IGNORE */
 
 %define api.header.include { "parser.h" }
-%expect 6
+%expect 8
 
 %{
 /** @endcond */
@@ -616,6 +616,7 @@ static void yyerror( char const *msg ) {
 %type <expr>        expr expr_exp
 %type <expr>        logical_and_expr
 %type <expr>        logical_or_expr
+%type <expr>        match_expr_opt
 %type <expr>        multiplicative_expr
 %type <expr>        postfix_expr
 %type <expr>        primary_expr
@@ -780,7 +781,10 @@ switch_case
 
 declaration
   : enum_declaration
-  | field_declaration
+  | field_declaration[field] match_expr_opt[match_expr]
+    {
+      //$field->match_expr = $match_expr;
+    }
   | struct_declaration
   | typedef_declaration
   ;
@@ -835,9 +839,11 @@ field_declaration
   : type name_exp[name] array_opt[array]
     {
       ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      ad_field->name = $name;
-      ad_field->rep = $array;
-      ad_field->type = $type;
+      *ad_field = (ad_field_t){
+        .name = $name,
+        .rep = $array,
+        .type = $type
+      };
     }
   ;
 
@@ -860,6 +866,11 @@ array_opt
     {
       elaborate_error( "array size expected" );
     }
+  ;
+
+match_expr_opt
+  : /* empty */                   { $$ = NULL; }
+  | "==" expr                     { $$ = $expr; }
   ;
 
 /// struct declaration ////////////////////////////////////////////////////////
