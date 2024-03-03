@@ -1,5 +1,5 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/red_black.c
 **
 **      Copyright (C) 2017-2024  Paul J. Lucas, et al.

@@ -1,5 +1,5 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/slist.c
 **
 **      Copyright (C) 2017-2024  Paul J. Lucas
@@ -140,7 +140,7 @@ slist_t slist_dup( slist_t const *src_list, ssize_t n,
   return dst_list;
 }
 
-bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *user_data ) {
+bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *data ) {
   assert( list != NULL );
   assert( pred_fn != NULL );
 
@@ -151,7 +151,7 @@ bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *user_data ) {
     slist_node_t *const curr = list->head;
     if ( curr == NULL )
       goto done;
-    if ( !(*pred_fn)( curr, user_data ) )
+    if ( !(*pred_fn)( curr, data ) )
       break;
     if ( list->tail == curr )
       list->tail = NULL;
@@ -170,7 +170,7 @@ bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *user_data ) {
     slist_node_t *const curr = prev->next;
     if ( curr == NULL )
       break;
-    if ( !(*pred_fn)( curr, user_data ) ) {
+    if ( !(*pred_fn)( curr, data ) ) {
       prev = curr;
       continue;
     }

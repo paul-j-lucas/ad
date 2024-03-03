@@ -1,8 +1,8 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/strbuf.c
 **
-**      Copyright (C) 2021-2022  Paul J. Lucas
+**      Copyright (C) 2021-2024  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #define STRBUF_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "strbuf.h"
+#include "util.h"
 
 /// @cond DOXYGEN_IGNORE
 

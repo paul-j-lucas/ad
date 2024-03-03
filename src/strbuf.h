@@ -1,8 +1,8 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/strbuf.h
 **
-**      Copyright (C) 2021-2022  Paul J. Lucas
+**      Copyright (C) 2021-2024  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_strbuf_H
-#define ad_strbuf_H
+#ifndef pjl_strbuf_H
+#define pjl_strbuf_H
 
 /**
  * @file
@@ -28,7 +28,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "util.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -337,5 +336,5 @@ char* strbuf_take( strbuf_t *sbuf ) {
 
 _GL_INLINE_HEADER_END
 
-#endif /* ad_strbuf_H */
+#endif /* pjl_strbuf_H */
 /* vim:set et sw=2 ts=2: */

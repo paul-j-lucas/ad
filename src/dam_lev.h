@@ -1,8 +1,8 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/dam_lev.h
 **
-**      Copyright (C) 2020-2023  Paul J. Lucas
+**      Copyright (C) 2020-2024  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_dam_lev_H
-#define ad_dam_lev_H
+#ifndef pjl_dam_lev_H
+#define pjl_dam_lev_H
 
 /**
  * @file
@@ -74,5 +74,5 @@ void* dam_lev_new( size_t max_source_len, size_t max_target_len );
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif /* ad_dam_lev_H */
+#endif /* pjl_dam_lev_H */
 /* vim:set et sw=2 ts=2: */

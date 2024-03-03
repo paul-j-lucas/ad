@@ -1,5 +1,5 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/slist.h
 **
 **      Copyright (C) 2017-2024  Paul J. Lucas
@@ -18,8 +18,8 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_slist_H
-#define ad_slist_H
+#ifndef pjl_slist_H
+#define pjl_slist_H
 
 /**
  * @file
@@ -86,8 +86,8 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef struct slist                  slist_t;
-typedef struct slist_node             slist_node_t;
+typedef struct slist      slist_t;
+typedef struct slist_node slist_node_t;
 
 /**
  * The signature for a function passed to slist_cmp() used to compare data
@@ -122,10 +122,10 @@ typedef void (*slist_free_fn_t)( void *data );
  * whether a node should be freed.
  *
  * @param node A pointer to the node being visited.
- * @param user_data Optional data passed to slist_free_if().
+ * @param data Optional data passed to slist_free_if().
  * @return Returns `true` only if the node should be freed.
  */
-typedef bool (*slist_pred_fn_t)( slist_node_t *node, void *user_data );
+typedef bool (*slist_pred_fn_t)( slist_node_t *node, void *data );
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -220,7 +220,7 @@ slist_t slist_dup( slist_t const *src_list, ssize_t n, slist_dup_fn_t dup_fn );
  *
  * @param list A pointer to the list to possibly free nodes from.
  * @param pred_fn The predicate function to use.
- * @param user_data Optional data passed to \a pred_fn.
+ * @param data Optional data passed to \a pred_fn.
  * @return Returns `true` only if any nodes were freed.
  *
  * @note This function _only_ frees matching nodes from \a list and _not_ the
@@ -231,7 +231,7 @@ slist_t slist_dup( slist_t const *src_list, ssize_t n, slist_dup_fn_t dup_fn );
  * @sa slist_cleanup()
  */
 PJL_DISCARD
-bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *user_data );
+bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *data );
 
 /**
  * Pops data from the back of \a list.
@@ -470,5 +470,5 @@ slist_t slist_move( slist_t *list );
 
 _GL_INLINE_HEADER_END
 
-#endif /* ad_slist_H */
+#endif /* pjl_slist_H */
 /* vim:set et sw=2 ts=2: */
