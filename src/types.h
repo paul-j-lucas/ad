@@ -280,7 +280,6 @@ typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
 typedef enum    ad_expr_err           ad_expr_err_t;
 typedef enum    ad_expr_kind          ad_expr_kind_t;
-typedef struct  ad_field              ad_field_t;
 typedef struct  ad_float_type         ad_float_type_t;
 typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
@@ -483,6 +482,7 @@ struct ad_type {
 struct ad_declaration {
   char const *name;                     ///< Name.
   ad_type_t   type;                     ///< Type.
+  unsigned    align;                    ///< Alignment.
   ad_rep_t    rep;                      ///< Repetition.
   char const *printf_fmt;               ///< `printf` format.
 };

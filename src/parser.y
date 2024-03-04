@@ -27,7 +27,7 @@
 /** @cond DOXYGEN_IGNORE */
 
 %define api.header.include { "parser.h" }
-%expect 8
+%expect 6
 
 %{
 /** @endcond */
@@ -458,8 +458,7 @@ static void yyerror( char const *msg ) {
   endian_t            endian_val;
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
-  ad_expr_kind_t      expr_kind;  // built-ins, storage classes, & qualifiers
-  ad_field_t         *field;
+  ad_expr_kind_t      expr_kind;  // expression kind
   int                 int_val;
   slist_t             list;       // multipurpose list
   char const         *literal;    // token literal
@@ -636,6 +635,7 @@ static void yyerror( char const *msg ) {
 %type <statement>   typedef_declaration
 
                     // Miscellaneous
+%type <int_val>     alignas_opt
 %type <list>        argument_expr_list argument_expr_list_opt
 %type <expr_kind>   assign_op
 %type <int_val>     int_exp
@@ -820,7 +820,7 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : type name_exp[name] array_opt[array]
+  : alignas_opt[align] type name_exp[name] array_opt[array]
     {
       ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
       *statement = (ad_statement_t){
@@ -829,19 +829,24 @@ field_declaration
         .decl_s = {
           .name = $name,
           .type = $type,
+          .align = $align,
           .rep = $array
         }
       };
     }
   ;
 
-array_opt
-  : /* empty */                   { $$ = (ad_rep_t){ .kind = AD_REP_1 }; }
-  | '[' ']' equals_exp expr_exp[expr]
+alignas_opt
+  : /* empty */                   { $$ = 0; }
+  | Y_alignas lparen_exp int_exp[value] rparen_exp
     {
-      $$ = (ad_rep_t){ .kind = AD_REP_1 };
-      // TODO: $expr
+      $$ = $value;
     }
+  ;
+
+array_opt
+  : /* empty */                   { $$ = (ad_rep_t){ .kind = AD_REP_1      }; }
+  | '[' ']'                       { $$ = (ad_rep_t){ .kind = AD_REP_1      }; }
   | '[' '?' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_0_1    }; }
   | '[' '*' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_0_MORE }; }
   | '[' '+' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_1_MORE }; }
@@ -863,12 +868,12 @@ match_expr_opt
 /// struct declaration ////////////////////////////////////////////////////////
 
 struct_declaration
-  : Y_struct name_exp[name] lbrace_exp statement_list_opt[st_list] rbrace_exp
+  : Y_struct name_exp[name] lbrace_exp statement_list_opt[s_list] rbrace_exp
     {
       (void)$name;
       //ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
       //ad_struct->name = $name;
-      //ad_struct->members = $st_list;
+      //ad_struct->members = $s_list;
     }
   ;
 
