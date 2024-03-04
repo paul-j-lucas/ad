@@ -398,6 +398,20 @@ static void parse_cleanup( bool fatal_error ) {
 }
 
 /**
+ * TODO
+ *
+ * @param name TODO
+ * @return TODO
+ */
+static sname_t sname_current( char const *name ) {
+  sname_t sname;
+  sname_init( &sname );
+  sname_append_sname( &sname, &in_attr.scope_sname );
+  sname_append_name( &sname, name );
+  return sname;
+}
+
+/**
  * Called by Bison to print a parsing error message to standard error.
  *
  * @remarks A custom error printing function via `%%define parse.error custom`
@@ -779,20 +793,20 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[value_list] rbrace_exp
     {
-      sname_t sname;
-      sname_init( &sname );
-      sname_append_sname( &sname, &in_attr.scope_sname );
-      sname_append_name( &sname, $name );
-
-      ad_type_t *const enum_type = MALLOC( ad_type_t, 1 );
-      *enum_type = (ad_type_t){
-        .sname = sname_move( &sname ),
-        .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
-        .size_expr = $type.size_expr,
-        .endian_expr = $type.endian_expr,
-        .enum_t = { .values = slist_move( &$value_list ) }
+      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
+      *statement = (ad_statement_t){
+        .kind = S_DECLARATION,
+        .loc = @$,
+        .decl_s = {
+          .type = {
+            .sname = sname_current( $name ),
+            .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
+            .enum_t = {
+              .values = slist_move( &$value_list )
+            }
+          }
+        }
       };
-      PARSE_ASSERT( define_type( enum_type ) );
     }
   ;
 
@@ -868,12 +882,22 @@ match_expr_opt
 /// struct declaration ////////////////////////////////////////////////////////
 
 struct_declaration
-  : Y_struct name_exp[name] lbrace_exp statement_list_opt[s_list] rbrace_exp
+  : Y_struct name_exp[name] lbrace_exp statement_list_opt[members] rbrace_exp
     {
-      (void)$name;
-      //ad_struct_t *const ad_struct = MALLOC( ad_struct_t, 1 );
-      //ad_struct->name = $name;
-      //ad_struct->members = $s_list;
+      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
+      *statement = (ad_statement_t){
+        .kind = S_DECLARATION,
+        .loc = @$,
+        .decl_s = {
+          .type = {
+            .sname = sname_current( $name ),
+            .tid = T_STRUCT,
+            .struct_t = {
+              .members = $members
+            }
+          }
+        }
+      };
     }
   ;
 
