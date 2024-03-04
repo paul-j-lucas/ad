@@ -61,22 +61,30 @@ void ad_type_free( ad_type_t *type ) {
   if ( type == NULL )
     return;
   switch ( type->tid & T_MASK_TYPE ) {
+    case T_BOOL:
+    case T_FLOAT:
+    case T_INT:
+    case T_UTF:
+      FREE( type->bool_t.printf_fmt );
+      FALLTHROUGH;
     case T_ENUM:
       slist_cleanup(
-        &type->ad_enum.values,
+        &type->enum_t.values,
         POINTER_CAST( slist_free_fn_t, &ad_enum_value_free )
       );
       break;
     case T_STRUCT:
+      slist_cleanup(
+        &type->struct_t.members,
+        POINTER_CAST( slist_free_fn_t, &ad_type_free )
+      );
       break;
-    case T_BOOL:
     case T_ERROR:
-    case T_FLOAT:
-    case T_INT:
-    case T_UTF:
       // nothing to do
       break;
   } // switch
+  sname_cleanup( &type->sname );
+  free( type );
 }
 
 ad_type_t* ad_type_new( ad_tid_t tid ) {

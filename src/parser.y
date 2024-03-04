@@ -692,7 +692,7 @@ break_statement
     {
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
-        .kind = AD_ST_BREAK,
+        .kind = S_BREAK,
         .loc = @$
       };
     }
@@ -706,9 +706,9 @@ switch_statement
     {
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
-        .kind = AD_ST_SWITCH,
+        .kind = S_SWITCH,
         .loc = @$,
-        .st_switch = {
+        .switch_s = {
           .expr = $expr,
           .case_list = slist_move( &$case_list )
         }
@@ -790,7 +790,7 @@ enum_declaration
         .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .size_expr = $type.size_expr,
         .endian_expr = $type.endian_expr,
-        .ad_enum = { .values = slist_move( &$value_list ) }
+        .enum_t = { .values = slist_move( &$value_list ) }
       };
       PARSE_ASSERT( define_type( enum_type ) );
     }
@@ -822,29 +822,32 @@ enumerator
 field_declaration
   : type name_exp[name] array_opt[array]
     {
-      ad_field_t *const ad_field = MALLOC( ad_field_t, 1 );
-      *ad_field = (ad_field_t){
-        .name = $name,
-        .rep = $array,
-        .type = $type
+      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
+      *statement = (ad_statement_t){
+        .kind = S_DECLARATION,
+        .loc = @$,
+        .decl_s = {
+          .name = $name,
+          .type = $type,
+          .rep = $array
+        }
       };
     }
   ;
 
 array_opt
-  : /* empty */                   { $$.times = AD_REP_1; }
+  : /* empty */                   { $$ = (ad_rep_t){ .kind = AD_REP_1 }; }
   | '[' ']' equals_exp expr_exp[expr]
     {
-      $$.times = AD_REP_1;
-      $$.expr = $expr;
+      $$ = (ad_rep_t){ .kind = AD_REP_1 };
+      // TODO: $expr
     }
-  | '[' '?' rbracket_exp          { $$.times = AD_REP_0_1; }
-  | '[' '*' rbracket_exp          { $$.times = AD_REP_0_MORE; }
-  | '[' '+' rbracket_exp          { $$.times = AD_REP_1_MORE; }
+  | '[' '?' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_0_1    }; }
+  | '[' '*' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_0_MORE }; }
+  | '[' '+' rbracket_exp          { $$ = (ad_rep_t){ .kind = AD_REP_1_MORE }; }
   | '[' expr ']'
     {
-      $$.times = AD_REP_EXPR;
-      $$.expr = $expr;
+      $$ = (ad_rep_t){ .kind = AD_REP_EXPR, .expr = $expr };
     }
   | '[' error ']'
     {

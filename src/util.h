@@ -218,6 +218,15 @@ _GL_INLINE_HEADER_BEGIN
 #define CONST_CAST(T,EXPR)        ((T)(EXPR))
 
 /**
+ * Declares a object with an unspecified name both aligned and sized as a \a T
+ * intended to be used inside a `struct` declaration to add padding.
+ *
+ * @param T The type of the object.
+ */
+#define DECL_UNUSED(T) \
+  _Alignas(T) char UNIQUE_NAME(unused)[ sizeof(T) ]
+
+/**
  * Calls **dup2**(2) and checks for failure.
  *
  * @param OLD_FD The old file descriptor to duplicate.

@@ -236,22 +236,22 @@ enum ad_statement_kind {
   /**
    * A `break` statement.
    */
-  AD_ST_BREAK,
+  S_BREAK,
 
   /**
    * A compound statement, i.e. zero or more statements between `{` `}`.
    */
-  AD_ST_COMPOUND,
+  S_COMPOUND,
 
   /**
    * A single declaration statement.
    */
-  AD_ST_DECLARATION,
+  S_DECLARATION,
 
   /**
    * A `switch` statement.
    */
-  AD_ST_SWITCH
+  S_SWITCH
 };
 
 /**
@@ -272,6 +272,7 @@ enum ad_tid_kind {
 
 typedef struct  ad_binary_expr        ad_binary_expr_t;
 typedef unsigned                      ad_bits_t;
+typedef struct  ad_bool_type          ad_bool_type_t;
 typedef enum    ad_debug              ad_debug_t;
 typedef struct  ad_declaration        ad_declaration_t;
 typedef struct  ad_enum_type          ad_enum_type_t;
@@ -280,6 +281,7 @@ typedef struct  ad_expr               ad_expr_t;
 typedef enum    ad_expr_err           ad_expr_err_t;
 typedef enum    ad_expr_kind          ad_expr_kind_t;
 typedef struct  ad_field              ad_field_t;
+typedef struct  ad_float_type         ad_float_type_t;
 typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
@@ -298,12 +300,13 @@ typedef struct  ad_rep                ad_rep_t;
 typedef enum    ad_rep_kind           ad_rep_kind_t;
 typedef struct  ad_statement          ad_statement_t;
 typedef enum    ad_statement_kind     ad_statement_kind_t;
-typedef struct  slist                 ad_statement_list_t;
+typedef slist_t                       ad_statement_list_t;
 typedef struct  ad_struct_type        ad_struct_type_t;
 typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
+typedef struct  ad_utf_type           ad_utf_type_t;
 
 /**
  * Type ID.
@@ -357,12 +360,12 @@ typedef struct  ad_type               ad_type_t;
 typedef uint16_t                      ad_tid_t;
 
 typedef enum    ad_tid_kind           ad_tid_kind_t;
-typedef struct  slist                 ad_type_list_t;
+typedef slist_t                       ad_type_list_t;
 typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
-typedef struct  slist                 sname_t;
+typedef slist_t                       sname_t;    ///< Scoped name.
 
 typedef ad_loc_t YYLTYPE;               ///< Source location type for Bison.
 /// @cond DOXYGEN_IGNORE
@@ -386,17 +389,25 @@ struct ad_loc {
  * Repetition.
  */
 struct ad_rep {
-  ad_rep_kind_t   times;
-  ad_expr_t      *expr;                 ///< Used only if times == AD_REP_EXPR
+  ad_rep_kind_t   kind;                 ///< Kind of repetition.
+  ad_expr_t      *expr;                 ///< Used only if rep == AD_REP_EXPR
 };
 
 ////////// ad types ///////////////////////////////////////////////////////////
 
 /**
+ * `bool` type.
+ */
+struct ad_bool_type {
+  char const *printf_fmt;               ///< `printf` format, if any.
+};
+
+/**
  * `enum` type.
  */
 struct ad_enum_type {
-  slist_t         values;               ///< List of ad_enum_value.
+  char const *printf_fmt;               ///< `printf` format, if any.
+  slist_t     values;                   ///< List of ad_enum_value.
 };
 
 /**
@@ -405,41 +416,75 @@ struct ad_enum_type {
  * @sa ad_enum_type
  */
 struct ad_enum_value {
+  char const *printf_fmt;               ///< `printf` format, if any.
   char const *name;                     ///< Name.
   int64_t     value;                    ///< Value.
+};
+
+/**
+ * `float` type.
+ */
+struct ad_float_type {
+  char const *printf_fmt;               ///< `printf` format, if any.
+};
+
+/**
+ * `int` type.
+ */
+struct ad_int_type {
+  char const *printf_fmt;               ///< `printf` format, if any.
 };
 
 /**
  * `struct` type.
  */
 struct ad_struct_type {
+  /// @cond DOXYGEN_IGNORE
+  /// So members below does not occupy the bytes used for printf_fmt in other
+  /// types.
+  DECL_UNUSED(char const*);
+  /// @endcond
+
   ad_type_list_t  members;              ///< Structure members.
+};
+
+/**
+ * `utf` (character only) type.
+ */
+struct ad_utf_type {
+  char const *printf_fmt;               ///< `printf` format, if any.
 };
 
 /**
  * A type.
  */
 struct ad_type {
-  sname_t         sname;                ///< Name of type.
-  ad_tid_t        tid;                  ///< Type of type.
-  ad_expr_t      *size_expr;
-  ad_expr_t      *endian_expr;
+  sname_t             sname;            ///< Name of type.
+  ad_tid_t            tid;              ///< Type of type.
+  ad_expr_t          *size_expr;
+  ad_expr_t          *endian_expr;
+  ad_rep_t            rep;              ///< Repetition.
 
   union {
-    char const   *printf_fmt;
-    ad_enum_type_t    ad_enum;
-    ad_struct_type_t  ad_struct;
+    ad_bool_type_t    bool_t;           ///< #T_BOOL members.
+    ad_enum_type_t    enum_t;           ///< #T_ENUM members.
+    ad_float_type_t   float_t;          ///< #T_FLOAT members.
+    ad_int_type_t     int_t;            ///< #T_INT members.
+    ad_struct_type_t  struct_t;         ///< #T_STRUCT members.
+    ad_utf_type_t     utf_t;            ///< #T_UTF members.
   };
 };
 
 ////////// ad statements //////////////////////////////////////////////////////
 
 /**
- * Declaration.
+ * A declaration in the **ad** language.
  */
 struct ad_declaration {
-  char const *name;
-  ad_type_t   type;
+  char const *name;                     ///< Name.
+  ad_type_t   type;                     ///< Type.
+  ad_rep_t    rep;                      ///< Repetition.
+  char const *printf_fmt;               ///< `printf` format.
 };
 
 /**
@@ -451,7 +496,7 @@ struct ad_switch_case {
 };
 
 /**
- * `switch` statement.
+ * A `switch` statement in the **ad** language.
  */
 struct ad_switch_statement {
   ad_expr_t  *expr;                     ///< `switch` expression.
@@ -459,14 +504,21 @@ struct ad_switch_statement {
 };
 
 /**
+ * A statement in the **ad** language.
  */
 struct ad_statement {
+  ad_statement_kind_t kind;             ///< Statement kind.
+  ad_loc_t            loc;              ///< Source location.
+
+  /**
+   * Additional data for each \ref kind.
+   */
   union {
-    ad_declaration_t        declaration;///< Declaration.
-    ad_switch_statement_t   st_switch;  ///< `switch` statement.
+    // nothing needed for break statement
+    // nothing needed for compound statement
+    ad_declaration_t        decl_s;     ///< \ref ad_declaration members.
+    ad_switch_statement_t   switch_s;   ///< \ref ad_switch_statement members.
   };
-  ad_statement_kind_t kind;
-  ad_loc_t            loc;
 };
 
 /**
@@ -474,18 +526,8 @@ struct ad_statement {
  *
  * @param VAR The `slist_node` loop variable.
  */
-#define FOREACH_CASE(VAR,SWITCH) \
-  FOREACH_SLIST_NODE( VAR, (SWITCH)->case_list )
-
-/**
- * A data field.
- */
-struct ad_field {
-  char const *name;                     ///< Field name.
-  ad_type_t   type;                     ///< Field type.
-  ad_rep_t    rep;                      ///< Repetitions.
-  ad_expr_t  *match_expr;               ///< Value it must match, if any.
-};
+#define FOREACH_SWITCH_CASE(VAR,STATEMENT) \
+  FOREACH_SLIST_NODE( VAR, (STATEMENT)->switch_s.case_list )
 
 ////////// expressions ////////////////////////////////////////////////////////
 
