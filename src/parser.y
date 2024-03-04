@@ -793,20 +793,15 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[value_list] rbrace_exp
     {
-      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
-      *statement = (ad_statement_t){
-        .kind = S_DECLARATION,
-        .loc = @$,
-        .decl_s = {
-          .type = {
-            .sname = sname_current( $name ),
-            .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
-            .enum_t = {
-              .values = slist_move( &$value_list )
-            }
-          }
+      ad_type_t *const type = MALLOC( ad_type_t, 1 );
+      *type = (ad_type_t){
+        .sname = sname_current( $name ),
+        .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
+        .enum_t = {
+          .values = slist_move( &$value_list )
         }
       };
+      PARSE_ASSERT( define_type( type ) );
     }
   ;
 
@@ -884,20 +879,15 @@ match_expr_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp statement_list_opt[members] rbrace_exp
     {
-      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
-      *statement = (ad_statement_t){
-        .kind = S_DECLARATION,
-        .loc = @$,
-        .decl_s = {
-          .type = {
-            .sname = sname_current( $name ),
-            .tid = T_STRUCT,
-            .struct_t = {
-              .members = $members
-            }
-          }
+      ad_type_t *const type = MALLOC( ad_type_t, 1 );
+      *type = (ad_type_t){
+        .sname = sname_current( $name ),
+        .tid = T_STRUCT,
+        .struct_t = {
+          .members = $members
         }
       };
+      PARSE_ASSERT( define_type( type ) );
     }
   ;
 
