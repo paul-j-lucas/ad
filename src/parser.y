@@ -797,6 +797,7 @@ enum_declaration
       *type = (ad_type_t){
         .sname = sname_current( $name ),
         .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
+        .loc = @$,
         .enum_t = {
           .values = slist_move( &$value_list )
         }
@@ -883,6 +884,7 @@ struct_declaration
       *type = (ad_type_t){
         .sname = sname_current( $name ),
         .tid = T_STRUCT,
+        .loc = @$,
         .struct_t = {
           .members = $members
         }

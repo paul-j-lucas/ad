@@ -462,6 +462,7 @@ struct ad_type {
   ad_tid_t            tid;              ///< Type of type.
   ad_expr_t          *size_expr;
   ad_expr_t          *endian_expr;
+  ad_loc_t            loc;              ///< Source location.
   ad_rep_t            rep;              ///< Repetition.
 
   union {
