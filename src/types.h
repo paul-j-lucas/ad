@@ -460,20 +460,33 @@ struct ad_utf_type {
 struct ad_type {
   sname_t             sname;            ///< Name of type.
   ad_tid_t            tid;              ///< Type of type.
+
+  /// Size (in bits) of type --- used only if \ref tid `&` #T_MASK_SIZE is 0.
   ad_expr_t          *size_expr;
+
+  /// Endianness of type --- used only if \ref tid `&` #T_MASK_ENDIAN is 0.
   ad_expr_t          *endian_expr;
+
   ad_loc_t            loc;              ///< Source location.
   ad_rep_t            rep;              ///< Repetition.
 
   union {
     ad_bool_type_t    bool_t;           ///< #T_BOOL members.
     ad_enum_type_t    enum_t;           ///< #T_ENUM members.
+                        // nothing needed for T_ERROR
     ad_float_type_t   float_t;          ///< #T_FLOAT members.
     ad_int_type_t     int_t;            ///< #T_INT members.
     ad_struct_type_t  struct_t;         ///< #T_STRUCT members.
     ad_utf_type_t     utf_t;            ///< #T_UTF members.
   };
 };
+
+extern ad_type_t const TB_BOOL8;        ///< Built-in `bool` type.
+extern ad_type_t const TB_ERROR;        ///< Built-in error type.
+extern ad_type_t const TB_FLOAT64;      ///< Built-in `float` type.
+extern ad_type_t const TB_INT64;        ///< Built-in `int64` type.
+extern ad_type_t const TB_UINT64;       ///< Built-in `uint64` type.
+extern ad_type_t const TB_UTF8_0;       ///< Built-in UTF-8 string type.
 
 ////////// ad statements //////////////////////////////////////////////////////
 
@@ -482,7 +495,7 @@ struct ad_type {
  */
 struct ad_declaration {
   char const *name;                     ///< Name.
-  ad_type_t   type;                     ///< Type.
+  ad_type_t  *type;                     ///< Type.
   unsigned    align;                    ///< Alignment.
   ad_rep_t    rep;                      ///< Repetition.
   char const *printf_fmt;               ///< `printf` format.
@@ -580,41 +593,41 @@ struct ad_ternary_expr {
  * Constant value expression.
  */
 struct ad_value_expr {
-  ad_type_t       type;                 ///< The type of the value.
+  ad_type_t const  *type;               ///< The type of the value.
 
   /**
    * The value.
    */
   union {
     // Signed integer.
-    int8_t        i8;                   ///< `int8_t` value.
-    int16_t       i16;                  ///< `int16_t` value.
-    int32_t       i32;                  ///< `int32_t` value.
-    int64_t       i64;                  ///< `int64_t` value.
+    int8_t          i8;                 ///< `int8_t` value.
+    int16_t         i16;                ///< `int16_t` value.
+    int32_t         i32;                ///< `int32_t` value.
+    int64_t         i64;                ///< `int64_t` value.
 
     // Unsigned integer.
-    uint8_t       u8;                   ///< `uint8_t` value.
-    uint16_t      u16;                  ///< `uint16_t` value.
-    uint32_t      u32;                  ///< `uint32_t` value.
-    uint64_t      u64;                  ///< `uint64_t` value.
+    uint8_t         u8;                 ///< `uint8_t` value.
+    uint16_t        u16;                ///< `uint16_t` value.
+    uint32_t        u32;                ///< `uint32_t` value.
+    uint64_t        u64;                ///< `uint64_t` value.
 
     // Floating-point.
-    double        f64;                  ///< f32, f64
+    double          f64;                ///< f32, f64
 
     // UTF characters.
-    char8_t       c8;                   ///< UTF-8 character.
-    char16_t      c16;                  ///< UTF-16 character.
-    char32_t      c32;                  ///< UTF-32 character.
+    char8_t         c8;                 ///< UTF-8 character.
+    char16_t        c16;                ///< UTF-16 character.
+    char32_t        c32;                ///< UTF-32 character.
 
     // UTF strings.
-    char         *s;                    ///< Any string.
-    char8_t      *s8;                   ///< UTF-8 string.
-    char16_t     *s16;                  ///< UTF-16 string.
-    char32_t     *s32;                  ///< UTF-32 string.
+    char           *s;                  ///< Any string.
+    char8_t        *s8;                 ///< UTF-8 string.
+    char16_t       *s16;                ///< UTF-16 string.
+    char32_t       *s32;                ///< UTF-32 string.
 
     // Miscellaneous.
-    ad_type_t     cast_type;
-    ad_expr_err_t err;
+    ad_type_t       cast_type;
+    ad_expr_err_t   err;
   };
 };
 

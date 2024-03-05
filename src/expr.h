@@ -86,7 +86,7 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc );
  */
 NODISCARD AD_EXPR_H_INLINE
 ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
-  return ad_expr_is_value( expr ) ? expr->value.type.tid : T_NONE;
+  return ad_expr_is_value( expr ) ? expr->value.type->tid : T_NONE;
 }
 
 /**

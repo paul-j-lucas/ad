@@ -112,7 +112,7 @@ static inline int int32_cmp( int32_t i, int32_t j ) {
 static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
   char32_t cp;
 
-  switch ( expr->value.type.tid ) {
+  switch ( expr->value.type->tid ) {
     case T_UTF8:
       return utf8_32( (char const*)&expr->value.c32 );
     case T_UTF16BE:
@@ -137,7 +137,7 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
  * @return Returns `true` only if the entire Unicode string TODO.
  */
 static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
-  switch ( expr->value.type.tid ) {
+  switch ( expr->value.type->tid ) {
     case T_UTF8_0:
       *ps8 = expr->value.s8;
       break;
@@ -212,7 +212,7 @@ static inline bool is_fzero( double d ) {
 }
 
 static void narrow( ad_expr_t *expr ) {
-  ad_tid_t const to_tid = expr->value.type.tid;
+  ad_tid_t const to_tid = expr->value.type->tid;
   assert( ((to_tid & T_MASK_TYPE) & T_NUMBER) != T_NONE );
 
   switch ( to_tid ) {
@@ -395,7 +395,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
 
     case T_BOOL:
       *rv = *expr;
-      rv->value.type.tid = cast_tid;
+      rv->value.type = cast_expr->value.type;
       switch ( lhs_tid ) {
         case T_BOOL:
         case T_INT:
@@ -410,7 +410,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
 
     case T_INT:
       *rv = *expr;
-      rv->value.type.tid = cast_tid;
+      rv->value.type = cast_expr->value.type;
       switch ( lhs_tid ) {
         case T_BOOL:
         case T_INT:
@@ -424,7 +424,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
 
     case T_FLOAT:
-      rv->value.type.tid = cast_tid;
+      rv->value.type = cast_expr->value.type;
       switch ( lhs_tid & ~T_MASK_SIZE ) {
         case T_INT:
           rv->value.f64 = lhs_expr.value.u64;
@@ -1371,31 +1371,31 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc ) {
 
 void ad_expr_set_b( ad_expr_t *expr, bool bval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->value.type.tid = T_BOOL8;
+  expr->value.type = &TB_BOOL8;
   expr->value.u64 = bval;
 }
 
 void ad_expr_set_f( ad_expr_t *expr, double dval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->value.type.tid = T_FLOAT64;
+  expr->value.type = &TB_FLOAT64;
   expr->value.f64 = dval;
 }
 
 void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
   expr->expr_kind = AD_EXPR_ERROR;
-  expr->value.type.tid = T_ERROR;
+  expr->value.type = &TB_ERROR;
   expr->value.err = err;
 }
 
 void ad_expr_set_i( ad_expr_t *expr, int64_t ival ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->value.type.tid = T_INT64;
+  expr->value.type = &TB_INT64;
   expr->value.i64 = ival;
 }
 
 void ad_expr_set_u( ad_expr_t *expr, uint64_t uval ) {
   expr->expr_kind = AD_EXPR_VALUE;
-  expr->value.type.tid = T_UINT64;
+  expr->value.type = &TB_UINT64;
   expr->value.u64 = uval;
 }
 
@@ -1404,7 +1404,7 @@ void ad_value_free( ad_value_expr_t *value ) {
   // If the type has a null-terminated value, then the value bits are a pointer
   // that must be free'd.  (It doesn't matter which pointer type we free.)
   //
-  if ( (value->type.tid & T_NULL) != T_NONE )
+  if ( (value->type->tid & T_NULL) != T_NONE )
     free( value->s );
 }
 

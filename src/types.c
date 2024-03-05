@@ -29,6 +29,92 @@
 
 // standard
 #include <assert.h>
+#include <inttypes.h>
+
+///////////////////////////////////////////////////////////////////////////////
+
+static slist_node_t TB_BOOL_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "bool" }
+};
+
+ad_type_t const TB_BOOL8 = {
+  .sname = {
+    &TB_BOOL_SNAME_NODE,
+    &TB_BOOL_SNAME_NODE,
+    1
+  },
+  .tid = T_BOOL8,
+  .int_t = { .printf_fmt = "%d" }
+};
+
+static slist_node_t TB_ERROR_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "error" }
+};
+
+ad_type_t const TB_ERROR = {
+  .sname = {
+    &TB_ERROR_SNAME_NODE,
+    &TB_ERROR_SNAME_NODE,
+    1
+  },
+  .tid = T_ERROR
+};
+
+static slist_node_t TB_FLOAT_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "float" }
+};
+
+ad_type_t const TB_FLOAT64 = {
+  .sname = {
+    &TB_FLOAT_SNAME_NODE,
+    &TB_FLOAT_SNAME_NODE,
+    1
+  },
+  .tid = T_FLOAT64 | T_END_H,
+  .int_t = { .printf_fmt = "%f" }
+};
+
+static slist_node_t TB_INT64_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "int64" }
+};
+
+ad_type_t const TB_INT64 = {
+  .sname = {
+    &TB_INT64_SNAME_NODE,
+    &TB_INT64_SNAME_NODE,
+    1
+  },
+  .tid = T_INT64 | T_END_H,
+  .int_t = { .printf_fmt = PRId64 }
+};
+
+static slist_node_t TB_UINT64_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "uint64" }
+};
+
+ad_type_t const TB_UINT64 = {
+  .sname = {
+    &TB_UINT64_SNAME_NODE,
+    &TB_UINT64_SNAME_NODE,
+    1
+  },
+  .tid = T_UINT64 | T_END_H,
+  .int_t = { .printf_fmt = PRIu64 }
+};
+
+static slist_node_t TB_UTF_SNAME_NODE = {
+  NULL, &(sname_scope_t){ .name = "utf" }
+};
+
+ad_type_t const TB_UTF8_0 = {
+  .sname = {
+    &TB_UTF_SNAME_NODE,
+    &TB_UTF_SNAME_NODE,
+    1
+  },
+  .tid = T_UTF8_0,
+  .int_t = { .printf_fmt = "%s" }
+};
 
 ////////// local functions ////////////////////////////////////////////////////
 

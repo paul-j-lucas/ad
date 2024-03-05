@@ -481,7 +481,7 @@ static void yyerror( char const *msg ) {
   ad_statement_t     *statement;
   char               *str_val;    // quoted string value
   ad_switch_case_t   *switch_case;
-  ad_type_t           type;
+  ad_type_t          *type;
   ad_typedef_t const *tdef;       // typedef
   ad_tid_t            tid;
 }
@@ -659,8 +659,9 @@ static void yyerror( char const *msg ) {
 %type <expr_kind>   unary_op
 
 // Bison %destructors.
-%destructor { DTRACE; FREE( $$ ); } <name>
-%destructor { DTRACE; FREE( $$ ); } <str_val>
+%destructor { DTRACE; FREE( $$ );         } <name>
+%destructor { DTRACE; free( $$ );         } <str_val>
+%destructor { DTRACE; ad_type_free( $$ ); } <type>
 
 /*****************************************************************************/
 %%
@@ -796,7 +797,7 @@ enum_declaration
       ad_type_t *const type = MALLOC( ad_type_t, 1 );
       *type = (ad_type_t){
         .sname = sname_current( $name ),
-        .tid = T_ENUM | ($type.tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
+        .tid = T_ENUM | ($type->tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .loc = @$,
         .enum_t = {
           .values = slist_move( &$value_list )
@@ -1124,13 +1125,13 @@ primary_expr
   | Y_INT_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_INT64;
+      $$->value.type = &TB_INT64;
       $$->value.i64 = $1;
     }
   | Y_STR_LIT
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_UTF8_0;
+      $$->value.type = &TB_UTF8_0;
       $$->value.s = $1;
     }
   | '(' expr ')'                  { $$ = $expr; }
@@ -1212,7 +1213,7 @@ unary_expr
       }
       ad_expr_t *const expr = ad_expr_new( AD_EXPR_VALUE, &@$ );
       expr->value = (ad_value_expr_t){
-        .type = (ad_type_t){ .tid = T_UINT64 },
+        .type = &TB_UINT64,
         .u64 = ad_type_size( tdef->type )
       };
       free( $name );
@@ -1249,9 +1250,13 @@ unary_op
 type
   : builtin_tid[tid] lt_exp expr_exp[size] type_endian_opt[endian] gt_exp
     {
-      $$.tid = $tid;
-      $$.size_expr = $size;
-      $$.endian_expr = $endian;
+      $$ = MALLOC( ad_type_t, 1 );
+      *$$ = (ad_type_t){
+        .tid = $tid,
+        .size_expr = $size,
+        .endian_expr = $endian,
+        .loc = @$
+      };
     }
   | Y_TYPEDEF_TYPE
   ;
@@ -1273,20 +1278,20 @@ type_endian
   : ',' 'b'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_UINT8;
-      $$->value.u64 = ENDIAN_BIG;
+      $$->value.type = &TB_UINT64;
+      $$->value.u8 = ENDIAN_BIG;
     }
   | ',' 'l'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_UINT8;
-      $$->value.u64 = ENDIAN_LITTLE;
+      $$->value.type = &TB_UINT64;
+      $$->value.u8 = ENDIAN_LITTLE;
     }
   | ',' 'h'
     {
       $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type.tid = T_UINT8;
-      $$->value.u64 = ENDIAN_HOST;
+      $$->value.type = &TB_UINT64;
+      $$->value.u8 = ENDIAN_HOST;
     }
   | ',' expr
     {
