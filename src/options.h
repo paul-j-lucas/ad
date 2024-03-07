@@ -68,7 +68,14 @@ enum c_fmt {
   CFMT_CONST    = 1 << 6,               ///< Declare variables as `const`.
   CFMT_STATIC   = 1 << 7,               ///< Declare variables as `static`.
 };
-typedef unsigned c_fmt_t;               ///< Bitwise-or of c_fmt options.
+typedef enum c_fmt c_fmt_t;             ///< Bitwise-or of c_fmt options.
+
+/**
+ * Shorthand for any C dump format length: #CFMT_INT, #CFMT_LONG,
+ * #CFMT_UNSIGNED, or #CFMT_SIZE_T.
+ */
+#define CFMT_ANY_LENGTH           ( CFMT_UNSIGNED | CFMT_INT | CFMT_LONG \
+                                  | CFMT_SIZE_T )
 
 /**
  * Whether to print the total number of matches.

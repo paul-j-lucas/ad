@@ -365,7 +365,7 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( CFMT_HAS_TYPE( opt_c_fmt ) )
+  if ( (opt_c_fmt & CFMT_ANY_LENGTH) != CFMT_NONE )
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
       ((opt_c_fmt & CFMT_STATIC  ) != 0 ? "static "   : ""),

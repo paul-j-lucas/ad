@@ -1,3 +1,9 @@
+2024-03-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Fixed error message.
+   * dump.c, options.h: 1. Changed c_fmt_t to actual enum type. 2.
+     s/CFMT_HAS_TYPE/CFMT_ANY_LENGTH/
+
 2024-03-06  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c: 1. Removed dependency on <libgen.h>; not using our own

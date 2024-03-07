@@ -366,7 +366,7 @@ static c_fmt_t parse_c_fmt( char const *s ) {
          (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != CFMT_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
-        " COPT(TOTAL_MATCHES) and [ilu] are mutually exclusive\n",
+        " 't' and [ilu] are mutually exclusive\n",
         s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
       );
     }
