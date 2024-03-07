@@ -59,8 +59,8 @@ _GL_INLINE_HEADER_BEGIN
 /** Si(Z)e bitmask: `xZZZ ZZZZ xxxx xxxx` */
 #define T_MASK_SIZE             0x7F00u
 
-/** (T)ype bitmask: `xxxx xxxx xTTT xxxx` */
-#define T_MASK_TYPE             0x0070u
+/** (T)ype bitmask: `xxxx xxxx TTTT xxxx` */
+#define T_MASK_TYPE             0x00F0u
 
 #define T_BOOL8     (           T_BOOL  | T_08) /**< `bool`             */
 
@@ -239,11 +239,6 @@ enum ad_statement_kind {
   S_BREAK,
 
   /**
-   * A compound statement, i.e. zero or more statements between `{` `}`.
-   */
-  S_COMPOUND,
-
-  /**
    * A single declaration statement.
    */
   S_DECLARATION,
@@ -266,6 +261,7 @@ enum ad_tid_kind {
   T_FLOAT   = 5 << 4,                   ///< Floating point.
   T_ENUM    = 6 << 4,                   ///< Enumeration.
   T_STRUCT  = 7 << 4,                   ///< Structure.
+  T_TYPEDEF = 8 << 4,                   ///< `typedef`.
 };
 
 ////////// typedefs ///////////////////////////////////////////////////////////
@@ -305,6 +301,7 @@ typedef struct  ad_switch_statement   ad_switch_statement_t;
 typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
+typedef struct  ad_typedef_type       ad_typedef_type_t;
 typedef struct  ad_utf_type           ad_utf_type_t;
 
 /**
@@ -315,7 +312,7 @@ typedef struct  ad_utf_type           ad_utf_type_t;
  * The bits are used as follows:
  *
  *      FEDC BA98 7654 3210
- *      SZZZ ZZZZ -TTT -NEE
+ *      SZZZ ZZZZ TTTT -NEE
  *
  * where:
  *
@@ -327,7 +324,7 @@ typedef struct  ad_utf_type           ad_utf_type_t;
  *         0 = expr
  *         n = size in bits
  *
- *      T[3] = type:
+ *      T[4] = type:
  *         0 = none
  *         1 = error
  *         2 = bool
@@ -336,6 +333,7 @@ typedef struct  ad_utf_type           ad_utf_type_t;
  *         5 = float
  *         6 = enum
  *         7 = struct
+ *         8 = typedef
  *
  *      N[1] = null terminated:
  *         0 = single character
@@ -448,6 +446,19 @@ struct ad_struct_type {
 };
 
 /**
+ * `typedef` type.
+ */
+struct ad_typedef_type {
+  /// @cond DOXYGEN_IGNORE
+  /// So members below does not occupy the bytes used for printf_fmt in other
+  /// types.
+  DECL_UNUSED(char const*);
+  /// @endcond
+
+  ad_type_t const *type;                ///< What it's a `typedef` for.
+};
+
+/**
  * `utf` (character only) type.
  */
 struct ad_utf_type {
@@ -477,6 +488,7 @@ struct ad_type {
     ad_float_type_t   float_t;          ///< #T_FLOAT members.
     ad_int_type_t     int_t;            ///< #T_INT members.
     ad_struct_type_t  struct_t;         ///< #T_STRUCT members.
+    ad_typedef_type_t typedef_t;        ///< #T_TYPEDEF members.
     ad_utf_type_t     utf_t;            ///< #T_UTF members.
   };
 };
@@ -541,7 +553,7 @@ struct ad_statement {
  * @param VAR The `slist_node` loop variable.
  */
 #define FOREACH_SWITCH_CASE(VAR,STATEMENT) \
-  FOREACH_SLIST_NODE( VAR, (STATEMENT)->switch_s.case_list )
+  FOREACH_SLIST_NODE( VAR, &(STATEMENT)->switch_s.case_list )
 
 ////////// expressions ////////////////////////////////////////////////////////
 
@@ -708,6 +720,13 @@ bool ad_is_signed( ad_tid_t tid ) {
 }
 
 /**
+ * Frees all the memory used by \a statement.
+ *
+ * @param statement The `ad_statement` to free.  May be NULL.
+ */
+void ad_statement_free( ad_statement_t *statement );
+
+/**
  * Gets the size (in bits) of the type represented by \a tid.
  *
  * @param tid The type ID to use.
@@ -763,6 +782,17 @@ ad_type_t* ad_type_new( ad_tid_t tid );
  */
 NODISCARD
 unsigned ad_type_size( ad_type_t const *t );
+
+/**
+ * Un-`typedef`s \a type, i.e., if \a type is of type #T_TYPEDEFl returns the
+ * \ref ad_type the `typedef` is for.
+ *
+ * @param type The \ref ad_type to un-`typedef`.
+ * @return Returns the \ref ad_type the `typedef` is for or \a type if \a type
+ * is not of kind #T_TYPEDEF>
+ */
+NODISCARD
+ad_type_t const* ad_type_untypedef( ad_type_t const *type );
 
 ///////////////////////////////////////////////////////////////////////////////
 

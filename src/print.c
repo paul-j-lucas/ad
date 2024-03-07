@@ -31,6 +31,7 @@
 #include "keyword.h"
 #include "lexer.h"
 #include "options.h"
+#include "typedef.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -222,6 +223,32 @@ static void print_input_line( size_t *error_column, size_t term_columns ) {
 }
 
 /**
+ * Prints the name of \a type followed by `(aka` followed by the underlying
+ * type.  For example, if a type was declared in like:
+ *
+ *      using RI = int<16,b>;
+ *
+ * prints `"RI" (aka "int<16,b>")`, that is the type name followed by `(aka`
+ * and the underlying type.
+ *
+ * @note A newline is _not_ printed.
+ *
+ * @param type The \ref ad_type to print.
+ * @param fout The `FILE` to print to.
+ */
+static void print_type_name_aka( ad_type_t const *type, FILE *fout ) {
+  assert( type != NULL );
+  assert( fout != NULL );
+
+  FPRINTF( fout, "\"%s\" (aka, \"", sname_full_name( &type->sname ) );
+  // Look-up the type so we can print it how it was originally defined.
+  ad_typedef_t const *const tdef = ad_typedef_find_sname( &type->sname );
+  assert( tdef != NULL );
+  print_type( tdef->type, fout );
+  FPUTS( "\")", fout );
+}
+
+/**
  * Gets the length of the first token in \a s.  Characters are divided into
  * three classes:
  *
@@ -380,6 +407,28 @@ bool print_suggestions( dym_kind_t kinds, char const *unknown_token ) {
     return true;
   }
   return false;
+}
+
+void print_type( ad_type_t const *type, FILE *fout ) {
+  assert( type != NULL );
+  assert( fout != NULL );
+
+  // TODO
+}
+
+void print_type_aka( ad_type_t const *type, FILE *fout ) {
+  assert( type != NULL );
+  assert( fout != NULL );
+
+  ad_type_t const *const raw_type = ad_type_untypedef( type );
+  if ( raw_type == type ) {             // not a typedef
+    FPUTC( '"', fout );
+    // c_ast_gibberish( ast, C_GIB_USING, fout );
+    FPUTC( '"', fout );
+  }
+  else {
+    print_type_name_aka( raw_type, fout );
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -249,6 +249,24 @@ void print_loc( ad_loc_t const *loc );
 PJL_DISCARD
 bool print_suggestions( dym_kind_t kinds, char const *unknown_token );
 
+/**
+ * TODO
+ *
+ * @param type The \ref ad_type to print.
+ * @param fout The `FILE` to print to.
+ */
+void print_type( ad_type_t const *type, FILE *fout );
+
+/**
+ * TODO
+ *
+ * @note A newline is _not_ printed.
+ *
+ * @param type The \ref ad_type to print.
+ * @param fout The `FILE` to print to.
+ */
+void print_type_aka( ad_type_t const *type, FILE *fout );
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */

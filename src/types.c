@@ -132,6 +132,35 @@ static void ad_enum_value_free( ad_enum_value_t *value ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+void ad_statement_free( ad_statement_t *statement ) {
+  if ( statement != NULL ) {
+    switch ( statement->kind ) {
+      case S_BREAK:
+        // nothing to do
+        break;
+
+      case S_DECLARATION:
+        FREE( statement->decl_s.name );
+        ad_type_free( statement->decl_s.type );
+        FREE( statement->decl_s.printf_fmt );
+        break;
+
+      case S_SWITCH:
+        ad_expr_free( statement->switch_s.expr );
+        FOREACH_SWITCH_CASE( case_node, statement ) {
+          ad_switch_case_t *const switch_case = case_node->data;
+          ad_expr_free( switch_case->expr );
+          FOREACH_SLIST_NODE( case_statement_node, &switch_case->statement_list ) {
+            ad_statement_t *const case_statement = case_statement_node->data;
+            ad_statement_free( case_statement );
+          } // for
+        } // for
+        break;
+    } // switch
+    free( statement );
+  }
+}
+
 bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
   if ( i_type == j_type )
     return true;
@@ -188,6 +217,15 @@ unsigned ad_type_size( ad_type_t const *t ) {
     return bits;
   assert( ad_expr_is_value( t->size_expr ) );
   return t->size_expr->value.u32;
+}
+
+ad_type_t const* ad_type_untypedef( ad_type_t const *type ) {
+  for (;;) {
+    assert( type != NULL );
+    if ( (type->tid & T_MASK_TYPE) != T_TYPEDEF )
+      return type;
+    type = type->typedef_t.type;
+  } // for
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -298,7 +298,6 @@ static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
                                 ... );
 
 // local variables
-static slist_t        gc_expr_list;     ///< `expr` nodes freed after parse.
 static in_attr_t      in_attr;          ///< Inherited attributes.
 static slist_t        statement_list;
 
@@ -317,17 +316,19 @@ static bool define_type( ad_type_t const *type ) {
   assert( type != NULL );
 
   ad_typedef_t const *const tdef = ad_typedef_add( type );
-  if ( tdef->type == type ) {
+  if ( tdef->type != type ) {
     //
-    // Type was added.
-    //
-  }
-  else {
-    //
-    // Type was NOT added because a previously decared type having the sname
+    // Type was NOT added because a previously declared type having the sname
     // name was returned.
     //
-    return false;
+    if ( !ad_type_equal( tdef->type, type ) ) {
+      print_error( &type->loc, "type " );
+      print_type_aka( type, stderr );
+      EPUTS( " redefinition incompatible with original type \"" );
+      print_type( tdef->type, stderr );
+      EPUTS( "\"\n" );
+      return false;
+    }
   }
 
   return true;
@@ -393,7 +394,6 @@ static void parse_cleanup( bool fatal_error ) {
   //
   lexer_reset( /*hard_reset=*/fatal_error );
 
-  slist_cleanup( &gc_expr_list, (slist_free_fn_t)&ad_expr_free );
   ia_cleanup();
 }
 
@@ -659,9 +659,10 @@ static void yyerror( char const *msg ) {
 %type <expr_kind>   unary_op
 
 // Bison %destructors.
-%destructor { DTRACE; FREE( $$ );         } <name>
-%destructor { DTRACE; free( $$ );         } <str_val>
-%destructor { DTRACE; ad_type_free( $$ ); } <type>
+%destructor { DTRACE; FREE( $$ );               } <name>
+%destructor { DTRACE; free( $$ );               } <str_val>
+%destructor { DTRACE; ad_type_free( $$ );       } <type>
+%destructor { DTRACE; ad_statement_free( $$ );  } <statement>
 
 /*****************************************************************************/
 %%
@@ -678,12 +679,14 @@ statement_list_opt
 statement_list
   : statement_list statement
     {
-      slist_push_back( &statement_list, $statement );
+      if ( $statement != NULL )
+        slist_push_back( &statement_list, $statement );
     }
   | statement
     {
       slist_init( &$$ );
-      slist_push_back( &$$, $statement );
+      if ( $statement != NULL )
+        slist_push_back( &$$, $statement );
     }
   ;
 
