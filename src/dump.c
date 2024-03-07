@@ -31,7 +31,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
-#include <libgen.h>                     /* for basename() */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
@@ -270,13 +269,13 @@ void dump_file( void ) {
   bool        any_matches = false;      // if matching, any data matched yet?
   row_buf_t   buf[2], *curr = buf, *next = buf + 1;
   bool        is_same_row = false;      // current row same as previous?
-  kmp_t      *kmps = NULL;              // used only by match_byte()
-  char8_t    *match_buf = NULL;         // used only by match_byte()
+  kmp_t      *kmps = NULL;              // used only by match_row()
+  char8_t    *match_buf = NULL;         // used only by match_row()
   char const *off_fmt = get_offset_fmt_format();
 
   if ( search_len > 0 ) {               // searching for anything?
-    kmps = free_later( kmp_init( search_buf, search_len ) );
-    match_buf = free_later( MALLOC( char8_t, search_len ) );
+    kmps = kmp_init( search_buf, search_len );
+    match_buf = MALLOC( char8_t, search_len );
   }
 
   // prime the pump by reading the first row
@@ -332,21 +331,16 @@ void dump_file( void ) {
     EPRINTF( "%lu\n", total_matches );
   }
 
+  free( kmps );
+  free( match_buf );
+
   exit( search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
 }
 
 void dump_file_c( void ) {
-  size_t            array_len = 0;
-  char const *      array_name = NULL;
-  char const *const off_fmt = get_offset_fmt_format();
-  size_t            row_len;
+  char const *const array_name = strcmp( fin_path, "-" ) == 0 ?
+    "stdin" : free_later( identify( base_name( fin_path ) ) );
 
-  if ( strcmp( fin_path, "-" ) == 0 ) {
-    array_name = "stdin";
-  } else {
-    char *const temp = free_later( check_strdup( fin_path ) );
-    array_name = free_later( identify( basename( temp ) ) );
-  }
   PRINTF(
     "%s%s %s%s[] = {\n",
     ((opt_c_fmt & CFMT_STATIC ) != 0 ? "static " : ""),
@@ -354,6 +348,10 @@ void dump_file_c( void ) {
     ((opt_c_fmt & CFMT_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
+
+  size_t array_len = 0;
+  char const *const off_fmt = get_offset_fmt_format();
+  size_t row_len;
 
   do {
     char8_t       bytes[ ROW_BYTES_C ]; // bytes in buffer
