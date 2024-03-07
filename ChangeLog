@@ -1,3 +1,8 @@
+2024-03-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c: 1. Removed dependency on <libgen.h>; not using our own
+     base_name(). 2. Now using free() rather than free_later().
+
 2024-02-29  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, unicode.c, unicode.h: s/utf8_encode/utf32_8/
