@@ -247,6 +247,9 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
   assert( off_fmt != NULL );
   assert( buf != NULL );
 
+  if ( unlikely( buf_len == 0 ) )
+    return;
+
   if ( opt_offset_fmt == OFMT_NONE ) {
     PUTC( ' ' );
   } else {
@@ -338,6 +341,14 @@ void dump_file( void ) {
 }
 
 void dump_file_c( void ) {
+  char8_t       bytes[ ROW_BYTES_C ];   // bytes in buffer
+  match_bits_t  match_bits;             // not used when dumping in C
+
+  // prime the pump by reading the first row
+  size_t row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
+  if ( row_len == 0 )
+    goto empty;
+
   char const *const array_name = strcmp( fin_path, "-" ) == 0 ?
     "stdin" : free_later( identify( base_name( fin_path ) ) );
 
@@ -351,17 +362,17 @@ void dump_file_c( void ) {
 
   size_t array_len = 0;
   char const *const off_fmt = get_offset_fmt_format();
-  size_t row_len;
 
-  do {
-    char8_t       bytes[ ROW_BYTES_C ]; // bytes in buffer
-    match_bits_t  match_bits;           // not used when dumping in C
-
-    row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
+  for (;;) {
     dump_row_c( off_fmt, bytes, row_len );
     fin_offset += STATIC_CAST( off_t, row_len );
     array_len += row_len;
-  } while ( row_len == ROW_BYTES_C );
+    if ( row_len != ROW_BYTES_C )
+      break;
+    row_len = match_row(
+      bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL, /*match_buf=*/NULL
+    );
+  } // for
 
   PUTS( "};\n" );
 
@@ -379,6 +390,7 @@ void dump_file_c( void ) {
       ((opt_c_fmt & CFMT_LONG    ) != 0 ? "L" : "")
     );
 
+empty:
   exit( EX_OK );
 }
 
