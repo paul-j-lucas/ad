@@ -98,7 +98,7 @@
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
 
 // extern variable definitions
-bool          opt_ad_debug;
+ad_debug_t    opt_ad_debug;
 bool          opt_case_insensitive;
 color_when_t  opt_color_when = COLOR_WHEN_DEFAULT;
 c_fmt_t       opt_c_fmt;
@@ -716,7 +716,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_color_when = parse_color_when( optarg );
         break;
       case COPT(DEBUG):
-        opt_ad_debug = true;
+        opt_ad_debug = AD_DEBUG_YES;
         break;
       case COPT(DECIMAL):
         opt_offset_fmt = OFMT_DEC;
