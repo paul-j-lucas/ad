@@ -112,6 +112,10 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_LITERAL:
       break;
 
+    case AD_EXPR_NAME:
+      // TODO
+      break;
+
     // unary
     case AD_EXPR_BIT_COMPL:
     case AD_EXPR_MATH_NEG:
