@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "January 8, 2023" "PJL TOOLS"
+.TH \f3ad\f1 1 "March 8, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -193,9 +193,17 @@ Declares both the array and length as \f(CWconst\f1.
 .TP
 .B i
 Declares the length as \f(CWint\f1.
+May be combined with
+.B l
+or
+.BR u .
 .TP
 .B l
 Declares the length as \f(CWlong\f1.
+May be combined with
+.B i
+or
+.BR u .
 .TP
 .B s
 Declares both the array and length as \f(CWstatic\f1.
@@ -205,7 +213,7 @@ Declares the length as \f(CWsize_t\f1.
 .TP
 .B u
 Declares the length as \f(CWunsigned\f1.
-May be combined with either
+May be combined with
 .B i
 or
 .BR l .
