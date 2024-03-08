@@ -1,5 +1,8 @@
 2024-03-08  Paul J. Lucas <paul@lucasmail.org>
 
+   * dump.c: For dumping as a C array, (1) no longer dumping offset for an
+     empty last row; (2) no longer dumping the array declaration at all if the
+     file is empty.
    * ad.1: Mention that 'i', 'l', and 'u' may all be combined.
 
 2024-03-07  Paul J. Lucas <paul@lucasmail.org>
