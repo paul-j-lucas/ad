@@ -318,8 +318,8 @@ static bool define_type( ad_type_t const *type ) {
   ad_typedef_t const *const tdef = ad_typedef_add( type );
   if ( tdef->type != type ) {
     //
-    // Type was NOT added because a previously declared type having the sname
-    // name was returned.
+    // Type was NOT added because a previously declared type having the same
+    // name was returned : check if the types are equal.
     //
     if ( !ad_type_equal( tdef->type, type ) ) {
       print_error( &type->loc, "type " );
@@ -700,6 +700,7 @@ statement
         elaborate_error( "unexpected token" );
       else
         elaborate_error( "unexpected end of statement" );
+      $$ = NULL;
     }
   ;
 
@@ -785,7 +786,9 @@ declaration
   : enum_declaration
   | field_declaration[field] match_expr_opt[match_expr]
     {
-      //$field->match_expr = $match_expr;
+      assert( $field->kind = S_DECLARATION );
+      $field->decl_s.match_expr = $match_expr;
+      $$ = $field;
     }
   | struct_declaration
   | typedef_declaration
@@ -807,6 +810,7 @@ enum_declaration
         }
       };
       PARSE_ASSERT( define_type( type ) );
+      $$ = NULL;
     }
   ;
 
@@ -836,8 +840,8 @@ enumerator
 field_declaration
   : alignas_opt[align] type name_exp[name] array_opt[array]
     {
-      ad_statement_t *const statement = MALLOC( ad_statement_t, 1 );
-      *statement = (ad_statement_t){
+      $$ = MALLOC( ad_statement_t, 1 );
+      *$$ = (ad_statement_t){
         .kind = S_DECLARATION,
         .loc = @$,
         .decl_s = {
@@ -894,15 +898,27 @@ struct_declaration
         }
       };
       PARSE_ASSERT( define_type( type ) );
+      $$ = NULL;
     }
   ;
 
 /// typedef declaration ///////////////////////////////////////////////////////
 
 typedef_declaration
-  : Y_typedef field_declaration
+  : Y_typedef field_declaration[statement]
     {
-      // TODO
+      assert( $statement->kind == S_DECLARATION );
+      ad_declaration_t *const decl = &$statement->decl_s;
+      ad_type_t *const type = MALLOC( ad_type_t, 1 );
+      *type = (ad_type_t){
+        .sname = sname_current( decl->name ),
+        .tid = T_TYPEDEF,
+        .loc = @$,
+        .rep = decl->rep,
+        .typedef_t = { .type = decl->type }
+      };
+      PARSE_ASSERT( define_type( type ) );
+      $$ = NULL;
     }
   ;
 

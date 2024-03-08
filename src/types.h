@@ -506,11 +506,12 @@ extern ad_type_t const TB_UTF8_0;       ///< Built-in UTF-8 string type.
  * A declaration in the **ad** language.
  */
 struct ad_declaration {
-  char const *name;                     ///< Name.
-  ad_type_t  *type;                     ///< Type.
-  unsigned    align;                    ///< Alignment.
-  ad_rep_t    rep;                      ///< Repetition.
-  char const *printf_fmt;               ///< `printf` format.
+  char const       *name;               ///< Name.
+  ad_type_t        *type;               ///< Type.
+  unsigned          align;              ///< Alignment.
+  ad_rep_t          rep;                ///< Repetition.
+  ad_expr_t const  *match_expr;         ///< Match expression, if any.
+  char const       *printf_fmt;         ///< `printf` format.
 };
 
 /**
