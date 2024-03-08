@@ -1245,6 +1245,10 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_MATH_SUB:
       return ad_expr_math_sub( expr, rv );
 
+    case AD_EXPR_NAME:
+      // TODO
+      return true;
+
     case AD_EXPR_SIZEOF:
       // TODO
       return true;
@@ -1326,6 +1330,7 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
     case AD_EXPR_MATH_MUL         : return "mul";
     case AD_EXPR_MATH_NEG         : return "neg";
     case AD_EXPR_MATH_SUB         : return "sub";
+    case AD_EXPR_NAME             : return "name";
     case AD_EXPR_NONE             : return "none";
     case AD_EXPR_PTR_ADDR         : return "addr";
     case AD_EXPR_PTR_DEREF        : return "deref";

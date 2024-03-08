@@ -162,6 +162,7 @@ enum ad_expr_kind {
   AD_EXPR_ERROR,                        ///< Error expression.
 
   AD_EXPR_LITERAL,                      ///< Literal value expression.
+  AD_EXPR_NAME,                         ///< Name value expression.
 
   // unary
   AD_EXPR_BIT_COMPL = AD_EXPR_UNARY + 1,///< Bitwise-complement expression.
