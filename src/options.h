@@ -34,15 +34,6 @@
 #include <stdint.h>                     /* for uint64_t */
 
 /**
- * Checks whether the given \c c_fmt specifies a type.
- *
- * @param FMT The \c c_fmt to check.
- * @return Returns \c true only if \a FMT specifies a type.
- */
-#define CFMT_HAS_TYPE(FMT) \
-  (((FMT) & (CFMT_UNSIGNED | CFMT_INT | CFMT_LONG | CFMT_SIZE_T)) != 0)
-
-/**
  * Convenience macro for iterating over all **ad** command-line options.
  *
  * @param VAR The `struct option` loop variable.
