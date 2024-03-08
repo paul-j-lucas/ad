@@ -1,3 +1,7 @@
+2024-03-08  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1: Mention that 'i', 'l', and 'u' may all be combined.
+
 2024-03-07  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c: Fixed error message.
