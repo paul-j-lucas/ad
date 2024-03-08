@@ -661,6 +661,7 @@ static void yyerror( char const *msg ) {
 // Bison %destructors.
 %destructor { DTRACE; FREE( $$ );               } <name>
 %destructor { DTRACE; free( $$ );               } <str_val>
+%destructor { DTRACE; ad_expr_free( $$ );       } <expr>
 %destructor { DTRACE; ad_type_free( $$ );       } <type>
 %destructor { DTRACE; ad_statement_free( $$ );  } <statement>
 
@@ -940,6 +941,7 @@ expr_exp
   | error
     {
       elaborate_error( "expression expected" );
+      $$ = NULL;
     }
   ;
 
@@ -1143,15 +1145,15 @@ primary_expr
     }
   | Y_INT_LIT
     {
-      $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type = &TB_INT64;
-      $$->value.i64 = $1;
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_INT64;
+      $$->literal.i64 = $1;
     }
   | Y_STR_LIT
     {
-      $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type = &TB_UTF8_0;
-      $$->value.s = $1;
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_UTF8_0;
+      $$->literal.s = $1;
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;
@@ -1230,8 +1232,9 @@ unary_expr
         free( $name );
         PARSE_ABORT();
       }
-      ad_expr_t *const expr = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      expr->value = (ad_value_expr_t){
+
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
         .u64 = ad_type_size( tdef->type )
       };
@@ -1296,21 +1299,21 @@ type_endian_opt
 type_endian
   : ',' 'b'
     {
-      $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type = &TB_UINT64;
-      $$->value.u8 = ENDIAN_BIG;
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_UINT64;
+      $$->literal.u8 = ENDIAN_BIG;
     }
   | ',' 'l'
     {
-      $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type = &TB_UINT64;
-      $$->value.u8 = ENDIAN_LITTLE;
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_UINT64;
+      $$->literal.u8 = ENDIAN_LITTLE;
     }
   | ',' 'h'
     {
-      $$ = ad_expr_new( AD_EXPR_VALUE, &@$ );
-      $$->value.type = &TB_UINT64;
-      $$->value.u8 = ENDIAN_HOST;
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_UINT64;
+      $$->literal.u8 = ENDIAN_HOST;
     }
   | ',' expr
     {
@@ -1319,6 +1322,7 @@ type_endian
   | ',' error
     {
       elaborate_error( "one of 'b', 'l', 'h', or '<expr>' expected" );
+      $$ = NULL;
     }
   ;
 

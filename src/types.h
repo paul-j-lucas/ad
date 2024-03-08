@@ -161,7 +161,7 @@ enum ad_expr_kind {
   AD_EXPR_NONE,                         ///< No expression.
   AD_EXPR_ERROR,                        ///< Error expression.
 
-  AD_EXPR_VALUE,                        ///< Constant value expression.
+  AD_EXPR_LITERAL,                      ///< Literal value expression.
 
   // unary
   AD_EXPR_BIT_COMPL = AD_EXPR_UNARY + 1,///< Bitwise-complement expression.
@@ -280,6 +280,7 @@ typedef struct  ad_float_type         ad_float_type_t;
 typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
+typedef struct  ad_literal_expr       ad_literal_expr_t;
 typedef struct  ad_loc                ad_loc_t;
 
 /**
@@ -360,7 +361,6 @@ typedef enum    ad_tid_kind           ad_tid_kind_t;
 typedef slist_t                       ad_type_list_t;
 typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
-typedef struct  ad_value_expr         ad_value_expr_t;
 typedef struct  print_params          print_params_t;
 typedef slist_t                       sname_t;    ///< Scoped name.
 
@@ -559,6 +559,48 @@ struct ad_statement {
 ////////// expressions ////////////////////////////////////////////////////////
 
 /**
+ * Literal value expression.
+ */
+struct ad_literal_expr {
+  ad_type_t const  *type;               ///< The type of the value.
+
+  /**
+   * The value.
+   */
+  union {
+    // Signed integer.
+    int8_t          i8;                 ///< `int8_t` value.
+    int16_t         i16;                ///< `int16_t` value.
+    int32_t         i32;                ///< `int32_t` value.
+    int64_t         i64;                ///< `int64_t` value.
+
+    // Unsigned integer.
+    uint8_t         u8;                 ///< `uint8_t` value.
+    uint16_t        u16;                ///< `uint16_t` value.
+    uint32_t        u32;                ///< `uint32_t` value.
+    uint64_t        u64;                ///< `uint64_t` value.
+
+    // Floating-point.
+    double          f64;                ///< f32, f64
+
+    // UTF characters.
+    char8_t         c8;                 ///< UTF-8 character.
+    char16_t        c16;                ///< UTF-16 character.
+    char32_t        c32;                ///< UTF-32 character.
+
+    // UTF strings.
+    char           *s;                  ///< Any string.
+    char8_t        *s8;                 ///< UTF-8 string.
+    char16_t       *s16;                ///< UTF-16 string.
+    char32_t       *s32;                ///< UTF-32 string.
+
+    // Miscellaneous.
+    ad_type_t       cast_type;
+    ad_expr_err_t   err;
+  };
+};
+
+/**
  * Unary expression; used for:
  *  + Pointer address
  *  + Pointer dereference
@@ -603,48 +645,6 @@ struct ad_ternary_expr {
 };
 
 /**
- * Constant value expression.
- */
-struct ad_value_expr {
-  ad_type_t const  *type;               ///< The type of the value.
-
-  /**
-   * The value.
-   */
-  union {
-    // Signed integer.
-    int8_t          i8;                 ///< `int8_t` value.
-    int16_t         i16;                ///< `int16_t` value.
-    int32_t         i32;                ///< `int32_t` value.
-    int64_t         i64;                ///< `int64_t` value.
-
-    // Unsigned integer.
-    uint8_t         u8;                 ///< `uint8_t` value.
-    uint16_t        u16;                ///< `uint16_t` value.
-    uint32_t        u32;                ///< `uint32_t` value.
-    uint64_t        u64;                ///< `uint64_t` value.
-
-    // Floating-point.
-    double          f64;                ///< f32, f64
-
-    // UTF characters.
-    char8_t         c8;                 ///< UTF-8 character.
-    char16_t        c16;                ///< UTF-16 character.
-    char32_t        c32;                ///< UTF-32 character.
-
-    // UTF strings.
-    char           *s;                  ///< Any string.
-    char8_t        *s8;                 ///< UTF-8 string.
-    char16_t       *s16;                ///< UTF-16 string.
-    char32_t       *s32;                ///< UTF-32 string.
-
-    // Miscellaneous.
-    ad_type_t       cast_type;
-    ad_expr_err_t   err;
-  };
-};
-
-/**
  * An expression.
  */
 struct ad_expr {
@@ -652,10 +652,10 @@ struct ad_expr {
   ad_loc_t        loc;                  ///< Source location.
 
   union {
+    ad_literal_expr_t literal;          ///< Literal expression.
     ad_unary_expr_t   unary;            ///< Unary expression.
     ad_binary_expr_t  binary;           ///< Binary expression.
     ad_ternary_expr_t ternary;          ///< Ternary expression.
-    ad_value_expr_t   value;            ///< Value expression.
   };
 };
 

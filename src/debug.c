@@ -109,7 +109,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_ERROR:
       break;
 
-    case AD_EXPR_VALUE:
+    case AD_EXPR_LITERAL:
       break;
 
     // unary

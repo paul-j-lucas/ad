@@ -63,8 +63,8 @@ void ad_expr_free( ad_expr_t *expr );
  * @return Returns `true` only if \a expr is a value.
  */
 NODISCARD AD_EXPR_H_INLINE
-bool ad_expr_is_value( ad_expr_t const *expr ) {
-  return expr->expr_kind == AD_EXPR_VALUE;
+bool ad_expr_is_literal( ad_expr_t const *expr ) {
+  return expr->expr_kind == AD_EXPR_LITERAL;
 }
 
 /**
@@ -86,7 +86,7 @@ ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc );
  */
 NODISCARD AD_EXPR_H_INLINE
 ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
-  return ad_expr_is_value( expr ) ? expr->value.type->tid : T_NONE;
+  return ad_expr_is_literal( expr ) ? expr->literal.type->tid : T_NONE;
 }
 
 /**
@@ -162,9 +162,9 @@ void ad_expr_set_u( ad_expr_t *expr, uint64_t ival );
 /**
  * Frees the memory associated with \a value.
  *
- * @param value The value to free.
+ * @param value The literal value to free.
  */
-void ad_value_free( ad_value_expr_t *value );
+void ad_literal_free( ad_literal_expr_t *value );
 
 ///////////////////////////////////////////////////////////////////////////////
 
