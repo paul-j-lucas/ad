@@ -122,7 +122,7 @@ static struct option const OPTIONS[] = {
   { "bytes",              required_argument,  NULL, COPT(BYTES)               },
   { "color",              required_argument,  NULL, COPT(COLOR)               },
   { "c-array",            optional_argument,  NULL, COPT(C_ARRAY)             },
-  { "--debug",            no_argument,        NULL, COPT(DEBUG)               },
+  { "debug",              no_argument,        NULL, COPT(DEBUG)               },
   { "decimal",            no_argument,        NULL, COPT(DECIMAL)             },
   { "little-endian",      required_argument,  NULL, COPT(LITTLE_ENDIAN)       },
   { "format",             required_argument,  NULL, COPT(FORMAT)              },
