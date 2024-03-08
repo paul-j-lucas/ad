@@ -1058,12 +1058,12 @@ void parse_options( int argc, char const *argv[] ) {
     }
 
     if ( rv != 0 )
-      exit( rv );
+      exit( EX_DATAERR );
   }
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
-    static char utf8_pad_buf[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+    static char utf8_pad_buf[ UTF8_LEN_MAX + 1/*NULL*/ ];
     utf32_8( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }
