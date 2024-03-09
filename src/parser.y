@@ -299,7 +299,7 @@ static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
 
 // local variables
 static in_attr_t      in_attr;          ///< Inherited attributes.
-static slist_t        statement_list;
+static slist_t        statement_list;   ///< List of non-declaration statements.
 
 ////////// local functions ////////////////////////////////////////////////////
 
