@@ -80,20 +80,19 @@ static void ad_typedefs_cleanup( void ) {
 }
 
 /**
- * Comparison function for \ref ad_typedef data used by the red-black tree.
+ * Comparison function for \ref ad_typedef objects.
  *
- * @param i_data A pointer to data.
- * @param j_data A pointer to data.
+ * @param i_tdef A pointer to the first \ref ad_typedef.
+ * @param j_tdef A pointer to the second \ref ad_typedef.
  * @return Returns an integer less than, equal to, or greater than 0, according
- * to whether the `typedef` name pointed to by \a i_data is less than, equal
- * to, or greater than the `typedef` name pointed to by \a j_data.
+ * to whether the `typedef` name pointed to by \a i_tdef is less than, equal
+ * to, or greater than the `typedef` name pointed to by \a j_tdef.
  */
 NODISCARD
-static int ad_typedef_cmp( void const *i_data, void const *j_data ) {
-  assert( i_data != NULL );
-  assert( j_data != NULL );
-  ad_typedef_t const *const i_tdef = i_data;
-  ad_typedef_t const *const j_tdef = j_data;
+static int ad_typedef_cmp( ad_typedef_t const *i_tdef,
+                           ad_typedef_t const *j_tdef ) {
+  assert( i_tdef != NULL );
+  assert( j_tdef != NULL );
   return sname_cmp( &i_tdef->type->sname, &j_tdef->type->sname );
 }
 
@@ -168,7 +167,7 @@ ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname ) {
 
 void ad_typedefs_init( void ) {
   ASSERT_RUN_ONCE();
-  rb_tree_init( &typedef_set, &ad_typedef_cmp );
+  rb_tree_init( &typedef_set, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp ) );
   ATEXIT( &ad_typedefs_cleanup );
 }
 
