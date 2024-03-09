@@ -271,7 +271,7 @@ typedef struct  ad_binary_expr        ad_binary_expr_t;
 typedef unsigned                      ad_bits_t;
 typedef struct  ad_bool_type          ad_bool_type_t;
 typedef enum    ad_debug              ad_debug_t;
-typedef struct  ad_declaration        ad_declaration_t;
+typedef struct  ad_decl               ad_decl_t;
 typedef struct  ad_enum_type          ad_enum_type_t;
 typedef struct  ad_enum_value         ad_enum_value_t;
 typedef struct  ad_expr               ad_expr_t;
@@ -506,7 +506,7 @@ extern ad_type_t const TB_UTF8_0;       ///< Built-in UTF-8 string type.
 /**
  * A declaration in the **ad** language.
  */
-struct ad_declaration {
+struct ad_decl {
   char const       *name;               ///< Name.
   ad_type_t        *type;               ///< Type.
   unsigned          align;              ///< Alignment.
@@ -544,7 +544,7 @@ struct ad_statement {
   union {
     // nothing needed for break statement
     // nothing needed for compound statement
-    ad_declaration_t        decl_s;     ///< \ref ad_declaration members.
+    ad_decl_t               decl_s;     ///< \ref ad_decl members.
     ad_switch_statement_t   switch_s;   ///< \ref ad_switch_statement members.
   };
 };

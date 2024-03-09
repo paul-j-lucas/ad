@@ -909,7 +909,7 @@ typedef_declaration
   : Y_typedef field_declaration[statement]
     {
       assert( $statement->kind == S_DECLARATION );
-      ad_declaration_t *const decl = &$statement->decl_s;
+      ad_decl_t *const decl = &$statement->decl_s;
       ad_type_t *const type = MALLOC( ad_type_t, 1 );
       *type = (ad_type_t){
         .sname = sname_current( decl->name ),
