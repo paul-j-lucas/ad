@@ -649,9 +649,12 @@ struct ad_ternary_expr {
  * An expression.
  */
 struct ad_expr {
-  ad_expr_kind_t  expr_kind;            ///< Expression kind.
-  ad_loc_t        loc;                  ///< Source location.
+  ad_expr_kind_t      expr_kind;        ///< Expression kind.
+  ad_loc_t            loc;              ///< Source location.
 
+  /**
+   * Additional data for each \ref expr_kind.
+   */
   union {
     ad_literal_expr_t literal;          ///< Literal expression.
     ad_unary_expr_t   unary;            ///< Unary expression.

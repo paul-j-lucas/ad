@@ -46,8 +46,9 @@
 #include "print.h"
 #include "slist.h"
 #include "sname.h"
-#include "types.h"
+#include "symbol.h"
 #include "typedef.h"
+#include "types.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -655,7 +656,7 @@ static void yyerror( char const *msg ) {
 %type <int_val>     int_exp
 %type <name>        name_exp
 %type <type>        type
-%type <expr>        type_endian type_endian_opt
+%type <expr>        type_endian_expr type_endian_expr_opt
 %type <expr_kind>   unary_op
 
 // Bison %destructors.
@@ -1270,7 +1271,7 @@ unary_op
 ///////////////////////////////////////////////////////////////////////////////
 
 type
-  : builtin_tid[tid] lt_exp expr_exp[size] type_endian_opt[endian] gt_exp
+  : builtin_tid[tid] lt_exp expr_exp[size] type_endian_expr_opt[endian] gt_exp
     {
       $$ = MALLOC( ad_type_t, 1 );
       *$$ = (ad_type_t){
@@ -1291,29 +1292,35 @@ builtin_tid
   | Y_utf                         { $$ = T_UTF; }
   ;
 
-type_endian_opt
+type_endian_expr_opt
   : /* empty */                   { $$ = NULL; }
-  | type_endian
+  | type_endian_expr
   ;
 
-type_endian
+type_endian_expr
   : ',' 'b'
     {
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
-      $$->literal.type = &TB_UINT64;
-      $$->literal.u8 = ENDIAN_BIG;
+      $$->literal = (ad_literal_expr_t){
+        .type = &TB_UINT64,
+        .u8 = ENDIAN_BIG
+      };
     }
   | ',' 'l'
     {
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
-      $$->literal.type = &TB_UINT64;
-      $$->literal.u8 = ENDIAN_LITTLE;
+      $$->literal = (ad_literal_expr_t){
+        .type = &TB_UINT64,
+        .u8 = ENDIAN_LITTLE
+      };
     }
   | ',' 'h'
     {
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
-      $$->literal.type = &TB_UINT64;
-      $$->literal.u8 = ENDIAN_HOST;
+      $$->literal = (ad_literal_expr_t){
+        .type = &TB_UINT64,
+        .u8 = ENDIAN_HOST
+      };
     }
   | ',' expr
     {

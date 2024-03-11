@@ -51,6 +51,7 @@ ad_SOURCES =	parser.y\
 		slist.c slist.h \
 		sname.c sname.h \
 		strbuf.c strbuf.h \
+		symbol.c symbol.h \
 		typedef.c typedef.h \
 		types.c types.h \
 		unicode.c unicode.h \
