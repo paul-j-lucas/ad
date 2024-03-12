@@ -158,6 +158,11 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
       ad_expr_dump_impl( expr->binary.rhs_expr, indent, "rhs_expr", fout );
       break;
 
+    case AD_EXPR_STRUCT_MBR_REF:
+    case AD_EXPR_STRUCT_MBR_DEREF:
+      // TODO
+      break;
+
     // ternary
     case AD_EXPR_IF_ELSE:
       ad_expr_dump_impl( expr->ternary.cond_expr, indent, "cond_expr", fout );

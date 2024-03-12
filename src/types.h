@@ -204,6 +204,9 @@ enum ad_expr_kind {
   AD_EXPR_REL_LESS,                     ///< Less than.
   AD_EXPR_REL_LESS_EQ,                  ///< Less than or equal to.
 
+  AD_EXPR_STRUCT_MBR_REF,               ///< Structure member reference.
+  AD_EXPR_STRUCT_MBR_DEREF,             ///< Structure member via pointer.
+
   // ternary
   AD_EXPR_IF_ELSE = AD_EXPR_TERNARY + 1,///< If-else ?: expression.
 };
@@ -657,6 +660,7 @@ struct ad_expr {
    */
   union {
     ad_literal_expr_t literal;          ///< Literal expression.
+    char const       *name;             ///< Name expression.
     ad_unary_expr_t   unary;            ///< Unary expression.
     ad_binary_expr_t  binary;           ///< Binary expression.
     ad_ternary_expr_t ternary;          ///< Ternary expression.

@@ -1096,17 +1096,20 @@ postfix_expr
       (void)$expr;
       (void)$arg_list;
     }
-  | postfix_expr[expr] '.' Y_NAME
+  | postfix_expr[expr] '.' Y_NAME[name]
     {
-      // TODO
-      (void)$expr;
-      (void)$3;
+      ad_expr_t *const name_expr = ad_expr_new( AD_EXPR_NAME, &@name );
+      name_expr->name = $name;
+
+      $$ = ad_expr_new( AD_EXPR_STRUCT_MBR_REF, &@$ );
+      $$->binary.lhs_expr = $expr;
+      $$->binary.rhs_expr = name_expr;
     }
-  | postfix_expr[expr] "->" Y_NAME
+  | postfix_expr[expr] "->" Y_NAME[name]
     {
       // TODO
       (void)$expr;
-      (void)$3;
+      (void)$name;
     }
   | postfix_expr[expr] "++"
     {

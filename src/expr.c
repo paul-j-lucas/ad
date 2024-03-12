@@ -1278,6 +1278,14 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
 
     case AD_EXPR_REL_NOT_EQ:
       return ad_expr_rel_not_eq( expr, rv );
+
+    case AD_EXPR_STRUCT_MBR_REF:
+      // TODO
+      return true;
+
+    case AD_EXPR_STRUCT_MBR_DEREF:
+      // TODO
+      return true;
   } // switch
   return false;
 }
@@ -1288,6 +1296,9 @@ void ad_expr_free( ad_expr_t *expr ) {
   switch ( expr->expr_kind & AD_EXPR_MASK ) {
     case AD_EXPR_LITERAL:
       ad_literal_free( &expr->literal );
+      break;
+    case AD_EXPR_NAME:
+      FREE( expr->name );
       break;
     case AD_EXPR_TERNARY:
       ad_expr_free( expr->ternary.sub_expr[1] );
@@ -1314,7 +1325,7 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
     case AD_EXPR_BIT_XOR          : return "bitxor";
     case AD_EXPR_CAST             : return "cast";
     case AD_EXPR_ERROR            : return "error";
-    case AD_EXPR_IF_ELSE          : return "?";
+    case AD_EXPR_IF_ELSE          : return "?:";
     case AD_EXPR_LITERAL          : return "literal";
     case AD_EXPR_LOG_AND          : return "&&";
     case AD_EXPR_LOG_NOT          : return "!";
@@ -1341,6 +1352,8 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
     case AD_EXPR_REL_LESS_EQ      : return "<=";
     case AD_EXPR_REL_NOT_EQ       : return "!=";
     case AD_EXPR_SIZEOF           : return "sizeof";
+    case AD_EXPR_STRUCT_MBR_REF   : return ".";
+    case AD_EXPR_STRUCT_MBR_DEREF : return "->";
   } // switch
 
   UNEXPECTED_INT_VALUE( kind );
