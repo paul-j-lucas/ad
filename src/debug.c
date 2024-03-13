@@ -39,25 +39,40 @@
 #include <stdlib.h>
 #include <sysexits.h>
 
-#define DUMP_FORMAT(...) BLOCK( \
-  FPUTNSP( indent * DUMP_INDENT, fout ); FPRINTF( fout, __VA_ARGS__ ); )
+#define DUMP_FORMAT(D,...) BLOCK(                   \
+  FPUTNSP( (D)->indent * DUMP_INDENT, (D)->fout );  \
+  FPRINTF( (D)->fout, __VA_ARGS__ ); )
 
-#define DUMP_KEY(...) BLOCK( \
-  fput_sep( ",\n", &comma, fout ); DUMP_FORMAT( __VA_ARGS__ ); )
+#define DUMP_KEY(D,...) BLOCK( \
+  fput_sep( ",\n", &(D)->comma, (D)->fout ); DUMP_FORMAT( (D), __VA_ARGS__ ); )
 
-#define DUMP_LOC(KEY,LOC) \
-  DUMP_KEY( KEY ": " ); ad_loc_dump( (LOC), fout )
+#define DUMP_KEY(D,...) BLOCK(                \
+  fput_sep( ",\n", &(D)->comma, (D)->fout );  \
+  DUMP_FORMAT( (D), __VA_ARGS__ ); )
 
-#define DUMP_STR(KEY,VALUE) BLOCK( \
-  DUMP_KEY( KEY ": " ); str_dump( (VALUE), fout ); )
+#define DUMP_LOC(D,KEY,LOC) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); ad_loc_dump( (LOC), (D)->fout ); )
 
-#define DUMP_TYPE(TYPE) BLOCK( \
-  DUMP_KEY( "type: " ); ad_type_dump( (TYPE), fout ); )
+#define DUMP_STR(D,KEY,STR) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', (D)->fout ); )
 
 /// @endcond
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Dump state.
+ */
+struct dump_state {
+  FILE     *fout;                       ///< File to dump to.
+  unsigned  indent;                     ///< Current indentation.
+  bool      comma;                      ///< Print a comma?
+};
+typedef struct dump_state dump_state_t;
+
 // local functions
 static void ad_loc_dump( ad_loc_t const*, FILE* );
+static void dump_init( dump_state_t*, unsigned, FILE* );
 
 // local constants
 static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
@@ -72,37 +87,37 @@ static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
  * @param indent The current indent.
  * @param key If not NULL, prints \a key followed by ` = ` before dumping the
  * value of \a expr.
- * @param fout The `FILE` to dump to.
+ * @param dump The dump_state to use.
  *
  * @sa ad_expr_list_dump()
  */
-static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
-                               char const *key, FILE *fout ) {
-  assert( fout != NULL );
+static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
+                               dump_state_t *dump ) {
+  assert( expr != NULL );
+  assert( dump != NULL );
   bool const has_key = key != NULL && key[0] != '\0';
 
   if ( has_key )
-    DUMP_FORMAT( "%s = ", key );
+    DUMP_FORMAT( dump, "%s = ", key );
 
   if ( expr == NULL ) {
-    FPUTS( "NULL", fout );
+    FPUTS( "NULL", dump->fout );
     return;
   }
 
   if ( has_key )
-    FPUTS( "{\n", fout );
+    FPUTS( "{\n", dump->fout );
   else
-    DUMP_FORMAT( "{\n" );
+    DUMP_FORMAT( dump, "{\n" );
 
-  bool comma = false;
-  ++indent;
+  ++dump->indent;
 
   //DUMP_SNAME( "sname", &ast->sname );
-  FPUTS( ",\n", fout );
-  DUMP_STR( "kind", ad_expr_kind_name( expr->expr_kind ) );
-  FPUTS( ",\n", fout );
-  DUMP_LOC( "loc", &expr->loc );
-  FPUTS( ",\n", fout );
+  FPUTS( ",\n", dump->fout );
+  DUMP_STR( dump, "kind", ad_expr_kind_name( expr->expr_kind ) );
+  FPUTS( ",\n", dump->fout );
+  DUMP_LOC( dump, "loc", &expr->loc );
+  FPUTS( ",\n", dump->fout );
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
@@ -126,7 +141,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_MATH_INC_POST:
     case AD_EXPR_MATH_INC_PRE:
     case AD_EXPR_SIZEOF:
-      ad_expr_dump_impl( expr->unary.sub_expr, indent, "sub_expr", fout );
+      ad_expr_dump_impl( expr->unary.sub_expr, "sub_expr", dump );
       break;
 
     // binary
@@ -153,9 +168,9 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
     case AD_EXPR_REL_LESS:
     case AD_EXPR_REL_LESS_EQ:
     case AD_EXPR_REL_NOT_EQ:
-      ad_expr_dump_impl( expr->binary.lhs_expr, indent, "lhs_expr", fout );
-      FPUTS( ",\n", fout );
-      ad_expr_dump_impl( expr->binary.rhs_expr, indent, "rhs_expr", fout );
+      ad_expr_dump_impl( expr->binary.lhs_expr, "lhs_expr", dump );
+      FPUTS( ",\n", dump->fout );
+      ad_expr_dump_impl( expr->binary.rhs_expr, "rhs_expr", dump );
       break;
 
     case AD_EXPR_STRUCT_MBR_REF:
@@ -165,17 +180,17 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, unsigned indent,
 
     // ternary
     case AD_EXPR_IF_ELSE:
-      ad_expr_dump_impl( expr->ternary.cond_expr, indent, "cond_expr", fout );
-      FPUTS( ",\n", fout );
-      ad_expr_dump_impl( expr->ternary.sub_expr[0], indent, "sub_expr[0]", fout );
-      FPUTS( ",\n", fout );
-      ad_expr_dump_impl( expr->ternary.sub_expr[1], indent, "sub_expr[1]", fout );
+      ad_expr_dump_impl( expr->ternary.cond_expr, "cond_expr", dump );
+      FPUTS( ",\n", dump->fout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[0], "sub_expr[0]", dump );
+      FPUTS( ",\n", dump->fout );
+      ad_expr_dump_impl( expr->ternary.sub_expr[1], "sub_expr[1]", dump );
       break;
   } // switch
 
-  FPUTC( '\n', fout );
-  --indent;
-  DUMP_FORMAT( "}" );
+  FPUTC( '\n', dump->fout );
+  --dump->indent;
+  DUMP_FORMAT( dump, "}" );
 }
 
 /**
@@ -204,6 +219,23 @@ static void ad_loc_dump( ad_loc_t const *loc, FILE *fout ) {
   FPUTS( " }", fout );
 }
 
+/**
+ * Initializes a dump_state.
+ *
+ * @param dump The dump_state to initialize.
+ * @param indent The current indent.
+ * @param fout The `FILE` to dump to.
+ */
+static void dump_init( dump_state_t *dump, unsigned indent, FILE *fout ) {
+  assert( dump != NULL );
+  assert( fout != NULL );
+
+  *dump = (dump_state_t){
+    .indent = indent,
+    .fout = fout
+  };
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 void bool_dump( bool value, FILE *fout ) {
@@ -211,8 +243,10 @@ void bool_dump( bool value, FILE *fout ) {
   FPUTS( value ? "true" : "false", fout );
 }
 
-void ad_expr_dump( ad_expr_t const *ast, char const *key, FILE *fout ) {
-  ad_expr_dump_impl( ast, 1, key, fout );
+void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *fout ) {
+  dump_state_t dump;
+  dump_init( &dump, 1, fout );
+  ad_expr_dump_impl( expr, key, &dump );
 }
 
 void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
@@ -255,22 +289,6 @@ char const* endian_name( endian_t e ) {
   } // switch
   UNEXPECTED_INT_VALUE( e );
   return NULL;
-}
-
-void str_dump( char const *value, FILE *fout ) {
-  assert( fout != NULL );
-  if ( value == NULL ) {
-    FPUTS( "null", fout );
-    return;
-  }
-  FPUTC( '"', fout );
-  for ( char const *p = value; *p != '\0'; ++p ) {
-    if ( *p == '"' )
-      FPUTS( "\\\"", fout );
-    else
-      FPUTC( *p, fout );
-  } // for
-  FPUTC( '"', fout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

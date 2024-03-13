@@ -877,6 +877,17 @@ void* free_later( void *p );
 void free_now( void );
 
 /**
+ * Prints \a s as a quoted string with escaped characters.
+ *
+ * @param s The string to put.  If NULL, prints `null` (unquoted).
+ * @param quote The quote character to use, either <tt>'</tt> or <tt>"</tt>.
+ * @param fout The `FILE` to print to.
+ *
+ * @sa strbuf_puts_quoted()
+ */
+void fputs_quoted( char const *s, char quote, FILE *fout );
+
+/**
  * Reads and discards \a bytes_to_skip bytes.
  * If an error occurs, prints an error message and exits.
  *

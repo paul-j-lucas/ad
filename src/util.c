@@ -216,6 +216,51 @@ void fskip( size_t bytes_to_skip, FILE *file ) {
   } // while
 }
 
+void fputs_quoted( char const *s, char quote, FILE *fout ) {
+  assert( quote == '\'' || quote == '"' );
+  assert( fout != NULL );
+
+  if ( s == NULL ) {
+    FPUTS( "null", fout );
+    return;
+  }
+
+  bool in_quote = false;
+  char const other_quote = quote == '\'' ? '"' : '\'';
+
+  FPUTC( quote, fout );
+  for ( char prev = '\0'; *s != '\0'; prev = *s++ ) {
+    switch ( *s ) {
+      case '\b': FPUTS( "\\b", fout ); continue;
+      case '\f': FPUTS( "\\f", fout ); continue;
+      case '\n': FPUTS( "\\n", fout ); continue;
+      case '\r': FPUTS( "\\r", fout ); continue;
+      case '\t': FPUTS( "\\t", fout ); continue;
+      case '\v': FPUTS( "\\v", fout ); continue;
+      case '\\':
+        if ( in_quote ) {
+          if ( prev != '\\' )
+            FPUTS( "\\\\", fout );
+          continue;
+        }
+        break;
+    } // switch
+
+    if ( prev != '\\' ) {
+      if ( *s == quote ) {
+        FPUTC( '\\', fout );
+        in_quote = !in_quote;
+      }
+      else if ( *s == other_quote ) {
+        in_quote = !in_quote;
+      }
+    }
+
+    FPUTC( *s, fout );
+  } // for
+  FPUTC( quote, fout );
+}
+
 char* identify( char const *s ) {
   assert( s != NULL );
   assert( *s );

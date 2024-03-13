@@ -95,14 +95,6 @@ void bool_dump( bool b, FILE *fout );
 NODISCARD
 char const* endian_name( endian_t e );
 
-/**
- * Dumps a string value (for debugging).
- *
- * @param s The string to dump, if any.  If NULL, `null` is printed instead.
- * @param fout The `FILE` to dump to.
- */
-void str_dump( char const *s, FILE *fout );
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
