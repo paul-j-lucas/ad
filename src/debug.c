@@ -71,6 +71,7 @@ struct dump_state {
 typedef struct dump_state dump_state_t;
 
 // local functions
+static void ad_literal_expr_dump( ad_literal_expr_t const*, dump_state_t* );
 static void ad_loc_dump( ad_loc_t const*, FILE* );
 static void dump_init( dump_state_t*, unsigned, FILE* );
 
@@ -123,40 +124,13 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     case AD_EXPR_NONE:
       FPUTS( "\"none\"", dump->fout );
       break;
+
     case AD_EXPR_ERROR:
       FPUTS( "\"error\"", dump->fout );
       break;
 
     case AD_EXPR_LITERAL:
-      switch ( ad_type_tid( expr->literal.type ) ) {
-        case T_NONE:
-          FPUTS( "\"none\"", dump->fout );
-          break;
-        case T_ERROR:
-          FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( expr->literal.err ) );
-          break;
-        case T_BOOL:
-          FPRINTF( dump->fout, "%u", !!expr->literal.u8 );
-          break;
-        case T_UTF:
-          // TODO
-          break;
-        case T_INT:
-          FPRINTF( dump->fout, "%lld", expr->literal.i64 );
-          break;
-        case T_FLOAT:
-          FPRINTF( dump->fout, "%f", expr->literal.f64 );
-          break;
-        case T_ENUM:
-          // TODO
-          break;
-        case T_STRUCT:
-          // TODO
-          break;
-        case T_TYPEDEF:
-          // TODO
-          break;
-      } // switch
+      ad_literal_expr_dump( &expr->literal, dump );
       break;
 
     case AD_EXPR_NAME:
@@ -223,6 +197,48 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
   FPUTC( '\n', dump->fout );
   --dump->indent;
   DUMP_FORMAT( dump, "}" );
+}
+
+/**
+ * Dumps \a literal in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param literal The \ref ad_literal_expr to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
+                                  dump_state_t *dump ) {
+  assert( literal != NULL );
+  assert( dump != NULL );
+
+  switch ( ad_type_tid( literal->type ) ) {
+    case T_NONE:
+      FPUTS( "\"none\"", dump->fout );
+      break;
+    case T_ERROR:
+      FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( literal->err ) );
+      break;
+    case T_BOOL:
+      FPRINTF( dump->fout, "%u", !!literal->u8 );
+      break;
+    case T_UTF:
+      // TODO
+      break;
+    case T_INT:
+      FPRINTF( dump->fout, "%lld", literal->i64 );
+      break;
+    case T_FLOAT:
+      FPRINTF( dump->fout, "%f", literal->f64 );
+      break;
+    case T_ENUM:
+      // TODO
+      break;
+    case T_STRUCT:
+      // TODO
+      break;
+    case T_TYPEDEF:
+      // TODO
+      break;
+  } // switch
 }
 
 /**
