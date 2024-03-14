@@ -1167,6 +1167,15 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+char const* ad_expr_err_name( ad_expr_err_t err ) {
+  switch ( err ) {
+    case AD_ERR_NONE        : return "none";
+    case AD_ERR_BAD_OPERAND : return "bad operand";
+    case AD_ERR_DIV_0       : return "divide by zero";
+  } // switch
+  UNEXPECTED_INT_VALUE( err );
+}
+
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
   switch ( expr->expr_kind ) {
     case AD_EXPR_ARRAY:

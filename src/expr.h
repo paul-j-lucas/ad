@@ -40,6 +40,15 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Gets the name of \a err.
+ *
+ * @param err The \ref ad_expr_err to get the name for.
+ * @return Returns said name.
+ */
+NODISCARD
+char const* ad_expr_err_name( ad_expr_err_t err );
+
+/**
  * Evalulates an expression.
  *
  * @param expr The expression to evaluate.

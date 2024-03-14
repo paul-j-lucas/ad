@@ -101,7 +101,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     DUMP_FORMAT( dump, "%s = ", key );
 
   if ( expr == NULL ) {
-    FPUTS( "NULL", dump->fout );
+    FPUTS( "null", dump->fout );
     return;
   }
 
@@ -121,14 +121,46 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
+      FPUTS( "\"none\"", dump->fout );
+      break;
     case AD_EXPR_ERROR:
+      FPUTS( "\"error\"", dump->fout );
       break;
 
     case AD_EXPR_LITERAL:
+      switch ( ad_type_tid( expr->literal.type ) ) {
+        case T_NONE:
+          FPUTS( "\"none\"", dump->fout );
+          break;
+        case T_ERROR:
+          FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( expr->literal.err ) );
+          break;
+        case T_BOOL:
+          FPRINTF( dump->fout, "%u", !!expr->literal.u8 );
+          break;
+        case T_UTF:
+          // TODO
+          break;
+        case T_INT:
+          FPRINTF( dump->fout, "%lld", expr->literal.i64 );
+          break;
+        case T_FLOAT:
+          FPRINTF( dump->fout, "%f", expr->literal.f64 );
+          break;
+        case T_ENUM:
+          // TODO
+          break;
+        case T_STRUCT:
+          // TODO
+          break;
+        case T_TYPEDEF:
+          // TODO
+          break;
+      } // switch
       break;
 
     case AD_EXPR_NAME:
-      // TODO
+      FPRINTF( dump->fout, "\"%s\"", expr->name );
       break;
 
     // unary

@@ -754,7 +754,7 @@ unsigned ad_tid_size( ad_tid_t tid ) {
  */
 NODISCARD AD_TYPES_H_INLINE
 endian_t ad_tid_endian( ad_tid_t tid ) {
-  return STATIC_CAST( endian_t, tid & T_MASK_ENDIAN );
+  return tid & T_MASK_ENDIAN;
 }
 
 /**
@@ -791,6 +791,17 @@ ad_type_t* ad_type_new( ad_tid_t tid );
  */
 NODISCARD
 unsigned ad_type_size( ad_type_t const *t );
+
+/**
+ * Gets the \ref ad_tid_t of \a type.
+ *
+ * @param type The \ref ad_type tp get the \ref ad_tid_t of.
+ * @return Returns said \a ref ad_tid_t.
+ */
+NODISCARD AD_TYPES_H_INLINE
+ad_tid_t ad_type_tid( ad_type_t const *type ) {
+  return type->tid & T_MASK_TYPE;
+}
 
 /**
  * Un-`typedef`s \a type, i.e., if \a type is of type #T_TYPEDEFl returns the
