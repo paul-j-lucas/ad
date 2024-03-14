@@ -693,13 +693,13 @@ void* free_later( void *p );
 void free_now( void );
 
 /**
- * Reads and discards \a bytes_to_skip bytes.
+ * Skips over \a bytes_to_skip bytes.
  * If an error occurs, prints an error message and exits.
  *
- * @param bytes_to_skip The number of bytes to skip.
+ * @param bytes_to_skip The number of bytes to skip.  Must not be negative.
  * @param file The file to read from.
  */
-void fskip( size_t bytes_to_skip, FILE *file );
+void fskip( off_t bytes_to_skip, FILE *file );
 
 /**
  * Converts a string into one that is a valid identifier in C such that:

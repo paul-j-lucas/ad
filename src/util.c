@@ -213,15 +213,16 @@ void free_now( void ) {
   free_head = NULL;
 }
 
-void fskip( size_t bytes_to_skip, FILE *file ) {
+void fskip( off_t bytes_to_skip, FILE *file ) {
+  assert( bytes_to_skip >= 0 );
   assert( file != NULL );
 
   char    buf[ 8192 ];
   size_t  bytes_to_read = sizeof buf;
 
   while ( bytes_to_skip > 0 && !feof( file ) ) {
-    if ( bytes_to_read > bytes_to_skip )
-      bytes_to_read = bytes_to_skip;
+    if ( bytes_to_read > STATIC_CAST( size_t, bytes_to_skip ) )
+      bytes_to_read = STATIC_CAST( size_t, bytes_to_skip );
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
       fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );

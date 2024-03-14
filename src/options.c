@@ -1001,7 +1001,7 @@ void parse_options( int argc, char const *argv[] ) {
 
     case 0:
       if ( strcmp( fin_path, "-" ) == 0 ) {
-        fskip( STATIC_CAST( size_t, fin_offset ), stdin );
+        fskip( fin_offset, stdin );
       } else {
         if ( !freopen( fin_path, "r", stdin ) )
           fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
