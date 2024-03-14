@@ -1000,14 +1000,9 @@ void parse_options( int argc, char const *argv[] ) {
       FALLTHROUGH;
 
     case 0:
-      if ( strcmp( fin_path, "-" ) == 0 ) {
-        fskip( fin_offset, stdin );
-      } else {
-        if ( !freopen( fin_path, "r", stdin ) )
-          fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
-        if ( fin_offset > 0 )
-          FSEEK( stdin, fin_offset, SEEK_SET );
-      }
+      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
+        fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
+      fskip( fin_offset, stdin );
       break;
 
     default:

@@ -217,9 +217,13 @@ void fskip( off_t bytes_to_skip, FILE *file ) {
   assert( bytes_to_skip >= 0 );
   assert( file != NULL );
 
-  if ( fd_is_file( fileno( file ) ) ) {
-    FSEEK( file, bytes_to_skip, SEEK_CUR );
+  if ( bytes_to_skip == 0 )
     return;
+
+  if ( fd_is_file( fileno( file ) ) ) {
+    if ( FSEEK_FN( file, bytes_to_skip, SEEK_CUR ) == 0 )
+      return;
+    clearerr( file );                   // fall back to reading bytes
   }
 
   char    buf[ 8192 ];
