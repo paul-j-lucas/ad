@@ -158,6 +158,12 @@ void fatal_error( int status, char const *format, ... ) {
   _Exit( status );
 }
 
+bool fd_is_file( int fd ) {
+  struct stat fd_stat;
+  FSTAT( fd, &fd_stat );
+  return S_ISREG( fd_stat.st_mode );
+}
+
 #ifndef HAVE_FGETLN
 char* fgetln( FILE *f, size_t *len ) {
   static char *buf;
@@ -200,15 +206,25 @@ void fput_list( FILE *out, void const *elt,
   } // for
 }
 
-void fskip( size_t bytes_to_skip, FILE *file ) {
+void fskip( off_t bytes_to_skip, FILE *file ) {
+  assert( bytes_to_skip >= 0 );
   assert( file != NULL );
+
+  if ( bytes_to_skip == 0 )
+    return;
+
+  if ( fd_is_file( fileno( file ) ) ) {
+    if ( FSEEK_FN( file, bytes_to_skip, SEEK_CUR ) == 0 )
+      return;
+    clearerr( file );                   // fall back to reading bytes
+  }
 
   char    buf[ 8192 ];
   size_t  bytes_to_read = sizeof buf;
 
   while ( bytes_to_skip > 0 && !feof( file ) ) {
-    if ( bytes_to_read > bytes_to_skip )
-      bytes_to_read = bytes_to_skip;
+    if ( bytes_to_read > STATIC_CAST( size_t, bytes_to_skip ) )
+      bytes_to_read = STATIC_CAST( size_t, bytes_to_skip );
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
       fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
@@ -343,12 +359,6 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 #endif /* WORDS_BIGENDIAN */
   } // switch
   UNEXPECTED_INT_VALUE( endian );
-}
-
-bool is_file( int fd ) {
-  struct stat fd_stat;
-  FSTAT( fd, &fd_stat );
-  return S_ISREG( fd_stat.st_mode );
 }
 
 char const* parse_identifier( char const *s ) {

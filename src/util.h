@@ -820,6 +820,15 @@ char const* empty_if_null( char const *s ) {
 PJL_PRINTF_LIKE_FUNC(2)
 _Noreturn void fatal_error( int status, char const *format, ... );
 
+/**
+ * Checks whether the given file descriptor refers to a regular file.
+ *
+ * @param fd The file descriptor to check.
+ * @return Returns `true` only if \a fd refers to a regular file.
+ */
+NODISCARD
+bool fd_is_file( int fd );
+
 #ifndef HAVE_FGETLN
 /**
  * Gets a line from a stream.
@@ -888,13 +897,13 @@ void free_now( void );
 void fputs_quoted( char const *s, char quote, FILE *fout );
 
 /**
- * Reads and discards \a bytes_to_skip bytes.
+ * Skips over \a bytes_to_skip bytes.
  * If an error occurs, prints an error message and exits.
  *
- * @param bytes_to_skip The number of bytes to skip.
+ * @param bytes_to_skip The number of bytes to skip.  Must not be negative.
  * @param file The file to read from.
  */
-void fskip( size_t bytes_to_skip, FILE *file );
+void fskip( off_t bytes_to_skip, FILE *file );
 
 /**
  * Converts a string into one that is a valid identifier in C such that:
@@ -939,15 +948,6 @@ size_t int_len( uint64_t n );
  * @param endian The endianness to use.
  */
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
-
-/**
- * Checks whether the given file descriptor refers to a regular file.
- *
- * @param fd The file descriptor to check.
- * @return Returns `true` only if \a fd refers to a regular file.
- */
-NODISCARD
-bool is_file( int fd );
 
 /**
  * Checks whether \a c is an identifier character.

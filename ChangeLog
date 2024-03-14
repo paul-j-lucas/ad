@@ -1,3 +1,11 @@
+2024-03-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, util.c: fskip() now calls fseek() if file is seekable.
+   * util.c: For fskip(), if the file is a regular file, uses fseek() to skip
+     bytes.
+   * options.c, util.c, util.h: fskip() now takes off_t.
+   * color.c, util.c, util.h: s/is_file/fd_is_file/
+
 2024-03-08  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c: For dumping as a C array, (1) no longer dumping offset for an

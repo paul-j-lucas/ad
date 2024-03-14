@@ -247,7 +247,7 @@ static bool should_colorize( color_when_t when ) {
   //
   // Hence, we want to do color _except_ when ISREG=T.
   //
-  return !is_file( fd_out );
+  return !fd_is_file( fd_out );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
