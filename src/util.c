@@ -176,6 +176,12 @@ void fatal_error( int status, char const *format, ... ) {
   _Exit( status );
 }
 
+bool fd_is_file( int fd ) {
+  struct stat fd_stat;
+  FSTAT( fd, &fd_stat );
+  return S_ISREG( fd_stat.st_mode );
+}
+
 #ifndef HAVE_FGETLN
 char* fgetln( FILE *f, size_t *len ) {
   static char *buf;
@@ -305,12 +311,6 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
 #endif /* WORDS_BIGENDIAN */
   } // switch
   UNEXPECTED_INT_VALUE( endian );
-}
-
-bool is_file( int fd ) {
-  struct stat fd_stat;
-  FSTAT( fd, &fd_stat );
-  return S_ISREG( fd_stat.st_mode );
 }
 
 unsigned long long parse_offset( char const *s ) {

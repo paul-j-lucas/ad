@@ -655,6 +655,15 @@ char* check_strdup( char const *s );
 PJL_PRINTF_LIKE_FUNC(2)
 _Noreturn void fatal_error( int status, char const *format, ... );
 
+/**
+ * Checks whether the given file descriptor refers to a regular file.
+ *
+ * @param fd The file descriptor to check.
+ * @return Returns `true` only if \a fd refers to a regular file.
+ */
+NODISCARD
+bool fd_is_file( int fd );
+
 #ifndef HAVE_FGETLN
 /**
  * Gets a line from a stream.
@@ -735,15 +744,6 @@ size_t int_len( uint64_t n );
  * @param endian The endianness to use.
  */
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
-
-/**
- * Checks whether the given file descriptor refers to a regular file.
- *
- * @param fd The file descriptor to check.
- * @return Returns `true` only if \a fd refers to a regular file.
- */
-NODISCARD
-bool is_file( int fd );
 
 /**
  * Parses a string into an offset.
