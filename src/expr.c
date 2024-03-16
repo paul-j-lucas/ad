@@ -64,9 +64,9 @@
  *
  * @param VAR_PFX The prefix of the type variable to create.
  */
-#define GET_BASE_TYPE(VAR_PFX) \
-  ad_tid_t const VAR_PFX##_tid = ad_expr_get_base_tid( &(VAR_PFX##_expr) ); \
-  if ( VAR_PFX##_tid == T_ERROR ) \
+#define GET_BASE_TYPE(VAR_PFX)                                          \
+  ad_tid_t const VAR_PFX##_tid = ad_expr_tid_base( &(VAR_PFX##_expr) ); \
+  if ( VAR_PFX##_tid == T_ERROR )                                       \
     return false
 
 /**
@@ -164,8 +164,8 @@ static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
 static bool ad_expr_utfxx_cmp( ad_expr_t const *lhs_expr,
                                ad_expr_t const *rhs_expr,
                                int *cmp ) {
-  ad_tid_t const lhs_tid = ad_expr_get_tid( lhs_expr );
-  ad_tid_t const rhs_tid = ad_expr_get_tid( rhs_expr );
+  ad_tid_t const lhs_tid = ad_expr_tid( lhs_expr );
+  ad_tid_t const rhs_tid = ad_expr_tid( rhs_expr );
 
   if ( lhs_tid == rhs_tid ) {
     //
@@ -389,7 +389,7 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
   GET_BASE_TYPE( lhs );
   ad_expr_t *const cast_expr = expr->binary.rhs_expr;
   assert( cast_expr->expr_kind == AD_EXPR_CAST );
-  ad_tid_t const cast_tid = ad_expr_get_tid( cast_expr );
+  ad_tid_t const cast_tid = ad_expr_tid( cast_expr );
 
   switch ( cast_tid & T_MASK_TYPE ) {
 
@@ -1371,7 +1371,7 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
 
 bool ad_expr_is_zero( ad_expr_t const *expr ) {
   if ( ad_expr_is_literal( expr ) ) {
-    ad_tid_t const tid = ad_expr_get_base_tid( expr );
+    ad_tid_t const tid = ad_expr_tid_base( expr );
     switch ( tid ) {
       case T_BOOL:
       case T_INT:

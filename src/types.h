@@ -718,22 +718,34 @@ union user_data {
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
+ * Frees all the memory used by \a statement.
+ *
+ * @param statement The `ad_statement` to free.  May be NULL.
+ */
+void ad_statement_free( ad_statement_t *statement );
+
+/**
+ * Gets whether \a is a null-terminated string (as opposed to a single
+ * character).
+ *
+ * @param tid The type ID to use.
+ * @return Returns `true` only if \a tid is null-terminated.
+ */
+NODISCARD AD_TYPES_H_INLINE
+bool ad_tid_is_null_term( ad_tid_t tid ) {
+  return (tid & T_NULL) != 0;
+}
+
+/**
  * Gets whether \a tid is a signed integer.
  *
  * @param tid The type ID to use.
  * @return Returns `true` only if \a tid is signed.
  */
 NODISCARD AD_TYPES_H_INLINE
-bool ad_is_signed( ad_tid_t tid ) {
+bool ad_tid_is_signed( ad_tid_t tid ) {
   return (tid & T_SIGNED) != 0;
 }
-
-/**
- * Frees all the memory used by \a statement.
- *
- * @param statement The `ad_statement` to free.  May be NULL.
- */
-void ad_statement_free( ad_statement_t *statement );
 
 /**
  * Gets the size (in bits) of the type represented by \a tid.
@@ -799,7 +811,7 @@ unsigned ad_type_size( ad_type_t const *t );
  * @return Returns said \a ref ad_tid_t.
  */
 NODISCARD AD_TYPES_H_INLINE
-ad_tid_t ad_type_tid( ad_type_t const *type ) {
+ad_tid_t ad_type_tid_base( ad_type_t const *type ) {
   return type->tid & T_MASK_TYPE;
 }
 

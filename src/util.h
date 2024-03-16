@@ -799,6 +799,8 @@ char* check_strndup( char const *s, size_t n );
  *
  * @param s The pointer to check.
  * @return If \a s is null, returns the empty string; otherwise returns \a s.
+ *
+ * @sa null_if_empty()
  */
 NODISCARD AD_UTIL_H_INLINE
 char const* empty_if_null( char const *s ) {
@@ -975,6 +977,21 @@ bool is_ident( char c ) {
 NODISCARD AD_UTIL_H_INLINE
 bool is_ident_first( char c ) {
   return isalpha( c ) || c == '_';
+}
+
+/**
+ * Checks whether \a s is null, an empty string, or consists only of
+ * whitespace.
+ *
+ * @param s The null-terminated string to check.
+ * @return If \a s is either null or the empty string, returns NULL; otherwise
+ * returns a pointer to the first non-whitespace character in \a s.
+ *
+ * @sa empty_if_null()
+ */
+NODISCARD AD_UTIL_H_INLINE
+char const* null_if_empty( char const *s ) {
+  return s != NULL && *SKIP_WS( s ) == '\0' ? NULL : s;
 }
 
 /**

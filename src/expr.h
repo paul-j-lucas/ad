@@ -87,30 +87,6 @@ NODISCARD
 ad_expr_t* ad_expr_new( ad_expr_kind_t expr_kind, ad_loc_t const *loc );
 
 /**
- * Gets the type of \a expr.
- *
- * @param expr The expression to get the type of.
- * @return Returns said type.
- * @sa ad_expr_get_base_tid(ad_expr_t const*)
- */
-NODISCARD AD_EXPR_H_INLINE
-ad_tid_t ad_expr_get_tid( ad_expr_t const *expr ) {
-  return ad_expr_is_literal( expr ) ? expr->literal.type->tid : T_NONE;
-}
-
-/**
- * Gets the base type of \a expr.  The base type of a type is the type without
- * either the sign or size.
- *
- * @param expr The expression to get the base type of.
- * @return Returns said base type.
- */
-NODISCARD AD_EXPR_H_INLINE
-ad_tid_t ad_expr_get_base_tid( ad_expr_t const *expr ) {
-  return ad_expr_get_tid( expr ) & T_MASK_TYPE;
-}
-
-/**
  * Gets whether \a expr is zero.
  *
  * @param expr The expresion to check.
@@ -167,6 +143,31 @@ void ad_expr_set_i( ad_expr_t *expr, int64_t ival );
  * @param uval The integer value.
  */
 void ad_expr_set_u( ad_expr_t *expr, uint64_t ival );
+
+/**
+ * Gets the type of \a expr.
+ *
+ * @param expr The expression to get the type of.
+ * @return Returns said type.
+ *
+ * @sa ad_expr_base_tid()
+ */
+NODISCARD AD_EXPR_H_INLINE
+ad_tid_t ad_expr_tid( ad_expr_t const *expr ) {
+  return ad_expr_is_literal( expr ) ? expr->literal.type->tid : T_NONE;
+}
+
+/**
+ * Gets the base type of \a expr.  The base type of a type is the type without
+ * either the sign or size.
+ *
+ * @param expr The expression to get the base type of.
+ * @return Returns said base type.
+ */
+NODISCARD AD_EXPR_H_INLINE
+ad_tid_t ad_expr_tid_base( ad_expr_t const *expr ) {
+  return ad_expr_tid( expr ) & T_MASK_TYPE;
+}
 
 /**
  * Frees the memory associated with \a value.

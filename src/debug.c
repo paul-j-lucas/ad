@@ -70,10 +70,24 @@ struct dump_state {
 };
 typedef struct dump_state dump_state_t;
 
+/**
+ * JSON object state.
+ */
+enum json_state {
+  JSON_INIT      = 0u,                  ///< Initial state.
+  JSON_COMMA     = (1u << 0),           ///< Previous "print a comma?" state.
+  JSON_OBJ_BEGUN = (1u << 1)            ///< Has a JSON object already begun?
+};
+typedef enum json_state json_state_t;
+
 // local functions
 static void ad_literal_expr_dump( ad_literal_expr_t const*, dump_state_t* );
 static void ad_loc_dump( ad_loc_t const*, FILE* );
 static void dump_init( dump_state_t*, unsigned, FILE* );
+NODISCARD
+static json_state_t json_object_begin( json_state_t, char const*,
+                                       dump_state_t* );
+static void json_object_end( json_state_t, dump_state_t* );
 
 // local constants
 static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
@@ -99,19 +113,15 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
   bool const has_key = key != NULL && key[0] != '\0';
 
   if ( has_key )
-    DUMP_FORMAT( dump, "%s = ", key );
+    DUMP_FORMAT( dump, "%s: ", key );
 
   if ( expr == NULL ) {
     FPUTS( "null", dump->fout );
     return;
   }
 
-  if ( has_key )
-    FPUTS( "{\n", dump->fout );
-  else
-    DUMP_FORMAT( dump, "{\n" );
-
-  ++dump->indent;
+  json_state_t const expr_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   //DUMP_SNAME( "sname", &ast->sname );
   FPUTS( ",\n", dump->fout );
@@ -194,9 +204,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
       break;
   } // switch
 
-  FPUTC( '\n', dump->fout );
-  --dump->indent;
-  DUMP_FORMAT( dump, "}" );
+  json_object_end( expr_json, dump );
 }
 
 /**
@@ -210,34 +218,33 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
   assert( literal != NULL );
   assert( dump != NULL );
 
-  switch ( ad_type_tid( literal->type ) ) {
+  ad_tid_t const tid_base = literal->type->tid & T_MASK_TYPE;
+  switch ( tid_base ) {
     case T_NONE:
       FPUTS( "\"none\"", dump->fout );
-      break;
-    case T_ERROR:
-      FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( literal->err ) );
       break;
     case T_BOOL:
       FPRINTF( dump->fout, "%u", !!literal->u8 );
       break;
-    case T_UTF:
-      // TODO
-      break;
-    case T_INT:
-      FPRINTF( dump->fout, "%lld", literal->i64 );
+    case T_ERROR:
+      FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( literal->err ) );
       break;
     case T_FLOAT:
       FPRINTF( dump->fout, "%f", literal->f64 );
       break;
+    case T_INT:
+      if ( ad_tid_is_signed( literal->type->tid ) )
+        FPRINTF( dump->fout, "%lld", (long long)literal->i64 );
+      else
+        FPRINTF( dump->fout, "%llu", (unsigned long long)literal->u64 );
+      break;
+    case T_UTF:
+      // TODO
+      break;
     case T_ENUM:
-      // TODO
-      break;
     case T_STRUCT:
-      // TODO
-      break;
     case T_TYPEDEF:
-      // TODO
-      break;
+      UNEXPECTED_INT_VALUE( tid_base );
   } // switch
 }
 
@@ -284,6 +291,79 @@ static void dump_init( dump_state_t *dump, unsigned indent, FILE *fout ) {
   };
 }
 
+/**
+ * Dumps the beginning of a JSON object.
+ *
+ * @param json The \ref json_state to use.  If not equal to #JSON_INIT, does
+ * nothing.  It allows json_object_begin() to be to be called even inside a
+ * `switch` statement and the previous `case` (that also called
+ * json_object_begin()) falls through and not begin a new JSON object when that
+ * happens allowing common code in the second case to be shared with the first
+ * and not be duplicated.  For example, given:
+ * ```cpp
+ *  case C1:
+ *    json = json_object_begin( JSON_INIT, "K1", dump );
+ *    // Do stuff unique to C1.
+ *    FALLTHROUGH;
+ *  case C2:
+ *    json = json_object_begin( json, "K2", dump ); // Passing 'json' here.
+ *    // Do stuff common to C1 and C2.
+ *    json_object_end( json, dump );
+ *    break;
+ * ```
+ * There are two cases:
+ * 1. `case C2` is entered: a JSON object will be begun having the key `K2`.
+ *    (There is nothing special about this case.)
+ * 2. `case C1` is entered: a JSON object will be begun having the key `K1`.
+ *    When the case falls through into `case C2`, a second JSON object will
+ *    _not_ be begun: the call to the second <code>%json_object_begin()</code>
+ *    will do nothing.
+ * @param key The key for the JSON object; may be NULL.  If neither NULL nor
+ * empty, dumps \a key followed by `: `.
+ * @param dump The dump_state to use.
+ * @return Returns a new \ref json_state that must eventually be passed to
+ * json_object_end().
+ *
+ * @sa json_object_end()
+ */
+NODISCARD
+static json_state_t json_object_begin( json_state_t json, char const *key,
+                                       dump_state_t *dump ) {
+  assert( dump != NULL );
+
+  if ( json == JSON_INIT ) {
+    key = null_if_empty( key );
+    if ( key != NULL )
+      DUMP_KEY( dump, "%s: ", key );
+    FPUTS( "{\n", dump->fout );
+    json = JSON_OBJ_BEGUN;
+    if ( dump->comma ) {
+      json |= JSON_COMMA;
+      dump->comma = false;
+    }
+    ++dump->indent;
+  }
+  return json;
+}
+
+/**
+ * Dumps the end of a JSON object.
+ *
+ * @param json The \ref json_state returned from json_object_begin().
+ * @param dump The dump_state to use.
+ *
+ * @sa json_object_begin()
+ */
+static void json_object_end( json_state_t json, dump_state_t *dump ) {
+  assert( json != JSON_INIT );
+  assert( dump != NULL );
+
+  FPUTC( '\n', dump->fout );
+  dump->comma = !!(json & JSON_COMMA);
+  --dump->indent;
+  DUMP_FORMAT( dump, "}" );
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 void bool_dump( bool value, FILE *fout ) {
@@ -310,7 +390,7 @@ void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
       FPRINTF( fout, "float%u", ad_tid_size( tid ) );
       break;
     case T_INT:
-      if ( !ad_is_signed( tid ) )
+      if ( !ad_tid_is_signed( tid ) )
         FPUTS( "unsigned ", fout );
       FPRINTF( fout, "int%u", ad_tid_size( tid ) );
       break;
