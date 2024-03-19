@@ -150,7 +150,8 @@ void ad_statement_free( ad_statement_t *statement ) {
         FOREACH_SWITCH_CASE( case_node, statement ) {
           ad_switch_case_t *const switch_case = case_node->data;
           ad_expr_free( switch_case->expr );
-          FOREACH_SLIST_NODE( case_statement_node, &switch_case->statement_list ) {
+          FOREACH_SLIST_NODE( case_statement_node,
+                              &switch_case->statement_list ) {
             ad_statement_t *const case_statement = case_statement_node->data;
             ad_statement_free( case_statement );
           } // for
@@ -190,7 +191,7 @@ void ad_type_free( ad_type_t *type ) {
       break;
     case T_STRUCT:
       slist_cleanup(
-        &type->struct_t.members,
+        &type->struct_t.member_list,
         POINTER_CAST( slist_free_fn_t, &ad_type_free )
       );
       break;

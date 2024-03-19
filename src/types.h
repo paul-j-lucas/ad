@@ -446,7 +446,7 @@ struct ad_struct_type {
   DECL_UNUSED(char const*);
   /// @endcond
 
-  ad_type_list_t  members;              ///< Structure members.
+  ad_type_list_t  member_list;          ///< Structure members.
 };
 
 /**

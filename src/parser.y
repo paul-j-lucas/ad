@@ -896,7 +896,7 @@ struct_declaration
         .tid = T_STRUCT,
         .loc = @$,
         .struct_t = {
-          .members = $members
+          .member_list = slist_move( &$members )
         }
       };
       PARSE_ASSERT( define_type( type ) );
