@@ -169,6 +169,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     case AD_EXPR_BIT_SHIFT_RIGHT:
     case AD_EXPR_BIT_XOR:
     case AD_EXPR_CAST:
+    case AD_EXPR_COMMA:
     case AD_EXPR_LOG_AND:
     case AD_EXPR_LOG_NOT:
     case AD_EXPR_LOG_OR:

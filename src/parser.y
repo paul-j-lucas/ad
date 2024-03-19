@@ -238,7 +238,7 @@
  * @param STR The C string to dump.
  */
 #define DUMP_STR(KEY,STR) IF_AD_DEBUG( \
-  DUMP_KEY_IMPL( KEY ": " ); str_dump( (STR), stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); fputs_quoted( (STR), '"', stdout ); )
 
 /**
  * Starts a dump block.
@@ -932,8 +932,16 @@ expr
   : assign_expr
   | expr[lhs_expr] ',' assign_expr[rhs_expr]
     {
-      ad_expr_free( $lhs_expr );
-      $$ = $rhs_expr;
+      DUMP_START( "expr", "expr ',' assign_expr" );
+      DUMP_EXPR( "expr", $lhs_expr );
+      DUMP_EXPR( "assign_expr", $rhs_expr );
+
+      $$ = ad_expr_new( AD_EXPR_COMMA, &@$ );
+      $$->binary.lhs_expr = $lhs_expr;
+      $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -950,25 +958,46 @@ additive_expr
   : multiplicative_expr
   | additive_expr[lhs_expr] '+' multiplicative_expr[rhs_expr]
     {
+      DUMP_START( "additive_expr", "unary_expr '+' assign_expr" );
+      DUMP_EXPR( "additive_expr", $lhs_expr );
+      DUMP_EXPR( "multiplicative_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_ADD, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | additive_expr[lhs_expr] '-' multiplicative_expr[rhs_expr]
     {
+      DUMP_START( "additive_expr", "unary_expr '-' assign_expr" );
+      DUMP_EXPR( "additive_expr", $lhs_expr );
+      DUMP_EXPR( "multiplicative_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_SUB, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
 assign_expr
   : conditional_expr
-  | unary_expr[lhs_expr] assign_op assign_expr[rhs_expr]
+  | unary_expr[lhs_expr] assign_op[op] assign_expr[rhs_expr]
     {
-      $$ = ad_expr_new( $2, &@$ );
+      DUMP_START( "assign_expr", "unary_expr '&' assign_expr" );
+      DUMP_EXPR( "unary_expr", $lhs_expr );
+      DUMP_EXPR( "assign_expr", $rhs_expr );
+
+      $$ = ad_expr_new( $op, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -976,9 +1005,16 @@ bitwise_and_expr
   : equality_expr
   | bitwise_and_expr[lhs_expr] '&' equality_expr[rhs_expr]
     {
+      DUMP_START( "bitwise_and_expr", "bitwise_and_expr '&' equality_expr" );
+      DUMP_EXPR( "bitwise_and_expr", $lhs_expr );
+      DUMP_EXPR( "equality_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_BIT_AND, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -986,9 +1022,17 @@ bitwise_exclusive_or_expr
   : bitwise_and_expr
   | bitwise_exclusive_or_expr[lhs_expr] '^' bitwise_and_expr[rhs_expr]
     {
+      DUMP_START( "bitwise_exclusive_or_expr",
+                  "bitwise_exclusive_or_expr '^' bitwise_and_expr" );
+      DUMP_EXPR( "bitwise_exclusive_or_expr", $lhs_expr );
+      DUMP_EXPR( "bitwise_and_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_BIT_XOR, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -996,19 +1040,27 @@ bitwise_or_expr
   : bitwise_exclusive_or_expr
   | bitwise_or_expr[lhs_expr] '|' bitwise_exclusive_or_expr[rhs_expr]
     {
+      DUMP_START( "bitwise_or_expr",
+                  "bitwise_or_expr '|' bitwise_exclusive_or_expr" );
+      DUMP_EXPR( "bitwise_or_expr", $lhs_expr );
+      DUMP_EXPR( "bitwise_exclusive_or_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_BIT_OR, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
 cast_expr
   : unary_expr
-  | '(' Y_NAME rparen_exp cast_expr[expr]
+  | '(' Y_NAME[name] rparen_exp cast_expr[expr]
     {
       $$ = ad_expr_new( AD_EXPR_CAST, &@$ );
       //$$->binary.lhs_expr = $2;
-      (void)$2;
+      (void)$name;
       $$->binary.rhs_expr = $expr;
     }
   ;
@@ -1017,10 +1069,19 @@ conditional_expr
   : logical_or_expr
   | logical_or_expr[c_expr] '?' expr[t_expr] ':' conditional_expr[f_expr]
     {
+      DUMP_START( "conditional_expr",
+                  "logical_or_expr '?' expr ':' conditional_expr" );
+      DUMP_EXPR( "logical_or_expr", $c_expr );
+      DUMP_EXPR( "expr", $t_expr );
+      DUMP_EXPR( "conditional_expr", $f_expr );
+
       $$ = ad_expr_new( AD_EXPR_IF_ELSE, &@$ );
       $$->ternary.cond_expr = $c_expr;
       $$->ternary.sub_expr[0] = $t_expr;
       $$->ternary.sub_expr[1] = $f_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1028,15 +1089,31 @@ equality_expr
   : relational_expr
   | equality_expr[lhs_expr] "==" relational_expr[rhs_expr]
     {
+      DUMP_START( "equality_expr",
+                  "equality_expr '==' relational_expr" );
+      DUMP_EXPR( "equality_expr", $lhs_expr );
+      DUMP_EXPR( "relational_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_EQ, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | equality_expr[lhs_expr] "!=" relational_expr[rhs_expr]
     {
+      DUMP_START( "equality_expr",
+                  "equality_expr '!=' relational_expr" );
+      DUMP_EXPR( "equality_expr", $lhs_expr );
+      DUMP_EXPR( "relational_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_NOT_EQ, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1044,9 +1121,17 @@ logical_and_expr
   : bitwise_or_expr
   | logical_and_expr[lhs_expr] "&&" bitwise_or_expr[rhs_expr]
     {
+      DUMP_START( "logical_and_expr",
+                  "logical_and_expr '||' bitwise_or_expr" );
+      DUMP_EXPR( "logical_and_expr", $lhs_expr );
+      DUMP_EXPR( "bitwise_or_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_LOG_AND, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1054,9 +1139,16 @@ logical_or_expr
   : logical_and_expr
   | logical_or_expr[lhs_expr] "||" logical_and_expr[rhs_expr]
     {
+      DUMP_START( "logical_or_expr", "logical_or_expr '||' logical_and_expr" );
+      DUMP_EXPR( "logical_or_expr", $lhs_expr );
+      DUMP_EXPR( "logical_and_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_LOG_OR, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1064,21 +1156,42 @@ multiplicative_expr
   : cast_expr
   | multiplicative_expr[lhs_expr] '*' cast_expr[rhs_expr]
     {
+      DUMP_START( "multiplicative_expr", "multiplicative_expr '*' cast_expr" );
+      DUMP_EXPR( "multiplicative_expr", $lhs_expr );
+      DUMP_EXPR( "cast_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_MUL, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | multiplicative_expr[lhs_expr] '/' cast_expr[rhs_expr]
     {
+      DUMP_START( "multiplicative_expr", "multiplicative_expr '/' cast_expr" );
+      DUMP_EXPR( "multiplicative_expr", $lhs_expr );
+      DUMP_EXPR( "cast_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_DIV, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | multiplicative_expr[lhs_expr] '%' cast_expr[rhs_expr]
     {
+      DUMP_START( "multiplicative_expr", "multiplicative_expr '%' cast_expr" );
+      DUMP_EXPR( "multiplicative_expr", $lhs_expr );
+      DUMP_EXPR( "cast_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_MOD, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1086,9 +1199,16 @@ postfix_expr
   : primary_expr
   | postfix_expr[lhs_expr] '[' expr[rhs_expr] ']'
     {
+      DUMP_START( "postfix_expr", "postfix_expr '[' expr ']'" );
+      DUMP_EXPR( "postfix_expr", $lhs_expr );
+      DUMP_EXPR( "expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_ARRAY, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | postfix_expr[expr] '(' argument_expr_list_opt[arg_list] ')'
     {
@@ -1099,31 +1219,57 @@ postfix_expr
     }
   | postfix_expr[expr] '.' Y_NAME[name]
     {
+      DUMP_START( "postfix_expr", "postfix_expr '.' NAME" );
+      DUMP_EXPR( "postfix_expr", $expr );
+      DUMP_STR( "NAME", $name );
+
       ad_expr_t *const name_expr = ad_expr_new( AD_EXPR_NAME, &@name );
       name_expr->name = $name;
 
       $$ = ad_expr_new( AD_EXPR_STRUCT_MBR_REF, &@$ );
       $$->binary.lhs_expr = $expr;
       $$->binary.rhs_expr = name_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | postfix_expr[expr] "->" Y_NAME[name]
     {
+      DUMP_START( "postfix_expr", "postfix_expr '->' NAME" );
+      DUMP_EXPR( "postfix_expr", $expr );
+      DUMP_STR( "NAME", $name );
+
       ad_expr_t *const name_expr = ad_expr_new( AD_EXPR_NAME, &@name );
       name_expr->name = $name;
 
       $$ = ad_expr_new( AD_EXPR_STRUCT_MBR_REF, &@$ );
       $$->binary.lhs_expr = $expr;
       $$->binary.rhs_expr = name_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | postfix_expr[expr] "++"
     {
+      DUMP_START( "postfix_expr", "postfix_expr '++'" );
+      DUMP_EXPR( "postfix_expr", $expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_INC_POST, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | postfix_expr[expr] "--"
     {
+      DUMP_START( "postfix_expr", "postfix_expr '--'" );
+      DUMP_EXPR( "postfix_expr", $expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_DEC_POST, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1170,27 +1316,55 @@ relational_expr
   : shift_expr
   | relational_expr[lhs_expr] '<' shift_expr[rhs_expr]
     {
+      DUMP_START( "relational_expr", "relational_expr '<' shift_expr" );
+      DUMP_EXPR( "relational_expr", $lhs_expr );
+      DUMP_EXPR( "shift_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_LESS, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | relational_expr[lhs_expr] '>' shift_expr[rhs_expr]
     {
+      DUMP_START( "relational_expr", "relational_expr '>' shift_expr" );
+      DUMP_EXPR( "relational_expr", $lhs_expr );
+      DUMP_EXPR( "shift_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_GREATER, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | relational_expr[lhs_expr] "<=" shift_expr[rhs_expr]
     {
+      DUMP_START( "relational_expr", "relational_expr '<=' shift_expr" );
+      DUMP_EXPR( "relational_expr", $lhs_expr );
+      DUMP_EXPR( "shift_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_LESS_EQ, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | relational_expr[lhs_expr] ">=" shift_expr[rhs_expr]
     {
+      DUMP_START( "relational_expr", "relational_expr '>=' shift_expr" );
+      DUMP_EXPR( "relational_expr", $lhs_expr );
+      DUMP_EXPR( "shift_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_REL_GREATER_EQ, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1198,15 +1372,29 @@ shift_expr
   : additive_expr
   | shift_expr[lhs_expr] "<<" additive_expr[rhs_expr]
     {
+      DUMP_START( "shift_expr", "shift_expr '<<' additive_expr" );
+      DUMP_EXPR( "shift_expr", $lhs_expr );
+      DUMP_EXPR( "additive_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_BIT_SHIFT_LEFT, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | shift_expr[lhs_expr] ">>" additive_expr[rhs_expr]
     {
+      DUMP_START( "shift_expr", "shift_expr '>>' additive_expr" );
+      DUMP_EXPR( "shift_expr", $lhs_expr );
+      DUMP_EXPR( "additive_expr", $rhs_expr );
+
       $$ = ad_expr_new( AD_EXPR_BIT_SHIFT_RIGHT, &@$ );
       $$->binary.lhs_expr = $lhs_expr;
       $$->binary.rhs_expr = $rhs_expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 
@@ -1214,26 +1402,53 @@ unary_expr
   : postfix_expr
   | "++" unary_expr[expr]
     {
+      DUMP_START( "unary_expr", "'++' unary_expr" );
+      DUMP_EXPR( "unary_expr", $expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_INC_PRE, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | "--" unary_expr[expr]
     {
+      DUMP_START( "unary_expr", "'--' unary_expr" );
+      DUMP_EXPR( "unary_expr", $expr );
+
       $$ = ad_expr_new( AD_EXPR_MATH_DEC_PRE, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | unary_op[op] cast_expr[expr]
     {
+      DUMP_START( "unary_expr", "unary_op cast_expr" );
+      DUMP_EXPR( "cast_expr", $expr );
+
       $$ = ad_expr_new( $op, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | Y_sizeof unary_expr[expr]
     {
+      DUMP_START( "unary_expr", "SIZEOF unary_expr" );
+      DUMP_EXPR( "unary_expr", $expr );
+
       $$ = ad_expr_new( AD_EXPR_SIZEOF, &@$ );
       $$->unary.sub_expr = $expr;
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | Y_sizeof '(' Y_NAME[name] rparen_exp
     {
+      DUMP_START( "unary_expr", "SIZEOF '(' NAME ')'" );
+      DUMP_STR( "NAME", $name );
+
       ad_typedef_t const *const tdef = ad_typedef_find_name( $name );
       if ( tdef == NULL ) {
         print_error( &@name, "\"%s\": no such type\n", $name );
@@ -1247,6 +1462,9 @@ unary_expr
         .uval = ad_type_size( tdef->type )
       };
       free( $name );
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   ;
 

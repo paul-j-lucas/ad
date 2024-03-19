@@ -179,6 +179,7 @@ enum ad_expr_kind {
   AD_EXPR_ASSIGN  = AD_EXPR_BINARY + 1, ///< Assign expression.
   AD_EXPR_ARRAY,                        ///< Array expression.
   AD_EXPR_CAST,                         ///< Cast expression.
+  AD_EXPR_COMMA,                        ///< Comma expression.
 
   AD_EXPR_BIT_AND,                      ///< Bitwise-and expression.
   AD_EXPR_BIT_OR,                       ///< Bitwise-or expression.

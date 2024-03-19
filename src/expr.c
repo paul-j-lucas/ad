@@ -1198,6 +1198,10 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
     case AD_EXPR_CAST:
       return ad_expr_cast( expr, rv );
 
+    case AD_EXPR_COMMA:
+      // TODO
+      return true;
+
     case AD_EXPR_IF_ELSE:
       return ad_expr_if_else( expr, rv );
 
@@ -1285,6 +1289,7 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
       // TODO
       return true;
   } // switch
+
   return false;
 }
 
@@ -1322,6 +1327,7 @@ char const* ad_expr_kind_name( ad_expr_kind_t kind ) {
     case AD_EXPR_BIT_SHIFT_RIGHT  : return ">>";
     case AD_EXPR_BIT_XOR          : return "bitxor";
     case AD_EXPR_CAST             : return "cast";
+    case AD_EXPR_COMMA            : return ",";
     case AD_EXPR_ERROR            : return "error";
     case AD_EXPR_IF_ELSE          : return "?:";
     case AD_EXPR_LITERAL          : return "literal";
