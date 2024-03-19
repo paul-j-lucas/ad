@@ -799,11 +799,24 @@ unsigned ad_type_size( ad_type_t const *t );
  *
  * @param tid The \ref ad_tid_t to get the \ref ad_tid_kind of.
  * @return Returns said \a ref ad_tid_kind.
+ *
+ * @sa ad_tid_kind_name()
  */
 NODISCARD AD_TYPES_H_INLINE
 ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
   return tid & T_MASK_TYPE;
 }
+
+/**
+ * Gets the name of \a kind.
+ *
+ * @param kind The \ref ad_tid_kind to get the name of.
+ * @return Returns said name.
+ *
+ * @sa ad_tid_kind()
+ */
+NODISCARD
+char const* ad_tid_kind_name( ad_tid_kind_t kind );
 
 /**
  * Un-`typedef`s \a type, i.e., if \a type is of type #T_TYPEDEFl returns the

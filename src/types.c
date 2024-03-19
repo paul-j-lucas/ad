@@ -162,6 +162,21 @@ void ad_statement_free( ad_statement_t *statement ) {
   }
 }
 
+char const* ad_tid_kind_name( ad_tid_kind_t kind ) {
+  switch ( kind ) {
+    case T_NONE   : return "none";
+    case T_BOOL   : return "bool";
+    case T_ENUM   : return "enum";
+    case T_ERROR  : return "error";
+    case T_FLOAT  : return "float";
+    case T_INT    : return "int";
+    case T_STRUCT : return "struct";
+    case T_TYPEDEF: return "typedef";
+    case T_UTF    : return "utf";
+  } // switch
+  UNEXPECTED_INT_VALUE( kind );
+}
+
 bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
   if ( i_type == j_type )
     return true;

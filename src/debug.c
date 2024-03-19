@@ -380,7 +380,14 @@ void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *fout ) {
 
 void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
   assert( fout != NULL );
-  switch ( tid ) {
+  ad_tid_kind_t const kind = ad_tid_kind( tid );
+  switch ( kind ) {
+    case T_NONE:
+    case T_ENUM:
+    case T_STRUCT:
+    case T_TYPEDEF:
+      FPUTS( ad_tid_kind_name( kind ), fout );
+      break;
     case T_BOOL:
       FPRINTF( fout, "bool<%u>", ad_tid_size( tid ) );
       break;
