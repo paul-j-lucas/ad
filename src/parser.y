@@ -1144,8 +1144,8 @@ argument_expr_list
 primary_expr
   : Y_NAME[name]
     {
-      // TODO
-      (void)$name;
+      $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
+      $$->name = $name;
     }
   | Y_INT_LIT
     {
