@@ -187,7 +187,7 @@
  * @param BOOL The `bool` to dump.
  */
 #define DUMP_BOOL(KEY,BOOL)  IF_AD_DEBUG( \
-  DUMP_KEY( KEY ": %s", ((BOOL) ? "true" : "false") ); )
+  DUMP_KEY_IMPL( KEY ": %s", ((BOOL) ? "true" : "false") ); )
 
 /**
  * Dumps a comma followed by a newline the _second_ and subsequent times it's
@@ -211,7 +211,7 @@
  * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
  */
 #define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_AD_DEBUG( \
-  DUMP_KEY( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
 
 /**
  * Possibly dumps a comma and a newline followed by the `printf()` arguments
@@ -219,7 +219,7 @@
  *
  * @param ... The `printf()` arguments.
  */
-#define DUMP_KEY(...) IF_AD_DEBUG( \
+#define DUMP_KEY_IMPL(...) BLOCK( \
   DUMP_COMMA; PRINTF( "  " __VA_ARGS__ ); )
 
 /**
@@ -229,7 +229,7 @@
  * @param NUM The integer to dump.
  */
 #define DUMP_INT(KEY,NUM) \
-  DUMP_KEY( KEY ": %d", STATIC_CAST( int, (NUM) ) )
+  DUMP_KEY_IMPL( KEY ": %d", STATIC_CAST( int, (NUM) ) )
 
 /**
  * Dumps a C string.
@@ -238,7 +238,7 @@
  * @param STR The C string to dump.
  */
 #define DUMP_STR(KEY,STR) IF_AD_DEBUG( \
-  DUMP_KEY( KEY ": " ); str_dump( (STR), stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); str_dump( (STR), stdout ); )
 
 /**
  * Starts a dump block.
@@ -266,7 +266,7 @@
  * @param TYPE The \ref ad_type to dump.
  */
 #define DUMP_TYPE(KEY,TYPE) IF_AD_DEBUG( \
-  DUMP_KEY( KEY ": " ); ad_type_dump( TYPE, stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); ad_type_dump( TYPE, stdout ); )
 
 /** @} */
 
