@@ -224,19 +224,19 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
       FPUTS( "\"none\"", dump->fout );
       break;
     case T_BOOL:
-      FPRINTF( dump->fout, "%u", !!literal->u8 );
+      FPRINTF( dump->fout, "%u", !!literal->uval );
       break;
     case T_ERROR:
       FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( literal->err ) );
       break;
     case T_FLOAT:
-      FPRINTF( dump->fout, "%f", literal->f64 );
+      FPRINTF( dump->fout, "%f", literal->fval );
       break;
     case T_INT:
       if ( ad_tid_is_signed( literal->type->tid ) )
-        FPRINTF( dump->fout, "%lld", (long long)literal->i64 );
+        FPRINTF( dump->fout, "%lld", (long long)literal->ival );
       else
-        FPRINTF( dump->fout, "%llu", (unsigned long long)literal->u64 );
+        FPRINTF( dump->fout, "%llu", (unsigned long long)literal->uval );
       break;
     case T_UTF:
       // TODO

@@ -572,20 +572,9 @@ struct ad_literal_expr {
    * The value.
    */
   union {
-    // Signed integer.
-    int8_t          i8;                 ///< `int8_t` value.
-    int16_t         i16;                ///< `int16_t` value.
-    int32_t         i32;                ///< `int32_t` value.
-    int64_t         i64;                ///< `int64_t` value.
-
-    // Unsigned integer.
-    uint8_t         u8;                 ///< `uint8_t` value.
-    uint16_t        u16;                ///< `uint16_t` value.
-    uint32_t        u32;                ///< `uint32_t` value.
-    uint64_t        u64;                ///< `uint64_t` value.
-
-    // Floating-point.
-    double          f64;                ///< f32, f64
+    int64_t         ival;               ///< Signed integer value.
+    uint64_t        uval;               ///< Unsigned integer value.
+    double          fval;               ///< Floating-point value.
 
     // UTF characters.
     char8_t         c8;                 ///< UTF-8 character.

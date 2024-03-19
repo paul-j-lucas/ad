@@ -216,7 +216,7 @@ unsigned ad_type_size( ad_type_t const *t ) {
   if ( bits != 0 )
     return bits;
   assert( ad_expr_is_literal( t->size_expr ) );
-  return t->size_expr->literal.u32;
+  return STATIC_CAST( unsigned, t->size_expr->literal.uval );
 }
 
 ad_type_t const* ad_type_untypedef( ad_type_t const *type ) {

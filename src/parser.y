@@ -1151,7 +1151,7 @@ primary_expr
     {
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal.type = &TB_INT64;
-      $$->literal.i64 = $1;
+      $$->literal.ival = $1;
     }
   | Y_STR_LIT
     {
@@ -1240,7 +1240,7 @@ unary_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .u64 = ad_type_size( tdef->type )
+        .uval = ad_type_size( tdef->type )
       };
       free( $name );
     }
@@ -1306,7 +1306,7 @@ type_endian_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .u8 = ENDIAN_BIG
+        .uval = ENDIAN_BIG
       };
     }
   | ',' 'l'
@@ -1314,7 +1314,7 @@ type_endian_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .u8 = ENDIAN_LITTLE
+        .uval = ENDIAN_LITTLE
       };
     }
   | ',' 'h'
@@ -1322,7 +1322,7 @@ type_endian_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .u8 = ENDIAN_HOST
+        .uval = ENDIAN_HOST
       };
     }
   | ',' expr
