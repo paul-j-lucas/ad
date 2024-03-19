@@ -795,14 +795,14 @@ NODISCARD
 unsigned ad_type_size( ad_type_t const *t );
 
 /**
- * Gets the \ref ad_tid_t of \a type.
+ * Gets the \ref ad_tid_kind of \a tid.
  *
- * @param type The \ref ad_type tp get the \ref ad_tid_t of.
- * @return Returns said \a ref ad_tid_t.
+ * @param tid The \ref ad_tid_t to get the \ref ad_tid_kind of.
+ * @return Returns said \a ref ad_tid_kind.
  */
 NODISCARD AD_TYPES_H_INLINE
-ad_tid_t ad_type_tid_base( ad_type_t const *type ) {
-  return type->tid & T_MASK_TYPE;
+ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
+  return tid & T_MASK_TYPE;
 }
 
 /**

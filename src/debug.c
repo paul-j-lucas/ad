@@ -382,21 +382,22 @@ void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
   assert( fout != NULL );
   switch ( tid ) {
     case T_BOOL:
-      FPRINTF( fout, "bool%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "bool<%u>", ad_tid_size( tid ) );
       break;
     case T_ERROR:
       FPUTS( "error", fout );
       break;
     case T_FLOAT:
-      FPRINTF( fout, "float%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "float<%u>", ad_tid_size( tid ) );
       break;
     case T_INT:
-      if ( !ad_tid_is_signed( tid ) )
-        FPUTS( "unsigned ", fout );
-      FPRINTF( fout, "int%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "%sint<%u>",
+        ad_tid_is_signed( tid ) ? "" : "u",
+        ad_tid_size( tid )
+      );
       break;
     case T_UTF:
-      FPRINTF( fout, "utf%u", ad_tid_size( tid ) );
+      FPRINTF( fout, "utf<%u>", ad_tid_size( tid ) );
       break;
   } // switch
   FPUTS( endian_name( ad_tid_endian( tid ) ), fout );
