@@ -185,7 +185,7 @@ void ad_type_free( ad_type_t *type ) {
       FALLTHROUGH;
     case T_ENUM:
       slist_cleanup(
-        &type->enum_t.values,
+        &type->enum_t.value_list,
         POINTER_CAST( slist_free_fn_t, &ad_enum_value_free )
       );
       break;

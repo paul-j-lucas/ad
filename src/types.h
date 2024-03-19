@@ -408,7 +408,7 @@ struct ad_bool_type {
  */
 struct ad_enum_type {
   char const *printf_fmt;               ///< `printf` format, if any.
-  slist_t     values;                   ///< List of ad_enum_value.
+  slist_t     value_list;               ///< List of ad_enum_value.
 };
 
 /**

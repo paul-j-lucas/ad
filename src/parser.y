@@ -800,7 +800,7 @@ declaration
 
 enum_declaration
   : Y_enum name_exp[name] colon_exp type
-    lbrace_exp enumerator_list[value_list] rbrace_exp
+    lbrace_exp enumerator_list[values] rbrace_exp
     {
       ad_type_t *const type = MALLOC( ad_type_t, 1 );
       *type = (ad_type_t){
@@ -808,7 +808,7 @@ enum_declaration
         .tid = T_ENUM | ($type->tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .loc = @$,
         .enum_t = {
-          .values = slist_move( &$value_list )
+          .value_list = slist_move( &$values )
         }
       };
       PARSE_ASSERT( define_type( type ) );
@@ -1095,6 +1095,7 @@ postfix_expr
       // TODO
       (void)$expr;
       (void)$arg_list;
+      $$ = NULL;
     }
   | postfix_expr[expr] '.' Y_NAME[name]
     {
