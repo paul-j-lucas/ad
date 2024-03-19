@@ -260,6 +260,15 @@
 #define DUMP_END()                IF_AD_DEBUG( FPUTS( "\n}\n\n", stdout ); )
 
 /**
+ * Dumps a \ref ad_tid_t.
+ *
+ * @param KEY The key name to print.
+ * @param TID The \ref ad_tid_t to dump.
+ */
+#define DUMP_TID(KEY,TID) IF_AD_DEBUG( \
+  DUMP_KEY_IMPL( KEY ": " ); ad_tid_dump( (TID), stdout ); )
+
+/**
  * Dumps a \ref ad_type.
  *
  * @param KEY The key name to print.
@@ -1498,6 +1507,10 @@ unary_op
 type
   : builtin_tid[tid] lt_exp expr_exp[size] type_endian_expr_opt[endian] gt_exp
     {
+      DUMP_START( "type", "builtin_tid '<' expr type_endian_expr_opt '>'" );
+      DUMP_TID( "builtin_tid", $tid );
+      DUMP_EXPR( "type_endian_expr_opt", $endian );
+
       $$ = MALLOC( ad_type_t, 1 );
       *$$ = (ad_type_t){
         .tid = $tid,
@@ -1505,6 +1518,9 @@ type
         .endian_expr = $endian,
         .loc = @$
       };
+
+      DUMP_TYPE( "$$_type", $$ );
+      DUMP_END();
     }
   | Y_TYPEDEF_TYPE
   ;
@@ -1525,27 +1541,42 @@ type_endian_expr_opt
 type_endian_expr
   : ',' 'b'
     {
+      DUMP_START( "type_endian_expr", "',' 'b'" );
+
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
         .uval = ENDIAN_BIG
       };
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | ',' 'l'
     {
+      DUMP_START( "type_endian_expr", "',' 'l'" );
+
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
         .uval = ENDIAN_LITTLE
       };
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | ',' 'h'
     {
+      DUMP_START( "type_endian_expr", "',' 'h'" );
+
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
         .uval = ENDIAN_HOST
       };
+
+      DUMP_EXPR( "$$_expr", $$ );
+      DUMP_END();
     }
   | ',' expr
     {
@@ -1553,7 +1584,7 @@ type_endian_expr
     }
   | ',' error
     {
-      elaborate_error( "one of 'b', 'l', 'h', or '<expr>' expected" );
+      elaborate_error( "one of 'b', 'l', 'h', or expression expected" );
       $$ = NULL;
     }
   ;
