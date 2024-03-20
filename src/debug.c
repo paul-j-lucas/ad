@@ -411,10 +411,10 @@ void ad_type_dump( ad_type_t const *type, FILE *fout ) {
 
 char const* endian_name( endian_t e ) {
   switch ( e ) {
-    case ENDIAN_NONE    : return "none";
-    case ENDIAN_LITTLE  : return "little";
-    case ENDIAN_BIG     : return "big";
-    case ENDIAN_HOST    : return "host";
+    case ENDIAN_NONE  : return "none";
+    case ENDIAN_LITTLE: return "little";
+    case ENDIAN_BIG   : return "big";
+    case ENDIAN_HOST  : return "host";
   } // switch
   UNEXPECTED_INT_VALUE( e );
   return NULL;
