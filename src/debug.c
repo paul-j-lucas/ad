@@ -53,6 +53,9 @@
 #define DUMP_LOC(D,KEY,LOC) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); ad_loc_dump( (LOC), (D)->fout ); )
 
+#define DUMP_SNAME(D,KEY,SNAME) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); sname_dump( (SNAME), (D)->fout ); )
+
 #define DUMP_STR(D,KEY,STR) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', (D)->fout ); )
 
@@ -123,8 +126,6 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
   json_state_t const expr_json =
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
-  //DUMP_SNAME( "sname", &ast->sname );
-  FPUTS( ",\n", dump->fout );
   DUMP_STR( dump, "kind", ad_expr_kind_name( expr->expr_kind ) );
   FPUTS( ",\n", dump->fout );
   DUMP_LOC( dump, "loc", &expr->loc );
@@ -144,7 +145,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
       break;
 
     case AD_EXPR_NAME:
-      FPRINTF( dump->fout, "\"%s\"", expr->name );
+      DUMP_STR( dump, "name", expr->name );
       break;
 
     // unary
@@ -418,6 +419,13 @@ char const* endian_name( endian_t e ) {
   } // switch
   UNEXPECTED_INT_VALUE( e );
   return NULL;
+}
+
+void sname_dump( sname_t const *sname, FILE *fout ) {
+  assert( sname != NULL );
+  assert( fout != NULL );
+
+  FPUTS( sname_empty( sname ) ? "null" : sname_full_name( sname ), fout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

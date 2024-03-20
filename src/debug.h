@@ -95,6 +95,14 @@ void bool_dump( bool b, FILE *fout );
 NODISCARD
 char const* endian_name( endian_t e );
 
+/**
+ * Dumps \a sname in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param sname The scoped name to dump.  If empty, prints `null` instead.
+ * @param fout The `FILE` to dump to.
+ */
+void sname_dump( sname_t const *sname, FILE *fout );
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
