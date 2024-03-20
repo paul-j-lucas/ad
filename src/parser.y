@@ -196,10 +196,19 @@
 #define DUMP_COMMA                fput_sep( ",\n", &dump_comma, stdout )
 
 /**
+ * Ends a dump block.
+ *
+ * @sa #DUMP_START()
+ */
+#define DUMP_END()                IF_AD_DEBUG( PUTS( "\n}\n\n" ); )
+
+/**
  * Dumps an ad_expr.
  *
  * @param KEY The key name to print.
  * @param EXPR The ad_expr to dump.
+ *
+ * @sa #DUMP_EXPR_LIST()
  */
 #define DUMP_EXPR(KEY,EXPR) \
   IF_AD_DEBUG( DUMP_COMMA; ad_expr_dump( (EXPR), (KEY), stdout ); )
@@ -209,6 +218,8 @@
  *
  * @param KEY The key name to print.
  * @param EXPR_LIST The `s_list` of ad_expr_t to dump.
+ *
+ * @sa #DUMP_EXPR()
  */
 #define DUMP_EXPR_LIST(KEY,EXPR_LIST) IF_AD_DEBUG( \
   DUMP_KEY_IMPL( KEY ": " ); ad_expr_list_dump( &(EXPR_LIST), /*indent=*/1, stdout ); )
@@ -243,21 +254,30 @@
 /**
  * Starts a dump block.
  *
+ * @remarks If a production has a result, it should be dumped as the final
+ * thing before the #DUMP_END() with the KEY of `$$_` followed by a suffix
+ * denoting the type, e.g., `expr`.  For example:
+ * ```
+ *  DUMP_START( "rule",
+ *              "subrule_1 subrule_2 ..." );
+ *  DUMP_AST( "subrule_1", $1 );
+ *  DUMP_STR( "name", $2 );
+ *  DUMP_AST( "subrule_2", $3 );
+ *  // ...
+ *  DUMP_AST( "$$_expr", $$ );
+ *  DUMP_END();
+ * ```
+ *
  * @param NAME The grammar production name.
- * @param PROD The grammar production rule.
+ * @param RULE The grammar production rule.
  *
- * @sa #DUMP_END
+ * @note The dump block _must_ end with #DUMP_END().
+ *
+ * @sa #DUMP_END()
  */
-#define DUMP_START(NAME,PROD) \
+#define DUMP_START(NAME,RULE) \
   bool dump_comma = false;    \
-  IF_AD_DEBUG( FPUTS( NAME " ::= " PROD " = {\n", stdout ); )
-
-/**
- * Ends a dump block.
- *
- * @sa #DUMP_START
- */
-#define DUMP_END()                IF_AD_DEBUG( FPUTS( "\n}\n\n", stdout ); )
+  IF_AD_DEBUG( PUTS( "{\n  rule: {\n    lhs: \"" NAME "\",\n    rhs: \"" RULE "\"\n  },\n" ); )
 
 /**
  * Dumps a \ref ad_tid_t.
@@ -811,8 +831,8 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[values] rbrace_exp
     {
-      ad_type_t *const type = MALLOC( ad_type_t, 1 );
-      *type = (ad_type_t){
+      ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
+      *new_type = (ad_type_t){
         .sname = sname_current( $name ),
         .tid = T_ENUM | ($type->tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .loc = @$,
@@ -820,7 +840,7 @@ enum_declaration
           .value_list = slist_move( &$values )
         }
       };
-      PARSE_ASSERT( define_type( type ) );
+      PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;
     }
   ;
@@ -899,8 +919,8 @@ match_expr_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp statement_list_opt[members] rbrace_exp
     {
-      ad_type_t *const type = MALLOC( ad_type_t, 1 );
-      *type = (ad_type_t){
+      ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
+      *new_type = (ad_type_t){
         .sname = sname_current( $name ),
         .tid = T_STRUCT,
         .loc = @$,
@@ -908,7 +928,7 @@ struct_declaration
           .member_list = slist_move( &$members )
         }
       };
-      PARSE_ASSERT( define_type( type ) );
+      PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;
     }
   ;
@@ -920,15 +940,15 @@ typedef_declaration
     {
       assert( $statement->kind == S_DECLARATION );
       ad_decl_t *const decl = &$statement->decl_s;
-      ad_type_t *const type = MALLOC( ad_type_t, 1 );
-      *type = (ad_type_t){
+      ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
+      *new_type = (ad_type_t){
         .sname = sname_current( decl->name ),
         .tid = T_TYPEDEF,
         .loc = @$,
         .rep = decl->rep,
         .typedef_t = { .type = decl->type }
       };
-      PARSE_ASSERT( define_type( type ) );
+      PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;
     }
   ;
