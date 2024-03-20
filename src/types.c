@@ -47,19 +47,6 @@ ad_type_t const TB_BOOL8 = {
   .int_t = { .printf_fmt = "%d" }
 };
 
-static slist_node_t TB_ERROR_SNAME_NODE = {
-  NULL, &(sname_scope_t){ .name = "error" }
-};
-
-ad_type_t const TB_ERROR = {
-  .sname = {
-    &TB_ERROR_SNAME_NODE,
-    &TB_ERROR_SNAME_NODE,
-    1
-  },
-  .tid = T_ERROR
-};
-
 static slist_node_t TB_FLOAT_SNAME_NODE = {
   NULL, &(sname_scope_t){ .name = "float" }
 };

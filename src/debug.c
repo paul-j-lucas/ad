@@ -225,9 +225,6 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
     case T_BOOL:
       FPRINTF( dump->fout, "%u", !!literal->uval );
       break;
-    case T_ERROR:
-      FPRINTF( dump->fout, "\"%s\"", ad_expr_err_name( literal->err ) );
-      break;
     case T_FLOAT:
       FPRINTF( dump->fout, "%f", literal->fval );
       break;

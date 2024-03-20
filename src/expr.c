@@ -1405,8 +1405,7 @@ void ad_expr_set_f( ad_expr_t *expr, double dval ) {
 
 void ad_expr_set_err( ad_expr_t *expr, ad_expr_err_t err ) {
   expr->expr_kind = AD_EXPR_ERROR;
-  expr->literal.type = &TB_ERROR;
-  expr->literal.err = err;
+  expr->err = err;
 }
 
 void ad_expr_set_i( ad_expr_t *expr, int64_t ival ) {

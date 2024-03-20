@@ -494,7 +494,6 @@ struct ad_type {
 };
 
 extern ad_type_t const TB_BOOL8;        ///< Built-in `bool` type.
-extern ad_type_t const TB_ERROR;        ///< Built-in error type.
 extern ad_type_t const TB_FLOAT64;      ///< Built-in `float` type.
 extern ad_type_t const TB_INT64;        ///< Built-in `int64` type.
 extern ad_type_t const TB_UINT64;       ///< Built-in `uint64` type.
@@ -585,7 +584,6 @@ struct ad_literal_expr {
 
     // Miscellaneous.
     ad_type_t       cast_type;
-    ad_expr_err_t   err;
   };
 };
 
@@ -644,6 +642,7 @@ struct ad_expr {
    * Additional data for each \ref expr_kind.
    */
   union {
+    ad_expr_err_t     err;              ///< Error expression.
     ad_literal_expr_t literal;          ///< Literal expression.
     char const       *name;             ///< Name expression.
     ad_unary_expr_t   unary;            ///< Unary expression.
