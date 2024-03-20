@@ -379,29 +379,24 @@ void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
   assert( fout != NULL );
   ad_tid_kind_t const kind = ad_tid_kind( tid );
   switch ( kind ) {
-    case T_NONE:
+    case T_BOOL:
+    case T_FLOAT:
+    case T_UTF:
+      FPRINTF( fout, "%s<%u>", ad_tid_kind_name( kind ), ad_tid_size( tid ) );
+      break;
     case T_ENUM:
+    case T_ERROR:
+    case T_NONE:
     case T_STRUCT:
     case T_TYPEDEF:
       FPUTS( ad_tid_kind_name( kind ), fout );
       break;
-    case T_BOOL:
-      FPRINTF( fout, "bool<%u>", ad_tid_size( tid ) );
-      break;
-    case T_ERROR:
-      FPUTS( "error", fout );
-      break;
-    case T_FLOAT:
-      FPRINTF( fout, "float<%u>", ad_tid_size( tid ) );
-      break;
     case T_INT:
-      FPRINTF( fout, "%sint<%u>",
+      FPRINTF( fout, "%s%s<%u>",
         ad_tid_is_signed( tid ) ? "" : "u",
+        ad_tid_kind_name( kind ),
         ad_tid_size( tid )
       );
-      break;
-    case T_UTF:
-      FPRINTF( fout, "utf<%u>", ad_tid_size( tid ) );
       break;
   } // switch
   FPUTS( endian_name( ad_tid_endian( tid ) ), fout );
