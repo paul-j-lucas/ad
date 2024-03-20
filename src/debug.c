@@ -186,7 +186,6 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     case AD_EXPR_REL_LESS_EQ:
     case AD_EXPR_REL_NOT_EQ:
       ad_expr_dump_impl( expr->binary.lhs_expr, "lhs_expr", dump );
-      FPUTS( ",\n", dump->fout );
       ad_expr_dump_impl( expr->binary.rhs_expr, "rhs_expr", dump );
       break;
 
@@ -198,9 +197,7 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     // ternary
     case AD_EXPR_IF_ELSE:
       ad_expr_dump_impl( expr->ternary.cond_expr, "cond_expr", dump );
-      FPUTS( ",\n", dump->fout );
       ad_expr_dump_impl( expr->ternary.sub_expr[0], "sub_expr[0]", dump );
-      FPUTS( ",\n", dump->fout );
       ad_expr_dump_impl( expr->ternary.sub_expr[1], "sub_expr[1]", dump );
       break;
   } // switch
@@ -262,15 +259,15 @@ static void ad_loc_dump( ad_loc_t const *loc, FILE *fout ) {
   FPUTS( "{ ", fout );
 
   if ( loc->first_line > 1 )
-    FPRINTF( fout, "first_line: " PRI_ad_loc_num_t ", ", loc->first_line );
+    FPRINTF( fout, "first_line: %d, ", loc->first_line );
 
-  FPRINTF( fout, "first_column: " PRI_ad_loc_num_t, loc->first_column );
+  FPRINTF( fout, "first_column: %d", loc->first_column );
 
   if ( loc->last_line != loc->first_line )
-    FPRINTF( fout, ", last_line: " PRI_ad_loc_num_t, loc->last_line );
+    FPRINTF( fout, ", last_line: %d", loc->last_line );
 
   if ( loc->last_column != loc->first_column )
-    FPRINTF( fout, ", last_column: " PRI_ad_loc_num_t, loc->last_column );
+    FPRINTF( fout, ", last_column: %d", loc->last_column );
 
   FPUTS( " }", fout );
 }

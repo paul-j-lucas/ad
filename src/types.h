@@ -120,11 +120,6 @@ _GL_INLINE_HEADER_BEGIN
 
 #define AD_EXPR_MASK        0x0F00      /**< Expression type bitmask. */
 
-/**
- * Decimal print conversion specifier for \ref ad_loc_num_t.
- */
-#define PRI_ad_loc_num_t          "%u"
-
 ////////// enumerations ///////////////////////////////////////////////////////
 
 // Enumerations have to be declared before typedefs of them since ISO C doesn't
