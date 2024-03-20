@@ -68,36 +68,36 @@ static inline bool print_readability_space( size_t byte_pos ) {
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Collects the bytes starting at \a buf_pos into a UTF-8 character.
+ * Collects the bytes starting at \a curr_pos into a UTF-8 character.
  *
  * @param curr A pointer to the current row.
- * @param buf_pos The position within the row.
+ * @param curr_pos The position within the row.
  * @param next A pointer to the next row.
  * @param utf8_char A pointer to the buffer to receive the UTF-8 character.
  * @return Returns the number of bytes comprising the UTF-8 character or 0 if
  * the bytes do not comprise a valid UTF-8 character.
  */
 NODISCARD
-static size_t utf8_collect( row_buf_t const *curr, size_t buf_pos,
+static size_t utf8_collect( row_buf_t const *curr, size_t curr_pos,
                             row_buf_t const *next, char8_t *utf8_char ) {
   assert( curr != NULL );
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( STATIC_CAST( char, curr->bytes[ buf_pos ] ) );
+  size_t const len = utf8_len( STATIC_CAST( char, curr->bytes[ curr_pos ] ) );
   if ( len > 1 ) {
     row_buf_t const *row = curr;
-    *utf8_char++ = row->bytes[ buf_pos++ ];
+    *utf8_char++ = row->bytes[ curr_pos++ ];
 
-    for ( size_t i = 1; i < len; ++i, ++buf_pos ) {
-      if ( buf_pos == row->len ) {      // ran off the end of the row
+    for ( size_t i = 1; i < len; ++i, ++curr_pos ) {
+      if ( curr_pos == row->len ) {     // ran off the end of the row
         if ( row == next || next->len == 0 )
           return 0;                     // incomplete UTF-8 character
         row = next;                     // continue on the next row
-        buf_pos = 0;
+        curr_pos = 0;
       }
 
-      char8_t const byte = row->bytes[ buf_pos ];
+      char8_t const byte = row->bytes[ curr_pos ];
       if ( unlikely( !utf8_is_cont( STATIC_CAST(char, byte) ) ) )
         return 0;
       *utf8_char++ = byte;
@@ -127,7 +127,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
   if ( dumped_offset == -1 )
     dumped_offset = fin_offset;
 
-  size_t  buf_pos;
+  size_t  curr_pos;
   bool    prev_matches;
 
   // print row separator (if necessary)
@@ -163,15 +163,15 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
 
   // dump hex part
   prev_matches = false;
-  for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
-    bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
+  for ( curr_pos = 0; curr_pos < curr->len; ++curr_pos ) {
+    bool const matches = (curr->match_bits & (1u << curr_pos)) != 0;
     bool const matches_changed = matches != prev_matches;
 
-    if ( buf_pos % opt_group_by == 0 ) {
+    if ( curr_pos % opt_group_by == 0 ) {
       COLOR_END_IF( prev_matches, sgr_hex_match );
-      if ( opt_offset_fmt != OFMT_NONE || buf_pos > 0 )
+      if ( opt_offset_fmt != OFMT_NONE || curr_pos > 0 )
         PUTC( ' ' );                    // print space between hex columns
-      if ( print_readability_space( buf_pos ) )
+      if ( print_readability_space( curr_pos ) )
         PUTC( ' ' );
       COLOR_START_IF( prev_matches, sgr_hex_match );
     }
@@ -179,7 +179,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
       COLOR_START_IF( matches_changed, sgr_hex_match );
     else
       COLOR_END_IF( matches_changed, sgr_hex_match );
-    PRINTF( "%02X", STATIC_CAST(unsigned, curr->bytes[ buf_pos ]) );
+    PRINTF( "%02X", STATIC_CAST(unsigned, curr->bytes[ curr_pos ]) );
     prev_matches = matches;
   } // for
   COLOR_END_IF( prev_matches, sgr_hex_match );
@@ -188,10 +188,10 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
     unsigned spaces = 2;
 
     // add padding spaces if necessary (last row only)
-    for ( ; buf_pos < row_bytes; ++buf_pos ) {
-      if ( buf_pos % opt_group_by == 0 )
+    for ( ; curr_pos < row_bytes; ++curr_pos ) {
+      if ( curr_pos % opt_group_by == 0 )
         ++spaces;                       // print space between hex columns
-      if ( print_readability_space( buf_pos ) )
+      if ( print_readability_space( curr_pos ) )
         ++spaces;
       spaces += 2;
     } // for
@@ -200,10 +200,10 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
 
     // dump ASCII part
     prev_matches = false;
-    for ( buf_pos = 0; buf_pos < curr->len; ++buf_pos ) {
-      bool const matches = (curr->match_bits & (1u << buf_pos)) != 0;
+    for ( curr_pos = 0; curr_pos < curr->len; ++curr_pos ) {
+      bool const matches = (curr->match_bits & (1u << curr_pos)) != 0;
       bool const matches_changed = matches != prev_matches;
-      char8_t const byte = curr->bytes[ buf_pos ];
+      char8_t const byte = curr->bytes[ curr_pos ];
 
       if ( matches )
         COLOR_START_IF( matches_changed, sgr_ascii_match );
@@ -217,7 +217,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
       } else {
         char8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
         utf8_count = opt_utf8 ?
-          utf8_collect( curr, buf_pos, next, utf8_char ) : 1;
+          utf8_collect( curr, curr_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )
           PUTS( POINTER_CAST( char*, utf8_char ) );
         else
