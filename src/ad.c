@@ -46,10 +46,6 @@ char const *fin_path = "-";
 char const *fout_path = "-";
 char const *me;
 size_t      row_bytes = ROW_BYTES_DEFAULT;
-char       *search_buf;
-endian_t    search_endian;
-size_t      search_len;
-uint64_t    search_number;
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -78,17 +74,20 @@ static void ad_init( int argc, char const *argv[const] ) {
   parse_options( argc, argv );
   colors_init();
 
-  if ( search_buf != NULL )             // searching for a string?
-    search_len = strlen( search_buf );
-  else if ( search_endian ) {           // searching for a number?
-    if ( search_len == 0 )              // default to smallest possible size
-      search_len = int_len( search_number );
-    int_rearrange_bytes( &search_number, search_len, search_endian );
-    search_buf = POINTER_CAST( char*, &search_number );
+  if ( opt_search_buf != NULL ) {       // searching for a string?
+    opt_search_len = strlen( opt_search_buf );
+  }
+  else if ( opt_search_endian != ENDIAN_NONE ) {  // searching for a number?
+    if ( opt_search_len == 0 )          // default to smallest possible size
+      opt_search_len = int_len( opt_search_number );
+    int_rearrange_bytes(
+      &opt_search_number, opt_search_len, opt_search_endian
+    );
+    opt_search_buf = POINTER_CAST( char*, &opt_search_number );
   }
 
   if ( opt_max_bytes == 0 )             // degenerate case
-    exit( search_len ? EX_NO_MATCHES : EX_OK );
+    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 }
 
 /////////// main //////////////////////////////////////////////////////////////

@@ -107,6 +107,10 @@ bool          opt_only_matching;
 bool          opt_only_printing;
 bool          opt_print_ascii = true;
 bool          opt_reverse;
+char         *opt_search_buf;
+endian_t      opt_search_endian;
+size_t        opt_search_len;
+uint64_t      opt_search_number;
 bool          opt_utf8;
 char const   *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
 bool          opt_verbose;
@@ -198,12 +202,12 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
 }
 
 /**
- * Checks that the number of bits or bytes given for \c search_number are
+ * Checks that the number of bits or bytes given for \c opt_search_number are
  * sufficient to contain it.
  * Prints an error message and exits if \a given_size &lt; \a actual_size.
  *
  * @param given_size The given size in bits or bytes.
- * @param actual_size The actual size of \c search_number in bits or bytes.
+ * @param actual_size The actual size of \c opt_search_number in bits or bytes.
  */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -213,7 +217,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, opt_format( opt, opt_buf, sizeof opt_buf ),
-      search_number, actual_size
+      opt_search_number, actual_size
     );
   }
 }
@@ -687,8 +691,8 @@ void parse_options( int argc, char const *argv[] ) {
       break;
     switch ( opt ) {
       case COPT(BIG_ENDIAN):
-        search_number = parse_ull( optarg );
-        search_endian = ENDIAN_BIG;
+        opt_search_number = parse_ull( optarg );
+        opt_search_endian = ENDIAN_BIG;
         break;
       case COPT(BITS):
         size_in_bits = parse_ull( optarg );
@@ -715,22 +719,22 @@ void parse_options( int argc, char const *argv[] ) {
         opt_offset_fmt = OFMT_HEX;
         break;
       case COPT(HOST_ENDIAN):
-        search_number = parse_ull( optarg );
+        opt_search_number = parse_ull( optarg );
 #ifdef WORDS_BIGENDIAN
-        search_endian = ENDIAN_BIG;
+        opt_search_endian = ENDIAN_BIG;
 #else
-        search_endian = ENDIAN_LITTLE;
+        opt_search_endian = ENDIAN_LITTLE;
 #endif /* WORDS_BIGENDIAN */
         break;
       case COPT(STRING_IGNORE_CASE):
-        search_buf = free_later( check_strdup( optarg ) );
+        opt_search_buf = free_later( check_strdup( optarg ) );
         FALLTHROUGH;
       case COPT(IGNORE_CASE):
         opt_case_insensitive = true;
         break;
       case COPT(LITTLE_ENDIAN):
-        search_number = parse_ull( optarg );
-        search_endian = ENDIAN_LITTLE;
+        opt_search_number = parse_ull( optarg );
+        opt_search_endian = ENDIAN_LITTLE;
         break;
       case COPT(MATCHING_ONLY):
         opt_only_matching = true;
@@ -765,7 +769,7 @@ void parse_options( int argc, char const *argv[] ) {
         fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
       case COPT(STRING):
-        search_buf = free_later( check_strdup( optarg ) );
+        opt_search_buf = free_later( check_strdup( optarg ) );
         break;
       case COPT(TOTAL_MATCHES):
         opt_matches = MATCHES_ALSO_PRINT;
@@ -953,8 +957,10 @@ void parse_options( int argc, char const *argv[] ) {
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, opt_format( COPT(BITS), opt_buf, sizeof opt_buf )
       );
-    search_len = size_in_bits * 8;
-    check_number_size( size_in_bits, int_len( search_number ) * 8, COPT(BITS) );
+    opt_search_len = size_in_bits * 8;
+    check_number_size(
+      size_in_bits, int_len( opt_search_number ) * 8, COPT(BITS)
+    );
   }
 
   if ( GAVE_OPTION( COPT(BYTES) ) ) {
@@ -963,12 +969,14 @@ void parse_options( int argc, char const *argv[] ) {
         "\"%zu\": invalid value for %s; must be in 1-8\n",
         size_in_bytes, opt_format( COPT(BYTES), opt_buf, sizeof opt_buf )
       );
-    search_len = size_in_bytes;
-    check_number_size( size_in_bytes, int_len( search_number ), COPT(BYTES) );
+    opt_search_len = size_in_bytes;
+    check_number_size(
+      size_in_bytes, int_len( opt_search_number ), COPT(BYTES)
+    );
   }
 
   if ( opt_case_insensitive )
-    tolower_s( search_buf );
+    tolower_s( opt_search_buf );
 
   if ( opt_group_by > row_bytes )
     row_bytes = opt_group_by;

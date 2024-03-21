@@ -118,9 +118,9 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
       case S_READING:
         if ( unlikely( !get_byte( &byte ) ) )
           GOTO_STATE( S_DONE );
-        if ( search_len == 0 )          // user isn't searching for anything
+        if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
-        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(char8_t, search_buf[0]) )
+        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(char8_t, opt_search_buf[0]) )
           RETURN( byte );               // searching, but no match yet
         //
         // The read byte matches the first byte of the search buffer: start
@@ -134,7 +134,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         GOTO_STATE( S_MATCHING );
 
       case S_MATCHING:
-        if ( ++buf_pos == search_len ) {
+        if ( ++buf_pos == opt_search_len ) {
           //
           // We've reached the end of the serch buffer, hence the current
           // sequence of bytes fully matches: we can now drain the match buffer
@@ -157,7 +157,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( S_NOT_MATCHED );
         }
         if ( MAYBE_NO_CASE( byte )
-             == STATIC_CAST(char8_t, search_buf[ buf_pos ]) ) {
+             == STATIC_CAST(char8_t, opt_search_buf[ buf_pos ]) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.

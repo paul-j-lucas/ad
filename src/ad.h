@@ -26,7 +26,6 @@
 
 // standard
 #include <stddef.h>                     /* for size_t */
-#include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,10 +55,6 @@ extern char const  *fin_path;           ///< Input file path name.
 extern char const  *fout_path;          ///< Output file path name.
 extern char const  *me;                 ///< Executable name from argv[0].
 extern size_t       row_bytes;          ///< Bytes dumped on a row.
-extern char        *search_buf;         ///< Not NULL-terminated when numeric.
-extern endian_t     search_endian;      ///< Numeric search endianness.
-extern size_t       search_len;         ///< Number of bytes in search_buf.
-extern uint64_t     search_number;      ///< The number to search for.
 
 ///////////////////////////////////////////////////////////////////////////////
 
