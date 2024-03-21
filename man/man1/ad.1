@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "March 8, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "March 21, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -113,9 +113,6 @@ or
 and
 .I n
 is interpreted accordingly.
-.TP
-.BR \-\-no-ascii " | " \-A
-Suppresses printing the ASCII part.
 .TP
 .BI \-\-big-endian \f1=\fPn "\f1 | \fP" "" \-E " n"
 Highlights all occurrences of the unsigned integer
@@ -396,6 +393,9 @@ bytes.
 Reads at most
 .I n
 lines.
+.TP
+.BR \-\-no-ascii " | " \-A
+Suppresses printing the ASCII part.
 .TP
 .BR \-\-no-offsets " | " \-O
 Suppresses printing offsets.
