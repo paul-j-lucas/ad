@@ -276,9 +276,9 @@ void dump_file( void ) {
   char8_t    *match_buf = NULL;         // used only by match_row()
   char const *off_fmt = get_offset_fmt_format();
 
-  if ( search_len > 0 ) {               // searching for anything?
-    kmps = kmp_init( search_buf, search_len );
-    match_buf = MALLOC( char8_t, search_len );
+  if ( opt_search_len > 0 ) {           // searching for anything?
+    kmps = kmp_init( opt_search_buf, opt_search_len );
+    match_buf = MALLOC( char8_t, opt_search_len );
   }
 
   // prime the pump by reading the first row
@@ -337,7 +337,7 @@ void dump_file( void ) {
   free( kmps );
   free( match_buf );
 
-  exit( search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
+  exit( opt_search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
 }
 
 void dump_file_c( void ) {

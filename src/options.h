@@ -103,6 +103,10 @@ extern bool           opt_only_matching;
 extern bool           opt_only_printing;
 extern bool           opt_print_ascii;
 extern bool           opt_reverse;
+extern char          *opt_search_buf;
+extern endian_t       opt_search_endian;///< Numeric search endianness.
+extern size_t         opt_search_len;   ///< Number of bytes in search_buf.
+extern uint64_t       opt_search_number;///< The number to search for.
 extern bool           opt_utf8;
 extern char const    *opt_utf8_pad;
 extern bool           opt_verbose;
