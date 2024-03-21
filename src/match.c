@@ -241,15 +241,15 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
   return kmps;
 }
 
-size_t match_row( char8_t *row_buf, size_t row_size, match_bits_t *match_bits,
+size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
                   kmp_t const *kmps, char8_t *match_buf ) {
   assert( row_buf != NULL );
-  assert( row_size <= row_bytes );
+  assert( row_len <= row_bytes );
   assert( match_bits != NULL );
   *match_bits = 0;
 
   size_t buf_len;
-  for ( buf_len = 0; buf_len < row_size; ++buf_len ) {
+  for ( buf_len = 0; buf_len < row_len; ++buf_len ) {
     bool matches;
     if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) )
       break;
