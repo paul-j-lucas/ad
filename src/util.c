@@ -55,9 +55,6 @@ struct free_node {
 };
 typedef struct free_node free_node_t;
 
-// extern variable declarations
-extern char const  *me;
-
 // local variable definitions
 static free_node_t *free_head;          // linked list of stuff to free
 
@@ -235,7 +232,7 @@ void fskip( off_t bytes_to_skip, FILE *file ) {
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
     if ( unlikely( ferror( file ) ) )
       fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
-    bytes_to_skip -= bytes_read;
+    bytes_to_skip -= STATIC_CAST( off_t, bytes_read );
   } // while
 }
 
@@ -384,7 +381,7 @@ char const* printable_char( char c ) {
   if ( ascii_is_print( c ) ) {
     buf[0] = c; buf[1] = '\0';
   } else {
-    snprintf( buf, sizeof buf, "\\x%02X", STATIC_CAST(unsigned, c) );
+    snprintf( buf, sizeof buf, "\\x%02X", STATIC_CAST(unsigned char, c) );
   }
   return buf;
 }
