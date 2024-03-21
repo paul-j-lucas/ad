@@ -1,5 +1,7 @@
 2024-03-21  Paul J. Lucas <paul@lucasmail.org>
 
+   * ad.1: Sorted --no-ascii.
+   * util.c: Fixed warnings.
    * options.h: Fixed declaration of opt_c_fmt.
    * options.c: Added #include <unistd.h> for STDOUT_FILENO.
 
