@@ -38,6 +38,7 @@
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
 #include <sysexits.h>
+#include <unistd.h>                     /* for STDOUT_FILENO */
 
 // Undefine these since they clash with our command-line options.
 #ifdef BIG_ENDIAN
