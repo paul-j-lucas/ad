@@ -1,3 +1,8 @@
+2024-03-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.h: Fixed declaration of opt_c_fmt.
+   * options.c: Added #include <unistd.h> for STDOUT_FILENO.
+
 2024-03-14  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, util.c: fskip() now calls fseek() if file is seekable.
