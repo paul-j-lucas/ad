@@ -51,12 +51,11 @@
  *
  * @param expr The expression to dump.  If NULL and \a key is not NULL, dumps
  * only \a key followed by `=&nbsp;NULL`.
- * @param key The key for which \a ast is the value, or NULL for none.
  * @param fout The `FILE` to dump to.
  *
  * @sa ad_expr_list_dump()
  */
-void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *fout );
+void ad_expr_dump( ad_expr_t const *expr, FILE *fout );
 
 /**
  * Dumps \a tid (for debugging).

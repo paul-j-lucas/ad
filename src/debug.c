@@ -39,6 +39,9 @@
 #include <stdlib.h>
 #include <sysexits.h>
 
+#define DUMP_EXPR(D,KEY,EXPR) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); ad_expr_dump_impl( (EXPR), (D) ); )
+
 #define DUMP_FORMAT(D,...) BLOCK(                   \
   FPUTNSP( (D)->indent * DUMP_INDENT, (D)->fout );  \
   FPRINTF( (D)->fout, __VA_ARGS__ ); )
@@ -103,20 +106,13 @@ static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
  * @param expr The expression to dump.  If NULL and \a key is not NULL, dumps
  * only \a key followed by `=&nbsp;NULL`.
  * @param indent The current indent.
- * @param key If not NULL, prints \a key followed by ` = ` before dumping the
- * value of \a expr.
  * @param dump The dump_state to use.
  *
  * @sa ad_expr_list_dump()
  */
-static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
-                               dump_state_t *dump ) {
+static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
   assert( expr != NULL );
   assert( dump != NULL );
-  bool const has_key = key != NULL && key[0] != '\0';
-
-  if ( has_key )
-    DUMP_FORMAT( dump, "%s: ", key );
 
   if ( expr == NULL ) {
     FPUTS( "null", dump->fout );
@@ -127,13 +123,16 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   DUMP_STR( dump, "kind", ad_expr_kind_name( expr->expr_kind ) );
-  FPUTS( ",\n", dump->fout );
   DUMP_LOC( dump, "loc", &expr->loc );
-  FPUTS( ",\n", dump->fout );
+  DUMP_KEY( dump,
+    "kind: { value: 0x%X, string: \"%s\" }",
+    expr->expr_kind, ad_expr_kind_name( expr->expr_kind )
+  );
+
+  json_state_t kind_json = JSON_INIT;
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
-      FPUTS( "\"none\"", dump->fout );
       break;
 
     case AD_EXPR_ERROR:
@@ -158,7 +157,9 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     case AD_EXPR_MATH_INC_POST:
     case AD_EXPR_MATH_INC_PRE:
     case AD_EXPR_SIZEOF:
-      ad_expr_dump_impl( expr->unary.sub_expr, "sub_expr", dump );
+      kind_json = json_object_begin( JSON_INIT, "unary", dump );
+      DUMP_EXPR( dump, "sub_expr", expr->unary.sub_expr );
+      json_object_end( kind_json, dump );
       break;
 
     // binary
@@ -186,8 +187,10 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
     case AD_EXPR_REL_LESS:
     case AD_EXPR_REL_LESS_EQ:
     case AD_EXPR_REL_NOT_EQ:
-      ad_expr_dump_impl( expr->binary.lhs_expr, "lhs_expr", dump );
-      ad_expr_dump_impl( expr->binary.rhs_expr, "rhs_expr", dump );
+      kind_json = json_object_begin( JSON_INIT, "binary", dump );
+      DUMP_EXPR( dump, "lhs_expr", expr->binary.lhs_expr );
+      DUMP_EXPR( dump, "rhs_expr", expr->binary.rhs_expr );
+      json_object_end( kind_json, dump );
       break;
 
     case AD_EXPR_STRUCT_MBR_REF:
@@ -197,9 +200,11 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, char const *key,
 
     // ternary
     case AD_EXPR_IF_ELSE:
-      ad_expr_dump_impl( expr->ternary.cond_expr, "cond_expr", dump );
-      ad_expr_dump_impl( expr->ternary.sub_expr[0], "sub_expr[0]", dump );
-      ad_expr_dump_impl( expr->ternary.sub_expr[1], "sub_expr[1]", dump );
+      kind_json = json_object_begin( JSON_INIT, "ternary", dump );
+      DUMP_EXPR( dump, "cond_expr", expr->ternary.cond_expr );
+      DUMP_EXPR( dump, "sub_expr[0]", expr->ternary.sub_expr[0] );
+      DUMP_EXPR( dump, "sub_expr[1]", expr->ternary.sub_expr[1] );
+      json_object_end( kind_json, dump );
       break;
   } // switch
 
@@ -367,10 +372,10 @@ void bool_dump( bool value, FILE *fout ) {
   FPUTS( value ? "true" : "false", fout );
 }
 
-void ad_expr_dump( ad_expr_t const *expr, char const *key, FILE *fout ) {
+void ad_expr_dump( ad_expr_t const *expr, FILE *fout ) {
   dump_state_t dump;
   dump_init( &dump, 1, fout );
-  ad_expr_dump_impl( expr, key, &dump );
+  ad_expr_dump_impl( expr, &dump );
 }
 
 void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
