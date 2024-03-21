@@ -94,7 +94,7 @@ typedef enum offset_fmt offset_fmt_t;
 extern ad_debug_t     opt_ad_debug;
 extern bool           opt_case_insensitive;
 extern color_when_t   opt_color_when;
-extern unsigned       opt_c_fmt;
+extern c_fmt_t        opt_c_fmt;
 extern unsigned       opt_group_by;
 extern size_t         opt_max_bytes;
 extern matches_t      opt_matches;
