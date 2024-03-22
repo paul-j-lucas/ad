@@ -264,6 +264,12 @@ enum ad_tid_kind {
   T_TYPEDEF = 8 << 4,                   ///< `typedef`.
 };
 
+/**
+ * Shorthand for any \ref ad_tid_kind that has a size: #T_BOOL, #T_FLOAT,
+ * #T_INT, or #T_UTF.
+ */
+#define T_ANY_SIZED               ( T_BOOL | T_FLOAT | T_INT | T_UTF )
+
 ////////// typedefs ///////////////////////////////////////////////////////////
 
 typedef struct  ad_binary_expr        ad_binary_expr_t;
@@ -754,41 +760,6 @@ endian_t ad_tid_endian( ad_tid_t tid ) {
 }
 
 /**
- * Checks whether two types are equal _except_ for their names.
- *
- * @param i_ast The first type; may be NULL.
- * @param j_ast The second type; may be NULL.
- * @return Returns `true` only if the two types are equal _except_ for their
- * names.
- */
-NODISCARD
-bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type );
-
-/**
- * Frees all the memory used by \a type.
- *
- * @param type The `ad_type` to free.  May be null.
- */
-void ad_type_free( ad_type_t *type );
-
-/**
- * Creates a new `ad_type`.
- *
- * @param tid The ID of the type to create.
- */
-NODISCARD
-ad_type_t* ad_type_new( ad_tid_t tid );
-
-/**
- * Gets the size in bits of \a t.
- *
- * @param t A pointer to the \ref ad_type to get the size of.
- * @return Returns said size.
- */
-NODISCARD
-unsigned ad_type_size( ad_type_t const *t );
-
-/**
  * Gets the \ref ad_tid_kind of \a tid.
  *
  * @param tid The \ref ad_tid_t to get the \ref ad_tid_kind of.
@@ -811,6 +782,46 @@ ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
  */
 NODISCARD
 char const* ad_tid_kind_name( ad_tid_kind_t kind );
+
+/**
+ * Checks whether two types are equal _except_ for their names.
+ *
+ * @param i_ast The first type; may be NULL.
+ * @param j_ast The second type; may be NULL.
+ * @return Returns `true` only if the two types are equal _except_ for their
+ * names.
+ */
+NODISCARD
+bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type );
+
+/**
+ * Frees all the memory used by \a type.
+ *
+ * @param type The `ad_type` to free.  May be null.
+ *
+ * @sa ad_type_new()
+ */
+void ad_type_free( ad_type_t *type );
+
+/**
+ * Creates a new \ref ad_type.
+ *
+ * @param tid The \ref ad_tid_t  of the type to create.
+ * @return Returns a new \ref ad_Type.
+ *
+ * @sa ad_type_free()
+ */
+NODISCARD
+ad_type_t* ad_type_new( ad_tid_t tid );
+
+/**
+ * Gets the size in bits of \a t.
+ *
+ * @param t A pointer to the \ref ad_type to get the size of.
+ * @return Returns said size.
+ */
+NODISCARD
+unsigned ad_type_size( ad_type_t const *t );
 
 /**
  * Un-`typedef`s \a type, i.e., if \a type is of type #T_TYPEDEFl returns the
