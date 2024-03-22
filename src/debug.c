@@ -39,6 +39,9 @@
 #include <stdlib.h>
 #include <sysexits.h>
 
+#define DUMP_BOOL(D,KEY,BOOL) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); bool_dump( (BOOL), (D)->fout ); )
+
 #define DUMP_EXPR(D,KEY,EXPR) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); ad_expr_dump_impl( (EXPR), (D) ); )
 
@@ -122,12 +125,11 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
   json_state_t const expr_json =
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
-  DUMP_STR( dump, "kind", ad_expr_kind_name( expr->expr_kind ) );
-  DUMP_LOC( dump, "loc", &expr->loc );
   DUMP_KEY( dump,
     "kind: { value: 0x%X, string: \"%s\" }",
     expr->expr_kind, ad_expr_kind_name( expr->expr_kind )
   );
+  DUMP_LOC( dump, "loc", &expr->loc );
 
   json_state_t kind_json = JSON_INIT;
 
@@ -187,15 +189,12 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
     case AD_EXPR_REL_LESS:
     case AD_EXPR_REL_LESS_EQ:
     case AD_EXPR_REL_NOT_EQ:
+    case AD_EXPR_STRUCT_MBR_REF:
+    case AD_EXPR_STRUCT_MBR_DEREF:
       kind_json = json_object_begin( JSON_INIT, "binary", dump );
       DUMP_EXPR( dump, "lhs_expr", expr->binary.lhs_expr );
       DUMP_EXPR( dump, "rhs_expr", expr->binary.rhs_expr );
       json_object_end( kind_json, dump );
-      break;
-
-    case AD_EXPR_STRUCT_MBR_REF:
-    case AD_EXPR_STRUCT_MBR_DEREF:
-      // TODO
       break;
 
     // ternary
@@ -222,7 +221,14 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
   assert( literal != NULL );
   assert( dump != NULL );
 
+  json_state_t const expr_json =
+    json_object_begin( JSON_INIT, "literal", dump );
+
   ad_tid_t const tid_base = literal->type->tid & T_MASK_TYPE;
+
+  DUMP_KEY( dump, "tid: " );
+  ad_tid_dump( literal->type->tid, dump->fout );
+
   switch ( tid_base ) {
     case T_NONE:
       FPUTS( "\"none\"", dump->fout );
@@ -247,6 +253,8 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
     case T_TYPEDEF:
       UNEXPECTED_INT_VALUE( tid_base );
   } // switch
+
+  json_object_end( expr_json, dump );
 }
 
 /**
@@ -290,6 +298,36 @@ static void dump_init( dump_state_t *dump, unsigned indent, FILE *fout ) {
     .indent = indent,
     .fout = fout
   };
+}
+
+/**
+ * Dumps \a tid in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param tid The \ref ad_tid_t to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_tid_dump_impl( ad_tid_t tid, dump_state_t *dump ) {
+  assert( dump != NULL );
+
+  json_state_t const tid_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  ad_tid_kind_t const kind = ad_tid_kind( tid );
+
+  DUMP_KEY( dump,
+    "kind: { value: 0x%X, string: \"%s\" }",
+    kind, ad_tid_kind_name( kind )
+  );
+
+  if ( (kind & T_ANY_SIZED) != 0 )
+    DUMP_KEY( dump, "size: %u", ad_tid_size( tid ) );
+
+  if ( kind == T_INT )
+    DUMP_BOOL( dump, "signed", ad_tid_is_signed( tid ) );
+
+  DUMP_STR( dump, "endian", endian_name( ad_tid_endian( tid ) ) );
+
+  json_object_end( tid_json, dump );
 }
 
 /**
@@ -379,30 +417,9 @@ void ad_expr_dump( ad_expr_t const *expr, FILE *fout ) {
 }
 
 void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
-  assert( fout != NULL );
-  ad_tid_kind_t const kind = ad_tid_kind( tid );
-  switch ( kind ) {
-    case T_BOOL:
-    case T_FLOAT:
-    case T_UTF:
-      FPRINTF( fout, "%s<%u>", ad_tid_kind_name( kind ), ad_tid_size( tid ) );
-      break;
-    case T_ENUM:
-    case T_ERROR:
-    case T_NONE:
-    case T_STRUCT:
-    case T_TYPEDEF:
-      FPUTS( ad_tid_kind_name( kind ), fout );
-      break;
-    case T_INT:
-      FPRINTF( fout, "%s%s<%u>",
-        ad_tid_is_signed( tid ) ? "" : "u",
-        ad_tid_kind_name( kind ),
-        ad_tid_size( tid )
-      );
-      break;
-  } // switch
-  FPUTS( endian_name( ad_tid_endian( tid ) ), fout );
+  dump_state_t dump;
+  dump_init( &dump, 1, fout );
+  ad_tid_dump_impl( tid, &dump );
 }
 
 void ad_type_dump( ad_type_t const *type, FILE *fout ) {
