@@ -60,10 +60,11 @@ static bool get_byte( char8_t *pbyte ) {
       *pbyte = STATIC_CAST(char8_t, c);
       return true;
     }
-    if ( unlikely( ferror( stdin ) ) )
+    if ( unlikely( ferror( stdin ) ) ) {
       fatal_error( EX_IOERR,
         "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
       );
+    }
   }
   return false;
 }
