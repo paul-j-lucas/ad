@@ -70,6 +70,20 @@ static bool get_byte( char8_t *pbyte ) {
 }
 
 /**
+ * Checks whether \a input_byte matches \a seach_byte.
+ *
+ * @param input_byte The byte read from the input source.
+ * @param search_byte The byte being searched for.
+ * @return Returns `true` only if \a input_byte matches \a search_byte.
+ */
+NODISCARD
+static inline bool is_match( char8_t input_byte, char seach_byte ) {
+  if ( opt_case_insensitive )
+    input_byte = STATIC_CAST( char8_t, tolower( input_byte ) );
+  return input_byte == STATIC_CAST( char8_t, seach_byte );
+}
+
+/**
  * Gets a byte and whether it matches one of the bytes in the search buffer.
  *
  * @param pbyte A pointer to receive the byte.
@@ -111,17 +125,12 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
 #define GOTO_STATE(S)       { buf_pos = 0; state = (S); continue; }
 #define RETURN(BYTE)        BLOCK( *pbyte = (BYTE); return true; )
 
-#define MAYBE_NO_CASE(BYTE)                                       \
-  ( opt_case_insensitive ?                                        \
-    STATIC_CAST(char8_t, tolower( STATIC_CAST(char, (BYTE)) )) :  \
-    (BYTE) )
-
       case S_READING:
         if ( unlikely( !get_byte( &byte ) ) )
           GOTO_STATE( S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
-        if ( MAYBE_NO_CASE( byte ) != STATIC_CAST(char8_t, opt_search_buf[0]) )
+        if ( !is_match( byte, opt_search_buf[0] ) )
           RETURN( byte );               // searching, but no match yet
         //
         // The read byte matches the first byte of the search buffer: start
@@ -157,8 +166,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_drain = buf_pos;
           GOTO_STATE( S_NOT_MATCHED );
         }
-        if ( MAYBE_NO_CASE( byte )
-             == STATIC_CAST(char8_t, opt_search_buf[ buf_pos ]) ) {
+        if ( is_match( byte, opt_search_buf[ buf_pos ] ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -201,7 +209,6 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         return false;
 
 #undef GOTO_STATE
-#undef MAYBE_NO_CASE
 #undef RETURN
 
     } // switch
