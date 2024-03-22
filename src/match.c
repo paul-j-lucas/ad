@@ -70,17 +70,17 @@ static bool get_byte( char8_t *pbyte ) {
 }
 
 /**
- * Checks whether \a input_byte matches \a seach_byte.
+ * Checks whether \a input_byte matches \a search_byte.
  *
  * @param input_byte The byte read from the input source.
  * @param search_byte The byte being searched for.
  * @return Returns `true` only if \a input_byte matches \a search_byte.
  */
 NODISCARD
-static inline bool is_match( char8_t input_byte, char seach_byte ) {
+static inline bool is_match( char8_t input_byte, char search_byte ) {
   if ( opt_case_insensitive )
     input_byte = STATIC_CAST( char8_t, tolower( input_byte ) );
-  return input_byte == STATIC_CAST( char8_t, seach_byte );
+  return input_byte == STATIC_CAST( char8_t, search_byte );
 }
 
 /**
