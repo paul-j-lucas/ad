@@ -59,11 +59,17 @@
 #define DUMP_LOC(D,KEY,LOC) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); ad_loc_dump( (LOC), (D)->fout ); )
 
+#define DUMP_REP(D,KEY,REP) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); ad_rep_dump_impl( (REP), (D) ); )
+
 #define DUMP_SNAME(D,KEY,SNAME) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); sname_dump( (SNAME), (D)->fout ); )
 
 #define DUMP_STR(D,KEY,STR) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', (D)->fout ); )
+
+#define DUMP_TID(D,KEY,TID) BLOCK( \
+  DUMP_KEY( dump, KEY ": " ); ad_tid_dump( (TID), (D)->fout ); )
 
 /// @endcond
 
@@ -226,8 +232,7 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
 
   ad_tid_t const tid_base = literal->type->tid & T_MASK_TYPE;
 
-  DUMP_KEY( dump, "tid: " );
-  ad_tid_dump( literal->type->tid, dump->fout );
+  DUMP_TID( dump, "tid", literal->type->tid );
 
   switch ( tid_base ) {
     case T_NONE:
@@ -284,20 +289,27 @@ static void ad_loc_dump( ad_loc_t const *loc, FILE *fout ) {
 }
 
 /**
- * Initializes a dump_state.
+ * Dumps \a rep in [JSON5](https://json5.org) format (for debugging).
  *
- * @param dump The dump_state to initialize.
- * @param indent The current indent.
- * @param fout The `FILE` to dump to.
+ * @param rep The \ref ad_rep to dump.
+ * @param dump The dump_state to use.
  */
-static void dump_init( dump_state_t *dump, unsigned indent, FILE *fout ) {
+static void ad_rep_dump_impl( ad_rep_t const *rep, dump_state_t *dump ) {
+  assert( rep != NULL );
   assert( dump != NULL );
-  assert( fout != NULL );
 
-  *dump = (dump_state_t){
-    .indent = indent,
-    .fout = fout
-  };
+  json_state_t const rep_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_KEY( dump,
+    "kind: { value: 0x%X, string: \"%s\" }",
+    rep->kind, ad_rep_kind_name( rep->kind )
+  );
+
+  if ( rep->expr != NULL )
+    DUMP_EXPR( dump, "expr", rep->expr );
+
+  json_object_end( rep_json, dump );
 }
 
 /**
@@ -328,6 +340,50 @@ static void ad_tid_dump_impl( ad_tid_t tid, dump_state_t *dump ) {
   DUMP_STR( dump, "endian", endian_name( ad_tid_endian( tid ) ) );
 
   json_object_end( tid_json, dump );
+}
+
+/**
+ * Dumps \a type in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param type The \ref ad_type to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
+  assert( type != NULL );
+  assert( dump != NULL );
+
+  json_state_t const type_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_SNAME( dump, "sname", &type->sname );
+  DUMP_TID( dump, "tid", type->tid );
+  DUMP_LOC( dump, "loc", &type->loc );
+
+  if ( type->size_expr != NULL )
+    DUMP_EXPR( dump, "size_expr", type->size_expr );
+  if ( type->endian_expr != NULL )
+    DUMP_EXPR( dump, "endian_expr", type->endian_expr );
+
+  DUMP_REP( dump, "rep", &type->rep );
+
+  json_object_end( type_json, dump );
+}
+
+/**
+ * Initializes a dump_state.
+ *
+ * @param dump The dump_state to initialize.
+ * @param indent The current indent.
+ * @param fout The `FILE` to dump to.
+ */
+static void dump_init( dump_state_t *dump, unsigned indent, FILE *fout ) {
+  assert( dump != NULL );
+  assert( fout != NULL );
+
+  *dump = (dump_state_t){
+    .indent = indent,
+    .fout = fout
+  };
 }
 
 /**
@@ -423,10 +479,9 @@ void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
 }
 
 void ad_type_dump( ad_type_t const *type, FILE *fout ) {
-  assert( type != NULL );
-  assert( fout != NULL );
-
-  // TODO
+  dump_state_t dump;
+  dump_init( &dump, 1, fout );
+  ad_type_dump_impl( type, &dump );
 }
 
 char const* endian_name( endian_t e ) {

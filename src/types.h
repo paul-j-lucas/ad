@@ -708,6 +708,15 @@ union user_data {
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
+ * Gets the name of \a kind.
+ *
+ * @param kind The \ref ad_rep_kind to get the name of.
+ * @return Returns said name.
+ */
+NODISCARD
+char const* ad_rep_kind_name( ad_rep_kind_t kind );
+
+/**
  * Frees all the memory used by \a statement.
  *
  * @param statement The `ad_statement` to free.  May be NULL.

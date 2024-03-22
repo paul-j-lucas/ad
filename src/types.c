@@ -119,6 +119,17 @@ static void ad_enum_value_free( ad_enum_value_t *value ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+char const* ad_rep_kind_name( ad_rep_kind_t kind ) {
+  switch ( kind ) {
+    case AD_REP_1     : return "1";
+    case AD_REP_EXPR  : return "expr";
+    case AD_REP_0_1   : return "?";
+    case AD_REP_0_MORE: return "*";
+    case AD_REP_1_MORE: return "+";
+  } // switch
+  UNEXPECTED_INT_VALUE( kind );
+}
+
 void ad_statement_free( ad_statement_t *statement ) {
   if ( statement != NULL ) {
     switch ( statement->kind ) {
