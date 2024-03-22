@@ -146,7 +146,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
       case S_MATCHING:
         if ( ++buf_pos == opt_search_len ) {
           //
-          // We've reached the end of the serch buffer, hence the current
+          // We've reached the end of the search buffer, hence the current
           // sequence of bytes fully matches: we can now drain the match buffer
           // and return the bytes individually to the caller denoting that all
           // matched.
