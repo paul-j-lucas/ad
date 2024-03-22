@@ -1018,6 +1018,21 @@ void parse_options( int argc, char const *argv[] ) {
       usage( EX_USAGE );
   } // switch
 
+  if ( opt_search_buf != NULL ) {       // searching for a string?
+    opt_search_len = strlen( opt_search_buf );
+  }
+  else if ( opt_search_endian != ENDIAN_NONE ) {  // searching for a number?
+    if ( opt_search_len == 0 )          // default to smallest possible size
+      opt_search_len = int_len( opt_search_number );
+    int_rearrange_bytes(
+      &opt_search_number, opt_search_len, opt_search_endian
+    );
+    opt_search_buf = POINTER_CAST( char*, &opt_search_number );
+  }
+
+  if ( opt_max_bytes == 0 )             // degenerate case
+    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
+
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
     static char utf8_pad_buf[ UTF8_LEN_MAX + 1 /*NULL*/ ];

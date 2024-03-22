@@ -26,12 +26,9 @@
 #include "util.h"
 
 // standard
-#include <assert.h>
-#include <stddef.h>
+#include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
-#include <string.h>                     /* for memset(), str...() */
 #include <sys/types.h>                  /* for off_t */
-#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -52,42 +49,10 @@ size_t      row_bytes = ROW_BYTES_DEFAULT;
 /**
  * Cleans up by doing:
  *  + Freeing dynamicaly allocated memory.
- *  + Closing files.
  * This function is called via \c atexit().
  */
 static void ad_cleanup( void ) {
   free_now();
-}
-
-/**
- * Performs initialization by doing:
- *  + Parsing command-line options.
- *  + Initializing search variables.
- *  + Initializing the elided separator.
- *
- * @param argc The command-line argument count.
- * @param argv The command-line argument values.
- */
-static void ad_init( int argc, char const *argv[const] ) {
-  me = base_name( argv[0] );
-  ATEXIT( ad_cleanup );
-  parse_options( argc, argv );
-  colors_init();
-
-  if ( opt_search_buf != NULL ) {       // searching for a string?
-    opt_search_len = strlen( opt_search_buf );
-  }
-  else if ( opt_search_endian != ENDIAN_NONE ) {  // searching for a number?
-    if ( opt_search_len == 0 )          // default to smallest possible size
-      opt_search_len = int_len( opt_search_number );
-    int_rearrange_bytes(
-      &opt_search_number, opt_search_len, opt_search_endian
-    );
-    opt_search_buf = POINTER_CAST( char*, &opt_search_number );
-  }
-
-  if ( opt_max_bytes == 0 )             // degenerate case
-    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 }
 
 /////////// main //////////////////////////////////////////////////////////////
@@ -100,7 +65,11 @@ static void ad_init( int argc, char const *argv[const] ) {
  * @return Returns 0 on success, non-zero on failure.
  */
 int main( int argc, char const *argv[const] ) {
-  ad_init( argc, argv );
+  me = base_name( argv[0] );
+  ATEXIT( ad_cleanup );
+  parse_options( argc, argv );
+  colors_init();
+
   if ( opt_reverse )
     reverse_dump_file(); 
   else if ( opt_c_fmt != CFMT_NONE )
