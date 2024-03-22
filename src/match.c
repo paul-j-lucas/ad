@@ -214,10 +214,11 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
  * @param byte The byte to unget.
  */
 static void unget_byte( char8_t byte ) {
-  if ( unlikely( ungetc( byte, stdin ) == EOF ) )
+  if ( unlikely( ungetc( byte, stdin ) == EOF ) ) {
     fatal_error( EX_IOERR,
       "\"%s\": unget byte failed: %s\n", fin_path, STRERROR()
     );
+  }
   --total_bytes_read;
 }
 
