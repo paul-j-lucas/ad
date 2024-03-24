@@ -415,6 +415,8 @@ _GL_INLINE_HEADER_BEGIN
  * @param TYPE The type to allocate.
  * @param N The number of objects of \a TYPE to allocate.
  * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
+ *
+ * @sa check_realloc()
  */
 #define MALLOC(TYPE,N) \
   check_realloc( NULL, sizeof(TYPE) * STATIC_CAST( size_t, (N) ) )
