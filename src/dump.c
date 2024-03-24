@@ -345,7 +345,9 @@ void dump_file_c( void ) {
   match_bits_t  match_bits;             // not used when dumping in C
 
   // prime the pump by reading the first row
-  size_t row_len = match_row( bytes, ROW_BYTES_C, &match_bits, NULL, NULL );
+  size_t row_len = match_row(
+    bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL, /*match_buf=*/NULL
+  );
   if ( row_len == 0 )
     goto empty;
 
