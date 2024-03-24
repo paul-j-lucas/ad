@@ -1,5 +1,6 @@
 2024-03-24  Paul J. Lucas <paul@lucasmail.org>
 
+   * dump.c: Made kmps const.
    * options.c: Now using long options --reverse and --version for usage
      message.
    * ad.1: Fixed option for hexadecimal.
