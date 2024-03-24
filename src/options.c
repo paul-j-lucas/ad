@@ -556,9 +556,9 @@ _Noreturn
 static void usage( int status ) {
   fprintf( status == EX_OK ? stdout : stderr,
 "usage: %s [options] [+offset] [infile [outfile]]\n"
-"       %s -" SOPT(REVERSE) " [-" SOPT(DECIMAL) SOPT(OCTAL) SOPT(HEXADECIMAL) "] [infile [outfile]]\n"
-"       %s -" SOPT(HELP) "\n"
-"       %s -" SOPT(VERSION) "\n"
+"       %s --reverse [-" SOPT(DECIMAL) SOPT(OCTAL) SOPT(HEXADECIMAL) "] [infile [outfile]]\n"
+"       %s --help\n"
+"       %s --version\n"
 "options:\n"
 "  --big-endian=NUM        " UOPT(BIG_ENDIAN)
                             "Search for big-endian number.\n"
