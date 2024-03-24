@@ -1,3 +1,15 @@
+2024-03-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Now using long options --reverse and --version for usage
+     message.
+   * ad.1: Fixed option for hexadecimal.
+
+2024-03-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: Changed MAYBE_NO_CASE() into is_match().
+   * ad.c, options.c: Moved opt_search_len/buf setting code into
+     parse_options().
+
 2024-03-21  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, ad.h, dump.c, match.c, options.c, options.h:
