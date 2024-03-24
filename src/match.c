@@ -197,7 +197,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // to re-read them and re-compare them since they will match; hence,
           // go to S_MATCHING_CONT.
           //
-          GOTO_STATE( kmp, buf_pos > 0 ? S_MATCHING_CONT : S_READING );
+          GOTO_STATE( kmp, kmp > 0 ? S_MATCHING_CONT : S_READING );
         }
         *matches = state == S_MATCHED;
         RETURN( match_buf[ buf_pos++ ] );
