@@ -192,7 +192,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         //
         if ( buf_pos == buf_drain ) {
           //
-          // We've drained all the bytes: if kmp != 0, it means we already have
+          // We've drained all the bytes: if kmp > 0, it means we already have
           // a partial match further along in the read bytes so we don't have
           // to re-read them and re-compare them since they will match; hence,
           // go to S_MATCHING_CONT.
