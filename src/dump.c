@@ -269,12 +269,12 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
 /////////// extern functions //////////////////////////////////////////////////
 
 void dump_file( void ) {
-  bool        any_matches = false;      // if matching, any data matched yet?
-  row_buf_t   buf[2], *curr = buf, *next = buf + 1;
-  bool        is_same_row = false;      // current row same as previous?
-  kmp_t      *kmps = NULL;              // used only by match_row()
-  char8_t    *match_buf = NULL;         // used only by match_row()
-  char const *off_fmt = get_offset_fmt_format();
+  bool          any_matches = false;    // if matching, any data matched yet?
+  row_buf_t     buf[2], *curr = buf, *next = buf + 1;
+  bool          is_same_row = false;    // current row same as previous?
+  kmp_t const  *kmps = NULL;            // used only by match_row()
+  char8_t      *match_buf = NULL;       // used only by match_row()
+  char const   *off_fmt = get_offset_fmt_format();
 
   if ( opt_search_len > 0 ) {           // searching for anything?
     kmps = kmp_init( opt_search_buf, opt_search_len );
@@ -334,7 +334,7 @@ void dump_file( void ) {
     EPRINTF( "%lu\n", total_matches );
   }
 
-  free( kmps );
+  FREE( kmps );
   free( match_buf );
 
   exit( opt_search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
