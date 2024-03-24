@@ -1,5 +1,6 @@
 2024-03-24  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c: Reworked GOTO_STATE().
    * options.c: Added STATIC_CAST()s.
    * dump.c: Made kmps const.
    * options.c: Now using long options --reverse and --version for usage
