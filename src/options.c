@@ -691,14 +691,14 @@ void parse_options( int argc, char const *argv[] ) {
       break;
     switch ( opt ) {
       case COPT(BIG_ENDIAN):
-        opt_search_number = parse_ull( optarg );
+        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_BIG;
         break;
       case COPT(BITS):
-        size_in_bits = parse_ull( optarg );
+        size_in_bits = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(BYTES):
-        size_in_bytes = parse_ull( optarg );
+        size_in_bytes = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(C_ARRAY):
         opt_c_fmt = parse_c_fmt( optarg );
@@ -719,7 +719,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_offset_fmt = OFMT_HEX;
         break;
       case COPT(HOST_ENDIAN):
-        opt_search_number = parse_ull( optarg );
+        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
 #ifdef WORDS_BIGENDIAN
         opt_search_endian = ENDIAN_BIG;
 #else
@@ -733,7 +733,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_case_insensitive = true;
         break;
       case COPT(LITTLE_ENDIAN):
-        opt_search_number = parse_ull( optarg );
+        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_LITTLE;
         break;
       case COPT(MATCHING_ONLY):
@@ -743,7 +743,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_max_bytes = parse_offset( optarg );
         break;
       case COPT(MAX_LINES):
-        max_lines = parse_ull( optarg );
+        max_lines = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(NO_ASCII):
         opt_print_ascii = false;
