@@ -111,9 +111,8 @@ size_t utf32_8( char32_t cp, char *u8 );
  * sequence comprising an encoded character.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_start( char c ) {
-  char8_t const c8 = STATIC_CAST( char8_t, c );
-  return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
+bool utf8_is_start( char8_t c ) {
+  return c < 0x80 || (c >= 0xC2 && c < 0xFE);
 }
 
 /**
@@ -126,9 +125,8 @@ bool utf8_is_start( char c ) {
  * byte sequence comprising an encoded character.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_cont( char c ) {
-  char8_t const c8 = STATIC_CAST( char8_t, c );
-  return c8 >= 0x80 && c8 < 0xC0;
+bool utf8_is_cont( char8_t c ) {
+  return c >= 0x80 && c < 0xC0;
 }
 
 /**

@@ -98,7 +98,7 @@ static unsigned utf8_collect( row_buf_t const *curr, size_t curr_pos,
       }
 
       char8_t const byte = row->bytes[ curr_pos ];
-      if ( unlikely( !utf8_is_cont( STATIC_CAST(char, byte) ) ) )
+      if ( unlikely( !utf8_is_cont( byte ) ) )
         return 0;
       *utf8_char++ = byte;
     } // for
