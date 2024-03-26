@@ -139,11 +139,9 @@ bool utf8_is_cont( char c ) {
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
 NODISCARD AD_UNICODE_H_INLINE
-size_t utf8_len( char start ) {
+unsigned utf8_len( char start ) {
   extern char8_t const UTF8_LEN_TABLE[];
-  return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ]
-  );
+  return UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
