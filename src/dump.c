@@ -78,13 +78,13 @@ static inline bool print_readability_space( size_t byte_pos ) {
  * the bytes do not comprise a valid UTF-8 character.
  */
 NODISCARD
-static size_t utf8_collect( row_buf_t const *curr, size_t curr_pos,
-                            row_buf_t const *next, char8_t *utf8_char ) {
+static unsigned utf8_collect( row_buf_t const *curr, size_t curr_pos,
+                              row_buf_t const *next, char8_t *utf8_char ) {
   assert( curr != NULL );
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  size_t const len = utf8_len( STATIC_CAST( char, curr->bytes[ curr_pos ] ) );
+  unsigned const len = utf8_len( curr->bytes[ curr_pos ] );
   if ( len > 1 ) {
     row_buf_t const *row = curr;
     *utf8_char++ = row->bytes[ curr_pos++ ];
@@ -210,7 +210,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
       else
         COLOR_END_IF( matches_changed, sgr_ascii_match );
 
-      static size_t utf8_count;
+      static unsigned utf8_count;
       if ( utf8_count > 1 ) {
         PUTS( opt_utf8_pad );
         --utf8_count;
