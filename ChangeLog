@@ -1,5 +1,6 @@
 2024-03-26  Paul J. Lucas <paul@lucasmail.org>
 
+   * unicode.h: Removed #include "util.h".
    * dump.c, unicode.h: utf8_is_start() and utf8_is_cont() now take char8_t.
    * dump.c, unicode.h: utf8_len() now takes char8_t.
    * unicode.h: s/size_t/unsigned/
