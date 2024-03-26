@@ -1,3 +1,7 @@
+2024-03-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * unicode.h: s/size_t/unsigned/
+
 2024-03-24  Paul J. Lucas <paul@lucasmail.org>
 
    * match.c: Reworked GOTO_STATE().
