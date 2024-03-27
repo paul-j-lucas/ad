@@ -57,42 +57,6 @@ static void ad_cleanup( void ) {
   free_now();
 }
 
-<<<<<<< HEAD
-/**
- * Performs initialization by doing:
- *  + Parsing command-line options.
- *  + Initializing search variables.
- *  + Initializing the elided separator.
- *
- * @param argc The command-line argument count.
- * @param argv The command-line argument values.
- */
-static void ad_init( int argc, char const *argv[const] ) {
-  me = base_name( argv[0] );
-  ATEXIT( ad_cleanup );
-  parse_options( argc, argv );
-  colors_init();
-  lexer_init();
-  ad_typedefs_init();
-
-  if ( opt_search_buf != NULL ) {       // searching for a string?
-    opt_search_len = strlen( opt_search_buf );
-  }
-  else if ( opt_search_endian != ENDIAN_NONE ) {  // searching for a number?
-    if ( opt_search_len == 0 )          // default to smallest possible size
-      opt_search_len = int_len( opt_search_number );
-    int_rearrange_bytes(
-      &opt_search_number, opt_search_len, opt_search_endian
-    );
-    opt_search_buf = POINTER_CAST( char*, &opt_search_number );
-  }
-
-  if ( opt_max_bytes == 0 )             // degenerate case
-    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
-}
-
-=======
->>>>>>> master
 /////////// main //////////////////////////////////////////////////////////////
 
 /**

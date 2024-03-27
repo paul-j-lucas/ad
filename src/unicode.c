@@ -156,7 +156,7 @@ size_t utf32_8( char32_t cp, char *u8 ) {
 
 char32_t utf8_32_impl( char const *s ) {
   assert( s != NULL );
-  size_t const len = utf8_len( *s );
+  unsigned const len = utf8_len( STATIC_CAST( char8_t, *s ) );
   assert( len >= 1 );
 
   char32_t cp = 0;

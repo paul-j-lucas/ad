@@ -43,6 +43,9 @@ typedef uint16_t char16_t;              /* C11's char16_t */
 typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
 
+// local
+#include "ad.h"
+
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UNICODE_H_INLINE
 # define AD_UNICODE_H_INLINE _GL_INLINE
@@ -143,7 +146,7 @@ size_t utf32_8( char32_t cp, char *u8 );
 NODISCARD AD_UNICODE_H_INLINE
 char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
-  char32_t const cp = STATIC_CAST( uint8_t, *s );
+  char32_t const cp = (uint8_t)*s;
   return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
 }
 
