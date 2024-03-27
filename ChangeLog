@@ -1,3 +1,10 @@
+2024-03-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Updated version.
+   * ad.1, ad.h, dump.c, match.c, match.h, options.c, options.h, util.h,
+     test/Makefile.am, ad-n-Snst.txt, ad-n.txt, ad-n6.txt, ad-n-Snst.test,
+     ad-n.test, ad-n6.test: Can now do strings(1)-like dumps.
+
 2024-03-26  Paul J. Lucas <paul@lucasmail.org>
 
    * unicode.h: Removed #include "util.h".
