@@ -274,16 +274,24 @@ void dump_file( void ) {
   bool          is_same_row = false;    // current row same as previous?
   kmp_t const  *kmps = NULL;            // used only by match_row()
   char8_t      *match_buf = NULL;       // used only by match_row()
+  size_t        match_len = 0;          // used only by match_row()
   char const   *off_fmt = get_offset_fmt_format();
 
   if ( opt_search_len > 0 ) {           // searching for anything?
-    kmps = kmp_init( opt_search_buf, opt_search_len );
+    if ( opt_strings ) {
+      match_len = opt_search_len < STRINGS_LEN_DEFAULT ?
+        STRINGS_LEN_DEFAULT : opt_search_len;
+    } else {
+      kmps = kmp_init( opt_search_buf, opt_search_len );
+      match_len = opt_search_len;
+    }
     match_buf = MALLOC( char8_t, opt_search_len );
   }
 
   // prime the pump by reading the first row
-  curr->len =
-    match_row( curr->bytes, row_bytes, &curr->match_bits, kmps, match_buf );
+  curr->len = match_row(
+    curr->bytes, row_bytes, &curr->match_bits, kmps, &match_buf, &match_len
+  );
 
   while ( curr->len > 0 ) {
     //
@@ -294,7 +302,9 @@ void dump_file( void ) {
     // row is the last row if the length of the next row is zero.
     //
     next->len = curr->len < row_bytes ? 0 :
-      match_row( next->bytes, row_bytes, &next->match_bits, kmps, match_buf );
+      match_row(
+        next->bytes, row_bytes, &next->match_bits, kmps, &match_buf, &match_len
+      );
 
     if ( opt_matches != MATCHES_ONLY_PRINT ) {
       bool const is_last_row = next->len == 0;
@@ -346,7 +356,8 @@ void dump_file_c( void ) {
 
   // prime the pump by reading the first row
   size_t row_len = match_row(
-    bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL, /*match_buf=*/NULL
+    bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
+    /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
   );
   if ( row_len == 0 )
     goto empty;
@@ -372,7 +383,8 @@ void dump_file_c( void ) {
     if ( row_len != ROW_BYTES_C )
       break;
     row_len = match_row(
-      bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL, /*match_buf=*/NULL
+      bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
+      /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
     );
   } // for
 

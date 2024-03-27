@@ -38,6 +38,7 @@
 #define ROW_BYTES_DEFAULT         16    /**< Default bytes dumped on a row. */
 #define ROW_BYTES_C               8     /**< Bytes dumped on a row in C. */
 #define ROW_BYTES_MAX             32    /**< Maximum bytes dumped on a row. */
+#define STRINGS_LEN_DEFAULT       4     /**< Default **strings**(1) length. */
 
 /**
  * Byte endian order.

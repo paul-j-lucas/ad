@@ -70,17 +70,34 @@ static bool get_byte( char8_t *pbyte ) {
 }
 
 /**
- * Checks whether \a input_byte matches \a search_byte.
+ * Checks whether \a input_byte is either:
+ *  + The byte at \a pos of \ref opt_search_buf (if \ref opt_strings is
+ *    `false`); or:
+ *  + A printable character (if \ref opt_strings is `true`).
  *
  * @param input_byte The byte read from the input source.
- * @param search_byte The byte being searched for.
- * @return Returns `true` only if \a input_byte matches \a search_byte.
+ * @param pos The positition within \ref opt_search_buf to match against, but
+ * only if \ref opt_strings is `false`.
+ * @return Returns `true` only if \a input_byte matches.
  */
 NODISCARD
-static inline bool is_match( char8_t input_byte, char search_byte ) {
+static bool is_match( char8_t input_byte, size_t pos ) {
+  if ( opt_strings ) {
+    switch ( input_byte ) {
+      case '\f': return (opt_strings_opts & STRINGS_OPT_FORMFEED) != 0;
+      case '\n': return (opt_strings_opts & STRINGS_OPT_NEWLINE ) != 0;
+      case '\r': return (opt_strings_opts & STRINGS_OPT_RETURN  ) != 0;
+      case ' ' : return (opt_strings_opts & STRINGS_OPT_SPACE   ) != 0;
+      case '\t': return (opt_strings_opts & STRINGS_OPT_TAB     ) != 0;
+      case '\v': return (opt_strings_opts & STRINGS_OPT_VTAB    ) != 0;
+      default  : return ascii_is_graph( input_byte );
+    } // switch
+  }
+
   if ( opt_case_insensitive )
     input_byte = STATIC_CAST( char8_t, tolower( input_byte ) );
-  return input_byte == STATIC_CAST( char8_t, search_byte );
+
+  return input_byte == STATIC_CAST( char8_t, opt_search_buf[ pos ] );
 }
 
 /**
@@ -89,13 +106,14 @@ static inline bool is_match( char8_t input_byte, char search_byte ) {
  * @param pbyte A pointer to receive the byte.
  * @param matches A pointer to receive whether the byte matches.
  * @param kmps A pointer to the array of KMP values to use.
- * @param match_buf A pointer to a buffer to use while matching.
+ * @param pmatch_buf A pointer to a pointer to a buffer to use while matching.
  * It must be at least as large as the search buffer.
+ * @param pmatch_len A pointer to the size of \a *pmatch_buf or NULL.
  * @return Returns \c true if a byte was read successfully.
  */
 NODISCARD
 static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
-                        char8_t *match_buf ) {
+                        char8_t **pmatch_buf, size_t *pmatch_len ) {
   enum state {
     S_READING,                          // just reading; not matching
     S_MATCHING,                         // matching search bytes
@@ -130,26 +148,35 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( 0, S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
-        if ( !is_match( byte, opt_search_buf[0] ) )
+        if ( !is_match( byte, 0 ) )
           RETURN( byte );               // searching, but no match yet
         //
-        // The read byte matches the first byte of the search buffer: start
-        // storing bytes in the match buffer and try to match the rest of the
-        // search buffer.  While matching, we can not return to the caller
-        // since we won't know whether the current sequence of bytes will fully
-        // match the search buffer until we reach its end.
+        // For non-strings(1) searches, the read byte matches the first byte of
+        // opt_search_buf: start storing bytes in the match buffer and try to
+        // match the rest of opt_search_buf;
         //
-        match_buf[0] = byte;
+        // For strings(1) searches, the read byte is the start of a string:
+        // start storing bytes in the match buffer and try to match at least
+        // opt_search_len total string characters.
+        //
+        // While matching, we can't return to the caller since we don't know
+        // whether the current byte sequence will either fully match
+        // opt_search_buf (for non-strings(1) searches) or will match at least
+        // opt_search_len total string characters possibly null terminated (for
+        // strings(1) searches).
+        //
+        (*pmatch_buf)[0] = byte;
         kmp = 0;
         GOTO_STATE( 0, S_MATCHING );
 
       case S_MATCHING:
-        if ( ++buf_pos == opt_search_len ) {
+        ++buf_pos;
+        if ( !opt_strings && buf_pos == opt_search_len ) {
           //
-          // We've reached the end of the search buffer, hence the current
-          // sequence of bytes fully matches: we can now drain the match buffer
-          // and return the bytes individually to the caller denoting that all
-          // matched.
+          // For non-strings(1) matches, we've reached the end of the search
+          // buffer, hence the current sequence of bytes fully matches: we can
+          // now drain the match buffer and return the bytes individually to
+          // the caller denoting that all matched.
           //
           ++total_matches;
           buf_drain = buf_pos;
@@ -166,22 +193,44 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_drain = buf_pos;
           GOTO_STATE( 0, S_NOT_MATCHED );
         }
-        if ( is_match( byte, opt_search_buf[ buf_pos ] ) ) {
+        if ( is_match( byte, buf_pos ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
           //
-          match_buf[ buf_pos ] = byte;
+          if ( buf_pos == *pmatch_len ) {
+            *pmatch_len <<= 1;
+            REALLOC( *pmatch_buf, *pmatch_len );
+          }
+          (*pmatch_buf)[ buf_pos ] = byte;
           GOTO_STATE( buf_pos, S_MATCHING ); // in case we were S_MATCHING_CONT
         }
+
         //
         // The read byte mismatches a byte in the search buffer: unget the
         // mismatched byte and now drain the bytes that occur nowhere else in
         // the search buffer (thanks to the KMP algorithm).
         //
         unget_byte( byte );
-        kmp = kmps[ buf_pos ];
+        if ( kmps != NULL )
+          kmp = kmps[ buf_pos ];
         buf_drain = buf_pos - kmp;
+
+        //
+        // However, for strings(1) matches, if we've matched at least
+        // opt_search_len bytes and either:
+        //
+        //  + We don't require a terminating null byte; or:
+        //  + We require a terminating null byte and the byte is a null byte,
+        //
+        // then we've matched a string.
+        //
+        if ( opt_strings && buf_pos >= opt_search_len &&
+             ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || byte == '\0') ) {
+          ++total_matches;
+          GOTO_STATE( 0, S_MATCHED );
+        }
+
         GOTO_STATE( 0, S_NOT_MATCHED );
 
       case S_MATCHED:
@@ -200,7 +249,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( kmp, kmp > 0 ? S_MATCHING_CONT : S_READING );
         }
         *matches = state == S_MATCHED;
-        RETURN( match_buf[ buf_pos++ ] );
+        RETURN( (*pmatch_buf)[ buf_pos++ ] );
 
       case S_DONE:
         return false;
@@ -248,7 +297,8 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 }
 
 size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
-                  kmp_t const *kmps, char8_t *match_buf ) {
+                  kmp_t const *kmps, char8_t **pmatch_buf,
+                  size_t *pmatch_len ) {
   assert( row_buf != NULL );
   assert( row_len <= row_bytes );
   assert( match_bits != NULL );
@@ -257,8 +307,10 @@ size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
   size_t buf_len;
   for ( buf_len = 0; buf_len < row_len; ++buf_len ) {
     bool matches;
-    if ( !match_byte( row_buf + buf_len, &matches, kmps, match_buf ) )
+    if ( !match_byte( row_buf + buf_len, &matches, kmps,
+                      pmatch_buf, pmatch_len ) ) {
       break;
+    }
     if ( matches )
       *match_bits |= 1u << buf_len;
   } // for

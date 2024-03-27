@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "March 24, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "March 27, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -273,9 +273,9 @@ Note that this greatly diminishes the usefulness of the
 .BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
-.BR \-\-string-ignore-case ,
+.BR \-\-strings ,
 and
-.B \-S
+.B \-n
 options since matches won't be highlighted.
 (However,
 the
@@ -462,20 +462,68 @@ Searches for the string
 .I s
 and highlights matches.
 .TP
-.BI \-\-string-ignore-case \f1=\fPs "\f1 | \fP" "" \-S " s"
-Searches for the string
-.I s
-in a case-insensitive manner
+.BI \-\-strings \f1[\fP "=" n \f1]\fP " \f1|\fP " \-n\f1[\fP n \f1]\fP
+Searches for all ASCII strings
+of at least length
+.I n
+like
+.BR strings (1)
 and highlights matches.
-(This option is the same as specifying both the
-.B \-\-string
+The default for
+.I n
+is 4.
+.TP
+.BR \-\-strings-opts \f1=\fPs "\f1 | \fP" "" \-S " s"
+Specifies options for
+.B \-\-strings
+matching.
+Valid values for
+.I s
+are:
+.RS 8
+.TP 4
+.PD 0
+.B 0
+Strings must end in a null byte.
+.TP
+.B f
+Strings may contain form-feed characters.
+.TP
+.B n
+Strings may contain newline characters.
+.TP
+.B r
+Strings may contain carriage return characters.
+.TP
+.B s
+Strings may contain space characters.
+.TP
+.B t
+Strings may contain tab characters.
+.TP
+.B v
+Strings may contain vertical tab characters.
+.TP
+.B w
+Strings may contain any whitespace characters.
+Same as
+.BR fnrstv .
+.RE
+.PD
+.IP
+Multiple options may be given,
+one immediately after the other.
+Alternatively,
+\f(CW*\fP may be given to mean ``all''
 or
-.B \-s
-and
-.B \-\-ignore-case
-or
-.B \-i
-options.)
+\f(CW-\fP may be given to mean ``none.''
+The default is
+.BR 0nst .
+.IP
+Specifying
+.B \-\-strings-opts
+implies
+.BR \-\-strings .
 .TP
 .BR \-\-total-matches " | " \-t
 Additionally prints the total number of matches
@@ -578,7 +626,9 @@ No matches if one of
 .BR \-H ,
 .BR \-\-string ,
 .BR \-s ,
-.BR \-\-string-ignore-case ,
+.BR \-\-strings ,
+.BR \-n ,
+.BR \-\-strings-opts ,
 or
 .B \-S
 was specified.
@@ -720,6 +770,7 @@ Paul J. Lucas
 .BR hexdump (1),
 .BR od (1),
 .BR less (1),
+.BR strings (1),
 .BR xxd (1),
 .BR fstat (2),
 .BR isatty (3),

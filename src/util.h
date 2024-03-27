@@ -24,6 +24,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
+#include "unicode.h"
 
 // standard
 #include <errno.h>
@@ -417,6 +418,7 @@ _GL_INLINE_HEADER_BEGIN
  * @return Returns a pointer to \a N uninitialized objects of \a TYPE.
  *
  * @sa check_realloc()
+ * @sa #REALLOC()
  */
 #define MALLOC(TYPE,N) \
   check_realloc( NULL, sizeof(TYPE) * STATIC_CAST( size_t, (N) ) )
@@ -504,6 +506,19 @@ _GL_INLINE_HEADER_BEGIN
 #define PUTS(S)                   FPUTS( (S), stdout )
 
 /**
+ * Convenience macro for calling check_realloc().
+ *
+ * @param PTR The pointer to memory to reallocate.  It is set to the newly
+ * reallocated memory.
+ * @param N The number of objects to reallocate.
+ *
+ * @sa check_realloc()
+ * @sa #MALLOC()
+ */
+#define REALLOC(PTR,N) \
+  ((PTR) = check_realloc( (PTR), sizeof(*(PTR)) * (N) ))
+
+/**
  * Like C11's `_Static_assert()` except that it can be used in an expression.
  *
  * @param EXPR The expression to check.
@@ -586,12 +601,35 @@ NODISCARD
 bool ascii_any_printable( char const *s, size_t s_len );
 
 /**
- * Checks whether the given character is an ASCII printable character.
- * (This function is needed because setlocale(3) affects what isprint(3)
- * considers printable.)
+ * Checks whether the given character is an ASCII printable character _not_
+ * including space.
+ *
+ * @remarks This function is needed because **setlocale**(3) affects what
+ * **isgraph**(3) considers printable.
  *
  * @param c The characther to check.
- * @return Returns `true` only if \a c is an ASCII printable character.
+ * @return Returns `true` only if \a c is an ASCII printable character _not_
+ * including space.
+ *
+ * @sa ascii_is_print()
+ */
+NODISCARD AD_UTIL_H_INLINE
+bool ascii_is_graph( char8_t c ) {
+  return c >= '!' && c <= '~';
+}
+
+/**
+ * Checks whether the given character is an ASCII printable character including
+ * space.
+ *
+ * @remarks This function is needed because **setlocale**(3) affects what
+ * **isprint**(3) considers printable.
+ *
+ * @param c The characther to check.
+ * @return Returns `true` only if \a c is an ASCII printable character
+ * including space.
+ *
+ * @sa ascii_is_graph()
  */
 NODISCARD AD_UTIL_H_INLINE
 bool ascii_is_print( char c ) {

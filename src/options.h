@@ -77,6 +77,21 @@ enum offset_fmt {
 };
 typedef enum offset_fmt offset_fmt_t;
 
+/**
+ * Options for **strings**(1)-like searches.
+ */
+enum strings_opts {
+  STRINGS_OPT_NONE      = 0,            ///< No options.
+  STRINGS_OPT_FORMFEED  = (1u << 0),    ///< Include form-feed characters.
+  STRINGS_OPT_NEWLINE   = (1u << 1),    ///< Include newline characters.
+  STRINGS_OPT_NULL      = (1u << 2),    ///< Must end with null byte.
+  STRINGS_OPT_RETURN    = (1u << 3),    ///< Include carriage return characters.
+  STRINGS_OPT_SPACE     = (1u << 4),    ///< Include space characters.
+  STRINGS_OPT_TAB       = (1u << 5),    ///< Include tab characters.
+  STRINGS_OPT_VTAB      = (1u << 6),    ///< Include vertical tab characters.
+};
+typedef enum strings_opts strings_opts_t;
+
 ////////// extern variables ///////////////////////////////////////////////////
 
 extern bool           opt_case_insensitive; ///< Case-insensitive matching?
@@ -111,6 +126,8 @@ extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
  */
 extern uint64_t       opt_search_number;
 
+extern bool           opt_strings;      ///< **strings**(1)-like search?
+extern strings_opts_t opt_strings_opts; ///< **strings**(1)-like options.
 extern bool           opt_utf8;         ///< Dump UTF-8 bytes?
 extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
