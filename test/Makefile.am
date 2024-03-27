@@ -107,7 +107,10 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-N2.test \
 	tests/ad-N3.test \
 	tests/ad-N4.test \
+	tests/ad-n6.test \
 	tests/ad-no_options-out.test \
+	tests/ad-n-Snst.test \
+	tests/ad-n.test \
 	tests/ad-o_01.test \
 	tests/ad-O_02.test \
 	tests/ad-P.test \
@@ -122,7 +125,6 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-r_07.test \
 	tests/ad-r_08.test \
 	tests/ad-s_01.test \
-	tests/ad-S_02.test \
 	tests/ad-sxxx.test \
 	tests/ad-t_01.test \
 	tests/ad-T_02.test \

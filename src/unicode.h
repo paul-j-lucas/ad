@@ -23,7 +23,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "util.h"
 
 // standard
 #include <stdbool.h>
@@ -171,9 +170,8 @@ bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
  * sequence comprising an encoded character.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_start( char c ) {
-  char8_t const c8 = STATIC_CAST( char8_t, c );
-  return c8 < 0x80 || (c8 >= 0xC2 && c8 < 0xFE);
+bool utf8_is_start( char8_t c ) {
+  return c < 0x80 || (c >= 0xC2 && c < 0xFE);
 }
 
 /**
@@ -186,9 +184,8 @@ bool utf8_is_start( char c ) {
  * byte sequence comprising an encoded character.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_cont( char c ) {
-  char8_t const c8 = STATIC_CAST( char8_t, c );
-  return c8 >= 0x80 && c8 < 0xC0;
+bool utf8_is_cont( char8_t c ) {
+  return c >= 0x80 && c < 0xC0;
 }
 
 /**
@@ -199,11 +196,9 @@ bool utf8_is_cont( char c ) {
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
 NODISCARD AD_UNICODE_H_INLINE
-size_t utf8_len( char start ) {
+unsigned utf8_len( char8_t start ) {
   extern char8_t const UTF8_LEN_TABLE[];
-  return STATIC_CAST(
-    size_t, UTF8_LEN_TABLE[ STATIC_CAST( char8_t, start ) ]
-  );
+  return UTF8_LEN_TABLE[ start ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////

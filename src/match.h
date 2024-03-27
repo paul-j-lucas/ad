@@ -64,14 +64,16 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * bytes in the buffer are numbered left-to-right where as their corresponding
  * bits are numbered right-to-left.
  * @param kmps A pointer to the array of KMP values to use or NULL.
- * @param match_buf A pointer to a buffer to use while matching or NULL.
+ * @param pmatch_buf A pointer to a pointer to a buffer to use while matching
+ * or NULL.
+ * @param pmatch_len A pointer to the size of \a *pmatch_buf or NULL.
  * @return Returns the number of bytes in \a row_buf.  It should always be \a
  * row_len except on the last row in which case it will be less than \a
  * row_len.
  */
 NODISCARD
 size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
-                  kmp_t const *kmps, char8_t *match_buf );
+                  kmp_t const *kmps, char8_t **pmatch_buf, size_t *pmatch_len );
 
 ///////////////////////////////////////////////////////////////////////////////
 

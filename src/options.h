@@ -89,27 +89,61 @@ enum offset_fmt {
 };
 typedef enum offset_fmt offset_fmt_t;
 
+/**
+ * Options for **strings**(1)-like searches.
+ */
+enum strings_opts {
+  STRINGS_OPT_NONE      = 0,            ///< No options.
+  STRINGS_OPT_FORMFEED  = (1u << 0),    ///< Include form-feed characters.
+  STRINGS_OPT_NEWLINE   = (1u << 1),    ///< Include newline characters.
+  STRINGS_OPT_NULL      = (1u << 2),    ///< Must end with null byte.
+  STRINGS_OPT_RETURN    = (1u << 3),    ///< Include carriage return characters.
+  STRINGS_OPT_SPACE     = (1u << 4),    ///< Include space characters.
+  STRINGS_OPT_TAB       = (1u << 5),    ///< Include tab characters.
+  STRINGS_OPT_VTAB      = (1u << 6),    ///< Include vertical tab characters.
+};
+typedef enum strings_opts strings_opts_t;
+
 ////////// extern variables ///////////////////////////////////////////////////
 
 extern ad_debug_t     opt_ad_debug;
-extern bool           opt_case_insensitive;
-extern color_when_t   opt_color_when;
-extern c_fmt_t        opt_c_fmt;
-extern unsigned       opt_group_by;
-extern size_t         opt_max_bytes;
-extern matches_t      opt_matches;
-extern offset_fmt_t   opt_offset_fmt;
-extern bool           opt_only_matching;
-extern bool           opt_only_printing;
-extern bool           opt_print_ascii;
-extern bool           opt_reverse;
+extern bool           opt_case_insensitive; ///< Case-insensitive matching?
+extern color_when_t   opt_color_when;   ///< When to colorize output.
+extern c_fmt_t        opt_c_fmt;        ///< Dump as C array in this format.
+extern unsigned       opt_group_by;     ///< Group by this number of bytes.
+extern size_t         opt_max_bytes;    ///< Maximum number of bytes to dump.
+extern matches_t      opt_matches;      ///< When to print total matches.
+extern offset_fmt_t   opt_offset_fmt;   ///< Dump offsets in this format.
+extern bool           opt_only_matching;///< Only dump matching rows?
+extern bool           opt_only_printing;///< Only dump printable rows?
+extern bool           opt_print_ascii;  ///< Dump ASCII part?
+extern bool           opt_reverse;      ///< Reverse dump (patch)?
+
+/**
+ * The bytes of what to search for, if any.
+ *
+ * @remarks When searching for a:
+ * + String, this points to the null-terminated string.
+ * + Number, this points to \ref opt_search_number.
+ */
 extern char          *opt_search_buf;
+
 extern endian_t       opt_search_endian;///< Numeric search endianness.
-extern size_t         opt_search_len;   ///< Number of bytes in search_buf.
-extern uint64_t       opt_search_number;///< The number to search for.
-extern bool           opt_utf8;
-extern char const    *opt_utf8_pad;
-extern bool           opt_verbose;
+extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
+
+/**
+ * The number to search for, if any.
+ *
+ * @remarks The bytes comprising the number are rearranged according to \ref
+ * opt_search_endian.
+ */
+extern uint64_t       opt_search_number;
+
+extern bool           opt_strings;      ///< **strings**(1)-like search?
+extern strings_opts_t opt_strings_opts; ///< **strings**(1)-like options.
+extern bool           opt_utf8;         ///< Dump UTF-8 bytes?
+extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
+extern bool           opt_verbose;      ///< Dump _all_ rows of data?
 
 ////////// extern functions ///////////////////////////////////////////////////
 

@@ -1,3 +1,32 @@
+2024-03-27  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Updated version.
+   * ad.1, ad.h, dump.c, match.c, match.h, options.c, options.h, util.h,
+     test/Makefile.am, ad-n-Snst.txt, ad-n.txt, ad-n6.txt, ad-n-Snst.test,
+     ad-n.test, ad-n6.test: Can now do strings(1)-like dumps.
+
+2024-03-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * unicode.h: Removed #include "util.h".
+   * dump.c, unicode.h: utf8_is_start() and utf8_is_cont() now take char8_t.
+   * dump.c, unicode.h: utf8_len() now takes char8_t.
+   * unicode.h: s/size_t/unsigned/
+
+2024-03-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: Reworked GOTO_STATE().
+   * options.c: Added STATIC_CAST()s.
+   * dump.c: Made kmps const.
+   * options.c: Now using long options --reverse and --version for usage
+     message.
+   * ad.1: Fixed option for hexadecimal.
+
+2024-03-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: Changed MAYBE_NO_CASE() into is_match().
+   * ad.c, options.c: Moved opt_search_len/buf setting code into
+     parse_options().
+
 2024-03-21  Paul J. Lucas <paul@lucasmail.org>
 
    * ad.c, ad.h, dump.c, match.c, options.c, options.h:

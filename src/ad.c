@@ -28,12 +28,9 @@
 #include "util.h"
 
 // standard
-#include <assert.h>
-#include <stddef.h>
+#include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
-#include <string.h>                     /* for memset(), str...() */
 #include <sys/types.h>                  /* for off_t */
-#include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -54,13 +51,13 @@ size_t      row_bytes = ROW_BYTES_DEFAULT;
 /**
  * Cleans up by doing:
  *  + Freeing dynamicaly allocated memory.
- *  + Closing files.
  * This function is called via \c atexit().
  */
 static void ad_cleanup( void ) {
   free_now();
 }
 
+<<<<<<< HEAD
 /**
  * Performs initialization by doing:
  *  + Parsing command-line options.
@@ -94,6 +91,8 @@ static void ad_init( int argc, char const *argv[const] ) {
     exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 }
 
+=======
+>>>>>>> master
 /////////// main //////////////////////////////////////////////////////////////
 
 /**
@@ -104,7 +103,11 @@ static void ad_init( int argc, char const *argv[const] ) {
  * @return Returns 0 on success, non-zero on failure.
  */
 int main( int argc, char const *argv[const] ) {
-  ad_init( argc, argv );
+  me = base_name( argv[0] );
+  ATEXIT( ad_cleanup );
+  parse_options( argc, argv );
+  colors_init();
+
   if ( opt_reverse )
     reverse_dump_file(); 
   else if ( opt_c_fmt != CFMT_NONE )
