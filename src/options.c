@@ -111,7 +111,6 @@ bool            opt_reverse;
 char           *opt_search_buf;
 endian_t        opt_search_endian;
 size_t          opt_search_len;
-uint64_t        opt_search_number;
 bool            opt_strings;
 strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE  \
                                  | STRINGS_OPT_NULL     \
@@ -162,6 +161,14 @@ static struct option const OPTIONS[] = {
 // local variable definitions
 static bool         opts_given[ 128 ];
 
+/**
+ * The number to search for, if any.
+ *
+ * @remarks The bytes comprising the number are rearranged according to \ref
+ * opt_search_endian.
+ */
+static uint64_t     search_number;
+
 // local functions
 static void         set_all_or_none( char const**, char const* );
 NODISCARD
@@ -210,12 +217,12 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
 }
 
 /**
- * Checks that the number of bits or bytes given for \c opt_search_number are
- * sufficient to contain it.
- * Prints an error message and exits if \a given_size &lt; \a actual_size.
+ * Checks that the number of bits or bytes given for \ref search_number are
+ * sufficient to contain it: if not, prints an error message and exits if \a
+ * given_size &lt; \a actual_size.
  *
  * @param given_size The given size in bits or bytes.
- * @param actual_size The actual size of \c opt_search_number in bits or bytes.
+ * @param actual_size The actual size of \ref search_number in bits or bytes.
  */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -225,7 +232,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, opt_format( opt, opt_buf, sizeof opt_buf ),
-      opt_search_number, actual_size
+      search_number, actual_size
     );
   }
 }
@@ -804,7 +811,7 @@ void parse_options( int argc, char const *argv[] ) {
       break;
     switch ( opt ) {
       case COPT(BIG_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_BIG;
         break;
       case COPT(BITS):
@@ -832,7 +839,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_offset_fmt = OFMT_HEX;
         break;
       case COPT(HOST_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
 #ifdef WORDS_BIGENDIAN
         opt_search_endian = ENDIAN_BIG;
 #else
@@ -843,7 +850,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_case_insensitive = true;
         break;
       case COPT(LITTLE_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_LITTLE;
         break;
       case COPT(MATCHING_ONLY):
@@ -1087,7 +1094,7 @@ void parse_options( int argc, char const *argv[] ) {
       );
     opt_search_len = size_in_bits * 8;
     check_number_size(
-      size_in_bits, int_len( opt_search_number ) * 8, COPT(BITS)
+      size_in_bits, int_len( search_number ) * 8, COPT(BITS)
     );
   }
 
@@ -1099,7 +1106,7 @@ void parse_options( int argc, char const *argv[] ) {
       );
     opt_search_len = size_in_bytes;
     check_number_size(
-      size_in_bytes, int_len( opt_search_number ), COPT(BYTES)
+      size_in_bytes, int_len( search_number ), COPT(BYTES)
     );
   }
 
@@ -1154,11 +1161,9 @@ void parse_options( int argc, char const *argv[] ) {
     else if ( opt_search_endian != ENDIAN_NONE ) {
       // searching for a number
       if ( opt_search_len == 0 )        // default to smallest possible size
-        opt_search_len = int_len( opt_search_number );
-      int_rearrange_bytes(
-        &opt_search_number, opt_search_len, opt_search_endian
-      );
-      opt_search_buf = POINTER_CAST( char*, &opt_search_number );
+        opt_search_len = int_len( search_number );
+      int_rearrange_bytes( &search_number, opt_search_len, opt_search_endian );
+      opt_search_buf = POINTER_CAST( char*, &search_number );
     }
   }
 
