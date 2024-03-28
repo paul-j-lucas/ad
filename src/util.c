@@ -27,7 +27,7 @@
 
 // standard
 #include <assert.h>
-#include <ctype.h>                      /* for isspace(), isprint() */
+#include <ctype.h>                      /* for isalnum(), isalpha() */
 #include <fcntl.h>                      /* for open() */
 #include <stdarg.h>
 #include <stdlib.h>                     /* for exit(), strtoull(), ... */
@@ -88,22 +88,6 @@ static char const* regex_error( regex_t *re, int err_code ) {
   static char err_buf[ 128 ];
   (void)regerror( err_code, re, err_buf, sizeof err_buf );
   return err_buf;
-}
-
-/**
- * Skips leading whitespace, if any.
- *
- * @param s The NULL-terminated string to skip whitespace for.
- * @return Returns a pointer within \a s pointing to the first non-whitespace
- * character or pointing to the NULL byte if either \a s was all whitespace or
- * empty.
- */
-NODISCARD
-static char const* skip_ws( char const *s ) {
-  assert( s != NULL );
-  while ( isspace( *s ) )
-    ++s;
-  return s;
 }
 
 ////////// extern funtions ////////////////////////////////////////////////////
@@ -377,36 +361,8 @@ char const* parse_identifier( char const *s ) {
   return s;
 }
 
-unsigned long long parse_offset( char const *s ) {
-  s = skip_ws( s );
-  if ( unlikely( s[0] == '\0' || s[0] == '-' ) )
-    goto error;                         // strtoull(3) wrongly allows '-'
-
-  { // local scope
-    char *end = NULL;
-    errno = 0;
-    unsigned long long n = strtoull( s, &end, 0 );
-    if ( unlikely( errno != 0 || end == s ) )
-      goto error;
-    if ( end[0] != '\0' ) {             // possibly 'b', 'k', or 'm'
-      if ( end[1] != '\0' )             // not a single char
-        goto error;
-      switch ( end[0] ) {
-        case 'b': n *=         512; break;
-        case 'k': n *=        1024; break;
-        case 'm': n *= 1024 * 1024; break;
-        default : goto error;
-      } // switch
-    }
-    return n;
-  } // local scope
-
-error:
-  fatal_error( EX_USAGE, "\"%s\": invalid offset\n", s );
-}
-
 unsigned long long parse_ull( char const *s ) {
-  s = skip_ws( s );
+  SKIP_WS( s );
   if ( likely( s[0] != '\0' || s[0] != '-' ) ) {
     char *end = NULL;
     errno = 0;

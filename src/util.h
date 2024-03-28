@@ -1033,22 +1033,10 @@ NODISCARD
 char const* parse_identifier( char const *s );
 
 /**
- * Parses a string into an offset.
- * Unlike **strtoull(3)**:
- *  + Insists that \a s is non-negative.
- *  + May be followed by one of `b`, `k`, or `m`
- *    for 512-byte blocks, kilobytes, and megabytes, respectively.
- *
- * @param s The NULL-terminated string to parse.
- * @return Returns the parsed offset only if \a s is a non-negative number or
- * prints an error message and exits if there was an error.
- */
-NODISCARD
-unsigned long long parse_offset( char const *s );
-
-/**
  * Parses a string into an <code>unsigned long long</code>.
- * Unlike **strtoull(3)**, insists that \a s is entirely a non-negative number.
+ *
+ * @remarks Unlike **strtoull(3)**, insists that \a s is entirely a non-
+ * negative number.
  *
  * @param s The NULL-terminated string to parse.
  * @param n A pointer to receive the parsed number.
