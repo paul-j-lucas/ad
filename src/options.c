@@ -25,6 +25,8 @@
 #include "options.h"
 #include "unicode.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for islower(), toupper() */
@@ -91,10 +93,23 @@
 /// usage message.
 #define UOPT(X)                   " (-" SOPT(X) ") "
 
+/// @endcond
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
+
+/**
+ * An unsigned integer literal of \a N `0xF`s, e.g., `NF(3)` = `0xFFF`.
+ *
+ * @param N The number of `0xF`s of the literal in the range [1,16].
+ * @return Returns said literal.
+ */
+#define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
+
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
+
+///////////////////////////////////////////////////////////////////////////////
 
 // option extern variable definitions
 bool            opt_case_insensitive;
@@ -266,6 +281,21 @@ static void check_required( char const *opts, char const *req_opts ) {
       );
     }
   } // for
+}
+
+/**
+ * Gets the minimum number of bytes required to contain the given `uint64_t`
+ * value.
+ *
+ * @param n The number to get the number of bytes for.
+ * @return Returns the minimum number of bytes required to contain \a n
+ * in the range [1,8].
+ */
+NODISCARD
+static unsigned int_len( uint64_t n ) {
+  return n <= NF(8) ?
+    (n <= NF( 4) ? (n <= NF( 2) ? 1 : 2) : (n <= NF( 6) ? 3 : 4)) :
+    (n <= NF(12) ? (n <= NF(10) ? 5 : 6) : (n <= NF(14) ? 7 : 8));
 }
 
 /**

@@ -35,14 +35,6 @@
 #include <sysexits.h>
 #include <unistd.h>                     /* for lseek() */
 
-/**
- * An unsigned integer literal of \a N `0xF`s, e.g., `NF(3)` = `0xFFF`.
- *
- * @param N The number of `0xF`s of the literal in the range [1,16].
- * @return Returns said literal.
- */
-#define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -247,12 +239,6 @@ char* identify( char const *s ) {
 
   *p = '\0';
   return ident;
-}
-
-size_t int_len( uint64_t n ) {
-  return n <= NF(8) ?
-    (n <= NF( 4) ? (n <= NF( 2) ? 1 : 2) : (n <= NF( 6) ? 3 : 4)) :
-    (n <= NF(12) ? (n <= NF(10) ? 5 : 6) : (n <= NF(14) ? 7 : 8));
 }
 
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian ) {
