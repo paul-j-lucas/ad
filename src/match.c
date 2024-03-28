@@ -52,21 +52,24 @@ static void         unget_byte( char8_t );
  */
 NODISCARD
 static bool get_byte( char8_t *pbyte ) {
-  if ( likely( total_bytes_read < opt_max_bytes ) ) {
-    int const c = getchar();
-    if ( likely( c != EOF ) ) {
-      ++total_bytes_read;
-      assert( pbyte != NULL );
-      *pbyte = STATIC_CAST(char8_t, c);
-      return true;
-    }
+  assert( pbyte != NULL );
+
+  if ( unlikely( total_bytes_read == opt_max_bytes ) )
+    return false;
+
+  int const c = getchar();
+  if ( unlikely( c == EOF ) ) {
     if ( unlikely( ferror( stdin ) ) ) {
       fatal_error( EX_IOERR,
         "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
       );
     }
+    return false;
   }
-  return false;
+
+  ++total_bytes_read;
+  *pbyte = STATIC_CAST( char8_t, c );
+  return true;
 }
 
 /**
