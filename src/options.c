@@ -869,7 +869,7 @@ void parse_options( int argc, char const *argv[] ) {
   char const *const short_opts = make_short_opts( OPTIONS );
   size_t            size_in_bits = 0, size_in_bytes = 0;
   char32_t          utf8_pad = 0;
-  utf8_when_t       utf8_when = UTF8_WHEN_DEFAULT;
+  utf8_when_t       utf8_when = UTF8_NEVER;
 
   opterr = 1;
 
