@@ -149,7 +149,7 @@ strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE  \
                                  | STRINGS_OPT_SPACE    \
                                  | STRINGS_OPT_TAB      ;
 bool            opt_utf8;
-char const     *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
+char const     *opt_utf8_pad = "\xE2\x96\xA1"; /* U+25A1: "white square" */
 bool            opt_verbose;
 
 /**
@@ -1243,7 +1243,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
-    static char utf8_pad_buf[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+    static char utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
     utf32_8( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }

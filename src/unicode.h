@@ -50,8 +50,7 @@ _GL_INLINE_HEADER_BEGIN
 #define CP_SURROGATE_HIGH_START   0x00D800u
 #define CP_SURROGATE_LOW_END      0x00DFFFu
 #define CP_VALID_MAX              0x10FFFFu
-#define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
-#define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
+#define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +71,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  *
  * @param cp The Unicode code-point to encode.
  * @param u8 A pointer to the start of a buffer to receive the UTF-8 bytes;
- * must be at least #UTF8_LEN_MAX long.  No NULL byte is appended.
+ * must be at least #UTF8_CHAR_SIZE_MAX long.  No NULL byte is appended.
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
