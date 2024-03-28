@@ -79,6 +79,19 @@ PJL_DISCARD
 size_t utf32_8( char32_t cp, char *u8 );
 
 /**
+ * Gets the number of bytes comprising a UTF-8 character.
+ *
+ * @param start The start byte of a UTF-8 byte sequence.
+ * @return Returns the number of bytes needed for the UTF-8 character in the
+ * range [1,6] or 0 if \a start is not a valid start byte.
+ */
+NODISCARD AD_UNICODE_H_INLINE
+unsigned utf8_char_len( char8_t start ) {
+  extern char8_t const UTF8_CHAR_LEN_TABLE[];
+  return UTF8_CHAR_LEN_TABLE[ start ];
+}
+
+/**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
  * comprising an encoded character.  Note that this is not equivalent to
  * !utf8_is_cont(c).
@@ -104,19 +117,6 @@ bool utf8_is_start( char8_t c ) {
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_cont( char8_t c ) {
   return c >= 0x80 && c < 0xC0;
-}
-
-/**
- * Gets the length of a UTF-8 character.
- *
- * @param start The start byte of a UTF-8 byte sequence.
- * @return Returns the number of bytes needed for the UTF-8 character in the
- * range [1,6] or 0 if \a start is not a valid start byte.
- */
-NODISCARD AD_UNICODE_H_INLINE
-unsigned utf8_len( char8_t start ) {
-  extern char8_t const UTF8_LEN_TABLE[];
-  return UTF8_LEN_TABLE[ start ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
