@@ -80,8 +80,8 @@
 #define OPT_TOTAL_MATCHES_ONLY  T
 #define OPT_UTF8                u
 #define OPT_UTF8_PADDING        U
-#define OPT_VERBOSE             v
-#define OPT_VERSION             V
+#define OPT_VERSION             v
+#define OPT_VERBOSE             V
 #define OPT_HEXADECIMAL         x
 
 /// Command-line option character as a character literal.
