@@ -1,3 +1,8 @@
+2024-03-28  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, util.c, util.h: Moved int_len().
+   * options.c, options.h: s/opt_search_number/search_number/
+
 2024-03-27  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, util.c, util.h: Moved parse_offset().
