@@ -33,6 +33,12 @@
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
+#ifdef HAVE_LANGINFO_H
+#include <langinfo.h>
+#endif /* HAVE_LANGINFO_H */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif /* HAVE_LOCALE_H */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
@@ -41,6 +47,7 @@
 #include <sys/types.h>
 #include <sysexits.h>
 #include <unistd.h>                     /* for close(2), STDOUT_FILENO */
+#include <string.h>
 
 // Undefine these since they clash with our command-line options.
 #ifdef BIG_ENDIAN
@@ -110,6 +117,16 @@
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * When to dump in UTF-8.
+ */
+enum utf8_when {
+  UTF8_NEVER,                           ///< Never dump in UTF-8.
+  UTF8_ENCODING,                        ///< Dump in UTF-8 only if encoding is.
+  UTF8_ALWAYS                           ///< Always dump in UTF-8.
+};
+typedef enum utf8_when utf8_when_t;
 
 // option extern variable definitions
 bool            opt_case_insensitive;
@@ -695,6 +712,30 @@ static void set_all_or_none( char const **pformat, char const *all_value ) {
     *pformat = all_value;
   else if ( strcmp( *pformat, "-" ) == 0 )
     *pformat = "";
+}
+
+/**
+ * Determines whether we should dump in UTF-8.
+ *
+ * @param when The UTF-8 when value.
+ * @return Returns \c true only if we should do UTF-8.
+ */
+NODISCARD
+static bool should_utf8( utf8_when_t when ) {
+  switch ( when ) {                     // handle easy cases
+    case UTF8_ALWAYS: return true;
+    case UTF8_NEVER : return false;
+    default         : break;
+  } // switch
+
+#if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
+  setlocale( LC_CTYPE, "" );
+  char const *const encoding = nl_langinfo( CODESET );
+  return  strcasecmp( encoding, "utf8"  ) == 0 ||
+          strcasecmp( encoding, "utf-8" ) == 0;
+#else
+  return false;
+#endif
 }
 
 /**

@@ -53,16 +53,6 @@ _GL_INLINE_HEADER_BEGIN
 #define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
 #define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
 
-/**
- * When to dump in UTF-8.
- */
-enum utf8_when {
-  UTF8_NEVER,                           ///< Never dump in UTF-8.
-  UTF8_ENCODING,                        ///< Dump in UTF-8 only if encoding is.
-  UTF8_ALWAYS                           ///< Always dump in UTF-8.
-};
-typedef enum utf8_when utf8_when_t;
-
 #define UTF8_WHEN_DEFAULT         UTF8_NEVER
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,15 +68,6 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
 }
-
-/**
- * Determines whether we should dump in UTF-8.
- *
- * @param when The UTF-8 when value.
- * @return Returns \c true only if we should do UTF-8.
- */
-NODISCARD
-bool should_utf8( utf8_when_t when );
 
 /**
  * Encodes a Unicode code-point into UTF-8.

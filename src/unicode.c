@@ -26,13 +26,6 @@
 
 // standard
 #include <assert.h>
-#ifdef HAVE_LANGINFO_H
-#include <langinfo.h>
-#endif /* HAVE_LANGINFO_H */
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif /* HAVE_LOCALE_H */
-#include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -58,23 +51,6 @@ char8_t const UTF8_LEN_TABLE[] = {
 };
 
 ////////// extern functions ///////////////////////////////////////////////////
-
-bool should_utf8( utf8_when_t when ) {
-  switch ( when ) {                     // handle easy cases
-    case UTF8_ALWAYS: return true;
-    case UTF8_NEVER : return false;
-    default         : break;
-  } // switch
-
-#if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
-  setlocale( LC_CTYPE, "" );
-  char const *const encoding = nl_langinfo( CODESET );
-  return  strcasecmp( encoding, "utf8"  ) == 0 ||
-          strcasecmp( encoding, "utf-8" ) == 0;
-#else
-  return false;
-#endif
-}
 
 size_t utf32_8( char32_t cp, char *u8 ) {
   assert( u8 != NULL );
