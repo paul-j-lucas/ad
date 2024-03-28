@@ -1,5 +1,8 @@
 2024-03-27  Paul J. Lucas <paul@lucasmail.org>
 
+   * options.c, util.c, util.h: Moved parse_offset().
+   * ad.1, options.c, test/Makefile.am, ad-V_01.test, ad-m-V.test, ad-p-V.test,
+     ad-v_02.test: Swapped -v and -V so that -v is short for --version.
    * configure.ac: Updated version.
    * ad.1, ad.h, dump.c, match.c, match.h, options.c, options.h, util.h,
      test/Makefile.am, ad-n-Snst.txt, ad-n.txt, ad-n6.txt, ad-n-Snst.test,
