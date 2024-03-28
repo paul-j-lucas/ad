@@ -507,6 +507,46 @@ static unsigned parse_group_by( char const *s ) {
 }
 
 /**
+ * Parses a string into an offset.
+ * Unlike **strtoull(3)**:
+ *  + Insists that \a s is non-negative.
+ *  + May be followed by one of `b`, `k`, or `m`
+ *    for 512-byte blocks, kilobytes, and megabytes, respectively.
+ *
+ * @param s The NULL-terminated string to parse.
+ * @return Returns the parsed offset only if \a s is a non-negative number or
+ * prints an error message and exits if there was an error.
+ */
+NODISCARD
+static off_t parse_offset( char const *s ) {
+  SKIP_WS( s );
+  if ( unlikely( s[0] == '\0' || s[0] == '-' ) )
+    goto error;                         // strtoull(3) wrongly allows '-'
+
+  { // local scope
+    char *end = NULL;
+    errno = 0;
+    unsigned long long n = strtoull( s, &end, 0 );
+    if ( unlikely( errno != 0 || end == s ) )
+      goto error;
+    if ( end[0] != '\0' ) {             // possibly 'b', 'k', or 'm'
+      if ( end[1] != '\0' )             // not a single char
+        goto error;
+      switch ( end[0] ) {
+        case 'b': n *=         512; break;
+        case 'k': n *=        1024; break;
+        case 'm': n *= 1024 * 1024; break;
+        default : goto error;
+      } // switch
+    }
+    return STATIC_CAST( off_t, n );
+  } // local scope
+
+error:
+  fatal_error( EX_USAGE, "\"%s\": invalid offset\n", s );
+}
+
+/**
  * Parses a `--strings-opts` value.
  *
  * @param opts_format The null-terminated string search options format to
@@ -810,7 +850,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_only_matching = true;
         break;
       case COPT(MAX_BYTES):
-        opt_max_bytes = parse_offset( optarg );
+        opt_max_bytes = STATIC_CAST( size_t, parse_offset( optarg ) );
         break;
       case COPT(MAX_LINES):
         max_lines = STATIC_CAST( size_t, parse_ull( optarg ) );

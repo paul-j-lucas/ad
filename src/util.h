@@ -519,6 +519,27 @@ _GL_INLINE_HEADER_BEGIN
   ((PTR) = check_realloc( (PTR), sizeof(*(PTR)) * (N) ))
 
 /**
+ * Advances \a S over all \a CHARS.
+ *
+ * @param S The string pointer to advance.
+ * @param CHARS A string containing the characters to skip over.
+ * @return Returns the updated \a S.
+ *
+ * @sa #SKIP_WS()
+ */
+#define SKIP_CHARS(S,CHARS)       ((S) += strspn( (S), (CHARS) ))
+
+/**
+ * Advances \a S over all whitespace.
+ *
+ * @param S The string pointer to advance.
+ * @return Returns the updated \a S.
+ *
+ * @sa #SKIP_CHARS()
+ */
+#define SKIP_WS(S)                SKIP_CHARS( (S), WS_CHARS )
+
+/**
  * Like C11's `_Static_assert()` except that it can be used in an expression.
  *
  * @param EXPR The expression to check.
@@ -587,6 +608,11 @@ _GL_INLINE_HEADER_BEGIN
  * used unique name.
  */
 #define UNIQUE_NAME(PREFIX)       NAME2(NAME2(PREFIX,_),__LINE__)
+
+/**
+ * Whitespace characters.
+ */
+#define WS_CHARS                  " \n\t\r\f\v"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -786,22 +812,10 @@ size_t int_len( uint64_t n );
 void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
 
 /**
- * Parses a string into an offset.
- * Unlike **strtoull(3)**:
- *  + Insists that \a s is non-negative.
- *  + May be followed by one of `b`, `k`, or `m`
- *    for 512-byte blocks, kilobytes, and megabytes, respectively.
- *
- * @param s The NULL-terminated string to parse.
- * @return Returns the parsed offset only if \a s is a non-negative number or
- * prints an error message and exits if there was an error.
- */
-NODISCARD
-unsigned long long parse_offset( char const *s );
-
-/**
  * Parses a string into an <code>unsigned long long</code>.
- * Unlike **strtoull(3)**, insists that \a s is entirely a non-negative number.
+ *
+ * @remarks Unlike **strtoull(3)**, insists that \a s is entirely a non-
+ * negative number.
  *
  * @param s The NULL-terminated string to parse.
  * @param n A pointer to receive the parsed number.
