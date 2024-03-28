@@ -94,9 +94,10 @@ static char const* regex_error( regex_t *re, int err_code ) {
 
 bool ascii_any_printable( char const *s, size_t s_len ) {
   assert( s != NULL );
-  for ( ; s_len > 0; --s_len, ++s )
+  for ( ; s_len > 0; --s_len, ++s ) {
     if ( ascii_is_print( *s ) )
       return true;
+  } // for
   return false;
 }
 
@@ -156,10 +157,13 @@ bool fd_is_file( int fd ) {
 }
 
 #ifndef HAVE_FGETLN
-char* fgetln( FILE *f, size_t *len ) {
+char* fgetln( FILE *fin, size_t *len ) {
+  assert( fin != NULL );
+  assert( len != NULL );
+
   static char *buf;
   static size_t cap;
-  ssize_t const temp_len = getline( &buf, &cap, f );
+  ssize_t const temp_len = getline( &buf, &cap, fin );
   if ( unlikely( temp_len == -1 ) )
     return NULL;
   *len = STATIC_CAST( size_t, temp_len );
@@ -270,7 +274,7 @@ void fputs_quoted( char const *s, char quote, FILE *fout ) {
 
 char* identify( char const *s ) {
   assert( s != NULL );
-  assert( *s );
+  assert( s[0] != '\0' );
 
   size_t const s_len = strlen( s );
   char *const ident = MALLOC( char, s_len + 1 /*NULL*/ + 1 /* leading _ */ );
