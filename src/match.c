@@ -151,7 +151,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( 0, S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
-        if ( !is_match( byte, 0 ) )
+        if ( !is_match( byte, /*buf_pos=*/0 ) )
           RETURN( byte );               // searching, but no match yet
         //
         // For non-strings(1) searches, the read byte matches the first byte of
