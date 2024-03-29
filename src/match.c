@@ -74,17 +74,17 @@ static bool get_byte( char8_t *pbyte ) {
 
 /**
  * Checks whether \a input_byte is either:
- *  + The byte at \a pos of \ref opt_search_buf (if \ref opt_strings is
+ *  + The byte at \a buf_pos of \ref opt_search_buf (if \ref opt_strings is
  *    `false`); or:
  *  + A printable character (if \ref opt_strings is `true`).
  *
  * @param input_byte The byte read from the input source.
- * @param pos The positition within \ref opt_search_buf to match against, but
- * only if \ref opt_strings is `false`.
+ * @param buf_pos The positition within \ref opt_search_buf to match against,
+ * but only if \ref opt_strings is `false`.
  * @return Returns `true` only if \a input_byte matches.
  */
 NODISCARD
-static bool is_match( char8_t input_byte, size_t pos ) {
+static bool is_match( char8_t input_byte, size_t buf_pos ) {
   if ( opt_strings ) {
     switch ( input_byte ) {
       case '\f': return (opt_strings_opts & STRINGS_OPT_FORMFEED) != 0;
@@ -100,7 +100,7 @@ static bool is_match( char8_t input_byte, size_t pos ) {
   if ( opt_case_insensitive )
     input_byte = STATIC_CAST( char8_t, tolower( input_byte ) );
 
-  return input_byte == STATIC_CAST( char8_t, opt_search_buf[ pos ] );
+  return input_byte == STATIC_CAST( char8_t, opt_search_buf[ buf_pos ] );
 }
 
 /**
