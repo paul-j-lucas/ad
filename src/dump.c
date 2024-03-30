@@ -27,6 +27,8 @@
 #include "unicode.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>
@@ -37,6 +39,8 @@
 #include <string.h>                     /* for str...() */
 #include <sysexits.h>
 
+/// @endcond
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define COLOR_START_IF(EXPR,COLOR) \
@@ -45,6 +49,9 @@
 #define COLOR_END_IF(EXPR,COLOR) \
   BLOCK( if ( EXPR ) color_end( stdout, (COLOR) ); )
 
+/**
+ * Buffer for row of data.
+ */
 struct row_buf {
   char8_t       bytes[ ROW_BYTES_MAX ]; ///< Bytes in buffer, left-to-right.
   size_t        len;                    ///< Length of buffer.

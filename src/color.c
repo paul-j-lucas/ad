@@ -32,6 +32,8 @@
 #include "options.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for isdigit() */
@@ -40,6 +42,8 @@
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
 #include <unistd.h>                     /* for isatty() */
+
+/// @endcond
 
 //
 // Color capabilities.  Names containing Upper-case are unique to ad and upper-

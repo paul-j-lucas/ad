@@ -24,6 +24,8 @@
 #define AD_UTIL_H_INLINE _GL_EXTERN_INLINE
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for isalnum(), isalpha() */
@@ -35,11 +37,13 @@
 #include <sysexits.h>
 #include <unistd.h>                     /* for lseek() */
 
+/// @endcond
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
  * A node for a singly linked list of pointers to memory to be freed via
- * \c atexit().
+ * `atexit()`.
  */
 struct free_node {
   void *ptr;
@@ -48,7 +52,7 @@ struct free_node {
 typedef struct free_node free_node_t;
 
 // local variable definitions
-static free_node_t *free_head;          // linked list of stuff to free
+static free_node_t *free_head;          ///< List of stuff to free later.
 
 /////////// inline functions //////////////////////////////////////////////////
 

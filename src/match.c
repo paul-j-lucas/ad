@@ -25,6 +25,8 @@
 #include "options.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for tolower() */
@@ -32,13 +34,15 @@
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
+/// @endcond
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern variable definitions
 unsigned long       total_matches;
 
 // local variable definitions
-static size_t       total_bytes_read;
+static size_t       total_bytes_read;   ///< Total bytes read.
 
 // local functions
 static void         unget_byte( char8_t );

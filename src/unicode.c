@@ -24,8 +24,12 @@
 #include "unicode.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
+
+/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -25,10 +25,14 @@
 #include "options.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
+
+/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 

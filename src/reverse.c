@@ -24,6 +24,8 @@
 #include "unicode.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>
@@ -33,6 +35,8 @@
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sysexits.h>
+
+/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -44,10 +48,13 @@
 #define FWRITE(PTR,SIZE,N,STREAM) \
   PERROR_EXIT_IF( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 
+/**
+ * The kinds of rows in an **ad** dump file.
+ */
 enum row_kind {
-  ROW_BYTES,
-  ROW_ELIDED,
-  ROW_IGNORE
+  ROW_BYTES,                            ///< Ordinary row of bytes.
+  ROW_ELIDED,                           ///< Elided row.
+  ROW_IGNORE                            ///< Row to ignore.
 };
 typedef enum row_kind row_kind_t;
 
@@ -125,10 +132,11 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     col += elided_sep_width;
     uint64_t delta;
     buf += elided_sep_width;
-    if ( unlikely( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 ) )
+    if ( unlikely( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 ) ) {
       INVALID_EXIT(
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
+    }
     *pbytes_len = STATIC_CAST(size_t, delta);
     return ROW_ELIDED;
   }
@@ -141,11 +149,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       buf, POINTER_CAST( char**, &end ), STATIC_CAST( int, opt_offset_fmt )
     )
   );
-  if ( unlikely( errno != 0 || (end[0] != '\0' && !is_offset_delim( *end )) ) )
+  if ( unlikely( errno != 0 || (*end != '\0' && !is_offset_delim( *end )) ) ) {
     INVALID_EXIT(
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
     );
+  }
   if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
     return ROW_IGNORE;
   col += STATIC_CAST( size_t, end - buf );
