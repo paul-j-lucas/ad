@@ -61,7 +61,7 @@ _GL_INLINE_HEADER_BEGIN
 #define CP_VALID_MAX              0x10FFFFu
 #define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
-typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
+typedef uint8_t   utf8_t[ UTF8_CHAR_SIZE_MAX ];
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -150,8 +150,8 @@ unsigned utf8_char_len( char8_t start ) {
  */
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
-  extern uint8_t const UTF8_LEN_TABLE[];
-  return memcmp( u1, u2, UTF8_LEN_TABLE[ u1[0] ] ) == 0;
+  extern uint8_t const UTF8_CHAR_LEN_TABLE[];
+  return memcmp( u1, u2, UTF8_CHAR_LEN_TABLE[ u1[0] ] ) == 0;
 }
 
 /**
