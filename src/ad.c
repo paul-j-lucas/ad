@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines global variables and main().
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
@@ -27,10 +32,14 @@
 #include "typedef.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
+
+/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 

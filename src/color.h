@@ -21,12 +21,20 @@
 #ifndef ad_color_H
 #define ad_color_H
 
+/**
+ * @file
+ * Declares constants, macros, types, global variables, and functions for
+ * printing to an ANSI terminal in color using [Select Graphics Rendition
+ * (SGR)](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR) codes.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
-#include <stdbool.h>
 #include <stdio.h>
 
 _GL_INLINE_HEADER_BEGIN
@@ -34,7 +42,25 @@ _GL_INLINE_HEADER_BEGIN
 # define COLOR_H_INLINE _GL_INLINE
 #endif /* COLOR_H_INLINE */
 
+/// @endcond
+
+/**
+ * @defgroup printing-color-group Printing Color
+ * Constants, macros, types, global variables, and functions for printing to an
+ * ANSI terminal in color using [Select Graphics Rendition
+ * (SGR)](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR) codes.
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @defgroup sgr-group Select Graphics Rendition (SGR) Macros
+ * Macros for [Select Graphics Rendition
+ * (SGR)](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR) colors and other
+ * terminal cababilities.
+ * @ingroup printing-color-group
+ * @{
+ */
 
 #define SGR_BG_BLACK        "40"        /**< Background black.            */
 #define SGR_BG_RED          "41"        /**< Background red.              */
@@ -61,6 +87,13 @@ _GL_INLINE_HEADER_BEGIN
 #define SGR_START           "\33[%sm"   /**< Start color sequence.        */
 #define SGR_END             "\33[m"     /**< End color sequence.          */
 #define SGR_EL              "\33[K"     /**< Erase in Line (EL) sequence. */
+
+/** @} */
+
+/**
+ * @addtogroup printing-color-group
+ * @{
+ */
 
 /** When to colorize default. */
 #define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
@@ -126,6 +159,8 @@ void color_start( FILE *file, char const *sgr_color ) {
 void colors_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
 
 _GL_INLINE_HEADER_END
 

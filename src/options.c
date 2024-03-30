@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http
 */
 
+/**
+ * @file
+ * Defines global variables and functions for **ad** options.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
@@ -105,19 +110,23 @@
 
 /// @endcond
 
+/**
+ * @addtogroup ad-options-group
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
-
 /**
- * An unsigned integer literal of \a N `0xF`s, e.g., `NF(3)` = `0xFFF`.
+ * An unsigned integer literal of \a N `0xF`s, e.g., <code>%NF(3)</code> =
+ * `0xFFF`.
  *
  * @param N The number of `0xF`s of the literal in the range [1,16].
  * @return Returns said literal.
  */
 #define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
 
-#define OPT_BUF_SIZE        32          /* used for opt_format() */
+#define OPT_BUF_SIZE        32          /**< Maximum size for an option. */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -130,6 +139,9 @@ enum utf8_when {
   UTF8_ALWAYS                           ///< Always dump in UTF-8.
 };
 typedef enum utf8_when utf8_when_t;
+
+/// @cond DOXYGEN_IGNORE
+/// Otherwise Doxygen generates two entries.
 
 // option extern variable definitions
 ad_debug_t      opt_ad_debug;
@@ -148,13 +160,15 @@ char           *opt_search_buf;
 endian_t        opt_search_endian;
 size_t          opt_search_len;
 bool            opt_strings;
-strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE  \
-                                 | STRINGS_OPT_NULL     \
-                                 | STRINGS_OPT_SPACE    \
-                                 | STRINGS_OPT_TAB      ;
+strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE
+                                 | STRINGS_OPT_NULL
+                                 | STRINGS_OPT_SPACE
+                                 | STRINGS_OPT_TAB ;
 bool            opt_utf8;
 char const     *opt_utf8_pad = "\xE2\x96\xA1"; /* U+25A1: "white square" */
 bool            opt_verbose;
+
+/// @endcond
 
 /**
  * Command-line options.
@@ -233,7 +247,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
 
   for ( unsigned i = 0; i < 2; ++i ) {
     for ( ; *opt != '\0'; ++opt ) {
-      if ( GAVE_OPTION( *opt ) ) {
+      if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
         if ( ++gave_count > 1 ) {
           char const gave_opt2 = *opt;
           char opt1_buf[ OPT_BUF_SIZE ];
@@ -261,6 +275,7 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
  *
  * @param given_size The given size in bits or bytes.
  * @param actual_size The actual size of \ref search_number in bits or bytes.
+ * @param opt The short option used to specify \a given_size.
  */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -290,9 +305,9 @@ static void check_required( char const *opts, char const *req_opts ) {
   assert( req_opts[0] != '\0' );
 
   for ( char const *opt = opts; *opt; ++opt ) {
-    if ( GAVE_OPTION( *opt ) ) {
+    if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
       for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
-        if ( GAVE_OPTION( *req_opt ) )
+        if ( opts_given[ STATIC_CAST( char8_t, *req_opt ) ] )
           return;
       char opt_buf[ OPT_BUF_SIZE ];
       bool const reqs_multiple = req_opts[1] != '\0';
@@ -366,7 +381,7 @@ static char const* make_short_opts( struct option const opts[static const 2] ) {
  * @param short_opt The short option (along with its corresponding long option,
  * if any) to format.
  * @param buf The buffer to use.
- * @param buf_size The size of \a buf.
+ * @param size The size of \a buf.
  * @return Returns \a buf.
  */
 NODISCARD
@@ -394,8 +409,10 @@ static char const* opt_get_long( char short_opt ) {
   return "";
 }
 
+/// @cond DOXYGEN_IGNORE
 #define ADD_CFMT(F) BLOCK( \
   if ( (c_fmt & CFMT_##F) != CFMT_NONE ) goto dup_format; c_fmt |= CFMT_##F; )
+/// @endcond
 
 /**
  * Parses a C array format value.
@@ -725,7 +742,7 @@ static void set_all_or_none( char const **pformat, char const *all_value ) {
  * Determines whether we should dump in UTF-8.
  *
  * @param when The UTF-8 when value.
- * @return Returns \c true only if we should do UTF-8.
+ * @return Returns `true` only if we should do UTF-8.
  */
 NODISCARD
 static bool should_utf8( utf8_when_t when ) {
@@ -1182,7 +1199,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   char opt_buf[ OPT_BUF_SIZE ];
 
-  if ( GAVE_OPTION( COPT(BITS) ) ) {
+  if ( opts_given[ COPT(BITS) ] ) {
     if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s;"
@@ -1195,7 +1212,7 @@ void parse_options( int argc, char const *argv[] ) {
     );
   }
 
-  if ( GAVE_OPTION( COPT(BYTES) ) ) {
+  if ( opts_given[ COPT(BYTES) ] ) {
     if ( size_in_bytes > 8 )
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
@@ -1318,4 +1335,7 @@ missing_arg:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

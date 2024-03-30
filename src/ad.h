@@ -21,6 +21,11 @@
 #ifndef ad_ad_H
 #define ad_ad_H
 
+/**
+ * @file
+ * Declares miscellaneous macros, types, and global variables.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 
@@ -30,8 +35,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define ELIDED_SEP_CHAR           '-'
-#define EX_NO_MATCHES             1     /**< No errors, but no matches. */
+#define ELIDED_SEP_CHAR           '-'   /**< Elided row separator character. */
+#define EX_NO_MATCHES             1     /**< Exit status for no matches. */
 #define GROUP_BY_DEFAULT          2     /**< Bytes to group together. */
 #define OFFSET_WIDTH_MIN          12    /**< Minimum offset digits. */
 #define OFFSET_WIDTH_MAX          16    /**< Maximum offset digits. */

@@ -23,6 +23,7 @@ tags
 /configure
 /conftest*
 /depcomp
+/docs/
 /install-sh
 /missing
 /test-driver

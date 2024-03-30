@@ -18,12 +18,19 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines utility functions.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #define AD_UTIL_H_INLINE _GL_EXTERN_INLINE
 #include "slist.h"
 #include "util.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
@@ -36,11 +43,18 @@
 #include <sysexits.h>
 #include <unistd.h>                     /* for lseek() */
 
+/// @endcond
+
+/**
+ * @addtogroup util-group
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
  * A node for a singly linked list of pointers to memory to be freed via
- * \c atexit().
+ * `atexit()`.
  */
 struct free_node {
   void *ptr;
@@ -49,6 +63,7 @@ struct free_node {
 typedef struct free_node free_node_t;
 
 // local variable definitions
+
 static slist_t free_later_list;         ///< List of stuff to free later.
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -467,4 +482,7 @@ char* tolower_s( char *s ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

@@ -18,12 +18,19 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defined functions for matching numbers or strings.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "match.h"
 #include "options.h"
 #include "util.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
@@ -32,13 +39,25 @@
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
+/// @endcond
+
+/**
+ * @addtogroup matching-group
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
+
+/// @cond DOXYGEN_IGNORE
+/// Otherwise Doxygen generates two entries.
 
 // extern variable definitions
 unsigned long       total_matches;
 
+/// @endcond
+
 // local variable definitions
-static size_t       total_bytes_read;
+static size_t       total_bytes_read;   ///< Total bytes read.
 
 // local functions
 static void         unget_byte( char8_t );
@@ -49,7 +68,7 @@ static void         unget_byte( char8_t );
  * Gets a byte.
  *
  * @param pbyte A pointer to the byte to receive the newly read byte.
- * @return Returns \c true if a byte was read successfully.
+ * @return Returns `true` only if a byte was read successfully.
  */
 NODISCARD
 static bool get_byte( char8_t *pbyte ) {
@@ -80,8 +99,8 @@ static bool get_byte( char8_t *pbyte ) {
  *  + A printable character (if \ref opt_strings is `true`).
  *
  * @param input_byte The byte read from the input source.
- * @param buf_pos The positition within \ref opt_search_buf to match against,
- * but only if \ref opt_strings is `false`.
+ * @param buf_pos The position within \ref opt_search_buf to match against, but
+ * only if \ref opt_strings is `false`.
  * @param must_be_utf8_cont
  * @parblock
  *  + If `true`, \a input_byte _must_ be a UTF-8 continuation byte;
@@ -126,7 +145,7 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
  * @param pmatch_buf A pointer to a pointer to a buffer to use while matching.
  * It must be at least as large as the search buffer.
  * @param pmatch_len A pointer to the size of \a *pmatch_buf or NULL.
- * @return Returns \c true if a byte was read successfully.
+ * @return Returns `true` if a byte was read successfully.
  */
 NODISCARD
 static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
@@ -373,4 +392,7 @@ size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

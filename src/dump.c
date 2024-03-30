@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines types and functions for dumping a file.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
@@ -26,6 +31,8 @@
 #include "options.h"
 #include "unicode.h"
 #include "util.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
@@ -37,14 +44,35 @@
 #include <string.h>                     /* for str...() */
 #include <sysexits.h>
 
+/// @endcond
+
+/**
+ * @defgroup dump-group Dumping
+ * Types and functions for dumping a file.
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Convenience macro that calls color_start() only if \a EXPR is `true`.
+ *
+ * @param EXPR The expression.
+ */
 #define COLOR_START_IF(EXPR,COLOR) \
   BLOCK( if ( EXPR ) color_start( stdout, (COLOR) ); )
 
+/**
+ * Convenience macro that calls color_end() only if \a EXPR is `true`.
+ *
+ * @param EXPR The expression.
+ */
 #define COLOR_END_IF(EXPR,COLOR) \
   BLOCK( if ( EXPR ) color_end( stdout, (COLOR) ); )
 
+/**
+ * Buffer for row of data.
+ */
 struct row_buf {
   char8_t       bytes[ ROW_BYTES_MAX ]; ///< Bytes in buffer, left-to-right.
   size_t        len;                    ///< Length of buffer.
@@ -58,7 +86,7 @@ typedef struct row_buf row_buf_t;
  * Gets whether to print an extra space between byte columns for readability.
  *
  * @param byte_pos The current byte position from the beginning of a line.
- * @return Returns \c true only if the extra space should be printed.
+ * @return Returns `true` only if the extra space should be printed.
  */
 NODISCARD
 static inline bool print_readability_space( size_t byte_pos ) {
@@ -268,6 +296,9 @@ static void dump_row_c( char const *off_fmt, char8_t const *buf,
 
 /////////// extern functions //////////////////////////////////////////////////
 
+/**
+ * Dumps a file.
+ */
 void dump_file( void ) {
   bool          any_matches = false;    // if matching, any data matched yet?
   row_buf_t     buf[2], *curr = buf, *next = buf + 1;
@@ -350,6 +381,9 @@ void dump_file( void ) {
   exit( opt_search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
 }
 
+/**
+ * Dumps a file as a C array.
+ */
 void dump_file_c( void ) {
   char8_t       bytes[ ROW_BYTES_C ];   // bytes in buffer
   match_bits_t  match_bits;             // not used when dumping in C
@@ -409,4 +443,7 @@ empty:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

@@ -18,12 +18,19 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines types and functions for reverse dumping (patching) a file.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "options.h"
 #include "unicode.h"
 #include "util.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
@@ -35,23 +42,52 @@
 #include <string.h>                     /* for str...() */
 #include <sysexits.h>
 
-///////////////////////////////////////////////////////////////////////////////
-
-#define INVALID_EXIT(FORMAT,...)                                    \
-  fatal_error( EX_DATAERR,                                          \
-    "%s:%zu:%zu: error: " FORMAT, fin_path, line, col, __VA_ARGS__  \
-  )
-
 #ifdef FWRITE
 #undef FWRITE
 #endif /* FWRITE */
+
+/// @endcond
+
+/**
+ * @defgroup reverse-dump-group Reverse Dumping
+ * Types and functions for reverse dumping (patching) a file.
+ * @{
+ */
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Calls **fwrite**(3) on \a STREAM, checks for an error, and exits if there
+ * was one.
+ *
+ * @param PTR A pointer to the object(s) to write.
+ * @param SIZE The size of each object in bytes.
+ * @param N The number of objects to write.
+ * @param STREAM The `FILE` stream to write to.
+ */
 #define FWRITE(PTR,SIZE,N,STREAM) \
   PERROR_EXIT_IF( fwrite( (PTR), (SIZE), (N), (STREAM) ) < (N), EX_IOERR )
 
+/**
+ * Convenience macro for calling fatal_error().
+ *
+ * @param LINE The line in the **ad** file on which the error occurred.
+ * @param COL The column in the **ad** file at which the error occurred.
+ * @param FORMAT The `printf()` format.
+ * @param .. The `printf()` arguments.
+ */
+#define INVALID_EXIT(LINE,COL,FORMAT,...)                               \
+  fatal_error( EX_DATAERR,                                              \
+    "%s:%zu:%zu: error: " FORMAT, fin_path, (LINE), (COL), __VA_ARGS__  \
+  )
+
+/**
+ * The kinds of rows in an **ad** dump file.
+ */
 enum row_kind {
-  ROW_BYTES,
-  ROW_ELIDED,
-  ROW_IGNORE
+  ROW_BYTES,                            ///< Ordinary row of bytes.
+  ROW_ELIDED,                           ///< Elided row.
+  ROW_IGNORE                            ///< Row to ignore.
 };
 typedef enum row_kind row_kind_t;
 
@@ -61,7 +97,7 @@ typedef enum row_kind row_kind_t;
  * Checks whether \a c is an offset delimiter character.
  *
  * @param c The character to check.
- * @return Returns \c true only if \a c is an offset delimiter character.
+ * @return Returns `true` only if \a c is an offset delimiter character.
  */
 NODISCARD
 static inline bool is_offset_delim( char c ) {
@@ -69,7 +105,7 @@ static inline bool is_offset_delim( char c ) {
 }
 
 /**
- * Converts a single hexadecimal digit [0-9A-Fa-f] to its integer value.
+ * Converts a single hexadecimal digit `[0-9A-Fa-f]` to its integer value.
  *
  * @param c The hexadecimal character.
  * @return Returns \a c converted to an integer.
@@ -129,10 +165,11 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     col += elided_sep_width;
     uint64_t delta;
     buf += elided_sep_width;
-    if ( unlikely( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 ) )
-      INVALID_EXIT(
+    if ( unlikely( sscanf( buf, ": (%" SCNu64 " | 0x%*X)", &delta ) != 1 ) ) {
+      INVALID_EXIT( line, col,
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
+    }
     *pbytes_len = STATIC_CAST(size_t, delta);
     return ROW_ELIDED;
   }
@@ -145,11 +182,12 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
       buf, POINTER_CAST( char**, &end ), STATIC_CAST( int, opt_offset_fmt )
     )
   );
-  if ( unlikely( errno != 0 || (end[0] != '\0' && !is_offset_delim( *end )) ) )
-    INVALID_EXIT(
+  if ( unlikely( errno != 0 || (*end != '\0' && !is_offset_delim( *end )) ) ) {
+    INVALID_EXIT( line, col,
       "\"%s\": unexpected character in %s file offset\n",
       printable_char( *end ), get_offset_fmt_english()
     );
+  }
   if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
     return ROW_IGNORE;
   col += STATIC_CAST( size_t, end - buf );
@@ -182,7 +220,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     // parse second nybble
     ++col;
     if ( unlikely( ++p == end ) )
-      INVALID_EXIT(
+      INVALID_EXIT( line, col,
         "unexpected end of data; expected %zu hexadecimal bytes\n",
         row_bytes
       );
@@ -197,7 +235,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   return ROW_BYTES;
 
 expected_hex_digit:
-  INVALID_EXIT(
+  INVALID_EXIT( line, col,
     "'%s': unexpected character; expected hexadecimal digit\n",
     printable_char( *p )
   );
@@ -205,6 +243,9 @@ expected_hex_digit:
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+/**
+ * Reverse dumps (patches) a file.
+ */
 void reverse_dump_file( void ) {
   char8_t bytes[ ROW_BYTES_MAX ];
   size_t  bytes_len;
@@ -258,4 +299,7 @@ backwards_offset:
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

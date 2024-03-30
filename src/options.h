@@ -21,17 +21,32 @@
 #ifndef ad_options_H
 #define ad_options_H
 
+/**
+ * @file
+ * Declares global variables and functions for **ad** options.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
 #include "types.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
+
+/// @endcond
+
+/**
+ * @defgroup ad-options-group Ad Options
+ * Global variables and functions for **ad** options.
+ * @{
+ */
 
 /**
  * Convenience macro for iterating over all **ad** command-line options.
@@ -59,7 +74,7 @@ enum c_fmt {
   CFMT_CONST    = 1 << 6,               ///< Declare variables as `const`.
   CFMT_STATIC   = 1 << 7,               ///< Declare variables as `static`.
 };
-typedef enum c_fmt c_fmt_t;             ///< Bitwise-or of c_fmt options.
+typedef enum c_fmt c_fmt_t;
 
 /**
  * Shorthand for any C dump format length: #CFMT_INT, #CFMT_LONG,
@@ -82,10 +97,10 @@ typedef enum matches matches_t;
  * Offset formats.
  */
 enum offset_fmt {
-  OFMT_NONE =  0,
-  OFMT_DEC  = 10,
-  OFMT_HEX  = 16,
-  OFMT_OCT  =  8
+  OFMT_NONE =  0,                       ///< No offsets.
+  OFMT_DEC  = 10,                       ///< Decimal offsets.
+  OFMT_HEX  = 16,                       ///< Hexadecimal offsets.
+  OFMT_OCT  =  8                        ///< Octal offsets.
 };
 typedef enum offset_fmt offset_fmt_t;
 
@@ -188,6 +203,8 @@ size_t get_offset_width( void );
 void parse_options( int argc, char const *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
 
 #endif /* ad_options_H */
 /* vim:set et sw=2 ts=2: */

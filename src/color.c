@@ -32,6 +32,8 @@
 #include "options.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for isdigit() */
@@ -40,6 +42,16 @@
 #include <stdlib.h>                     /* for exit(), getenv() */
 #include <string.h>                     /* for str...() */
 #include <unistd.h>                     /* for isatty() */
+
+#define CALL_FN(FN)               NULL, (sgr_ ## FN)
+#define SET_SGR(VAR)              &(sgr_ ## VAR), NULL
+
+/// @endcond
+
+/**
+ * @addtogroup printing-color-group
+ * @{
+ */
 
 //
 // Color capabilities.  Names containing Upper-case are unique to ad and upper-
@@ -53,9 +65,6 @@
 #define COLOR_CAP_MATCHED_BOTH    "MB"
 #define COLOR_CAP_SEPARATOR       "se"
 #define COLOR_CAP_WARNING         "warning"
-
-#define CALL_FN(FN)               NULL, (sgr_ ## FN)
-#define SET_SGR(VAR)              &(sgr_ ## VAR), NULL
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -166,7 +175,7 @@ static void sgr_set_cap_MB( char const *sgr_color ) {
  * Parses and sets the sequence of grep color capabilities.
  *
  * @param capabilities The grep capabilities to parse.
- * @return Returns \c true only if at least one capability was parsed
+ * @return Returns `true` only if at least one capability was parsed
  * successfully.
  */
 NODISCARD
@@ -207,8 +216,8 @@ static bool colors_parse( char const *capabilities ) {
 /**
  * Determines whether we should emit escape sequences for color.
  *
- * @param c The color_when value.
- * @return Returns \c true only if we should do color.
+ * @param when The color_when value.
+ * @return Returns `true` only if we should do color.
  */
 NODISCARD
 static bool should_colorize( color_when_t when ) {
@@ -275,4 +284,7 @@ void colors_init( void ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */
