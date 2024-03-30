@@ -28,6 +28,7 @@
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for tolower() */
+#include <stdint.h>                     /* for SIZE_MAX */
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
@@ -81,10 +82,18 @@ static bool get_byte( char8_t *pbyte ) {
  * @param input_byte The byte read from the input source.
  * @param buf_pos The positition within \ref opt_search_buf to match against,
  * but only if \ref opt_strings is `false`.
+ * @param must_be_utf8_cont
+ * @parblock
+ *  + If `true`, \a input_byte _must_ be a UTF-8 continuation byte;
+ *  + If `false`, it _must_ be a UTF-8 start byte.
+ *
+ * Used only if \ref opt_utf8 is `true`.
+ * @endparblock
  * @return Returns `true` only if \a input_byte matches.
  */
 NODISCARD
-static bool is_match( char8_t input_byte, size_t buf_pos ) {
+static bool is_match( char8_t input_byte, size_t buf_pos,
+                      bool must_be_utf8_cont ) {
   if ( opt_strings ) {
     switch ( input_byte ) {
       case '\f': return (opt_strings_opts & STRINGS_OPT_FORMFEED) != 0;
@@ -93,7 +102,12 @@ static bool is_match( char8_t input_byte, size_t buf_pos ) {
       case ' ' : return (opt_strings_opts & STRINGS_OPT_SPACE   ) != 0;
       case '\t': return (opt_strings_opts & STRINGS_OPT_TAB     ) != 0;
       case '\v': return (opt_strings_opts & STRINGS_OPT_VTAB    ) != 0;
-      default  : return ascii_is_graph( input_byte );
+      default  :
+        if ( opt_utf8 ) {
+          return must_be_utf8_cont ?
+            utf8_is_cont( input_byte ) : utf8_is_start( input_byte );
+        }
+        return ascii_is_graph( input_byte );
     } // switch
   }
 
@@ -129,10 +143,14 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
 
   static size_t buf_pos;
   static size_t buf_drain;              // bytes to "drain" buf after mismatch
+  static size_t buf_matched;            // bytes in buffer matched
   static kmp_t kmp;
   static state_t state = S_READING;
+  static unsigned string_chars_matched; // strings(1) characters matched
+  static unsigned utf8_char_bytes;      // bytes comprising UTF-8 character
+  static unsigned utf8_char_bytes_left; // bytes left to match UTF-8 character
 
-  char8_t byte;
+  char8_t byte = '\0';
 
   assert( pbyte != NULL );
   assert( matches != NULL );
@@ -151,7 +169,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( 0, S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
-        if ( !is_match( byte, /*buf_pos=*/0 ) )
+        if ( !is_match( byte, /*buf_pos=*/0, /*must_be_utf8_cont=*/false ) )
           RETURN( byte );               // searching, but no match yet
         //
         // For non-strings(1) searches, the read byte matches the first byte of
@@ -169,14 +187,26 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         // strings(1) searches).
         //
         (*pmatch_buf)[0] = byte;
+        buf_matched = SIZE_MAX;         // assume all bytes read matched
         kmp = 0;
         GOTO_STATE( 0, S_MATCHING );
 
       case S_MATCHING:
         ++buf_pos;
-        if ( !opt_strings && buf_pos == opt_search_len ) {
+        if ( opt_strings ) {
+          if ( utf8_char_bytes_left == 0 ) {
+            //
+            // We've matched all the bytes comprising a UTF-8 character: bump
+            // the number of characers matched and reset for the next UTF-8
+            // character, if any.
+            //
+            ++string_chars_matched;
+            utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( byte );
+          }
+        }
+        else if ( buf_pos == opt_search_len ) {
           //
-          // For non-strings(1) matches, we've reached the end of the search
+          // For non-strings(1) searches, we've reached the end of the search
           // buffer, hence the current sequence of bytes fully matches: we can
           // now drain the match buffer and return the bytes individually to
           // the caller denoting that all matched.
@@ -196,7 +226,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_drain = buf_pos;
           GOTO_STATE( 0, S_NOT_MATCHED );
         }
-        if ( is_match( byte, buf_pos ) ) {
+        if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -219,25 +249,47 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           kmp = kmps[ buf_pos ];
         buf_drain = buf_pos - kmp;
 
-        //
-        // However, for strings(1) matches, if we've matched at least
-        // opt_search_len bytes and either:
-        //
-        //  + We don't require a terminating null byte; or:
-        //  + We require a terminating null byte and the byte is a null byte,
-        //
-        // then we've matched a string.
-        //
-        if ( opt_strings && buf_pos >= opt_search_len &&
-             ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || byte == '\0') ) {
-          ++total_matches;
-          GOTO_STATE( 0, S_MATCHED );
+        if ( opt_strings ) {
+          if ( opt_utf8 ) {
+            //
+            // When strings(1) matching UTF-8 characters, it's possible to
+            // encounter an invalid byte.
+            //
+            // For example, if we read the bytes E2 96 31, the E2 says we're to
+            // expect 3 bytes comprising the character so the next 2 bytes must
+            // be "continuation bytes" in the range 80-BF, hence 31 is invalid.
+            //
+            // In such a case, we've already "ungot" the invalid byte (31),
+            // but what to do about the E2 and 96?  Since only 1 byte of push-
+            // back is guaranteed, we shouldn't rely on pushing them back.
+            // Instead, we'll "drain" them just like the valid bytes through
+            // the byte before the E2, but just set *is_match to false.  To do
+            // that, we set buf_matched.
+            //
+            buf_matched = buf_pos - utf8_char_bytes + utf8_char_bytes_left - 1;
+          }
+
+          //
+          // For strings(1) searches, if we've matched at least opt_search_len
+          // characters and either:
+          //
+          //  + We don't require a terminating null byte; or:
+          //  + We require a terminating null byte and the byte is a null byte,
+          //
+          // then we've matched a string.
+          //
+          if ( string_chars_matched >= opt_search_len &&
+              ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || byte == '\0') ) {
+            ++total_matches;
+            GOTO_STATE( 0, S_MATCHED );
+          }
         }
 
         GOTO_STATE( 0, S_NOT_MATCHED );
 
       case S_MATCHED:
       case S_NOT_MATCHED:
+        utf8_char_bytes = utf8_char_bytes_left = string_chars_matched = 0;
         //
         // Drain the match buffer returning each byte to the caller along with
         // whether it matched.
@@ -251,7 +303,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           //
           GOTO_STATE( kmp, kmp > 0 ? S_MATCHING_CONT : S_READING );
         }
-        *matches = state == S_MATCHED;
+        *matches = state == S_MATCHED && buf_pos <= buf_matched;
         RETURN( (*pmatch_buf)[ buf_pos++ ] );
 
       case S_DONE:
