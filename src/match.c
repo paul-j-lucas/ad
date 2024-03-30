@@ -160,9 +160,9 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   };
   typedef enum state state_t;
 
-  static size_t   buf_pos;              // position in *pmatch_buf
   static size_t   buf_drain;            // bytes to "drain" buf after mismatch
   static size_t   buf_matched;          // bytes in buffer matched
+  static size_t   buf_pos;              // position in *pmatch_buf
   static kmp_t    kmp;                  // bytes partially matched
   static state_t  state = S_READING;    // current state
   static unsigned string_chars_matched; // strings(1) characters matched
@@ -208,6 +208,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         buf_matched = SIZE_MAX;         // assume all bytes read matched
         buf_pos = 0;
         kmp = 0;
+        string_chars_matched = utf8_char_bytes = utf8_char_bytes_left = 0;
         GOTO_STATE( S_MATCHING );
 
       case S_MATCHING:
@@ -218,6 +219,9 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             // We've matched all the bytes comprising a UTF-8 character: bump
             // the number of characers matched and reset for the next UTF-8
             // character, if any.
+            //
+            // We don't need to check opt_utf8 since this code also works for
+            // ASCII since ASCII is a subset of UTF-8.
             //
             ++string_chars_matched;
             utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( byte );
@@ -312,7 +316,6 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
 
       case S_MATCHED:
       case S_NOT_MATCHED:
-        utf8_char_bytes = utf8_char_bytes_left = string_chars_matched = 0;
         //
         // Drain the match buffer returning each byte to the caller along with
         // whether it matched.
