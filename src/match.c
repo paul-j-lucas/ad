@@ -285,11 +285,11 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             // be "continuation bytes" in the range 80-BF, hence 31 is invalid.
             //
             // In such a case, we've already "ungot" the invalid byte (31),
-            // but what to do about the E2 and 96?  Since only 1 byte of push-
-            // back is guaranteed, we shouldn't rely on pushing them back.
-            // Instead, we'll "drain" them just like the valid bytes through
-            // the byte before the E2, but just set *is_match to false.  To do
-            // that, we set buf_matched.
+            // but what to do about E2 and 96?  Since only 1 byte of push-back
+            // is guaranteed, we shouldn't rely on pushing them back.  Instead,
+            // we'll "drain" them just like the valid bytes through the byte
+            // before the E2, but just set *is_match to false for E2 and 96.
+            // To do that, we set buf_matched.
             //
             buf_matched = buf_pos - utf8_char_bytes + utf8_char_bytes_left - 1;
           }
