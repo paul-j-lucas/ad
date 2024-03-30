@@ -27,11 +27,19 @@
 #include "parser.h"
 #include "unicode.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for islower(), toupper() */
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <inttypes.h>                   /* for PRIu64, etc. */
+#ifdef HAVE_LANGINFO_H
+#include <langinfo.h>
+#endif /* HAVE_LANGINFO_H */
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif /* HAVE_LOCALE_H */
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>                      /* for fdopen() */
 #include <stdlib.h>                     /* for exit() */
@@ -40,6 +48,7 @@
 #include <sys/types.h>
 #include <sysexits.h>
 #include <unistd.h>                     /* for close(2), STDOUT_FILENO */
+#include <string.h>
 
 // Undefine these since they clash with our command-line options.
 #ifdef BIG_ENDIAN
@@ -94,10 +103,33 @@
 /// usage message.
 #define UOPT(X)                   " (-" SOPT(X) ") "
 
+/// @endcond
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #define GAVE_OPTION(OPT)    (opts_given[ STATIC_CAST( char8_t, (OPT) ) ])
+
+/**
+ * An unsigned integer literal of \a N `0xF`s, e.g., `NF(3)` = `0xFFF`.
+ *
+ * @param N The number of `0xF`s of the literal in the range [1,16].
+ * @return Returns said literal.
+ */
+#define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
+
 #define OPT_BUF_SIZE        32          /* used for opt_format() */
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * When to dump in UTF-8.
+ */
+enum utf8_when {
+  UTF8_NEVER,                           ///< Never dump in UTF-8.
+  UTF8_ENCODING,                        ///< Dump in UTF-8 only if encoding is.
+  UTF8_ALWAYS                           ///< Always dump in UTF-8.
+};
+typedef enum utf8_when utf8_when_t;
 
 // option extern variable definitions
 ad_debug_t      opt_ad_debug;
@@ -115,14 +147,13 @@ bool            opt_reverse;
 char           *opt_search_buf;
 endian_t        opt_search_endian;
 size_t          opt_search_len;
-uint64_t        opt_search_number;
 bool            opt_strings;
 strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE  \
                                  | STRINGS_OPT_NULL     \
                                  | STRINGS_OPT_SPACE    \
                                  | STRINGS_OPT_TAB      ;
 bool            opt_utf8;
-char const     *opt_utf8_pad = UTF8_PAD_CHAR_DEFAULT;
+char const     *opt_utf8_pad = "\xE2\x96\xA1"; /* U+25A1: "white square" */
 bool            opt_verbose;
 
 /**
@@ -167,6 +198,14 @@ static struct option const OPTIONS[] = {
 
 // local variable definitions
 static bool         opts_given[ 128 ];
+
+/**
+ * The number to search for, if any.
+ *
+ * @remarks The bytes comprising the number are rearranged according to \ref
+ * opt_search_endian.
+ */
+static uint64_t     search_number;
 
 // local functions
 static void         set_all_or_none( char const**, char const* );
@@ -216,12 +255,12 @@ static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
 }
 
 /**
- * Checks that the number of bits or bytes given for \c opt_search_number are
- * sufficient to contain it.
- * Prints an error message and exits if \a given_size &lt; \a actual_size.
+ * Checks that the number of bits or bytes given for \ref search_number are
+ * sufficient to contain it: if not, prints an error message and exits if \a
+ * given_size &lt; \a actual_size.
  *
  * @param given_size The given size in bits or bytes.
- * @param actual_size The actual size of \c opt_search_number in bits or bytes.
+ * @param actual_size The actual size of \ref search_number in bits or bytes.
  */
 static void check_number_size( size_t given_size, size_t actual_size,
                                char opt ) {
@@ -231,7 +270,7 @@ static void check_number_size( size_t given_size, size_t actual_size,
       "\"%zu\": value for %s is too small for \"%" PRIu64 "\";"
       " must be at least %zu\n",
       given_size, opt_format( opt, opt_buf, sizeof opt_buf ),
-      opt_search_number, actual_size
+      search_number, actual_size
     );
   }
 }
@@ -265,6 +304,21 @@ static void check_required( char const *opts, char const *req_opts ) {
       );
     }
   } // for
+}
+
+/**
+ * Gets the minimum number of bytes required to contain the given `uint64_t`
+ * value.
+ *
+ * @param n The number to get the number of bytes for.
+ * @return Returns the minimum number of bytes required to contain \a n
+ * in the range [1,8].
+ */
+NODISCARD
+static unsigned int_len( uint64_t n ) {
+  return n <= NF(8) ?
+    (n <= NF( 4) ? (n <= NF( 2) ? 1 : 2) : (n <= NF( 6) ? 3 : 4)) :
+    (n <= NF(12) ? (n <= NF(10) ? 5 : 6) : (n <= NF(14) ? 7 : 8));
 }
 
 /**
@@ -668,6 +722,30 @@ static void set_all_or_none( char const **pformat, char const *all_value ) {
 }
 
 /**
+ * Determines whether we should dump in UTF-8.
+ *
+ * @param when The UTF-8 when value.
+ * @return Returns \c true only if we should do UTF-8.
+ */
+NODISCARD
+static bool should_utf8( utf8_when_t when ) {
+  switch ( when ) {                     // handle easy cases
+    case UTF8_ALWAYS: return true;
+    case UTF8_NEVER : return false;
+    default         : break;
+  } // switch
+
+#if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
+  setlocale( LC_CTYPE, "" );
+  char const *const encoding = nl_langinfo( CODESET );
+  return  strcasecmp( encoding, "utf8"  ) == 0 ||
+          strcasecmp( encoding, "utf-8" ) == 0;
+#else
+  return false;
+#endif
+}
+
+/**
  * Prints the usage message to standard error and exits.
  */
 _Noreturn
@@ -803,7 +881,7 @@ void parse_options( int argc, char const *argv[] ) {
   char const *const short_opts = make_short_opts( OPTIONS );
   size_t            size_in_bits = 0, size_in_bytes = 0;
   char32_t          utf8_pad = 0;
-  utf8_when_t       utf8_when = UTF8_WHEN_DEFAULT;
+  utf8_when_t       utf8_when = UTF8_NEVER;
 
   opterr = 1;
 
@@ -816,7 +894,7 @@ void parse_options( int argc, char const *argv[] ) {
       break;
     switch ( opt ) {
       case COPT(BIG_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_BIG;
         break;
       case COPT(BITS):
@@ -852,7 +930,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_offset_fmt = OFMT_HEX;
         break;
       case COPT(HOST_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
 #ifdef WORDS_BIGENDIAN
         opt_search_endian = ENDIAN_BIG;
 #else
@@ -863,7 +941,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_case_insensitive = true;
         break;
       case COPT(LITTLE_ENDIAN):
-        opt_search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
+        search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
         opt_search_endian = ENDIAN_LITTLE;
         break;
       case COPT(MATCHING_ONLY):
@@ -1113,7 +1191,7 @@ void parse_options( int argc, char const *argv[] ) {
       );
     opt_search_len = size_in_bits * 8;
     check_number_size(
-      size_in_bits, int_len( opt_search_number ) * 8, COPT(BITS)
+      size_in_bits, int_len( search_number ) * 8, COPT(BITS)
     );
   }
 
@@ -1125,7 +1203,7 @@ void parse_options( int argc, char const *argv[] ) {
       );
     opt_search_len = size_in_bytes;
     check_number_size(
-      size_in_bytes, int_len( opt_search_number ), COPT(BYTES)
+      size_in_bytes, int_len( search_number ), COPT(BYTES)
     );
   }
 
@@ -1199,11 +1277,9 @@ void parse_options( int argc, char const *argv[] ) {
     else if ( opt_search_endian != ENDIAN_NONE ) {
       // searching for a number
       if ( opt_search_len == 0 )        // default to smallest possible size
-        opt_search_len = int_len( opt_search_number );
-      int_rearrange_bytes(
-        &opt_search_number, opt_search_len, opt_search_endian
-      );
-      opt_search_buf = POINTER_CAST( char*, &opt_search_number );
+        opt_search_len = int_len( search_number );
+      int_rearrange_bytes( &search_number, opt_search_len, opt_search_endian );
+      opt_search_buf = POINTER_CAST( char*, &search_number );
     }
   }
 
@@ -1212,7 +1288,7 @@ void parse_options( int argc, char const *argv[] ) {
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
-    static char utf8_pad_buf[ UTF8_LEN_MAX + 1/*NULL*/ ];
+    static char utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
     utf32_8( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }

@@ -1,3 +1,18 @@
+2024-03-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.1, match.c, test/Makefile.am, ad-nSw-u.txt, ad-nSw-u.test: Now support
+     UTF-8 for strings(1) dumps.
+
+2024-03-28  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, unicode.c, unicode.h: s/utf8_len/utf8_char_len/
+   * dump.c, options.c, unicode.h: s/UTF8_LEN_MAX/UTF8_CHAR_SIZE_MAX/;
+     eliminated UTF8_PAD_CHAR_DEFAULT.
+   * options.c, unicode.h: Eliminated UTF8_WHEN_DEFAULT.
+   * options.c, unicode.c, unicode.h: Moved should_utf8().
+   * options.c, util.c, util.h: Moved int_len().
+   * options.c, options.h: s/opt_search_number/search_number/
+
 2024-03-27  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, util.c, util.h: Moved parse_offset().

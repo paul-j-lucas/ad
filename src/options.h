@@ -123,21 +123,14 @@ extern bool           opt_reverse;      ///< Reverse dump (patch)?
  * The bytes of what to search for, if any.
  *
  * @remarks When searching for a:
- * + String, this points to the null-terminated string.
- * + Number, this points to \ref opt_search_number.
+ * + A specific string, this points to the null-terminated string.
+ * + Any string, not used.
+ * + Number, this points to \ref search_number.
  */
 extern char          *opt_search_buf;
 
 extern endian_t       opt_search_endian;///< Numeric search endianness.
 extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
-
-/**
- * The number to search for, if any.
- *
- * @remarks The bytes comprising the number are rearranged according to \ref
- * opt_search_endian.
- */
-extern uint64_t       opt_search_number;
 
 extern bool           opt_strings;      ///< **strings**(1)-like search?
 extern strings_opts_t opt_strings_opts; ///< **strings**(1)-like options.

@@ -84,7 +84,7 @@ static unsigned utf8_collect( row_buf_t const *curr, size_t curr_pos,
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  unsigned const len = utf8_len( curr->bytes[ curr_pos ] );
+  unsigned const len = utf8_char_len( curr->bytes[ curr_pos ] );
   if ( len > 1 ) {
     row_buf_t const *row = curr;
     *utf8_char++ = row->bytes[ curr_pos++ ];
@@ -215,7 +215,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
         PUTS( opt_utf8_pad );
         --utf8_count;
       } else {
-        char8_t utf8_char[ UTF8_LEN_MAX + 1 /*NULL*/ ];
+        char8_t utf8_char[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
         utf8_count = opt_utf8 ?
           utf8_collect( curr, curr_pos, next, utf8_char ) : 1;
         if ( utf8_count > 1 )

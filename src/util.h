@@ -949,17 +949,6 @@ NODISCARD
 char* identify( char const *s );
 
 /**
- * Gets the minimum number of bytes required to contain the given `uint64_t`
- * value.
- *
- * @param n The number to get the number of bytes for.
- * @return Returns the minimum number of bytes required to contain \a n
- * in the range [1,8].
- */
-NODISCARD
-size_t int_len( uint64_t n );
-
-/**
  * Rearranges the bytes in the given `uint64_t` such that:
  *  + The value is down-cast into the requested number of bytes.
  *  + The bytes have the requested endianness.

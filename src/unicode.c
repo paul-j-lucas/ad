@@ -26,18 +26,11 @@
 
 // standard
 #include <assert.h>
-#ifdef HAVE_LANGINFO_H
-#include <langinfo.h>
-#endif /* HAVE_LANGINFO_H */
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif /* HAVE_LOCALE_H */
-#include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern constant definitions
-char8_t const UTF8_LEN_TABLE[] = {
+char8_t const UTF8_CHAR_LEN_TABLE[] = {
   /*      0 1 2 3 4 5 6 7 8 9 A B C D E F */
   /* 0 */ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   /* 1 */ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -76,23 +69,6 @@ static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
-
-bool should_utf8( utf8_when_t when ) {
-  switch ( when ) {                     // handle easy cases
-    case UTF8_ALWAYS: return true;
-    case UTF8_NEVER : return false;
-    default         : break;
-  } // switch
-
-#if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
-  setlocale( LC_CTYPE, "" );
-  char const *const encoding = nl_langinfo( CODESET );
-  return  strcasecmp( encoding, "utf8"  ) == 0 ||
-          strcasecmp( encoding, "utf-8" ) == 0;
-#else
-  return false;
-#endif
-}
 
 bool utf16_32( char16_t const *u16, size_t size16, endian_t endian,
                char32_t *u32 ) {

@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "March 27, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "March 29, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -469,6 +469,12 @@ of at least length
 like
 .BR strings (1)
 and highlights matches.
+If dumping in UTF-8,
+searches for all UTF-8 strings
+of at least length
+.I n
+characters
+(not bytes).
 The default for
 .I n
 is 4.

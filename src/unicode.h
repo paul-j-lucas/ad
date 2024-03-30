@@ -59,20 +59,7 @@ _GL_INLINE_HEADER_BEGIN
 #define CP_SURROGATE_LOW_START    0x00DC00u
 #define CP_SURROGATE_LOW_END      0x00DFFFu
 #define CP_VALID_MAX              0x10FFFFu
-#define UTF8_LEN_MAX              4       /* max bytes needed for UTF-8 char */
-#define UTF8_PAD_CHAR_DEFAULT     "\xE2\x96\xA1" /* U+25A1: "white square" */
-
-/**
- * When to dump in UTF-8.
- */
-enum utf8_when {
-  UTF8_NEVER,                           ///< Never dump in UTF-8.
-  UTF8_ENCODING,                        ///< Dump in UTF-8 only if encoding is.
-  UTF8_ALWAYS                           ///< Always dump in UTF-8.
-};
-typedef enum utf8_when utf8_when_t;
-
-#define UTF8_WHEN_DEFAULT         UTF8_NEVER
+#define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
 typedef uint8_t   utf8_t[ UTF8_LEN_MAX ];
 
@@ -101,15 +88,6 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
 }
 
 /**
- * Determines whether we should dump in UTF-8.
- *
- * @param when The UTF-8 when value.
- * @return Returns \c true only if we should do UTF-8.
- */
-NODISCARD
-bool should_utf8( utf8_when_t when );
-
-/**
  * Decodes UTF-16 encoded characters into their corresponding Unicode code-
  * points.
  *
@@ -128,7 +106,7 @@ bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
  *
  * @param cp The Unicode code-point to encode.
  * @param u8 A pointer to the start of a buffer to receive the UTF-8 bytes;
- * must be at least \c UTF8_LEN_MAX long.  No NULL byte is appended.
+ * must be at least #UTF8_CHAR_SIZE_MAX long.  No NULL byte is appended.
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
@@ -148,6 +126,19 @@ char32_t utf8_32( char const *s ) {
   extern char32_t utf8_32_impl( char const* );
   char32_t const cp = (uint8_t)*s;
   return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
+}
+
+/*
+ * Gets the number of bytes comprising a UTF-8 character.
+ *
+ * @param start The start byte of a UTF-8 byte sequence.
+ * @return Returns the number of bytes needed for the UTF-8 character in the
+ * range [1,6] or 0 if \a start is not a valid start byte.
+ */
+NODISCARD AD_UNICODE_H_INLINE
+unsigned utf8_char_len( char8_t start ) {
+  extern char8_t const UTF8_CHAR_LEN_TABLE[];
+  return UTF8_CHAR_LEN_TABLE[ start ];
 }
 
 /**
@@ -189,19 +180,6 @@ bool utf8_is_start( char8_t c ) {
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_cont( char8_t c ) {
   return c >= 0x80 && c < 0xC0;
-}
-
-/**
- * Gets the length of a UTF-8 character.
- *
- * @param start The start byte of a UTF-8 byte sequence.
- * @return Returns the number of bytes needed for the UTF-8 character in the
- * range [1,6] or 0 if \a start is not a valid start byte.
- */
-NODISCARD AD_UNICODE_H_INLINE
-unsigned utf8_len( char8_t start ) {
-  extern char8_t const UTF8_LEN_TABLE[];
-  return UTF8_LEN_TABLE[ start ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
