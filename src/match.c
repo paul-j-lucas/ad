@@ -169,12 +169,11 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   static unsigned utf8_char_bytes;      // bytes comprising UTF-8 character
   static unsigned utf8_char_bytes_left; // bytes left to match UTF-8 character
 
-  char8_t byte = '\0';
-
   assert( pbyte != NULL );
   assert( matches != NULL );
   assert( state != S_DONE );
 
+  char8_t byte = '\0';
   *matches = false;
 
   for (;;) {
