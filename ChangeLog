@@ -1,5 +1,6 @@
 2024-03-30  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c: No longer setting buf_pos in GOTO_STATE().
    * ad.1, match.c, test/Makefile.am, ad-nSw-u.txt, ad-nSw-u.test: Now support
      UTF-8 for strings(1) dumps.
 
