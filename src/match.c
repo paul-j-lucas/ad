@@ -180,12 +180,12 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   for (;;) {
     switch ( state ) {
 
-#define GOTO_STATE(POS,S)         { buf_pos = (POS); state = (S); continue; }
+#define GOTO_STATE(S)             { state = (S); continue; }
 #define RETURN(BYTE)              BLOCK( *pbyte = (BYTE); return true; )
 
       case S_READING:
         if ( unlikely( !get_byte( &byte ) ) )
-          GOTO_STATE( 0, S_DONE );
+          GOTO_STATE( S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
           RETURN( byte );
         if ( !is_match( byte, /*buf_pos=*/0, /*must_be_utf8_cont=*/false ) )
@@ -207,8 +207,9 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         //
         (*pmatch_buf)[0] = byte;
         buf_matched = SIZE_MAX;         // assume all bytes read matched
+        buf_pos = 0;
         kmp = 0;
-        GOTO_STATE( 0, S_MATCHING );
+        GOTO_STATE( S_MATCHING );
 
       case S_MATCHING:
         ++buf_pos;
@@ -232,7 +233,8 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           //
           ++total_matches;
           buf_drain = buf_pos;
-          GOTO_STATE( 0, S_MATCHED );
+          buf_pos = 0;
+          GOTO_STATE( S_MATCHED );
         }
         FALLTHROUGH;
       case S_MATCHING_CONT:
@@ -243,7 +245,8 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // individually to the caller denoting that none matched.
           //
           buf_drain = buf_pos;
-          GOTO_STATE( 0, S_NOT_MATCHED );
+          buf_pos = 0;
+          GOTO_STATE( S_NOT_MATCHED );
         }
         if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
           //
@@ -255,7 +258,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             REALLOC( *pmatch_buf, *pmatch_len );
           }
           (*pmatch_buf)[ buf_pos ] = byte;
-          GOTO_STATE( buf_pos, S_MATCHING ); // in case we were S_MATCHING_CONT
+          GOTO_STATE( S_MATCHING );     // in case we were S_MATCHING_CONT
         }
 
         //
@@ -300,11 +303,13 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           if ( string_chars_matched >= opt_search_len &&
               ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || byte == '\0') ) {
             ++total_matches;
-            GOTO_STATE( 0, S_MATCHED );
+            buf_pos = 0;
+            GOTO_STATE( S_MATCHED );
           }
         }
 
-        GOTO_STATE( 0, S_NOT_MATCHED );
+        buf_pos = 0;
+        GOTO_STATE( S_NOT_MATCHED );
 
       case S_MATCHED:
       case S_NOT_MATCHED:
@@ -320,7 +325,8 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // to re-read them and re-compare them since they will match; hence,
           // go to S_MATCHING_CONT.
           //
-          GOTO_STATE( kmp, kmp > 0 ? S_MATCHING_CONT : S_READING );
+          buf_pos = kmp;
+          GOTO_STATE( kmp > 0 ? S_MATCHING_CONT : S_READING );
         }
         *matches = state == S_MATCHED && buf_pos <= buf_matched;
         RETURN( (*pmatch_buf)[ buf_pos++ ] );
