@@ -21,33 +21,49 @@
 #ifndef ad_match_H
 #define ad_match_H
 
+/**
+ * @file
+ * Declares types and functions for matching numbers or strings.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "unicode.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint32_t */
 
+/// @endcond
+
+/**
+ * @defgroup matching-group Matching Numbers or Strings
+ * Types, variables, and functions for matching numbers or strings.
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef size_t    kmp_t;                // Knuth-Morris-Pratt prefix value
-typedef uint32_t  match_bits_t;
+typedef size_t    kmp_t;                ///< Knuth-Morris-Pratt prefix value.
+typedef uint32_t  match_bits_t;         ///< Bit _i_ means byte _i_ matches.
 
 // extern variables
-extern unsigned long total_matches;
+extern unsigned long total_matches;     ///< Total number of matches.
 
 /**
  * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
  * string searching algorithm.
  *
- * For the small search patterns and there being no requirement for super-fast
- * performance for this application, brute-force searching would have been
- * fine.  However, KMP has the advantage of never having to back up within the
- * string being searched which is a requirement when reading from stdin.
+ * @remarks For the small search patterns and there being no requirement for
+ * super-fast performance for this application, brute-force searching would
+ * have been fine.  However, KMP has the advantage of never having to back up
+ * within the string being searched which is a requirement when reading from
+ * stdin.
  *
  * @param pattern The search pattern to use.
- * @param pattern_len The length of the pattern.
+ * @param pattern_len The length of \a pattern.
  * @return Returns an array containing the values comprising the partial-match
  * table.  The caller is responsible for freeing the array.
  */
@@ -59,9 +75,9 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * buffer.
  *
  * @param row_buf A pointer to the row buffer.
- * @param row_len The length of the row to match.
+ * @param row_len The length of \a row_buf.
  * @param match_bits A pointer to receive which bytes matched.  Note that the
- * bytes in the buffer are numbered left-to-right where as their corresponding
+ * bytes in the buffer are numbered left-to-right whereas their corresponding
  * bits are numbered right-to-left.
  * @param kmps A pointer to the array of KMP values to use or NULL.
  * @param pmatch_buf A pointer to a pointer to a buffer to use while matching
@@ -76,6 +92,8 @@ size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
                   kmp_t const *kmps, char8_t **pmatch_buf, size_t *pmatch_len );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
 
 #endif /* ad_match_H */
 /* vim:set et sw=2 ts=2: */

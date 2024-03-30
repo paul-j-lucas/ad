@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines global variables and main().
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"

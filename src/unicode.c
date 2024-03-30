@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines functions for working with Unicode characters.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #define AD_UNICODE_H_INLINE _GL_EXTERN_INLINE
@@ -30,6 +35,11 @@
 #include <assert.h>
 
 /// @endcond
+
+/**
+ * @addtogroup matching-group
+ * @{
+ */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -95,4 +105,7 @@ size_t utf32_8( char32_t cp, char *u8 ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

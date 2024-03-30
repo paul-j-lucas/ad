@@ -21,8 +21,15 @@
 #ifndef ad_unicode_H
 #define ad_unicode_H
 
+/**
+ * @file
+ * Declares macros, types, and functions for working with Unicode characters.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <stdbool.h>
@@ -32,24 +39,32 @@
 #include <uchar.h>
 #endif /* HAVE_CHAR8_T || HAVE_CHAR32_T */
 
-#if !HAVE_CHAR8_T
-typedef uint8_t char8_t;                /* borrowed from C++20 */
-#endif /* !HAVE_CHAR8_T */
-#if !HAVE_CHAR32_T
-typedef uint32_t char32_t;              /* C11's char32_t */
-#endif /* !HAVE_CHAR32_T */
-
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UNICODE_H_INLINE
 # define AD_UNICODE_H_INLINE _GL_INLINE
 #endif /* AD_UNICODE_H_INLINE */
 
+/// @endcond
+
+/**
+ * @defgroup unicode-group Unicode
+ * Macros, types, and functions for working with Unicode characters.
+ * @{
+ */
+
+#if !HAVE_CHAR8_T
+typedef uint8_t char8_t;                /**< Borrowed from C++20. */
+#endif /* !HAVE_CHAR8_T */
+#if !HAVE_CHAR32_T
+typedef uint32_t char32_t;              /**< C11's `char32_t` */
+#endif /* !HAVE_CHAR32_T */
+
 ///////////////////////////////////////////////////////////////////////////////
 
-#define CP_INVALID                0x01FFFFu
-#define CP_SURROGATE_HIGH_START   0x00D800u
-#define CP_SURROGATE_LOW_END      0x00DFFFu
-#define CP_VALID_MAX              0x10FFFFu
+#define CP_INVALID                0x01FFFFu /**< Invalid Unicode code-point. */
+#define CP_SURROGATE_HIGH_START   0x00D800u /**< Unicode surrogate high. */
+#define CP_SURROGATE_LOW_END      0x00DFFFu /**< Unicode surrogate low. */
+#define CP_VALID_MAX              0x10FFFFu /**< Maximum valid code-point. */
 #define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,7 +73,7 @@ _GL_INLINE_HEADER_BEGIN
  * Checks whether the given Unicode code-point is valid.
  *
  * @param cp_candidate The Unicode code-point candidate value to check.
- * @return Returns \c true only if \a cp_candidate is a valid code-point.
+ * @return Returns `true` only if \a cp_candidate is a valid code-point.
  */
 NODISCARD AD_UNICODE_H_INLINE
 bool cp_is_valid( unsigned long long cp_candidate ) {
@@ -93,12 +108,15 @@ unsigned utf8_char_len( char8_t start ) {
 
 /**
  * Checks whether the given byte is the first byte of a UTF-8 byte sequence
- * comprising an encoded character.  Note that this is not equivalent to
- * !utf8_is_cont(c).
+ * comprising an encoded character.
+ *
+ * @note This is _not_ equivalent to `!utf8_is_cont(c)`.
  *
  * @param c The byte to check.
- * @return Returns \c true only if the byte is the first byte of a UTF-8 byte
+ * @return Returns `true` only if the byte is the first byte of a UTF-8 byte
  * sequence comprising an encoded character.
+ *
+ * @sa utf8_is_cont()
  */
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_start( char8_t c ) {
@@ -107,12 +125,15 @@ bool utf8_is_start( char8_t c ) {
 
 /**
  * Checks whether the given byte is not the first byte of a UTF-8 byte sequence
- * comprising an encoded character.  Note that this is not equivalent to
- * !utf8_is_start(c).
+ * comprising an encoded character.
+ *
+ * @note This is _not_ equivalent to `!utf8_is_start(c)`.
  *
  * @param c The byte to check.
- * @return Returns \c true only if the byte is not the first byte of a UTF-8
+ * @return Returns `true` only if the byte is not the first byte of a UTF-8
  * byte sequence comprising an encoded character.
+ *
+ * @sa utf8_is_start().
  */
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8_is_cont( char8_t c ) {
@@ -120,6 +141,8 @@ bool utf8_is_cont( char8_t c ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
 
 _GL_INLINE_HEADER_END
 

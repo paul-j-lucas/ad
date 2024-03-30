@@ -21,10 +21,17 @@
 #ifndef ad_util_H
 #define ad_util_H
 
+/**
+ * @file
+ * Declares utility constants, macros, and functions.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "unicode.h"
+
+/// @cond DOXYGEN_IGNORE
 
 // standard
 #include <errno.h>
@@ -41,7 +48,17 @@ _GL_INLINE_HEADER_BEGIN
 # define AD_UTIL_H_INLINE _GL_INLINE
 #endif /* AD_UTIL_H_INLINE */
 
+/// @endcond
+
+/**
+ * @defgroup util-group Utility Macros & Functions
+ * Utility macros, constants, and functions.
+ * @{
+ */
+
 ///////////////////////////////////////////////////////////////////////////////
+
+/// @cond DOXYGEN_IGNORE
 
 #define CHARIFY_0 '0'
 #define CHARIFY_1 '1'
@@ -109,6 +126,8 @@ _GL_INLINE_HEADER_BEGIN
 
 #define NAME2_HELPER(A,B)         A##B
 #define STRINGIFY_HELPER(X)       #X
+
+/// @endcond
 
 /**
  * Gets the number of elements of the given array.
@@ -195,8 +214,6 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @param ... The `printf()` arguments.
  *
- * @sa #EPUTC()
- * @sa #EPUTS()
  * @sa #FPRINTF()
  */
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
@@ -263,7 +280,6 @@ _GL_INLINE_HEADER_BEGIN
  * @param C The character to print.
  * @param STREAM The `FILE` stream to print to.
  *
- * @sa #EPUTC()
  * @sa #FPRINTF()
  * @sa #FPUTS()
  * @sa #PERROR_EXIT_IF()
@@ -290,7 +306,6 @@ _GL_INLINE_HEADER_BEGIN
  * @param S The C string to print.
  * @param STREAM The `FILE` stream to print to.
  *
- * @sa #EPUTS()
  * @sa #FPRINTF()
  * @sa #FPUTC()
  * @sa #PERROR_EXIT_IF()
@@ -486,7 +501,6 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @param C The character to print.
  *
- * @sa #EPUTC()
  * @sa #FPUTC()
  * @sa #PRINTF()
  */
@@ -499,7 +513,6 @@ _GL_INLINE_HEADER_BEGIN
  *
  * @note Unlike **puts**(3), does _not_ print a newline.
  *
- * @sa #EPUTS()
  * @sa #FPUTS()
  * @sa #PRINTF()
  */
@@ -807,7 +820,6 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * negative number.
  *
  * @param s The NULL-terminated string to parse.
- * @param n A pointer to receive the parsed number.
  * @return Returns the parsed number only if \a s is entirely a non-negative
  * number or prints an error message and exits if there was an error.
  */
@@ -827,18 +839,18 @@ void perror_exit( int status );
 
 /**
  * Gets a printable version of the given character:
- *  + For characters for which isprint(3) returns non-zero,
- *    the printable version is a single character string of itself.
- *  + For the special-case characters of \0, \a, \b, \f, \n, \r, \t, and \v,
- *    the printable version is a two character string of a backslash followed
- *    by the letter.
+ *  + For characters for which **isprint**(3) returns non-zero, the printable
+ *    version is a single character string of itself.
+ *  + For the special-case characters of `\0`, `\a`, `\b`, `\f`, `\n`, `\r`,
+ *    `\t`, and `\v`, the printable version is a two character string of a
+ *    backslash followed by the letter.
  *  + For all other characters, the printable version is a four-character
- *    string of a backslash followed by an 'x' and the two-character
+ *    string of a backslash followed by an `'x'` and the two-character
  *    hexedecimal value of che characters ASCII code.
  *
  * @param c The character to get the printable form of.
- * @return Returns a NULL-terminated string that is a printable version of
- * \a c.  Note that the result is a pointer to static storage, hence subsequent
+ * @return Returns a NULL-terminated string that is a printable version of \a
+ * c.  Note that the result is a pointer to static storage, hence subsequent
  * calls will overwrite the returned value.  As such, this function is not
  * thread-safe.
  */
@@ -855,6 +867,8 @@ PJL_DISCARD
 char* tolower_s( char *s );
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
 
 _GL_INLINE_HEADER_END
 

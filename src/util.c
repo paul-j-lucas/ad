@@ -18,6 +18,11 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * @file
+ * Defines utility functions.
+ */
+
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
@@ -38,6 +43,11 @@
 #include <unistd.h>                     /* for lseek() */
 
 /// @endcond
+
+/**
+ * @addtogroup util-group
+ * @{
+ */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -342,4 +352,7 @@ char* tolower_s( char *s ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
 /* vim:set et sw=2 ts=2: */

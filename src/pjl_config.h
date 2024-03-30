@@ -39,8 +39,12 @@
 # undef VERSION
 #endif /* VERSION */
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <attribute.h>
+
+/// @endcond
 
 ////////// compiler attributes ////////////////////////////////////////////////
 
