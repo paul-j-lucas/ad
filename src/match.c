@@ -240,6 +240,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( S_MATCHED );
         }
         FALLTHROUGH;
+
       case S_MATCHING_CONT:
         if ( unlikely( !get_byte( &byte ) ) ) {
           //
