@@ -1,0 +1,87 @@
+Ad NEWS -- history of user-visible changes.
+
+Copyright (C) 2015-2024  Paul J. Lucas, et al.
+See the end of the file for license conditions.
+
+-------------------------------------------------------------------------------
+
+* Changes in Ad 3.4
+
+** Dumping C arrays
+If the file is empty, now dumps nothing.
+
+** Fixed `-C` option
+Fixed the `-C` option to allow argument to be optional.
+
+** **strings**(1)-like dumps
+Via the new `--strings` and `-n` options, can now search for and match all
+strings of at least length 4 (by default) like **strings**(1).
+
+** Swapped `-v` and `-V`
+The `-v` option is now a shorthand for `--version` and `-V` is now a shorthand
+for `--verbose`.
+
+
+* Changes in Ad 3.3
+
+** No-offsets options
+Added `--no-offsets` and `-O` options to suppress printing the offsets.
+
+
+* Changes in Ad 3.2
+
+** Max-lines options
+Added `--max-lines` and `-L` options to dump at most the given number of lines.
+
+
+* Changes in Ad 3.1
+
+** Group-by options
+Added `--group-by` and `-g` options to group hex bytes.
+
+
+* Changes in Ad 3.0.1
+
+** Fixed `--c-array`
+Fixed the `--c-array` option when no argument is given.
+
+
+* Changes in Ad 3.0
+
+** Case-insensitive option synonym
+Added `-S` that's equivalent to `-is`.
+
+** Color option
+The `-c` option now takes an argument of `always`, `isatty`, `never`, or
+`not_isreg`.
+
+** Max-bytes option
+Added `-N` to read a maximum number of bytes.
+
+** Only-matchin option
+Added `-m` to print only rows that match a search.
+
+** No matches exit code
+When searching and there are no matches, the exit status code is now 1.
+
+** Printable option
+Added `-p` to print only rows that have printable characters.
+
+** Verbose option
+Added `-V` for verbose to dump all rows even repeated ones.
+
+-------------------------------------------------------------------------------
+The file is part of Ad.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
