@@ -244,16 +244,20 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
       case S_MATCHING_CONT:
         if ( unlikely( !get_byte( &byte ) ) ) {
           //
-          // We've reached EOF and there weren't enough bytes to match the
-          // search buffer: just drain the match buffer and return the bytes
-          // individually to the caller denoting that none matched.
+          // We've reached either EOF or the maximum number of bytes to read.
+          //
+          // + For non-strings(1) searches, there weren't enough bytes to match
+          //   the search buffer.
+          //
+          // + For strings(1) searches, we may have already read opt_search_len
+          //   characters, i.e., one last match.
+          //
+          // In either case, drain the match buffer and return the bytes
+          // individually to the caller.
           //
           buf_drain = buf_pos;
-          buf_pos = 0;
-          GOTO_STATE( S_NOT_MATCHED );
         }
-
-        if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
+        else if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -265,30 +269,32 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           (*pmatch_buf)[ buf_pos ] = byte;
           GOTO_STATE( S_MATCHING );     // in case we were S_MATCHING_CONT
         }
-
-        //
-        // The read byte mismatches a byte in the search buffer: unget the
-        // mismatched byte and now drain the bytes that occur nowhere else in
-        // the search buffer (thanks to the KMP algorithm).
-        //
-        unget_byte( byte );
-        if ( kmps != NULL )
-          kmp = kmps[ buf_pos ];
-        buf_drain = buf_pos - kmp;
+        else {
+          //
+          // The read byte mismatches a byte in the search buffer: unget the
+          // mismatched byte and now drain the bytes that occur nowhere else in
+          // the search buffer (thanks to the KMP algorithm).
+          //
+          unget_byte( byte );
+          if ( kmps != NULL )
+            kmp = kmps[ buf_pos ];
+          buf_drain = buf_pos - kmp;
+        }
 
         if ( opt_strings ) {
           if ( opt_utf8 ) {
             //
-            // When strings(1) matching UTF-8 characters, it's possible to
-            // encounter an invalid byte.
+            // When strings(1) searching UTF-8 characters, it's possible to
+            // encounter either an invalid byte or EOF while reading the bytes
+            // comprising the character.
             //
             // For example, if we read the bytes E2 96 31, the E2 says we're to
             // expect 3 bytes comprising the character so the next 2 bytes must
             // be "continuation bytes" in the range 80-BF, hence 31 is invalid.
             //
-            // In such a case, we've already "ungot" the invalid byte (31),
-            // but what to do about E2 and 96?  Since only 1 byte of push-back
-            // is guaranteed, we shouldn't rely on pushing them back.  Instead,
+            // In such a case, we've already "ungot" the invalid byte (31), but
+            // what to do about E2 and 96?  Since only 1 byte of push-back is
+            // guaranteed, we shouldn't rely on pushing them back.  Instead,
             // we'll "drain" them just like the valid bytes through the byte
             // before the E2, but just set *is_match to false for E2 and 96.
             // To do that, we set buf_matched.
