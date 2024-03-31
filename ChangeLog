@@ -1,3 +1,8 @@
+2024-03-31  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c, test/Makefile.am, ad-n-Snst-02.txt, ad-n-Snst-02.test: Fixed
+     --strings matching on EOF.
+
 2024-03-30  Paul J. Lucas <paul@lucasmail.org>
 
    * match.c: No longer setting buf_pos in GOTO_STATE().
