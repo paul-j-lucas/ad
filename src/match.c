@@ -252,6 +252,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           buf_pos = 0;
           GOTO_STATE( S_NOT_MATCHED );
         }
+
         if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
