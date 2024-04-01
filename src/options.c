@@ -141,13 +141,13 @@ typedef enum utf8_when utf8_when_t;
 /// Otherwise Doxygen generates two entries.
 
 // option extern variable definitions
+ad_carray_t     opt_carray;
 bool            opt_case_insensitive;
 color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
-c_fmt_t         opt_c_fmt;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
 size_t          opt_max_bytes = SIZE_MAX;
-matches_t       opt_matches;
-offset_fmt_t    opt_offset_fmt = OFMT_HEX;
+ad_matches_t    opt_matches;
+ad_offsets_t    opt_offsets = OFFSETS_HEX;
 bool            opt_only_matching;
 bool            opt_only_printing;
 bool            opt_print_ascii = true;
@@ -156,10 +156,10 @@ char           *opt_search_buf;
 endian_t        opt_search_endian;
 size_t          opt_search_len;
 bool            opt_strings;
-strings_opts_t  opt_strings_opts = STRINGS_OPT_NEWLINE
-                                 | STRINGS_OPT_NULL
-                                 | STRINGS_OPT_SPACE
-                                 | STRINGS_OPT_TAB ;
+ad_strings_t    opt_strings_opts = STRINGS_NEWLINE
+                                 | STRINGS_NULL
+                                 | STRINGS_SPACE
+                                 | STRINGS_TAB ;
 bool            opt_utf8;
 char const     *opt_utf8_pad = "\xE2\x96\xA1"; /* U+25A1: "white square" */
 bool            opt_verbose;
@@ -403,62 +403,63 @@ static char const* opt_get_long( char short_opt ) {
 }
 
 /// @cond DOXYGEN_IGNORE
-#define ADD_CFMT(F) BLOCK( \
-  if ( (c_fmt & CFMT_##F) != CFMT_NONE ) goto dup_format; c_fmt |= CFMT_##F; )
+#define ADD_CARRAY(F) BLOCK( \
+  if ( (carray & CARRAY_##F) != CARRAY_NONE ) goto dup_format; carray |= CARRAY_##F; )
 /// @endcond
 
 /**
  * Parses a C array format value.
  *
- * @param s The NULL-terminated string to parse that may contain exactly zero
- * or one of each of the letters \c cilstu in any order; or NULL for none.
- * @return Returns the corresponding \ref c_fmt or prints an error message and
- * exits if \a s is invalid.
+ * @param carray_format The NULL-terminated string to parse that may contain
+ * exactly zero or one of each of the letters \c cilstu in any order; or NULL
+ * for none.
+ * @return Returns the corresponding \ref ad_carray or prints an error message
+ * and exits if \a carray_format is invalid.
  */
 NODISCARD
-static c_fmt_t parse_c_fmt( char const *s ) {
-  c_fmt_t c_fmt = CFMT_DEFAULT;
-  char const *fmt;
+static ad_carray_t parse_carray( char const *carray_format ) {
+  ad_carray_t carray = CARRAY_DEFAULT;
+  char const *s;
   char opt_buf[ OPT_BUF_SIZE ];
 
-  if ( s != NULL && s[0] != '\0' ) {
-    for ( fmt = s; fmt[0] != '\0'; ++fmt ) {
-      switch ( fmt[0] ) {
-        case '8': ADD_CFMT( CHAR8_T );  break;
-        case 'c': ADD_CFMT( CONST );    break;
-        case 'i': ADD_CFMT( INT );      break;
-        case 'l': ADD_CFMT( LONG );     break;
-        case 's': ADD_CFMT( STATIC );   break;
-        case 't': ADD_CFMT( SIZE_T );   break;
-        case 'u': ADD_CFMT( UNSIGNED ); break;
+  if ( carray_format != NULL && carray_format[0] != '\0' ) {
+    for ( s = carray_format; *s != '\0'; ++s ) {
+      switch ( *s ) {
+        case '8': ADD_CARRAY( CHAR8_T );  break;
+        case 'c': ADD_CARRAY( CONST );    break;
+        case 'i': ADD_CARRAY( INT );      break;
+        case 'l': ADD_CARRAY( LONG );     break;
+        case 's': ADD_CARRAY( STATIC );   break;
+        case 't': ADD_CARRAY( SIZE_T );   break;
+        case 'u': ADD_CARRAY( UNSIGNED ); break;
         default :
           fatal_error( EX_USAGE,
             "'%c': invalid C format for %s;"
             " must be one of: [8cilstu]\n",
-            *fmt, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
+            *s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
           );
       } // switch
     } // for
-    if ( (c_fmt & CFMT_SIZE_T) != CFMT_NONE &&
-         (c_fmt & (CFMT_INT | CFMT_LONG | CFMT_UNSIGNED)) != CFMT_NONE ) {
+    if ( (carray & CARRAY_SIZE_T) != CARRAY_NONE &&
+         (carray & CARRAY_INT_LENGTH) != CARRAY_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
-        s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
+        carray_format, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
       );
     }
   }
-  return c_fmt;
+  return carray;
 
 dup_format:
   fatal_error( EX_USAGE,
     "\"%s\": invalid C format for %s:"
     " '%c' specified more than once\n",
-    s, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf ), *fmt
+    carray_format, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf ), *s
   );
 }
 
-#undef ADD_CFMT
+#undef ADD_CARRAY
 
 /**
  * Parses a Unicode code-point value.
@@ -626,26 +627,26 @@ error:
  * message and exits if \a opts_format is invalid.
  */
 NODISCARD
-static strings_opts_t parse_strings_opts( char const *opts_format ) {
+static ad_strings_t parse_strings_opts( char const *opts_format ) {
   set_all_or_none( &opts_format, "0w" );
   char opt_buf[ OPT_BUF_SIZE ];
-  strings_opts_t opts = STRINGS_OPT_NONE;
+  ad_strings_t opts = STRINGS_NONE;
 
   for ( char const *s = opts_format; *s != '\0'; ++s ) {
     switch ( *s ) {
-      case '0': opts |= STRINGS_OPT_NULL;     break;
-      case 'f': opts |= STRINGS_OPT_FORMFEED; break;
-      case 'n': opts |= STRINGS_OPT_NEWLINE;  break;
-      case 'r': opts |= STRINGS_OPT_RETURN;   break;
-      case 's': opts |= STRINGS_OPT_SPACE;    break;
-      case 't': opts |= STRINGS_OPT_TAB;      break;
-      case 'v': opts |= STRINGS_OPT_VTAB;     break;
-      case 'w': opts |= STRINGS_OPT_FORMFEED
-                     |  STRINGS_OPT_NEWLINE
-                     |  STRINGS_OPT_RETURN
-                     |  STRINGS_OPT_SPACE
-                     |  STRINGS_OPT_TAB
-                     |  STRINGS_OPT_VTAB;     break;
+      case '0': opts |= STRINGS_NULL;     break;
+      case 'f': opts |= STRINGS_FORMFEED; break;
+      case 'n': opts |= STRINGS_NEWLINE;  break;
+      case 'r': opts |= STRINGS_RETURN;   break;
+      case 's': opts |= STRINGS_SPACE;    break;
+      case 't': opts |= STRINGS_TAB;      break;
+      case 'v': opts |= STRINGS_VTAB;     break;
+      case 'w': opts |= STRINGS_FORMFEED
+                     |  STRINGS_NEWLINE
+                     |  STRINGS_RETURN
+                     |  STRINGS_SPACE
+                     |  STRINGS_TAB
+                     |  STRINGS_VTAB;     break;
       default :
         fatal_error( EX_USAGE,
           "'%c': invalid option for %s; must be one of: [0fnrstvw]\n",
@@ -841,38 +842,38 @@ PACKAGE_NAME " home page: " PACKAGE_URL "\n"
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-char const* get_offset_fmt_english( void ) {
-  switch ( opt_offset_fmt ) {
-    case OFMT_NONE: return "none";
-    case OFMT_DEC : return "decimal";
-    case OFMT_HEX : return "hexadecimal";
-    case OFMT_OCT : return "octal";
+char const* gets_offsets_english( void ) {
+  switch ( opt_offsets ) {
+    case OFFSETS_NONE: return "none";
+    case OFFSETS_DEC : return "decimal";
+    case OFFSETS_HEX : return "hexadecimal";
+    case OFFSETS_OCT : return "octal";
   } // switch
-  UNEXPECTED_INT_VALUE( opt_offset_fmt );
+  UNEXPECTED_INT_VALUE( opt_offsets );
 }
 
-char const* get_offset_fmt_format( void ) {
-  static char fmt[8];                   // e.g.: "%016llX"
-  if ( fmt[0] == '\0' ) {
-    switch ( opt_offset_fmt ) {
-      case OFMT_NONE:
-        strcpy( fmt, "%00" );
+char const* get_offsets_format( void ) {
+  static char format[8];                // e.g.: "%016llX"
+  if ( format[0] == '\0' ) {
+    switch ( opt_offsets ) {
+      case OFFSETS_NONE:
+        strcpy( format, "%00" );
         break;
-      case OFMT_DEC:
-        sprintf( fmt, "%%0%zu" PRIu64, get_offset_width() );
+      case OFFSETS_DEC:
+        sprintf( format, "%%0%zu" PRIu64, get_offsets_width() );
         break;
-      case OFMT_HEX:
-        sprintf( fmt, "%%0%zu" PRIX64, get_offset_width() );
+      case OFFSETS_HEX:
+        sprintf( format, "%%0%zu" PRIX64, get_offsets_width() );
         break;
-      case OFMT_OCT:
-        sprintf( fmt, "%%0%zu" PRIo64, get_offset_width() );
+      case OFFSETS_OCT:
+        sprintf( format, "%%0%zu" PRIo64, get_offsets_width() );
         break;
     } // switch
   }
-  return fmt;
+  return format;
 }
 
-size_t get_offset_width( void ) {
+size_t get_offsets_width( void ) {
   return  (opt_group_by == 1 && opt_print_ascii) ||
           (row_bytes > ROW_BYTES_DEFAULT && !opt_print_ascii) ?
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
@@ -909,13 +910,13 @@ void parse_options( int argc, char const *argv[] ) {
         size_in_bytes = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(C_ARRAY):
-        opt_c_fmt = parse_c_fmt( optarg );
+        opt_carray = parse_carray( optarg );
         break;
       case COPT(COLOR):
         opt_color_when = parse_color_when( optarg );
         break;
       case COPT(DECIMAL):
-        opt_offset_fmt = OFMT_DEC;
+        opt_offsets = OFFSETS_DEC;
         break;
       case COPT(GROUP_BY):
         opt_group_by = parse_group_by( optarg );
@@ -924,7 +925,7 @@ void parse_options( int argc, char const *argv[] ) {
         opt_help = true;
         break;
       case COPT(HEXADECIMAL):
-        opt_offset_fmt = OFMT_HEX;
+        opt_offsets = OFFSETS_HEX;
         break;
       case COPT(HOST_ENDIAN):
         search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
@@ -954,14 +955,14 @@ void parse_options( int argc, char const *argv[] ) {
         opt_print_ascii = false;
         break;
       case COPT(NO_OFFSETS):
-        opt_offset_fmt = OFMT_NONE;
+        opt_offsets = OFFSETS_NONE;
         break;
       case COPT(OCTAL):
-        opt_offset_fmt = OFMT_OCT;
+        opt_offsets = OFFSETS_OCT;
         break;
       case COPT(PLAIN):
         opt_group_by = ROW_BYTES_MAX;
-        opt_offset_fmt = OFMT_NONE;
+        opt_offsets = OFFSETS_NONE;
         opt_print_ascii = false;
         break;
       case COPT(PRINTING_ONLY):
@@ -1160,6 +1161,7 @@ void parse_options( int argc, char const *argv[] ) {
     SOPT(BIG_ENDIAN)
     SOPT(LITTLE_ENDIAN)
     SOPT(STRING)
+    SOPT(STRINGS)
   );
   check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 

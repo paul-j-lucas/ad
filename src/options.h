@@ -49,73 +49,82 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * C dump formats.
+ * C array dump formats.
  */
-enum c_fmt {
-  CFMT_NONE     = 0,                    ///< No format.
-  CFMT_DEFAULT  = 1 << 0,               ///< Default format.
-  CFMT_CHAR8_T  = 1 << 1,               ///< Declare array type as `char8_t`.
-  CFMT_UNSIGNED = 1 << 2,               ///< Declare len type as `unsigned`.
-  CFMT_INT      = 1 << 3,               ///< Declare len type as `int`.
-  CFMT_LONG     = 1 << 4,               ///< Declare len type as `long`.
-  CFMT_SIZE_T   = 1 << 5,               ///< Declare len type as `size_t`.
-  CFMT_CONST    = 1 << 6,               ///< Declare variables as `const`.
-  CFMT_STATIC   = 1 << 7,               ///< Declare variables as `static`.
+enum ad_carray {
+  CARRAY_NONE     = 0,                  ///< No format.
+  CARRAY_DEFAULT  = 1 << 0,             ///< Default format.
+  CARRAY_CHAR8_T  = 1 << 1,             ///< Declare array type as `char8_t`.
+  CARRAY_UNSIGNED = 1 << 2,             ///< Declare len type as `unsigned`.
+  CARRAY_INT      = 1 << 3,             ///< Declare len type as `int`.
+  CARRAY_LONG     = 1 << 4,             ///< Declare len type as `long`.
+  CARRAY_SIZE_T   = 1 << 5,             ///< Declare len type as `size_t`.
+  CARRAY_CONST    = 1 << 6,             ///< Declare variables as `const`.
+  CARRAY_STATIC   = 1 << 7,             ///< Declare variables as `static`.
 };
-typedef enum c_fmt c_fmt_t;
+typedef enum ad_carray ad_carray_t;
 
 /**
- * Shorthand for any C dump format length: #CFMT_INT, #CFMT_LONG,
- * #CFMT_UNSIGNED, or #CFMT_SIZE_T.
+ * Shorthand for any C dump format length: #CARRAY_INT, #CARRAY_LONG,
+ * #CARRAY_UNSIGNED, or #CARRAY_SIZE_T.
+ *
+ * @sa #CARRAY_INT_LENGTH
  */
-#define CFMT_ANY_LENGTH           ( CFMT_UNSIGNED | CFMT_INT | CFMT_LONG \
-                                  | CFMT_SIZE_T )
+#define CARRAY_ANY_LENGTH         ( CARRAY_INT_LENGTH | CARRAY_SIZE_T )
+
+/**
+ * Shorthand for any `int` C dump format length: #CARRAY_INT, #CARRAY_LONG, or
+ * #CARRAY_UNSIGNED.
+ *
+ * @sa #CARRAY_ANY_LENGTH
+ */
+#define CARRAY_INT_LENGTH         ( CARRAY_UNSIGNED | CARRAY_INT | CARRAY_LONG )
 
 /**
  * Whether to print the total number of matches.
  */
-enum matches {
+enum ad_matches {
   MATCHES_NO_PRINT,                     ///< Don't print total matches.
   MATCHES_ALSO_PRINT,                   ///< Additionally print total matches.
   MATCHES_ONLY_PRINT                    ///< Only print total matches.
 };
-typedef enum matches matches_t;
+typedef enum ad_matches ad_matches_t;
 
 /**
  * Offset formats.
  */
-enum offset_fmt {
-  OFMT_NONE =  0,                       ///< No offsets.
-  OFMT_DEC  = 10,                       ///< Decimal offsets.
-  OFMT_HEX  = 16,                       ///< Hexadecimal offsets.
-  OFMT_OCT  =  8                        ///< Octal offsets.
+enum ad_offsets {
+  OFFSETS_NONE =  0,                    ///< No offsets.
+  OFFSETS_DEC  = 10,                    ///< Decimal offsets.
+  OFFSETS_HEX  = 16,                    ///< Hexadecimal offsets.
+  OFFSETS_OCT  =  8                     ///< Octal offsets.
 };
-typedef enum offset_fmt offset_fmt_t;
+typedef enum ad_offsets ad_offsets_t;
 
 /**
  * Options for **strings**(1)-like searches.
  */
-enum strings_opts {
-  STRINGS_OPT_NONE      = 0,            ///< No options.
-  STRINGS_OPT_FORMFEED  = (1u << 0),    ///< Include form-feed characters.
-  STRINGS_OPT_NEWLINE   = (1u << 1),    ///< Include newline characters.
-  STRINGS_OPT_NULL      = (1u << 2),    ///< Must end with null byte.
-  STRINGS_OPT_RETURN    = (1u << 3),    ///< Include carriage return characters.
-  STRINGS_OPT_SPACE     = (1u << 4),    ///< Include space characters.
-  STRINGS_OPT_TAB       = (1u << 5),    ///< Include tab characters.
-  STRINGS_OPT_VTAB      = (1u << 6),    ///< Include vertical tab characters.
+enum ad_strings {
+  STRINGS_NONE      = 0,                ///< No options.
+  STRINGS_FORMFEED  = (1u << 0),        ///< Include form-feed characters.
+  STRINGS_NEWLINE   = (1u << 1),        ///< Include newline characters.
+  STRINGS_NULL      = (1u << 2),        ///< Must end with null byte.
+  STRINGS_RETURN    = (1u << 3),        ///< Include carriage return characters.
+  STRINGS_SPACE     = (1u << 4),        ///< Include space characters.
+  STRINGS_TAB       = (1u << 5),        ///< Include tab characters.
+  STRINGS_VTAB      = (1u << 6),        ///< Include vertical tab characters.
 };
-typedef enum strings_opts strings_opts_t;
+typedef enum ad_strings ad_strings_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
+extern ad_carray_t    opt_carray;        ///< Dump as C array in this format.
 extern bool           opt_case_insensitive; ///< Case-insensitive matching?
 extern color_when_t   opt_color_when;   ///< When to colorize output.
-extern c_fmt_t        opt_c_fmt;        ///< Dump as C array in this format.
 extern unsigned       opt_group_by;     ///< Group by this number of bytes.
 extern size_t         opt_max_bytes;    ///< Maximum number of bytes to dump.
-extern matches_t      opt_matches;      ///< When to print total matches.
-extern offset_fmt_t   opt_offset_fmt;   ///< Dump offsets in this format.
+extern ad_matches_t   opt_matches;      ///< When to print total matches.
+extern ad_offsets_t   opt_offsets;      ///< Dump offsets in this format.
 extern bool           opt_only_matching;///< Only dump matching rows?
 extern bool           opt_only_printing;///< Only dump printable rows?
 extern bool           opt_print_ascii;  ///< Dump ASCII part?
@@ -135,7 +144,7 @@ extern endian_t       opt_search_endian;///< Numeric search endianness.
 extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
 
 extern bool           opt_strings;      ///< **strings**(1)-like search?
-extern strings_opts_t opt_strings_opts; ///< **strings**(1)-like options.
+extern ad_strings_t   opt_strings_opts; ///< **strings**(1)-like options.
 extern bool           opt_utf8;         ///< Dump UTF-8 bytes?
 extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
@@ -146,25 +155,29 @@ extern bool           opt_verbose;      ///< Dump _all_ rows of data?
  * Gets the English word for the current offset format.
  *
  * @return Returns said word.
+ *
+ * @sa get_offsets_format()
  */
 NODISCARD
-char const* get_offset_fmt_english( void );
+char const* gets_offsets_english( void );
 
 /**
  * Gets the **printf**(3) format for the current offset format.
  *
  * @return Returns said printf(3) format.
+ *
+ * @sa gets_offsets_english()
  */
 NODISCARD
-char const* get_offset_fmt_format( void );
+char const* get_offsets_format( void );
 
 /**
- * Gets the offset width.
+ * Gets the offsets width.
  *
  * @return Returns said width.
  */
 NODISCARD
-size_t get_offset_width( void );
+size_t get_offsets_width( void );
 
 /**
  * Parses command-line options and sets global variables.

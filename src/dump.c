@@ -139,13 +139,13 @@ static unsigned utf8_collect( row_buf_t const *curr, size_t curr_pos,
 /**
  * Dumps a single row of bytes containing the offset and hex and ASCII parts.
  *
- * @param off_fmt The \c printf() format for the offset.
+ * @param offset_format The \c printf() format for the offset.
  * @param curr A pointer to the current \a row_buf.
  * @param next A pointer to the next \a row_buf.
  */
-static void dump_row( char const *off_fmt, row_buf_t const *curr,
+static void dump_row( char const *offset_format, row_buf_t const *curr,
                       row_buf_t const *next ) {
-  assert( off_fmt != NULL );
+  assert( offset_format != NULL );
   assert( curr != NULL );
   assert( next != NULL );
 
@@ -165,7 +165,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
     );
     if ( offset_delta > 0 && any_dumped ) {
       color_start( stdout, sgr_elided );
-      for ( size_t i = get_offset_width(); i > 0; --i )
+      for ( size_t i = get_offsets_width(); i > 0; --i )
         PUTC( ELIDED_SEP_CHAR );
       color_end( stdout, sgr_elided );
       color_start( stdout, sgr_sep );
@@ -180,9 +180,9 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
   }
 
   // print offset & column separator
-  if ( opt_offset_fmt != OFMT_NONE ) {
+  if ( opt_offsets != OFFSETS_NONE ) {
     color_start( stdout, sgr_offset );
-    PRINTF( off_fmt, STATIC_CAST(uint64_t, fin_offset) );
+    PRINTF( offset_format, STATIC_CAST(uint64_t, fin_offset) );
     color_end( stdout, sgr_offset );
     color_start( stdout, sgr_sep );
     PUTC( ':' );
@@ -197,7 +197,7 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
 
     if ( curr_pos % opt_group_by == 0 ) {
       COLOR_END_IF( prev_matches, sgr_hex_match );
-      if ( opt_offset_fmt != OFMT_NONE || curr_pos > 0 )
+      if ( opt_offsets != OFFSETS_NONE || curr_pos > 0 )
         PUTC( ' ' );                    // print space between hex columns
       if ( print_readability_space( curr_pos ) )
         PUTC( ' ' );
@@ -266,24 +266,24 @@ static void dump_row( char const *off_fmt, row_buf_t const *curr,
 /**
  * Dumps a single row of bytes as C array data.
  *
- * @param off_fmt The \c printf() format for the offset.
+ * @param offset_format The \c printf() format for the offset.
  * @param buf A pointer to the current set of bytes to dump.
  * @param buf_len The number of bytes pointed to by \a buf.
  */
-static void dump_row_c( char const *off_fmt, char8_t const *buf,
+static void dump_row_c( char const *offset_format, char8_t const *buf,
                         size_t buf_len ) {
-  assert( off_fmt != NULL );
+  assert( offset_format != NULL );
   assert( buf != NULL );
 
   if ( unlikely( buf_len == 0 ) )
     return;
 
-  if ( opt_offset_fmt == OFMT_NONE ) {
+  if ( opt_offsets == OFFSETS_NONE ) {
     PUTC( ' ' );
   } else {
     // print offset
     PUTS( "  /* " );
-    PRINTF( off_fmt, fin_offset );
+    PRINTF( offset_format, fin_offset );
     PUTS( " */" );
   }
 
@@ -306,7 +306,7 @@ void dump_file( void ) {
   kmp_t const  *kmps = NULL;            // used only by match_row()
   char8_t      *match_buf = NULL;       // used only by match_row()
   size_t        match_len = 0;          // used only by match_row()
-  char const   *off_fmt = get_offset_fmt_format();
+  char const   *offset_format = get_offsets_format();
 
   if ( opt_search_len > 0 ) {           // searching for anything?
     if ( opt_strings ) {
@@ -350,7 +350,7 @@ void dump_file( void ) {
           (!opt_only_printing ||
             ascii_any_printable( (char*)curr->bytes, curr->len )) ) ) {
 
-        dump_row( off_fmt, curr, next );
+        dump_row( offset_format, curr, next );
       }
 
       // Check if the next row is the same as the current row, but only if:
@@ -401,17 +401,17 @@ void dump_file_c( void ) {
 
   PRINTF(
     "%s%s %s%s[] = {\n",
-    ((opt_c_fmt & CFMT_STATIC ) != 0 ? "static " : ""),
-    ((opt_c_fmt & CFMT_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
-    ((opt_c_fmt & CFMT_CONST  ) != 0 ? "const "  : ""),
+    ((opt_carray & CARRAY_STATIC ) != 0 ? "static " : ""),
+    ((opt_carray & CARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
+    ((opt_carray & CARRAY_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
 
   size_t array_len = 0;
-  char const *const off_fmt = get_offset_fmt_format();
+  char const *const offset_format = get_offsets_format();
 
   for (;;) {
-    dump_row_c( off_fmt, bytes, row_len );
+    dump_row_c( offset_format, bytes, row_len );
     fin_offset += STATIC_CAST( off_t, row_len );
     array_len += row_len;
     if ( row_len != ROW_BYTES_C )
@@ -424,18 +424,18 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( (opt_c_fmt & CFMT_ANY_LENGTH) != CFMT_NONE )
+  if ( (opt_carray & CARRAY_ANY_LENGTH) != CARRAY_NONE )
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-      ((opt_c_fmt & CFMT_STATIC  ) != 0 ? "static "   : ""),
-      ((opt_c_fmt & CFMT_UNSIGNED) != 0 ? "unsigned " : ""),
-      ((opt_c_fmt & CFMT_LONG    ) != 0 ? "long "     : ""),
-      ((opt_c_fmt & CFMT_INT     ) != 0 ? "int "      : ""),
-      ((opt_c_fmt & CFMT_SIZE_T  ) != 0 ? "size_t "   : ""),
-      ((opt_c_fmt & CFMT_CONST   ) != 0 ? "const "    : ""),
+      ((opt_carray & CARRAY_STATIC  ) != 0 ? "static "   : ""),
+      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "unsigned " : ""),
+      ((opt_carray & CARRAY_LONG    ) != 0 ? "long "     : ""),
+      ((opt_carray & CARRAY_INT     ) != 0 ? "int "      : ""),
+      ((opt_carray & CARRAY_SIZE_T  ) != 0 ? "size_t "   : ""),
+      ((opt_carray & CARRAY_CONST   ) != 0 ? "const "    : ""),
       array_name, array_len,
-      ((opt_c_fmt & CFMT_UNSIGNED) != 0 ? "u" : ""),
-      ((opt_c_fmt & CFMT_LONG    ) != 0 ? "L" : "")
+      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "u" : ""),
+      ((opt_carray & CARRAY_LONG    ) != 0 ? "L" : "")
     );
 
 empty:
