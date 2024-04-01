@@ -1112,7 +1112,9 @@ _GL_CXXALIAS_SYS (qsort_r, void, (void *base, size_t nmemb, size_t size,
                                   _gl_qsort_r_compar_fn compare,
                                   void *arg));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (qsort_r);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef qsort_r
 # if HAVE_RAW_DECL_QSORT_R
@@ -1586,6 +1588,38 @@ _GL_CXXALIASWARN (strtod);
 # if HAVE_RAW_DECL_STRTOD
 _GL_WARN_ON_USE (strtod, "strtod is unportable - "
                  "use gnulib module strtod for portability");
+# endif
+#endif
+
+#if @GNULIB_STRTOF@
+ /* Parse a float from STRING, updating ENDP if appropriate.  */
+# if @REPLACE_STRTOF@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define strtof rpl_strtof
+#  endif
+#  define GNULIB_defined_strtof_function 1
+_GL_FUNCDECL_RPL (strtof, float,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtof, float,
+                  (const char *restrict str, char **restrict endp));
+# else
+#  if !@HAVE_STRTOF@
+_GL_FUNCDECL_SYS (strtof, float,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (strtof, float,
+                  (const char *restrict str, char **restrict endp));
+# endif
+# if __GLIBC__ >= 2
+_GL_CXXALIASWARN (strtof);
+# endif
+#elif defined GNULIB_POSIXCHECK
+# undef strtof
+# if HAVE_RAW_DECL_STRTOF
+_GL_WARN_ON_USE (strtof, "strtof is unportable - "
+                 "use gnulib module strtof for portability");
 # endif
 #endif
 
