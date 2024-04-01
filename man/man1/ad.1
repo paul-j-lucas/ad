@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "March 29, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "March 31, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -495,8 +495,13 @@ Strings must end in a null byte.
 .B f
 Strings may contain form-feed characters.
 .TP
+.B l
+Strings may contain line-feed characters.
+.TP
 .B n
-Strings may contain newline characters.
+Synonym for
+.B l
+(newline).
 .TP
 .B r
 Strings may contain carriage return characters.
@@ -513,7 +518,7 @@ Strings may contain vertical tab characters.
 .B w
 Strings may contain any whitespace characters.
 Same as
-.BR fnrstv .
+.BR flrstv .
 .RE
 .PD
 .IP
@@ -524,7 +529,7 @@ Alternatively,
 or
 \f(CW-\fP may be given to mean ``none.''
 The default is
-.BR 0nst .
+.BR 0lst .
 .IP
 Specifying
 .B \-\-strings-opts

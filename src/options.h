@@ -107,7 +107,7 @@ typedef enum ad_offsets ad_offsets_t;
 enum ad_strings {
   STRINGS_NONE      = 0,                ///< No options.
   STRINGS_FORMFEED  = (1u << 0),        ///< Include form-feed characters.
-  STRINGS_NEWLINE   = (1u << 1),        ///< Include newline characters.
+  STRINGS_LINEFEED  = (1u << 1),        ///< Include line-feed characters.
   STRINGS_NULL      = (1u << 2),        ///< Must end with null byte.
   STRINGS_RETURN    = (1u << 3),        ///< Include carriage return characters.
   STRINGS_SPACE     = (1u << 4),        ///< Include space characters.
