@@ -165,7 +165,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   static size_t   buf_pos;              // position in *pmatch_buf
   static kmp_t    kmp;                  // bytes partially matched
   static state_t  state = S_READING;    // current state
-  static unsigned string_chars_matched; // strings(1) characters matched
+  static size_t   string_chars_matched; // strings(1) characters matched
   static unsigned utf8_char_bytes;      // bytes comprising UTF-8 character
   static unsigned utf8_char_bytes_left; // bytes left to match UTF-8 character
 
