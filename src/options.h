@@ -133,10 +133,10 @@ extern bool           opt_reverse;      ///< Reverse dump (patch)?
 /**
  * The bytes of what to search for, if any.
  *
- * @remarks When searching for a:
+ * @remarks When searching for:
  * + A specific string, this points to the null-terminated string.
  * + Any string, not used.
- * + Number, this points to \ref search_number.
+ * + A number, this points to \ref search_number.
  */
 extern char          *opt_search_buf;
 
