@@ -1,5 +1,7 @@
 2024-04-01  Paul J. Lucas <paul@lucasmail.org>
 
+   * ad.1, match.c, options.c, options.h: Now accepting 'l' for line-feed; 'n'
+     is a synonym for 'l'.
    * dump.c, options.c, options.h: s/opt_print_ascii/opt_dump_ascii/
    * ad.c, dump.c, match.c, options.c, options.h, reverse.c: Renaming.
    * match.c: s/unsigned/size_t/
