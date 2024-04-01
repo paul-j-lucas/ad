@@ -83,7 +83,7 @@ int main( int argc, char const *argv[const] ) {
 
   if ( opt_reverse )
     reverse_dump_file(); 
-  else if ( opt_c_fmt != CFMT_NONE )
+  else if ( opt_carray != CARRAY_NONE )
     dump_file_c();
   else
     dump_file();

@@ -34,3 +34,10 @@ you can generate `configure` yourself by doing:
 
 then follow the generic installation instructions given in
 [`INSTALL`](https://github.com/paul-j-lucas/ad/blob/master/INSTALL).
+
+If you would like to generate the developer documentation,
+you will also need
+[Doxygen](http://www.doxygen.org/);
+then do:
+
+    make doc                            # or: make docs

@@ -179,13 +179,13 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
   errno = 0;
   *poffset = STATIC_CAST( off_t,
     strtoull(
-      buf, POINTER_CAST( char**, &end ), STATIC_CAST( int, opt_offset_fmt )
+      buf, POINTER_CAST( char**, &end ), STATIC_CAST( int, opt_offsets )
     )
   );
   if ( unlikely( errno != 0 || (*end != '\0' && !is_offset_delim( *end )) ) ) {
     INVALID_EXIT( line, col,
       "\"%s\": unexpected character in %s file offset\n",
-      printable_char( *end ), get_offset_fmt_english()
+      printable_char( *end ), gets_offsets_english()
     );
   }
   if ( unlikely( end[0] == '\n' || end[0] == '\0' ) )
@@ -292,7 +292,7 @@ void reverse_dump_file( void ) {
 backwards_offset:
   snprintf( msg_fmt, sizeof msg_fmt,
     "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
-    get_offset_fmt_format(), get_offset_fmt_english()
+    get_offsets_format(), gets_offsets_english()
   );
   EPRINTF( msg_fmt, fin_path, line, new_offset );
   exit( EX_DATAERR );

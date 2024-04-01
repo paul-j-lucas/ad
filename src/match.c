@@ -115,12 +115,12 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
                       bool must_be_utf8_cont ) {
   if ( opt_strings ) {
     switch ( input_byte ) {
-      case '\f': return (opt_strings_opts & STRINGS_OPT_FORMFEED) != 0;
-      case '\n': return (opt_strings_opts & STRINGS_OPT_NEWLINE ) != 0;
-      case '\r': return (opt_strings_opts & STRINGS_OPT_RETURN  ) != 0;
-      case ' ' : return (opt_strings_opts & STRINGS_OPT_SPACE   ) != 0;
-      case '\t': return (opt_strings_opts & STRINGS_OPT_TAB     ) != 0;
-      case '\v': return (opt_strings_opts & STRINGS_OPT_VTAB    ) != 0;
+      case '\f': return (opt_strings_opts & STRINGS_FORMFEED) != 0;
+      case '\n': return (opt_strings_opts & STRINGS_NEWLINE ) != 0;
+      case '\r': return (opt_strings_opts & STRINGS_RETURN  ) != 0;
+      case ' ' : return (opt_strings_opts & STRINGS_SPACE   ) != 0;
+      case '\t': return (opt_strings_opts & STRINGS_TAB     ) != 0;
+      case '\v': return (opt_strings_opts & STRINGS_VTAB    ) != 0;
       default  :
         if ( opt_utf8 ) {
           return must_be_utf8_cont ?
@@ -312,7 +312,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // then we've matched a string.
           //
           if ( string_chars_matched >= opt_search_len &&
-              ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || *pbyte == '\0') ) {
+              ((opt_strings_opts & STRINGS_NULL) == 0 || *pbyte == '\0') ) {
             ++total_matches;
             buf_pos = 0;
             GOTO_STATE( S_MATCHED );
