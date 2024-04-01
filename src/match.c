@@ -178,7 +178,9 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   for (;;) {
     switch ( state ) {
 
+/// @cond DOXYGEN_IGNORE
 #define GOTO_STATE(S)             { state = (S); continue; }
+/// @endcond
 
       case S_READING:
         if ( unlikely( !get_byte( pbyte ) ) )
