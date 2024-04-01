@@ -148,13 +148,13 @@ ad_debug_t      opt_ad_debug;
 ad_carray_t     opt_carray;
 bool            opt_case_insensitive;
 color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
+bool            opt_dump_ascii = true;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
 size_t          opt_max_bytes = SIZE_MAX;
 ad_matches_t    opt_matches;
 ad_offsets_t    opt_offsets = OFFSETS_HEX;
 bool            opt_only_matching;
 bool            opt_only_printing;
-bool            opt_print_ascii = true;
 bool            opt_reverse;
 char           *opt_search_buf;
 endian_t        opt_search_endian;
@@ -885,8 +885,8 @@ char const* get_offsets_format( void ) {
 }
 
 size_t get_offsets_width( void ) {
-  return  (opt_group_by == 1 && opt_print_ascii) ||
-          (row_bytes > ROW_BYTES_DEFAULT && !opt_print_ascii) ?
+  return  (opt_group_by == 1 && opt_dump_ascii) ||
+          (row_bytes > ROW_BYTES_DEFAULT && !opt_dump_ascii) ?
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
@@ -972,7 +972,7 @@ void parse_options( int argc, char const *argv[] ) {
         max_lines = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(NO_ASCII):
-        opt_print_ascii = false;
+        opt_dump_ascii = false;
         break;
       case COPT(NO_OFFSETS):
         opt_offsets = OFFSETS_NONE;
@@ -983,7 +983,7 @@ void parse_options( int argc, char const *argv[] ) {
       case COPT(PLAIN):
         opt_group_by = ROW_BYTES_MAX;
         opt_offsets = OFFSETS_NONE;
-        opt_print_ascii = false;
+        opt_dump_ascii = false;
         break;
       case COPT(PRINTING_ONLY):
         opt_only_printing = true;
