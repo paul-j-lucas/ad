@@ -212,7 +212,7 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
   } // for
   COLOR_END_IF( prev_matches, sgr_hex_match );
 
-  if ( opt_print_ascii ) {
+  if ( opt_dump_ascii ) {
     unsigned spaces = 2;
 
     // add padding spaces if necessary (last row only)
