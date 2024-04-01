@@ -1,5 +1,16 @@
+2024-04-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c: s/unsigned/size_t/
+   * match.c: Eliminated "byte" and "RETURN".
+
+2024-03-31  Paul J. Lucas <paul@lucasmail.org>
+
+   * match.c, test/Makefile.am, ad-n-Snst-02.txt, ad-n-Snst-02.test: Fixed
+     --strings matching on EOF.
+
 2024-03-30  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c: No longer setting buf_pos in GOTO_STATE().
    * ad.1, match.c, test/Makefile.am, ad-nSw-u.txt, ad-nSw-u.test: Now support
      UTF-8 for strings(1) dumps.
 
