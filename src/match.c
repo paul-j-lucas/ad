@@ -173,22 +173,20 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   assert( matches != NULL );
   assert( state != S_DONE );
 
-  char8_t byte = '\0';
   *matches = false;
 
   for (;;) {
     switch ( state ) {
 
 #define GOTO_STATE(S)             { state = (S); continue; }
-#define RETURN(BYTE)              BLOCK( *pbyte = (BYTE); return true; )
 
       case S_READING:
-        if ( unlikely( !get_byte( &byte ) ) )
+        if ( unlikely( !get_byte( pbyte ) ) )
           GOTO_STATE( S_DONE );
         if ( opt_search_len == 0 )      // user isn't searching for anything
-          RETURN( byte );
-        if ( !is_match( byte, /*buf_pos=*/0, /*must_be_utf8_cont=*/false ) )
-          RETURN( byte );               // searching, but no match yet
+          return true;
+        if ( !is_match( *pbyte, /*buf_pos=*/0, /*must_be_utf8_cont=*/false ) )
+          return true;                  // searching, but no match yet
         //
         // For non-strings(1) searches, the read byte matches the first byte of
         // opt_search_buf: start storing bytes in the match buffer and try to
@@ -204,7 +202,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         // opt_search_len total string characters possibly null terminated (for
         // strings(1) searches).
         //
-        (*pmatch_buf)[0] = byte;
+        (*pmatch_buf)[0] = *pbyte;
         buf_matched = SIZE_MAX;         // assume all bytes read matched
         buf_pos = 0;
         kmp = 0;
@@ -224,7 +222,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             // ASCII since ASCII is a subset of UTF-8.
             //
             ++string_chars_matched;
-            utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( byte );
+            utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( *pbyte );
           }
         }
         else if ( buf_pos == opt_search_len ) {
@@ -242,7 +240,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         FALLTHROUGH;
 
       case S_MATCHING_CONT:
-        if ( unlikely( !get_byte( &byte ) ) ) {
+        if ( unlikely( !get_byte( pbyte ) ) ) {
           //
           // We've reached either EOF or the maximum number of bytes to read.
           //
@@ -257,7 +255,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           //
           buf_drain = buf_pos;
         }
-        else if ( is_match( byte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
+        else if ( is_match( *pbyte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -266,7 +264,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             *pmatch_len <<= 1;
             REALLOC( *pmatch_buf, *pmatch_len );
           }
-          (*pmatch_buf)[ buf_pos ] = byte;
+          (*pmatch_buf)[ buf_pos ] = *pbyte;
           GOTO_STATE( S_MATCHING );     // in case we were S_MATCHING_CONT
         }
         else {
@@ -275,7 +273,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // mismatched byte and now drain the bytes that occur nowhere else in
           // the search buffer (thanks to the KMP algorithm).
           //
-          unget_byte( byte );
+          unget_byte( *pbyte );
           if ( kmps != NULL )
             kmp = kmps[ buf_pos ];
           buf_drain = buf_pos - kmp;
@@ -312,7 +310,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // then we've matched a string.
           //
           if ( string_chars_matched >= opt_search_len &&
-              ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || byte == '\0') ) {
+              ((opt_strings_opts & STRINGS_OPT_NULL) == 0 || *pbyte == '\0') ) {
             ++total_matches;
             buf_pos = 0;
             GOTO_STATE( S_MATCHED );
@@ -339,13 +337,13 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           GOTO_STATE( kmp > 0 ? S_MATCHING_CONT : S_READING );
         }
         *matches = state == S_MATCHED && buf_pos <= buf_matched;
-        RETURN( (*pmatch_buf)[ buf_pos++ ] );
+        *pbyte = (*pmatch_buf)[ buf_pos++ ];
+        return true;
 
       case S_DONE:
         return false;
 
 #undef GOTO_STATE
-#undef RETURN
 
     } // switch
   } // for
