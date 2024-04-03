@@ -36,15 +36,16 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
+#include <sysexits.h>
 
 /// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern function declarations
-_Noreturn void dump_file( void );
-_Noreturn void dump_file_c( void );
-_Noreturn void reverse_dump_file( void );
+void dump_file( void );
+void dump_file_c( void );
+void reverse_dump_file( void );
 
 // extern variable definitions
 off_t       fin_offset;
@@ -79,13 +80,14 @@ int main( int argc, char const *argv[const] ) {
   parse_options( argc, argv );
   colors_init();
 
-  if ( opt_reverse )
-    reverse_dump_file(); 
-  else if ( opt_carray != CARRAY_NONE )
+  if ( opt_carray != CARRAY_NONE )
     dump_file_c();
+  else if ( opt_reverse )
+    reverse_dump_file();
   else
     dump_file();
-  unreachable();                        // none of the above functions returns
+
+  return EX_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

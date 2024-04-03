@@ -378,7 +378,8 @@ void dump_file( void ) {
   FREE( kmps );
   free( match_buf );
 
-  exit( opt_search_len > 0 && !any_matches ? EX_NO_MATCHES : EX_OK );
+  if ( opt_search_len > 0 && !any_matches )
+    exit( EX_NO_MATCHES );
 }
 
 /**
@@ -394,7 +395,7 @@ void dump_file_c( void ) {
     /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
   );
   if ( row_len == 0 )
-    goto empty;
+    return;
 
   char const *const array_name = strcmp( fin_path, "-" ) == 0 ?
     "stdin" : free_later( identify( base_name( fin_path ) ) );
@@ -424,7 +425,7 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( (opt_carray & CARRAY_ANY_LENGTH) != CARRAY_NONE )
+  if ( (opt_carray & CARRAY_ANY_LENGTH) != CARRAY_NONE ) {
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
       ((opt_carray & CARRAY_STATIC  ) != 0 ? "static "   : ""),
@@ -437,9 +438,7 @@ void dump_file_c( void ) {
       ((opt_carray & CARRAY_UNSIGNED) != 0 ? "u" : ""),
       ((opt_carray & CARRAY_LONG    ) != 0 ? "L" : "")
     );
-
-empty:
-  exit( EX_OK );
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
