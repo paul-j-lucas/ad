@@ -1232,11 +1232,11 @@ void parse_options( int argc, char const *argv[] ) {
 
     case 1:                             // infile only
       fin_path = argv[1];
+      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
+        fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
       FALLTHROUGH;
 
     case 0:
-      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
-        fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
       fskip( fin_offset, stdin );
       break;
 
