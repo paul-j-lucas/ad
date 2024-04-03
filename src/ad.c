@@ -33,7 +33,6 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
-#include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
 
@@ -51,7 +50,7 @@ off_t       fin_offset;
 char const *fin_path = "-";
 char const *fout_path = "-";
 char const *me;
-size_t      row_bytes = ROW_BYTES_DEFAULT;
+unsigned    row_bytes = ROW_BYTES_DEFAULT;
 
 /////////// local functions ///////////////////////////////////////////////////
 

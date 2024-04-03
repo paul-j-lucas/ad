@@ -216,7 +216,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     ++col;
     if ( unlikely( ++p == end ) )
       INVALID_EXIT( line, col,
-        "unexpected end of data; expected %zu hexadecimal bytes\n",
+        "unexpected end of data; expected %u hexadecimal bytes\n",
         row_bytes
       );
     if ( unlikely( !isxdigit( *p ) ) )
