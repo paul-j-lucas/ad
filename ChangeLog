@@ -1,5 +1,12 @@
+2024-04-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Moved freopen() to case 1.
+   * ad.c: Eliminated unecessary return.
+   * ad.c, dump.c, reverse.c: Dump functions are no longer _Noreturn.
+
 2024-04-01  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c: Renaming.
    * ad.1, match.c, options.c, options.h: Now accepting 'l' for line-feed; 'n'
      is a synonym for 'l'.
    * dump.c, options.c, options.h: s/opt_print_ascii/opt_dump_ascii/
