@@ -36,7 +36,6 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
-#include <sysexits.h>
 
 /// @endcond
 
@@ -86,8 +85,6 @@ int main( int argc, char const *argv[const] ) {
     reverse_dump_file();
   else
     dump_file();
-
-  return EX_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
