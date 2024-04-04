@@ -1,5 +1,6 @@
 2024-04-03  Paul J. Lucas <paul@lucasmail.org>
 
+   * man/man1/Makefile.am: Can now generate ad.ps and ad.pdf.
    * ad.c, ad.h, reverse.c: s/size_t/unsigned/
    * options.c: Moved freopen() to case 1.
    * ad.c: Eliminated unecessary return.
