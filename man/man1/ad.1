@@ -411,7 +411,8 @@ parses offsets in octal.
 .TP
 .BR \-\-plain " | " \-P
 Dumps in plain format;
-same as: \-AOg32
+same as:
+.BR \-AOg32 .
 .TP
 .BR \-\-printing-only " | " \-p
 Only dumps rows having printable characters.
@@ -437,7 +438,7 @@ to patch a subset of bytes in an existing larger binary file.
 The bytes to be patched are given by the offsets.
 .IP
 Elided bytes,
-given by the separator of ``-'' characters
+given by the separator of ``\f(CW-\fP'' characters
 when none of the
 .BR \-\-matching-only ,
 .BR \-m ,
@@ -697,7 +698,7 @@ Capability names in upper-case are unique to
 those in lower-case are upwards compatibile with
 .BR grep .
 .RS
-.TP 8
+.TP 10
 .BI bn= SGR
 SGR for the byte offset
 (as with
