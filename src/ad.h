@@ -60,7 +60,7 @@ extern off_t        fin_offset;         ///< Current file offset.
 extern char const  *fin_path;           ///< Input file path name.
 extern char const  *fout_path;          ///< Output file path name.
 extern char const  *me;                 ///< Executable name from argv[0].
-extern size_t       row_bytes;          ///< Bytes dumped on a row.
+extern unsigned     row_bytes;          ///< Bytes dumped on a row.
 
 ///////////////////////////////////////////////////////////////////////////////
 

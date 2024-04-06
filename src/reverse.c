@@ -221,7 +221,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
     ++col;
     if ( unlikely( ++p == end ) )
       INVALID_EXIT( line, col,
-        "unexpected end of data; expected %zu hexadecimal bytes\n",
+        "unexpected end of data; expected %u hexadecimal bytes\n",
         row_bytes
       );
     if ( unlikely( !isxdigit( *p ) ) )
@@ -247,12 +247,8 @@ expected_hex_digit:
  * Reverse dumps (patches) a file.
  */
 void reverse_dump_file( void ) {
-  char8_t bytes[ ROW_BYTES_MAX ];
-  size_t  bytes_len;
-  off_t   offset = -STATIC_CAST( off_t, row_bytes );
   size_t  line = 0;
-  char    msg_fmt[ 128 ];
-  off_t   new_offset;
+  off_t   offset = -STATIC_CAST( off_t, row_bytes );
 
   for (;;) {
     size_t row_len;
@@ -262,12 +258,24 @@ void reverse_dump_file( void ) {
         fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
       break;
     }
+
+    char8_t bytes[ ROW_BYTES_MAX ];
+    size_t  bytes_len;
+    off_t   new_offset;
+
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
       case ROW_BYTES: {
         off_t const row_end_offset = offset + STATIC_CAST( off_t, row_bytes );
-        if ( unlikely( new_offset < row_end_offset ) )
-          goto backwards_offset;
+        if ( unlikely( new_offset < row_end_offset ) ) {
+          char msg_fmt[ 128 ];
+          snprintf( msg_fmt, sizeof msg_fmt,
+            "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
+            get_offsets_format(), gets_offsets_english()
+          );
+          EPRINTF( msg_fmt, fin_path, line, new_offset );
+          exit( EX_DATAERR );
+        }
         if ( new_offset > row_end_offset )
           FSEEK( stdout, new_offset, SEEK_SET );
         FWRITE( bytes, 1, bytes_len, stdout );
@@ -287,15 +295,6 @@ void reverse_dump_file( void ) {
     } // switch
 
   } // for
-  exit( EX_OK );
-
-backwards_offset:
-  snprintf( msg_fmt, sizeof msg_fmt,
-    "%%s:%%zu:1: error: \"%s\": %s offset goes backwards\n",
-    get_offsets_format(), gets_offsets_english()
-  );
-  EPRINTF( msg_fmt, fin_path, line, new_offset );
-  exit( EX_DATAERR );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

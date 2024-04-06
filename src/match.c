@@ -116,7 +116,7 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
   if ( opt_strings ) {
     switch ( input_byte ) {
       case '\f': return (opt_strings_opts & STRINGS_FORMFEED) != 0;
-      case '\n': return (opt_strings_opts & STRINGS_NEWLINE ) != 0;
+      case '\n': return (opt_strings_opts & STRINGS_LINEFEED) != 0;
       case '\r': return (opt_strings_opts & STRINGS_RETURN  ) != 0;
       case ' ' : return (opt_strings_opts & STRINGS_SPACE   ) != 0;
       case '\t': return (opt_strings_opts & STRINGS_TAB     ) != 0;
@@ -153,7 +153,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   enum state {
     S_READING,                          // just reading; not matching
     S_MATCHING,                         // matching search bytes
-    S_MATCHING_CONT,                    // matching after a mismatch
+    S_MATCHING_CONTINUE,                // matching after a mismatch
     S_MATCHED,                          // a complete match
     S_NOT_MATCHED,                      // didn't match after all
     S_DONE                              // no more input
@@ -241,7 +241,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
         }
         FALLTHROUGH;
 
-      case S_MATCHING_CONT:
+      case S_MATCHING_CONTINUE:
         if ( unlikely( !get_byte( pbyte ) ) ) {
           //
           // We've reached either EOF or the maximum number of bytes to read.
@@ -267,7 +267,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
             REALLOC( *pmatch_buf, *pmatch_len );
           }
           (*pmatch_buf)[ buf_pos ] = *pbyte;
-          GOTO_STATE( S_MATCHING );     // in case we were S_MATCHING_CONT
+          GOTO_STATE( S_MATCHING );     // in case we were S_MATCHING_CONTINUE
         }
         else {
           //
@@ -333,10 +333,10 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
           // We've drained all the bytes: if kmp > 0, it means we already have
           // a partial match further along in the read bytes so we don't have
           // to re-read them and re-compare them since they will match; hence,
-          // go to S_MATCHING_CONT.
+          // go to S_MATCHING_CONTINUE.
           //
           buf_pos = kmp;
-          GOTO_STATE( kmp > 0 ? S_MATCHING_CONT : S_READING );
+          GOTO_STATE( kmp > 0 ? S_MATCHING_CONTINUE : S_READING );
         }
         *matches = state == S_MATCHED && buf_pos <= buf_matched;
         *pbyte = (*pmatch_buf)[ buf_pos++ ];

@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "March 29, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "April 3, 2024" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -95,7 +95,7 @@ or
 then
 .I n
 is interpreted as hexedecimal.
-.TP 8
+.TP 7
 \f3+\f2n\f1[\f2u\f1]
 Skips reading
 .I n
@@ -179,8 +179,8 @@ the format
 .I s
 is one or more of the following letters
 that specify the format of the declarations:
-.RS 8
-.TP 4
+.RS 7
+.TP 3
 .B 8
 Declares the array as \f(CWchar8_t\f1.
 The default is \f(CWunsigned char\fP.
@@ -237,7 +237,7 @@ Sets when to colorize output to
 .B AD_COLORS
 environment variable about colorization.)
 The choices for
-.I w
+.I s
 are:
 .RS
 .TP 11
@@ -294,7 +294,7 @@ and the TERM environment variable
 is not empty and not equal to
 .BR dumb .
 (Specifically,
-.BR fstat (3)
+.BR fstat (2)
 is called on standard output:
 colorize only if \f(CWS_IFREG\f1 is false.)
 .IP
@@ -411,7 +411,8 @@ parses offsets in octal.
 .TP
 .BR \-\-plain " | " \-P
 Dumps in plain format;
-same as: \-AOg32
+same as:
+.BR \-AOg32 .
 .TP
 .BR \-\-printing-only " | " \-p
 Only dumps rows having printable characters.
@@ -437,7 +438,7 @@ to patch a subset of bytes in an existing larger binary file.
 The bytes to be patched are given by the offsets.
 .IP
 Elided bytes,
-given by the separator of ``-'' characters
+given by the separator of ``\f(CW-\fP'' characters
 when none of the
 .BR \-\-matching-only ,
 .BR \-m ,
@@ -486,8 +487,8 @@ matching.
 Valid values for
 .I s
 are:
-.RS 8
-.TP 4
+.RS 7
+.TP 3
 .PD 0
 .B 0
 Strings must end in a null byte.
@@ -495,8 +496,13 @@ Strings must end in a null byte.
 .B f
 Strings may contain form-feed characters.
 .TP
+.B l
+Strings may contain line-feed characters.
+.TP
 .B n
-Strings may contain newline characters.
+Synonym for
+.B l
+(newline).
 .TP
 .B r
 Strings may contain carriage return characters.
@@ -513,7 +519,7 @@ Strings may contain vertical tab characters.
 .B w
 Strings may contain any whitespace characters.
 Same as
-.BR fnrstv .
+.BR flrstv .
 .RE
 .PD
 .IP
@@ -524,7 +530,7 @@ Alternatively,
 or
 \f(CW-\fP may be given to mean ``none.''
 The default is
-.BR 0nst .
+.BR 0lst .
 .IP
 Specifying
 .B \-\-strings-opts
@@ -546,7 +552,7 @@ Sets when to dump in UTF-8 rather than ASCII to
 The choices for
 .I s
 are:
-.RS
+.RS 7
 .TP 8
 .B always
 Always dump in UTF-8.
@@ -692,7 +698,7 @@ Capability names in upper-case are unique to
 those in lower-case are upwards compatibile with
 .BR grep .
 .RS
-.TP 8
+.TP 10
 .BI bn= SGR
 SGR for the byte offset
 (as with

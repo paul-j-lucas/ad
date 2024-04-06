@@ -119,7 +119,7 @@ typedef enum ad_offsets ad_offsets_t;
 enum ad_strings {
   STRINGS_NONE      = 0,                ///< No options.
   STRINGS_FORMFEED  = (1u << 0),        ///< Include form-feed characters.
-  STRINGS_NEWLINE   = (1u << 1),        ///< Include newline characters.
+  STRINGS_LINEFEED  = (1u << 1),        ///< Include line-feed characters.
   STRINGS_NULL      = (1u << 2),        ///< Must end with null byte.
   STRINGS_RETURN    = (1u << 3),        ///< Include carriage return characters.
   STRINGS_SPACE     = (1u << 4),        ///< Include space characters.
@@ -146,10 +146,10 @@ extern bool           opt_reverse;      ///< Reverse dump (patch)?
 /**
  * The bytes of what to search for, if any.
  *
- * @remarks When searching for a:
+ * @remarks When searching for:
  * + A specific string, this points to the null-terminated string.
  * + Any string, not used.
- * + Number, this points to \ref search_number.
+ * + A number, this points to \ref search_number.
  */
 extern char          *opt_search_buf;
 
@@ -208,12 +208,14 @@ NODISCARD
 size_t get_offsets_width( void );
 
 /**
- * Parses command-line options and sets global variables.
+ * Initializes **ad** options from the command-line.
  *
  * @param argc The argument count from \c main().
  * @param argv The argument values from \c main().
+ *
+ * @note This function must be called exactly once.
  */
-void parse_options( int argc, char const *argv[] );
+void options_init( int argc, char const *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
 

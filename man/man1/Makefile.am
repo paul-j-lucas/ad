@@ -20,4 +20,25 @@
 
 dist_man1_MANS = ad.1
 
+GROFF_FLAGS =	-man -Tps
+
+PS2PDF_FLAGS =	-dEmbedAllFonts=true \
+		-dHaveTrueTypes=true \
+		-dPDFSETTINGS=/prepress \
+		-dSubsetFonts=false
+
+pdf-local: ad.pdf
+
+ad.ps: ad.1
+	groff $(GROFF_FLAGS) $< > $@
+
+ad.pdf: ad.ps
+	ps2pdf $(PS2PDF_FLAGS) $<
+
+clean-local:
+	rm -f ad.ps
+
+distclean-local:
+	rm -f ad.pdf
+
 # vim:set noet sw=8 ts=8:

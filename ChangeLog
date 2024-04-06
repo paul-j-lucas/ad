@@ -1,5 +1,20 @@
+2024-04-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, options.c, options.h: Renaming.
+
+2024-04-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * man/man1/Makefile.am: Can now generate ad.ps and ad.pdf.
+   * ad.c, ad.h, reverse.c: s/size_t/unsigned/
+   * options.c: Moved freopen() to case 1.
+   * ad.c: Eliminated unecessary return.
+   * ad.c, dump.c, reverse.c: Dump functions are no longer _Noreturn.
+
 2024-04-01  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c: Renaming.
+   * ad.1, match.c, options.c, options.h: Now accepting 'l' for line-feed; 'n'
+     is a synonym for 'l'.
    * dump.c, options.c, options.h: s/opt_print_ascii/opt_dump_ascii/
    * ad.c, dump.c, match.c, options.c, options.h, reverse.c: Renaming.
    * match.c: s/unsigned/size_t/

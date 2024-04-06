@@ -35,7 +35,6 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
-#include <stddef.h>                     /* for size_t */
 #include <stdlib.h>                     /* for atexit() */
 #include <sys/types.h>                  /* for off_t */
 
@@ -44,16 +43,16 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern function declarations
-_Noreturn void dump_file( void );
-_Noreturn void dump_file_c( void );
-_Noreturn void reverse_dump_file( void );
+void dump_file( void );
+void dump_file_c( void );
+void reverse_dump_file( void );
 
 // extern variable definitions
 off_t       fin_offset;
 char const *fin_path = "-";
 char const *fout_path = "-";
 char const *me;
-size_t      row_bytes = ROW_BYTES_DEFAULT;
+unsigned    row_bytes = ROW_BYTES_DEFAULT;
 
 /////////// local functions ///////////////////////////////////////////////////
 
@@ -78,16 +77,15 @@ static void ad_cleanup( void ) {
 int main( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
   ATEXIT( ad_cleanup );
-  parse_options( argc, argv );
+  options_init( argc, argv );
   colors_init();
 
-  if ( opt_reverse )
-    reverse_dump_file(); 
-  else if ( opt_carray != CARRAY_NONE )
+  if ( opt_carray != CARRAY_NONE )
     dump_file_c();
+  else if ( opt_reverse )
+    reverse_dump_file();
   else
     dump_file();
-  unreachable();                        // none of the above functions returns
 }
 
 ///////////////////////////////////////////////////////////////////////////////

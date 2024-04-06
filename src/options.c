@@ -160,7 +160,7 @@ char           *opt_search_buf;
 endian_t        opt_search_endian;
 size_t          opt_search_len;
 bool            opt_strings;
-ad_strings_t    opt_strings_opts = STRINGS_NEWLINE
+ad_strings_t    opt_strings_opts = STRINGS_LINEFEED
                                  | STRINGS_NULL
                                  | STRINGS_SPACE
                                  | STRINGS_TAB ;
@@ -643,20 +643,21 @@ static ad_strings_t parse_strings_opts( char const *opts_format ) {
     switch ( *s ) {
       case '0': opts |= STRINGS_NULL;     break;
       case 'f': opts |= STRINGS_FORMFEED; break;
-      case 'n': opts |= STRINGS_NEWLINE;  break;
+      case 'l':
+      case 'n': opts |= STRINGS_LINEFEED; break;
       case 'r': opts |= STRINGS_RETURN;   break;
       case 's': opts |= STRINGS_SPACE;    break;
       case 't': opts |= STRINGS_TAB;      break;
       case 'v': opts |= STRINGS_VTAB;     break;
       case 'w': opts |= STRINGS_FORMFEED
-                     |  STRINGS_NEWLINE
+                     |  STRINGS_LINEFEED
                      |  STRINGS_RETURN
                      |  STRINGS_SPACE
                      |  STRINGS_TAB
                      |  STRINGS_VTAB;     break;
       default :
         fatal_error( EX_USAGE,
-          "'%c': invalid option for %s; must be one of: [0fnrstvw]\n",
+          "'%c': invalid option for %s; must be one of: [0flnrstvw]\n",
           *s, opt_format( COPT(STRINGS_OPTS), opt_buf, sizeof opt_buf )
         );
     } // switch
@@ -890,7 +891,9 @@ size_t get_offsets_width( void ) {
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
-void parse_options( int argc, char const *argv[] ) {
+void options_init( int argc, char const *argv[] ) {
+  ASSERT_RUN_ONCE();
+
   size_t            max_lines = 0;
   int               opt;
   char const       *opt_format_file = NULL;
@@ -1257,11 +1260,11 @@ void parse_options( int argc, char const *argv[] ) {
 
     case 1:                             // infile only
       fin_path = argv[1];
+      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
+        fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
       FALLTHROUGH;
 
     case 0:
-      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
-        fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
       fskip( fin_offset, stdin );
       break;
 
