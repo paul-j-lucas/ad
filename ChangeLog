@@ -1,5 +1,6 @@
 2024-04-06  Paul J. Lucas <paul@lucasmail.org>
 
+   * options.c: Usage now correctly shows =FMT as optional for --c-array.
    * options.c: Shifted help output left.
    * match.c, options.c, options.h: s/opt_case_insensitive/opt_ignore_case/
    * ad.c, options.c, options.h: Renaming.

@@ -781,7 +781,7 @@ static void usage( int status ) {
                         "Number size in bits: 8-64 [default: auto].\n"
 "  --bytes=NUM         " UOPT(BYTES)
                         "Number size in bytes: 1-8 [default: auto].\n"
-"  --c-array=FMT       " UOPT(C_ARRAY)
+"  --c-array[=FMT]     " UOPT(C_ARRAY)
                         "Dump bytes as a C array.\n"
 "  --color=WHEN        " UOPT(COLOR)
                         "When to colorize output [default: not_file].\n"
