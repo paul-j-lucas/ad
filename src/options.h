@@ -180,12 +180,14 @@ NODISCARD
 size_t get_offsets_width( void );
 
 /**
- * Parses command-line options and sets global variables.
+ * Initializes **ad** options from the command-line.
  *
  * @param argc The argument count from \c main().
  * @param argv The argument values from \c main().
+ *
+ * @note This function must be called exactly once.
  */
-void parse_options( int argc, char const *argv[] );
+void options_init( int argc, char const *argv[] );
 
 ///////////////////////////////////////////////////////////////////////////////
 

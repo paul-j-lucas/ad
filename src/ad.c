@@ -75,7 +75,7 @@ static void ad_cleanup( void ) {
 int main( int argc, char const *argv[const] ) {
   me = base_name( argv[0] );
   ATEXIT( ad_cleanup );
-  parse_options( argc, argv );
+  options_init( argc, argv );
   colors_init();
 
   if ( opt_carray != CARRAY_NONE )

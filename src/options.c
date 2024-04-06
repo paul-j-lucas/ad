@@ -880,7 +880,9 @@ size_t get_offsets_width( void ) {
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;
 }
 
-void parse_options( int argc, char const *argv[] ) {
+void options_init( int argc, char const *argv[] ) {
+  ASSERT_RUN_ONCE();
+
   size_t            max_lines = 0;
   int               opt;
   bool              opt_help = false;
