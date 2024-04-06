@@ -775,68 +775,68 @@ static void usage( int status ) {
 "       %s --help\n"
 "       %s --version\n"
 "options:\n"
-"  --big-endian=NUM      " UOPT(BIG_ENDIAN)
-                          "Search for big-endian number.\n"
-"  --bits=NUM            " UOPT(BITS)
-                          "Number size in bits: 8-64 [default: auto].\n"
-"  --bytes=NUM           " UOPT(BYTES)
-                          "Number size in bytes: 1-8 [default: auto].\n"
-"  --c-array=FMT         " UOPT(C_ARRAY)
-                          "Dump bytes as a C array.\n"
-"  --color=WHEN          " UOPT(COLOR)
-                          "When to colorize output [default: not_file].\n"
-"  --decimal             " UOPT(DECIMAL)
-                          "Print offsets in decimal.\n"
-"  --group-by=NUM        " UOPT(GROUP_BY)
-                          "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "].\n"
-"  --help                " UOPT(HELP)
-                          "Print this help and exit.\n"
-"  --hexadecimal         " UOPT(HEXADECIMAL)
-                          "Print offsets in hexadecimal [default].\n"
-"  --host-endian=NUM     " UOPT(HOST_ENDIAN)
-                          "Search for host-endian number.\n"
-"  --ignore-case         " UOPT(IGNORE_CASE)
-                          "Ignore case for string searches.\n"
-"  --little-endian=NUM   " UOPT(LITTLE_ENDIAN)
-                          "Search for little-endian number.\n"
-"  --matching-only       " UOPT(MATCHING_ONLY)
-                          "Only dump rows having matches.\n"
-"  --max-bytes=NUM       " UOPT(MAX_BYTES)
-                          "Dump max number of bytes [default: unlimited].\n"
-"  --max-lines=NUM       " UOPT(MAX_LINES)
-                          "Dump max number of lines [default: unlimited].\n"
-"  --no-ascii            " UOPT(NO_ASCII)
-                          "Suppress printing the ASCII part.\n"
-"  --no-offsets          " UOPT(NO_OFFSETS)
-                          "Suppress printing offsets.\n"
-"  --octal               " UOPT(OCTAL)
-                          "Print offsets in octal.\n"
-"  --plain               " UOPT(PLAIN)
-                          "Dump in plain format; same as: -AOg32.\n"
-"  --printing-only       " UOPT(PRINTING_ONLY)
-                          "Only dump rows having printable characters.\n"
-"  --reverse             " UOPT(REVERSE)
-                          "Reverse from dump back to binary.\n"
-"  --skip-bytes=NUM      " UOPT(SKIP_BYTES)
-                          "Jump to offset before dumping [default: 0].\n"
-"  --string=STR          " UOPT(STRING)
-                          "Search for string.\n"
-"  --strings[=NUM]       " UOPT(STRINGS)
-                          "Search for all strings.\n"
-"  --strings-opts=OPTS   " UOPT(STRINGS_OPTS)
-                          "Options for --strings matches [default: 0nst].\n"
-"  --total-matches       " UOPT(TOTAL_MATCHES)
-                          "Additionally print total number of matches.\n"
-"  --total-matches-only  " UOPT(TOTAL_MATCHES_ONLY)
-                          "Only print total number of matches.\n"
-"  --utf8=WHEN           " UOPT(UTF8)
-                          "When to dump in UTF-8 [default: never].\n"
-"  --utf8-padding=NUM    " UOPT(UTF8_PADDING)
-                          "Set UTF-8 padding character [default: U+2581].\n"
-"  --verbose             " UOPT(VERBOSE)
-                          "Dump repeated rows also.\n"
-"  --version             " UOPT(VERSION)
-                          "Print version and exit.\n"
+"  --big-endian=NUM    " UOPT(BIG_ENDIAN)
+                        "Search for big-endian number.\n"
+"  --bits=NUM          " UOPT(BITS)
+                        "Number size in bits: 8-64 [default: auto].\n"
+"  --bytes=NUM         " UOPT(BYTES)
+                        "Number size in bytes: 1-8 [default: auto].\n"
+"  --c-array=FMT       " UOPT(C_ARRAY)
+                        "Dump bytes as a C array.\n"
+"  --color=WHEN        " UOPT(COLOR)
+                        "When to colorize output [default: not_file].\n"
+"  --decimal           " UOPT(DECIMAL)
+                        "Print offsets in decimal.\n"
+"  --group-by=NUM      " UOPT(GROUP_BY)
+                        "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "].\n"
+"  --help              " UOPT(HELP)
+                        "Print this help and exit.\n"
+"  --hexadecimal       " UOPT(HEXADECIMAL)
+                        "Print offsets in hexadecimal [default].\n"
+"  --host-endian=NUM   " UOPT(HOST_ENDIAN)
+                        "Search for host-endian number.\n"
+"  --ignore-case       " UOPT(IGNORE_CASE)
+                        "Ignore case for string searches.\n"
+"  --little-endian=NUM " UOPT(LITTLE_ENDIAN)
+                        "Search for little-endian number.\n"
+"  --matching-only     " UOPT(MATCHING_ONLY)
+                        "Only dump rows having matches.\n"
+"  --max-bytes=NUM     " UOPT(MAX_BYTES)
+                        "Dump max number of bytes [default: unlimited].\n"
+"  --max-lines=NUM     " UOPT(MAX_LINES)
+                        "Dump max number of lines [default: unlimited].\n"
+"  --no-ascii          " UOPT(NO_ASCII)
+                        "Suppress printing the ASCII part.\n"
+"  --no-offsets        " UOPT(NO_OFFSETS)
+                        "Suppress printing offsets.\n"
+"  --octal             " UOPT(OCTAL)
+                        "Print offsets in octal.\n"
+"  --plain             " UOPT(PLAIN)
+                        "Dump in plain format; same as: -AOg32.\n"
+"  --printing-only     " UOPT(PRINTING_ONLY)
+                        "Only dump rows having printable characters.\n"
+"  --reverse           " UOPT(REVERSE)
+                        "Reverse from dump back to binary.\n"
+"  --skip-bytes=NUM    " UOPT(SKIP_BYTES)
+                        "Jump to offset before dumping [default: 0].\n"
+"  --string=STR        " UOPT(STRING)
+                        "Search for string.\n"
+"  --strings[=NUM]     " UOPT(STRINGS)
+                        "Search for all strings.\n"
+"  --strings-opts=OPTS " UOPT(STRINGS_OPTS)
+                        "Options for --strings matches [default: 0nst].\n"
+"  --total-matches     " UOPT(TOTAL_MATCHES)
+                        "Additionally print total number of matches.\n"
+"  --total-matches-only" UOPT(TOTAL_MATCHES_ONLY)
+                        "Only print total number of matches.\n"
+"  --utf8=WHEN         " UOPT(UTF8)
+                        "When to dump in UTF-8 [default: never].\n"
+"  --utf8-padding=NUM  " UOPT(UTF8_PADDING)
+                        "Set UTF-8 padding character [default: U+2581].\n"
+"  --verbose           " UOPT(VERBOSE)
+                        "Dump repeated rows also.\n"
+"  --version           " UOPT(VERSION)
+                        "Print version and exit.\n"
 "\n"
 PACKAGE_NAME " home page: " PACKAGE_URL "\n"
 "Report bugs to: " PACKAGE_BUGREPORT "\n",
