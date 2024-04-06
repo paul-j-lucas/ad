@@ -142,10 +142,10 @@ typedef enum utf8_when utf8_when_t;
 
 // option extern variable definitions
 ad_carray_t     opt_carray;
-bool            opt_case_insensitive;
 color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
 bool            opt_dump_ascii = true;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
+bool            opt_ignore_case;
 size_t          opt_max_bytes = SIZE_MAX;
 ad_matches_t    opt_matches;
 ad_offsets_t    opt_offsets = OFFSETS_HEX;
@@ -939,7 +939,7 @@ void options_init( int argc, char const *argv[] ) {
 #endif /* WORDS_BIGENDIAN */
         break;
       case COPT(IGNORE_CASE):
-        opt_case_insensitive = true;
+        opt_ignore_case = true;
         break;
       case COPT(LITTLE_ENDIAN):
         search_number = STATIC_CAST( uint64_t, parse_ull( optarg ) );
@@ -1203,7 +1203,7 @@ void options_init( int argc, char const *argv[] ) {
     );
   }
 
-  if ( opt_case_insensitive )
+  if ( opt_ignore_case )
     tolower_s( opt_search_buf );
 
   if ( opt_group_by > row_bytes )

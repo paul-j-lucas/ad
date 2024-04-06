@@ -118,11 +118,11 @@ typedef enum ad_strings ad_strings_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-extern ad_carray_t    opt_carray;        ///< Dump as C array in this format.
-extern bool           opt_case_insensitive; ///< Case-insensitive matching?
+extern ad_carray_t    opt_carray;       ///< Dump as C array in this format.
 extern color_when_t   opt_color_when;   ///< When to colorize output.
 extern bool           opt_dump_ascii;   ///< Dump ASCII part?
 extern unsigned       opt_group_by;     ///< Group by this number of bytes.
+extern bool           opt_ignore_case;  ///< Case-insensitive matching?
 extern size_t         opt_max_bytes;    ///< Maximum number of bytes to dump.
 extern ad_matches_t   opt_matches;      ///< When to print total matches.
 extern ad_offsets_t   opt_offsets;      ///< Dump offsets in this format.
