@@ -130,7 +130,7 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
     } // switch
   }
 
-  if ( opt_case_insensitive )
+  if ( opt_ignore_case )
     input_byte = STATIC_CAST( char8_t, tolower( input_byte ) );
 
   return input_byte == STATIC_CAST( char8_t, opt_search_buf[ buf_pos ] );

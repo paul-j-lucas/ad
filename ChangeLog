@@ -1,5 +1,6 @@
 2024-04-06  Paul J. Lucas <paul@lucasmail.org>
 
+   * match.c, options.c, options.h: s/opt_case_insensitive/opt_ignore_case/
    * ad.c, options.c, options.h: Renaming.
 
 2024-04-03  Paul J. Lucas <paul@lucasmail.org>
