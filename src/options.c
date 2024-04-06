@@ -789,7 +789,7 @@ static void usage( int status ) {
 "  --host-endian=NUM   " UOPT(HOST_ENDIAN)
                         "Highlight host-endian number.\n"
 "  --ignore-case       " UOPT(IGNORE_CASE)
-                        "Ignore case for --string searches.\n"
+                        "Ignore case for --string matches.\n"
 "  --little-endian=NUM " UOPT(LITTLE_ENDIAN)
                         "Highlight little-endian number.\n"
 "  --matching-only     " UOPT(MATCHING_ONLY)
