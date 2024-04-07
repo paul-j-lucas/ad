@@ -1,5 +1,7 @@
 2024-04-07  Paul J. Lucas <paul@lucasmail.org>
 
+   * ad.c, dump.c, options.c, options.h, test/Makefile.am: Renaming; eliminated
+     duplicate --c-array format checking.
    * dump.c, match.c, match.h: s/kmp_init/kmp_new/
    * dump.c, match.c, match.h: Eliminated kmp_t.
 
