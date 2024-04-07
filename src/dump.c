@@ -303,7 +303,7 @@ void dump_file( void ) {
   bool          any_matches = false;    // if matching, any data matched yet?
   row_buf_t     buf[2], *curr = buf, *next = buf + 1;
   bool          is_same_row = false;    // current row same as previous?
-  kmp_t const  *kmps = NULL;            // used only by match_row()
+  size_t const *kmps = NULL;            // used only by match_row()
   char8_t      *match_buf = NULL;       // used only by match_row()
   size_t        match_len = 0;          // used only by match_row()
   char const   *offset_format = get_offsets_format();

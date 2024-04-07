@@ -148,7 +148,7 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
  * @return Returns `true` if a byte was read successfully.
  */
 NODISCARD
-static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
+static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
                         char8_t **pmatch_buf, size_t *pmatch_len ) {
   enum state {
     S_READING,                          // just reading; not matching
@@ -163,7 +163,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, kmp_t const *kmps,
   static size_t   buf_drain;            // bytes to "drain" buf after mismatch
   static size_t   buf_matched;          // bytes in buffer matched
   static size_t   buf_pos;              // position in *pmatch_buf
-  static kmp_t    kmp;                  // bytes partially matched
+  static size_t   kmp;                  // bytes partially matched
   static state_t  state = S_READING;    // current state
   static size_t   string_chars_matched; // strings(1) characters matched
   static unsigned utf8_char_bytes;      // bytes comprising UTF-8 character
@@ -367,12 +367,12 @@ static void unget_byte( char8_t byte ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
+size_t* kmp_init( char const *pattern, size_t pattern_len ) {
   assert( pattern != NULL );
 
   // allocating +1 eliminates "past the end" checking
-  kmp_t *const kmps = MALLOC( kmp_t, pattern_len + 1 );
-  memset( kmps, 0, sizeof( kmp_t ) * (pattern_len + 1) );
+  size_t *const kmps = MALLOC( size_t, pattern_len + 1 );
+  memset( kmps, 0, sizeof( size_t ) * (pattern_len + 1) );
 
   for ( size_t i = 1, j = 0; i < pattern_len; ) {
     assert( j < pattern_len );
@@ -387,7 +387,7 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len ) {
 }
 
 size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
-                  kmp_t const *kmps, char8_t **pmatch_buf,
+                  size_t const *kmps, char8_t **pmatch_buf,
                   size_t *pmatch_len ) {
   assert( row_buf != NULL );
   assert( row_len <= row_bytes );
