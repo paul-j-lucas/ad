@@ -367,7 +367,7 @@ static void unget_byte( char8_t byte ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-size_t* kmp_init( char const *pattern, size_t pattern_len ) {
+size_t* kmp_new( char const *pattern, size_t pattern_len ) {
   assert( pattern != NULL );
 
   // allocating +1 eliminates "past the end" checking

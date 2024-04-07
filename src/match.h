@@ -67,7 +67,7 @@ extern unsigned long total_matches;     ///< Total number of matches.
  * table.  The caller is responsible for freeing the array.
  */
 NODISCARD
-size_t* kmp_init( char const *pattern, size_t pattern_len );
+size_t* kmp_new( char const *pattern, size_t pattern_len );
 
 /**
  * Gets a row of bytes and whether each byte matches bytes in the search

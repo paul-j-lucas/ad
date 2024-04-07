@@ -313,7 +313,7 @@ void dump_file( void ) {
       match_len = opt_search_len < STRINGS_LEN_DEFAULT ?
         STRINGS_LEN_DEFAULT : opt_search_len;
     } else {
-      kmps = kmp_init( opt_search_buf, opt_search_len );
+      kmps = kmp_new( opt_search_buf, opt_search_len );
       match_len = opt_search_len;
     }
     match_buf = MALLOC( char8_t, opt_search_len );
