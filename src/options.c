@@ -420,13 +420,13 @@ static ad_c_array_t parse_c_array( char const *c_array_format ) {
   if ( c_array_format != NULL && c_array_format[0] != '\0' ) {
     for ( s = c_array_format; *s != '\0'; ++s ) {
       switch ( *s ) {
-        case '8': c_array |= C_ARRAY_CHAR8_T;  break;
-        case 'c': c_array |= C_ARRAY_CONST;    break;
-        case 'i': c_array |= C_ARRAY_INT;      break;
-        case 'l': c_array |= C_ARRAY_LONG;     break;
-        case 's': c_array |= C_ARRAY_STATIC;   break;
-        case 't': c_array |= C_ARRAY_SIZE_T;   break;
-        case 'u': c_array |= C_ARRAY_UNSIGNED; break;
+        case '8': c_array |= C_ARRAY_CHAR8_T;       break;
+        case 'c': c_array |= C_ARRAY_CONST;         break;
+        case 'i': c_array |= C_ARRAY_LEN_INT;       break;
+        case 'l': c_array |= C_ARRAY_LEN_LONG;      break;
+        case 's': c_array |= C_ARRAY_STATIC;        break;
+        case 't': c_array |= C_ARRAY_LEN_SIZE_T;    break;
+        case 'u': c_array |= C_ARRAY_LEN_UNSIGNED;  break;
         default :
           fatal_error( EX_USAGE,
             "'%c': invalid C format for %s;"
@@ -435,8 +435,8 @@ static ad_c_array_t parse_c_array( char const *c_array_format ) {
           );
       } // switch
     } // for
-    if ( (c_array & C_ARRAY_SIZE_T) != C_ARRAY_NONE &&
-         (c_array & C_ARRAY_INT_LENGTH) != C_ARRAY_NONE ) {
+    if ( (c_array & C_ARRAY_LEN_SIZE_T) != C_ARRAY_NONE &&
+         (c_array & C_ARRAY_LEN_INT_ANY) != C_ARRAY_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",

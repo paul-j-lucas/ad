@@ -425,18 +425,18 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( (opt_c_array & C_ARRAY_ANY_LENGTH) != C_ARRAY_NONE ) {
+  if ( (opt_c_array & C_ARRAY_LEN_ANY) != C_ARRAY_NONE ) {
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-      ((opt_c_array & C_ARRAY_STATIC  ) != 0 ? "static "   : ""),
-      ((opt_c_array & C_ARRAY_UNSIGNED) != 0 ? "unsigned " : ""),
-      ((opt_c_array & C_ARRAY_LONG    ) != 0 ? "long "     : ""),
-      ((opt_c_array & C_ARRAY_INT     ) != 0 ? "int "      : ""),
-      ((opt_c_array & C_ARRAY_SIZE_T  ) != 0 ? "size_t "   : ""),
-      ((opt_c_array & C_ARRAY_CONST   ) != 0 ? "const "    : ""),
+      ((opt_c_array & C_ARRAY_STATIC      ) != 0 ? "static "   : ""),
+      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "unsigned " : ""),
+      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "long "     : ""),
+      ((opt_c_array & C_ARRAY_LEN_INT     ) != 0 ? "int "      : ""),
+      ((opt_c_array & C_ARRAY_LEN_SIZE_T  ) != 0 ? "size_t "   : ""),
+      ((opt_c_array & C_ARRAY_CONST       ) != 0 ? "const "    : ""),
       array_name, array_len,
-      ((opt_c_array & C_ARRAY_UNSIGNED) != 0 ? "u" : ""),
-      ((opt_c_array & C_ARRAY_LONG    ) != 0 ? "L" : "")
+      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "u" : ""),
+      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "L" : "")
     );
   }
 }
