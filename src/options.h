@@ -86,7 +86,7 @@ typedef enum ad_c_array ad_c_array_t;
  */
 enum ad_matches {
   MATCHES_NO_PRINT,                     ///< Don't print total matches.
-  MATCHES_ALSO_PRINT,                   ///< Additionally print total matches.
+  MATCHES_ALSO_PRINT,                   ///< Also print total matches.
   MATCHES_ONLY_PRINT                    ///< Only print total matches.
 };
 typedef enum ad_matches ad_matches_t;
