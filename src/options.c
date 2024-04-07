@@ -623,7 +623,7 @@ error:
  *
  * @param opts_format The null-terminated string search options format to
  * parse.
- * @return Returns the corresponding \ref strings_opts or prints an error
+ * @return Returns the corresponding \ref ad_strings value or prints an error
  * message and exits if \a opts_format is invalid.
  */
 NODISCARD
