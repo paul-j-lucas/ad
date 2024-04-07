@@ -1,9 +1,5 @@
 2024-04-07  Paul J. Lucas <paul@lucasmail.org>
 
-   * options.c, options.h: Renaming.
-   * dump.c, options.c, options.h: Renaming.
-   * ad.c, dump.c, options.c, options.h, test/Makefile.am: Renaming; eliminated
-     duplicate --c-array format checking.
    * dump.c, match.c, match.h: s/kmp_init/kmp_new/
    * dump.c, match.c, match.h: Eliminated kmp_t.
 
@@ -12,7 +8,6 @@
    * options.c: Usage now correctly shows =FMT as optional for --c-array.
    * options.c: Shifted help output left.
    * match.c, options.c, options.h: s/opt_case_insensitive/opt_ignore_case/
-   * ad.c, options.c, options.h: Renaming.
 
 2024-04-03  Paul J. Lucas <paul@lucasmail.org>
 
@@ -24,11 +19,9 @@
 
 2024-04-01  Paul J. Lucas <paul@lucasmail.org>
 
-   * match.c: Renaming.
    * ad.1, match.c, options.c, options.h: Now accepting 'l' for line-feed; 'n'
      is a synonym for 'l'.
    * dump.c, options.c, options.h: s/opt_print_ascii/opt_dump_ascii/
-   * ad.c, dump.c, match.c, options.c, options.h, reverse.c: Renaming.
    * match.c: s/unsigned/size_t/
    * match.c: Eliminated "byte" and "RETURN".
 
@@ -134,7 +127,6 @@
 
 2024-02-14  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c: Renaming.
    * ad.c, util.c, util.h: s/check_atexit()/ATEXIT()/
 
 2024-02-07  Paul J. Lucas <paul@lucasmail.org>
@@ -182,7 +174,6 @@
 
 2023-05-11  Paul J. Lucas <paul@lucasmail.org>
 
-   * options.c: Renaming.
    * options.c, util.h, ad-Cc.test, ad-Ccc.test, ad-Cci.test, ad-Ci.test,
      ad-Cii.test, ad-Cilu.test, ad-Cis.test, ad-Cit.test, ad-Ciu.test,
      ad-Cl.test, ad-Cll.test, ad-Clt.test, ad-Css.test, ad-Ct.test,
@@ -313,10 +304,6 @@
 
    * configure.ac: s/AC_PROG_CC_C99/AC_PROG_CC/; moved AC_LANG(C) earlier.
    * run_test.sh: Made --test-name optional.
-
-2020-12-29  Paul J. Lucas <paul@lucasmail.org>
-
-   * dump.c, options.c, reverse.c, util.h: Renaming and comments.
 
 2020-12-23  Paul J. Lucas <paul@lucasmail.org>
 
