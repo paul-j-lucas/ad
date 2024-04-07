@@ -436,7 +436,7 @@ static ad_c_array_t parse_c_array( char const *c_array_format ) {
       } // switch
     } // for
     if ( (c_array & C_ARRAY_LEN_SIZE_T) != C_ARRAY_NONE &&
-         (c_array & C_ARRAY_LEN_INT_ANY) != C_ARRAY_NONE ) {
+         (c_array & C_ARRAY_LEN_ANY_INT) != C_ARRAY_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",

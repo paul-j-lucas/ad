@@ -68,9 +68,9 @@ typedef enum ad_c_array ad_c_array_t;
  * Shorthand for any C dump format length: #C_ARRAY_LEN_INT, #C_ARRAY_LEN_LONG,
  * #C_ARRAY_LEN_UNSIGNED, or #C_ARRAY_LEN_SIZE_T.
  *
- * @sa #C_ARRAY_LEN_INT_ANY
+ * @sa #C_ARRAY_LEN_ANY_INT
  */
-#define C_ARRAY_LEN_ANY           ( C_ARRAY_LEN_INT_ANY | C_ARRAY_LEN_SIZE_T )
+#define C_ARRAY_LEN_ANY           ( C_ARRAY_LEN_ANY_INT | C_ARRAY_LEN_SIZE_T )
 
 /**
  * Shorthand for any `int` C dump format length: #C_ARRAY_LEN_INT,
@@ -78,7 +78,7 @@ typedef enum ad_c_array ad_c_array_t;
  *
  * @sa #C_ARRAY_LEN_ANY
  */
-#define C_ARRAY_LEN_INT_ANY       ( C_ARRAY_LEN_INT | C_ARRAY_LEN_LONG \
+#define C_ARRAY_LEN_ANY_INT       ( C_ARRAY_LEN_INT | C_ARRAY_LEN_LONG \
                                   | C_ARRAY_LEN_UNSIGNED )
 
 /**
