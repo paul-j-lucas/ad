@@ -135,9 +135,11 @@ extern bool           opt_reverse;      ///< Reverse dump (patch)?
  * The bytes of what to search for, if any.
  *
  * @remarks When searching for:
- * + A specific string, this points to the null-terminated string.
- * + Any string, not used.
- * + A number, this points to \ref search_number.
+ * + A specific string: this points to the null-terminated string.
+ * + Any string: not used.
+ * + A number: this points to \ref search_number.
+ *
+ * @sa opt_search_len
  */
 extern char          *opt_search_buf;
 
@@ -146,7 +148,7 @@ extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
 
 extern bool           opt_strings;      ///< **strings**(1)-like search?
 extern ad_strings_t   opt_strings_opts; ///< **strings**(1)-like options.
-extern bool           opt_utf8;         ///< Dump UTF-8 bytes?
+extern bool           opt_utf8;         ///< Dump as UTF-8?
 extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
 
@@ -165,7 +167,7 @@ char const* gets_offsets_english( void );
 /**
  * Gets the **printf**(3) format for the current offset format.
  *
- * @return Returns said printf(3) format.
+ * @return Returns said **printf**(3) format.
  *
  * @sa gets_offsets_english()
  */
