@@ -1,3 +1,8 @@
+2024-04-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, match.c, match.h: s/kmp_init/kmp_new/
+   * dump.c, match.c, match.h: Eliminated kmp_t.
+
 2024-04-06  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c: Usage now correctly shows =FMT as optional for --c-array.
