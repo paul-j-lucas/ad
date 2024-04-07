@@ -145,7 +145,7 @@ static bool is_match( char8_t input_byte, size_t buf_pos,
  * @param pmatch_buf A pointer to a pointer to a buffer to use while matching.
  * It must be at least as large as the search buffer.
  * @param pmatch_len A pointer to the size of \a *pmatch_buf or NULL.
- * @return Returns `true` if a byte was read successfully.
+ * @return Returns `true` only if a byte was read successfully.
  */
 NODISCARD
 static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
