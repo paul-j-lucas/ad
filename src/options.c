@@ -205,7 +205,7 @@ static struct option const OPTIONS[] = {
 };
 
 // local variable definitions
-static bool         opts_given[ 128 ];
+static bool         opts_given[ 128 ];  ///< Table of options that were given.
 
 /**
  * The number to search for, if any.
