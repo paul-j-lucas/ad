@@ -46,7 +46,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-typedef size_t    kmp_t;                ///< Knuth-Morris-Pratt prefix value.
 typedef uint32_t  match_bits_t;         ///< Bit _i_ means byte _i_ matches.
 
 // extern variables
@@ -68,7 +67,7 @@ extern unsigned long total_matches;     ///< Total number of matches.
  * table.  The caller is responsible for freeing the array.
  */
 NODISCARD
-kmp_t* kmp_init( char const *pattern, size_t pattern_len );
+size_t* kmp_new( char const *pattern, size_t pattern_len );
 
 /**
  * Gets a row of bytes and whether each byte matches bytes in the search
@@ -88,8 +87,9 @@ kmp_t* kmp_init( char const *pattern, size_t pattern_len );
  * row_len.
  */
 NODISCARD
-size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
-                  kmp_t const *kmps, char8_t **pmatch_buf, size_t *pmatch_len );
+size_t match_row( char8_t *row_buf, size_t row_len,
+                  match_bits_t *match_bits, size_t const *kmps,
+                  char8_t **pmatch_buf, size_t *pmatch_len );
 
 ///////////////////////////////////////////////////////////////////////////////
 

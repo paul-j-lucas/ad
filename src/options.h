@@ -63,41 +63,42 @@
 /**
  * C array dump formats.
  */
-enum ad_carray {
-  CARRAY_NONE     = 0,                  ///< No format.
-  CARRAY_DEFAULT  = 1 << 0,             ///< Default format.
-  CARRAY_CHAR8_T  = 1 << 1,             ///< Declare array type as `char8_t`.
-  CARRAY_UNSIGNED = 1 << 2,             ///< Declare len type as `unsigned`.
-  CARRAY_INT      = 1 << 3,             ///< Declare len type as `int`.
-  CARRAY_LONG     = 1 << 4,             ///< Declare len type as `long`.
-  CARRAY_SIZE_T   = 1 << 5,             ///< Declare len type as `size_t`.
-  CARRAY_CONST    = 1 << 6,             ///< Declare variables as `const`.
-  CARRAY_STATIC   = 1 << 7,             ///< Declare variables as `static`.
+enum ad_c_array {
+  C_ARRAY_NONE          = 0,            ///< No format.
+  C_ARRAY_DEFAULT       = 1 << 0,       ///< Default format.
+  C_ARRAY_CHAR8_T       = 1 << 1,       ///< Declare array type as `char8_t`.
+  C_ARRAY_CONST         = 1 << 2,       ///< Declare variables as `const`.
+  C_ARRAY_LEN_UNSIGNED  = 1 << 3,       ///< Declare length type as `unsigned`.
+  C_ARRAY_LEN_INT       = 1 << 4,       ///< Declare length type as `int`.
+  C_ARRAY_LEN_LONG      = 1 << 5,       ///< Declare length type as `long`.
+  C_ARRAY_LEN_SIZE_T    = 1 << 6,       ///< Declare length type as `size_t`.
+  C_ARRAY_STATIC        = 1 << 7,       ///< Declare variables as `static`.
 };
-typedef enum ad_carray ad_carray_t;
+typedef enum ad_c_array ad_c_array_t;
 
 /**
- * Shorthand for any C dump format length: #CARRAY_INT, #CARRAY_LONG,
- * #CARRAY_UNSIGNED, or #CARRAY_SIZE_T.
+ * Shorthand for any C dump format length: #C_ARRAY_LEN_INT, #C_ARRAY_LEN_LONG,
+ * #C_ARRAY_LEN_UNSIGNED, or #C_ARRAY_LEN_SIZE_T.
  *
- * @sa #CARRAY_INT_LENGTH
+ * @sa #C_ARRAY_LEN_ANY_INT
  */
-#define CARRAY_ANY_LENGTH         ( CARRAY_INT_LENGTH | CARRAY_SIZE_T )
+#define C_ARRAY_LEN_ANY           ( C_ARRAY_LEN_ANY_INT | C_ARRAY_LEN_SIZE_T )
 
 /**
- * Shorthand for any `int` C dump format length: #CARRAY_INT, #CARRAY_LONG, or
- * #CARRAY_UNSIGNED.
+ * Shorthand for any `int` C dump format length: #C_ARRAY_LEN_INT,
+ * #C_ARRAY_LEN_LONG, or #C_ARRAY_LEN_UNSIGNED.
  *
- * @sa #CARRAY_ANY_LENGTH
+ * @sa #C_ARRAY_LEN_ANY
  */
-#define CARRAY_INT_LENGTH         ( CARRAY_UNSIGNED | CARRAY_INT | CARRAY_LONG )
+#define C_ARRAY_LEN_ANY_INT       ( C_ARRAY_LEN_INT | C_ARRAY_LEN_LONG \
+                                  | C_ARRAY_LEN_UNSIGNED )
 
 /**
  * Whether to print the total number of matches.
  */
 enum ad_matches {
   MATCHES_NO_PRINT,                     ///< Don't print total matches.
-  MATCHES_ALSO_PRINT,                   ///< Additionally print total matches.
+  MATCHES_ALSO_PRINT,                   ///< Also print total matches.
   MATCHES_ONLY_PRINT                    ///< Only print total matches.
 };
 typedef enum ad_matches ad_matches_t;
@@ -118,20 +119,20 @@ typedef enum ad_offsets ad_offsets_t;
  */
 enum ad_strings {
   STRINGS_NONE      = 0,                ///< No options.
-  STRINGS_FORMFEED  = (1u << 0),        ///< Include form-feed characters.
-  STRINGS_LINEFEED  = (1u << 1),        ///< Include line-feed characters.
-  STRINGS_NULL      = (1u << 2),        ///< Must end with null byte.
-  STRINGS_RETURN    = (1u << 3),        ///< Include carriage return characters.
-  STRINGS_SPACE     = (1u << 4),        ///< Include space characters.
-  STRINGS_TAB       = (1u << 5),        ///< Include tab characters.
-  STRINGS_VTAB      = (1u << 6),        ///< Include vertical tab characters.
+  STRINGS_FORMFEED  = 1 << 0,           ///< Include form-feed characters.
+  STRINGS_LINEFEED  = 1 << 1,           ///< Include line-feed characters.
+  STRINGS_NULL      = 1 << 2,           ///< Must end with null byte.
+  STRINGS_RETURN    = 1 << 3,           ///< Include carriage return characters.
+  STRINGS_SPACE     = 1 << 4,           ///< Include space characters.
+  STRINGS_TAB       = 1 << 5,           ///< Include tab characters.
+  STRINGS_VTAB      = 1 << 6,           ///< Include vertical tab characters.
 };
 typedef enum ad_strings ad_strings_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
 extern ad_debug_t     opt_ad_debug;
-extern ad_carray_t    opt_carray;       ///< Dump as C array in this format.
+extern ad_c_array_t   opt_c_array;      ///< Dump as C array in this format.
 extern color_when_t   opt_color_when;   ///< When to colorize output.
 extern bool           opt_dump_ascii;   ///< Dump ASCII part?
 extern unsigned       opt_group_by;     ///< Group by this number of bytes.
@@ -147,9 +148,11 @@ extern bool           opt_reverse;      ///< Reverse dump (patch)?
  * The bytes of what to search for, if any.
  *
  * @remarks When searching for:
- * + A specific string, this points to the null-terminated string.
- * + Any string, not used.
- * + A number, this points to \ref search_number.
+ * + A specific string: this points to the null-terminated string.
+ * + Any string: not used.
+ * + A number: this points to \ref search_number.
+ *
+ * @sa opt_search_len
  */
 extern char          *opt_search_buf;
 
@@ -158,7 +161,7 @@ extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
 
 extern bool           opt_strings;      ///< **strings**(1)-like search?
 extern ad_strings_t   opt_strings_opts; ///< **strings**(1)-like options.
-extern bool           opt_utf8;         ///< Dump UTF-8 bytes?
+extern bool           opt_utf8;         ///< Dump as UTF-8?
 extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
 
@@ -192,7 +195,7 @@ char const* gets_offsets_english( void );
 /**
  * Gets the **printf**(3) format for the current offset format.
  *
- * @return Returns said printf(3) format.
+ * @return Returns said **printf**(3) format.
  *
  * @sa gets_offsets_english()
  */

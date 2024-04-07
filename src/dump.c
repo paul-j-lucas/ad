@@ -303,7 +303,7 @@ void dump_file( void ) {
   bool          any_matches = false;    // if matching, any data matched yet?
   row_buf_t     buf[2], *curr = buf, *next = buf + 1;
   bool          is_same_row = false;    // current row same as previous?
-  kmp_t const  *kmps = NULL;            // used only by match_row()
+  size_t const *kmps = NULL;            // used only by match_row()
   char8_t      *match_buf = NULL;       // used only by match_row()
   size_t        match_len = 0;          // used only by match_row()
   char const   *offset_format = get_offsets_format();
@@ -313,7 +313,7 @@ void dump_file( void ) {
       match_len = opt_search_len < STRINGS_LEN_DEFAULT ?
         STRINGS_LEN_DEFAULT : opt_search_len;
     } else {
-      kmps = kmp_init( opt_search_buf, opt_search_len );
+      kmps = kmp_new( opt_search_buf, opt_search_len );
       match_len = opt_search_len;
     }
     match_buf = MALLOC( char8_t, opt_search_len );
@@ -402,9 +402,9 @@ void dump_file_c( void ) {
 
   PRINTF(
     "%s%s %s%s[] = {\n",
-    ((opt_carray & CARRAY_STATIC ) != 0 ? "static " : ""),
-    ((opt_carray & CARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
-    ((opt_carray & CARRAY_CONST  ) != 0 ? "const "  : ""),
+    ((opt_c_array & C_ARRAY_STATIC ) != 0 ? "static " : ""),
+    ((opt_c_array & C_ARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
+    ((opt_c_array & C_ARRAY_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
 
@@ -425,18 +425,18 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( (opt_carray & CARRAY_ANY_LENGTH) != CARRAY_NONE ) {
+  if ( (opt_c_array & C_ARRAY_LEN_ANY) != C_ARRAY_NONE ) {
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-      ((opt_carray & CARRAY_STATIC  ) != 0 ? "static "   : ""),
-      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "unsigned " : ""),
-      ((opt_carray & CARRAY_LONG    ) != 0 ? "long "     : ""),
-      ((opt_carray & CARRAY_INT     ) != 0 ? "int "      : ""),
-      ((opt_carray & CARRAY_SIZE_T  ) != 0 ? "size_t "   : ""),
-      ((opt_carray & CARRAY_CONST   ) != 0 ? "const "    : ""),
+      ((opt_c_array & C_ARRAY_STATIC      ) != 0 ? "static "   : ""),
+      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "unsigned " : ""),
+      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "long "     : ""),
+      ((opt_c_array & C_ARRAY_LEN_INT     ) != 0 ? "int "      : ""),
+      ((opt_c_array & C_ARRAY_LEN_SIZE_T  ) != 0 ? "size_t "   : ""),
+      ((opt_c_array & C_ARRAY_CONST       ) != 0 ? "const "    : ""),
       array_name, array_len,
-      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "u" : ""),
-      ((opt_carray & CARRAY_LONG    ) != 0 ? "L" : "")
+      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "u" : ""),
+      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "L" : "")
     );
   }
 }
