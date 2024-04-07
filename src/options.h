@@ -107,13 +107,13 @@ typedef enum ad_offsets ad_offsets_t;
  */
 enum ad_strings {
   STRINGS_NONE      = 0,                ///< No options.
-  STRINGS_FORMFEED  = (1u << 0),        ///< Include form-feed characters.
-  STRINGS_LINEFEED  = (1u << 1),        ///< Include line-feed characters.
-  STRINGS_NULL      = (1u << 2),        ///< Must end with null byte.
-  STRINGS_RETURN    = (1u << 3),        ///< Include carriage return characters.
-  STRINGS_SPACE     = (1u << 4),        ///< Include space characters.
-  STRINGS_TAB       = (1u << 5),        ///< Include tab characters.
-  STRINGS_VTAB      = (1u << 6),        ///< Include vertical tab characters.
+  STRINGS_FORMFEED  = 1 << 0,           ///< Include form-feed characters.
+  STRINGS_LINEFEED  = 1 << 1,           ///< Include line-feed characters.
+  STRINGS_NULL      = 1 << 2,           ///< Must end with null byte.
+  STRINGS_RETURN    = 1 << 3,           ///< Include carriage return characters.
+  STRINGS_SPACE     = 1 << 4,           ///< Include space characters.
+  STRINGS_TAB       = 1 << 5,           ///< Include tab characters.
+  STRINGS_VTAB      = 1 << 6,           ///< Include vertical tab characters.
 };
 typedef enum ad_strings ad_strings_t;
 
