@@ -141,7 +141,7 @@ typedef enum utf8_when utf8_when_t;
 /// Otherwise Doxygen generates two entries.
 
 // option extern variable definitions
-ad_carray_t     opt_carray;
+ad_c_array_t    opt_c_array;
 color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
 bool            opt_dump_ascii = true;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
@@ -402,36 +402,31 @@ static char const* opt_get_long( char short_opt ) {
   return "";
 }
 
-/// @cond DOXYGEN_IGNORE
-#define ADD_CARRAY(F) BLOCK( \
-  if ( (carray & CARRAY_##F) != CARRAY_NONE ) goto dup_format; carray |= CARRAY_##F; )
-/// @endcond
-
 /**
  * Parses a C array format value.
  *
- * @param carray_format The NULL-terminated string to parse that may contain
+ * @param c_array_format The NULL-terminated string to parse that may contain
  * exactly zero or one of each of the letters \c cilstu in any order; or NULL
  * for none.
- * @return Returns the corresponding \ref ad_carray or prints an error message
- * and exits if \a carray_format is invalid.
+ * @return Returns the corresponding \ref ad_c_array or prints an error message
+ * and exits if \a c_array_format is invalid.
  */
 NODISCARD
-static ad_carray_t parse_carray( char const *carray_format ) {
-  ad_carray_t carray = CARRAY_DEFAULT;
+static ad_c_array_t parse_c_array( char const *c_array_format ) {
+  ad_c_array_t c_array = C_ARRAY_DEFAULT;
   char const *s;
   char opt_buf[ OPT_BUF_SIZE ];
 
-  if ( carray_format != NULL && carray_format[0] != '\0' ) {
-    for ( s = carray_format; *s != '\0'; ++s ) {
+  if ( c_array_format != NULL && c_array_format[0] != '\0' ) {
+    for ( s = c_array_format; *s != '\0'; ++s ) {
       switch ( *s ) {
-        case '8': ADD_CARRAY( CHAR8_T );  break;
-        case 'c': ADD_CARRAY( CONST );    break;
-        case 'i': ADD_CARRAY( INT );      break;
-        case 'l': ADD_CARRAY( LONG );     break;
-        case 's': ADD_CARRAY( STATIC );   break;
-        case 't': ADD_CARRAY( SIZE_T );   break;
-        case 'u': ADD_CARRAY( UNSIGNED ); break;
+        case '8': c_array |= C_ARRAY_CHAR8_T;  break;
+        case 'c': c_array |= C_ARRAY_CONST;    break;
+        case 'i': c_array |= C_ARRAY_INT;      break;
+        case 'l': c_array |= C_ARRAY_LONG;     break;
+        case 's': c_array |= C_ARRAY_STATIC;   break;
+        case 't': c_array |= C_ARRAY_SIZE_T;   break;
+        case 'u': c_array |= C_ARRAY_UNSIGNED; break;
         default :
           fatal_error( EX_USAGE,
             "'%c': invalid C format for %s;"
@@ -440,26 +435,17 @@ static ad_carray_t parse_carray( char const *carray_format ) {
           );
       } // switch
     } // for
-    if ( (carray & CARRAY_SIZE_T) != CARRAY_NONE &&
-         (carray & CARRAY_INT_LENGTH) != CARRAY_NONE ) {
+    if ( (c_array & C_ARRAY_SIZE_T) != C_ARRAY_NONE &&
+         (c_array & C_ARRAY_INT_LENGTH) != C_ARRAY_NONE ) {
       fatal_error( EX_USAGE,
         "\"%s\": invalid C format for %s:"
         " 't' and [ilu] are mutually exclusive\n",
-        carray_format, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
+        c_array_format, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf )
       );
     }
   }
-  return carray;
-
-dup_format:
-  fatal_error( EX_USAGE,
-    "\"%s\": invalid C format for %s:"
-    " '%c' specified more than once\n",
-    carray_format, opt_format( COPT(C_ARRAY), opt_buf, sizeof opt_buf ), *s
-  );
+  return c_array;
 }
-
-#undef ADD_CARRAY
 
 /**
  * Parses a Unicode code-point value.
@@ -913,7 +899,7 @@ void options_init( int argc, char const *argv[] ) {
         size_in_bytes = STATIC_CAST( size_t, parse_ull( optarg ) );
         break;
       case COPT(C_ARRAY):
-        opt_carray = parse_carray( optarg );
+        opt_c_array = parse_c_array( optarg );
         break;
       case COPT(COLOR):
         opt_color_when = parse_color_when( optarg );

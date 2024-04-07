@@ -78,7 +78,7 @@ int main( int argc, char const *argv[const] ) {
   options_init( argc, argv );
   colors_init();
 
-  if ( opt_carray != CARRAY_NONE )
+  if ( opt_c_array != C_ARRAY_NONE )
     dump_file_c();
   else if ( opt_reverse )
     reverse_dump_file();

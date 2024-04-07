@@ -402,9 +402,9 @@ void dump_file_c( void ) {
 
   PRINTF(
     "%s%s %s%s[] = {\n",
-    ((opt_carray & CARRAY_STATIC ) != 0 ? "static " : ""),
-    ((opt_carray & CARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
-    ((opt_carray & CARRAY_CONST  ) != 0 ? "const "  : ""),
+    ((opt_c_array & C_ARRAY_STATIC ) != 0 ? "static " : ""),
+    ((opt_c_array & C_ARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
+    ((opt_c_array & C_ARRAY_CONST  ) != 0 ? "const "  : ""),
     array_name
   );
 
@@ -425,18 +425,18 @@ void dump_file_c( void ) {
 
   PUTS( "};\n" );
 
-  if ( (opt_carray & CARRAY_ANY_LENGTH) != CARRAY_NONE ) {
+  if ( (opt_c_array & C_ARRAY_ANY_LENGTH) != C_ARRAY_NONE ) {
     PRINTF(
       "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-      ((opt_carray & CARRAY_STATIC  ) != 0 ? "static "   : ""),
-      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "unsigned " : ""),
-      ((opt_carray & CARRAY_LONG    ) != 0 ? "long "     : ""),
-      ((opt_carray & CARRAY_INT     ) != 0 ? "int "      : ""),
-      ((opt_carray & CARRAY_SIZE_T  ) != 0 ? "size_t "   : ""),
-      ((opt_carray & CARRAY_CONST   ) != 0 ? "const "    : ""),
+      ((opt_c_array & C_ARRAY_STATIC  ) != 0 ? "static "   : ""),
+      ((opt_c_array & C_ARRAY_UNSIGNED) != 0 ? "unsigned " : ""),
+      ((opt_c_array & C_ARRAY_LONG    ) != 0 ? "long "     : ""),
+      ((opt_c_array & C_ARRAY_INT     ) != 0 ? "int "      : ""),
+      ((opt_c_array & C_ARRAY_SIZE_T  ) != 0 ? "size_t "   : ""),
+      ((opt_c_array & C_ARRAY_CONST   ) != 0 ? "const "    : ""),
       array_name, array_len,
-      ((opt_carray & CARRAY_UNSIGNED) != 0 ? "u" : ""),
-      ((opt_carray & CARRAY_LONG    ) != 0 ? "L" : "")
+      ((opt_c_array & C_ARRAY_UNSIGNED) != 0 ? "u" : ""),
+      ((opt_c_array & C_ARRAY_LONG    ) != 0 ? "L" : "")
     );
   }
 }

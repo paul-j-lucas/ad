@@ -51,34 +51,35 @@
 /**
  * C array dump formats.
  */
-enum ad_carray {
-  CARRAY_NONE     = 0,                  ///< No format.
-  CARRAY_DEFAULT  = 1 << 0,             ///< Default format.
-  CARRAY_CHAR8_T  = 1 << 1,             ///< Declare array type as `char8_t`.
-  CARRAY_UNSIGNED = 1 << 2,             ///< Declare len type as `unsigned`.
-  CARRAY_INT      = 1 << 3,             ///< Declare len type as `int`.
-  CARRAY_LONG     = 1 << 4,             ///< Declare len type as `long`.
-  CARRAY_SIZE_T   = 1 << 5,             ///< Declare len type as `size_t`.
-  CARRAY_CONST    = 1 << 6,             ///< Declare variables as `const`.
-  CARRAY_STATIC   = 1 << 7,             ///< Declare variables as `static`.
+enum ad_c_array {
+  C_ARRAY_NONE     = 0,                 ///< No format.
+  C_ARRAY_DEFAULT  = 1 << 0,            ///< Default format.
+  C_ARRAY_CHAR8_T  = 1 << 1,            ///< Declare array type as `char8_t`.
+  C_ARRAY_UNSIGNED = 1 << 2,            ///< Declare len type as `unsigned`.
+  C_ARRAY_INT      = 1 << 3,            ///< Declare len type as `int`.
+  C_ARRAY_LONG     = 1 << 4,            ///< Declare len type as `long`.
+  C_ARRAY_SIZE_T   = 1 << 5,            ///< Declare len type as `size_t`.
+  C_ARRAY_CONST    = 1 << 6,            ///< Declare variables as `const`.
+  C_ARRAY_STATIC   = 1 << 7,            ///< Declare variables as `static`.
 };
-typedef enum ad_carray ad_carray_t;
+typedef enum ad_c_array ad_c_array_t;
 
 /**
- * Shorthand for any C dump format length: #CARRAY_INT, #CARRAY_LONG,
- * #CARRAY_UNSIGNED, or #CARRAY_SIZE_T.
+ * Shorthand for any C dump format length: #C_ARRAY_INT, #C_ARRAY_LONG,
+ * #C_ARRAY_UNSIGNED, or #C_ARRAY_SIZE_T.
  *
- * @sa #CARRAY_INT_LENGTH
+ * @sa #C_ARRAY_INT_LENGTH
  */
-#define CARRAY_ANY_LENGTH         ( CARRAY_INT_LENGTH | CARRAY_SIZE_T )
+#define C_ARRAY_ANY_LENGTH        ( C_ARRAY_INT_LENGTH | C_ARRAY_SIZE_T )
 
 /**
- * Shorthand for any `int` C dump format length: #CARRAY_INT, #CARRAY_LONG, or
- * #CARRAY_UNSIGNED.
+ * Shorthand for any `int` C dump format length: #C_ARRAY_INT, #C_ARRAY_LONG,
+ * or #C_ARRAY_UNSIGNED.
  *
- * @sa #CARRAY_ANY_LENGTH
+ * @sa #C_ARRAY_ANY_LENGTH
  */
-#define CARRAY_INT_LENGTH         ( CARRAY_UNSIGNED | CARRAY_INT | CARRAY_LONG )
+#define C_ARRAY_INT_LENGTH        ( C_ARRAY_UNSIGNED | C_ARRAY_INT \
+                                  | C_ARRAY_LONG )
 
 /**
  * Whether to print the total number of matches.
@@ -118,7 +119,7 @@ typedef enum ad_strings ad_strings_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-extern ad_carray_t    opt_carray;       ///< Dump as C array in this format.
+extern ad_c_array_t   opt_c_array;      ///< Dump as C array in this format.
 extern color_when_t   opt_color_when;   ///< When to colorize output.
 extern bool           opt_dump_ascii;   ///< Dump ASCII part?
 extern unsigned       opt_group_by;     ///< Group by this number of bytes.
