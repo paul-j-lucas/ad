@@ -186,6 +186,7 @@ static struct option const OPTIONS[] = {
   { "group-by",           required_argument,  NULL, COPT(GROUP_BY)            },
   { "help",               no_argument,        NULL, COPT(HELP)                },
   { "hexadecimal",        no_argument,        NULL, COPT(HEXADECIMAL)         },
+  { "host-endian",        required_argument,  NULL, COPT(HOST_ENDIAN)         },
   { "ignore-case",        no_argument,        NULL, COPT(IGNORE_CASE)         },
   { "skip-bytes",         required_argument,  NULL, COPT(SKIP_BYTES)          },
   { "max-lines",          required_argument,  NULL, COPT(MAX_LINES)           },
@@ -249,37 +250,6 @@ static void check_number_size( size_t given_size, size_t actual_size,
       search_number, actual_size
     );
   }
-}
-
-/**
- * For each option in \a opts that was given, checks that at least one of
- * \a req_opts was also given.
- * If not, prints an error message and exits.
- *
- * @param opts The set of short options.
- * @param req_opts The set of required options for \a opts.
- */
-static void check_required( char const *opts, char const *req_opts ) {
-  assert( opts != NULL );
-  assert( opts[0] != '\0' );
-  assert( req_opts != NULL );
-  assert( req_opts[0] != '\0' );
-
-  for ( char const *opt = opts; *opt; ++opt ) {
-    if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
-      for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
-        if ( opts_given[ STATIC_CAST( char8_t, *req_opt ) ] )
-          return;
-      char opt_buf[ OPT_BUF_SIZE ];
-      bool const reqs_multiple = req_opts[1] != '\0';
-      fatal_error( EX_USAGE,
-        "%s requires %sthe -%s option%s to be given also\n",
-        opt_format( *opt, opt_buf, sizeof opt_buf ),
-        (reqs_multiple ? "one of " : ""),
-        req_opts, (reqs_multiple ? "s" : "")
-      );
-    }
-  } // for
 }
 
 /**
@@ -399,6 +369,37 @@ static void opt_check_mutually_exclusive( char const *opts1,
     if ( gave_count == 0 )
       break;
     opt = opts2;
+  } // for
+}
+
+/**
+ * For each option in \a opts that was given, checks that at least one of
+ * \a req_opts was also given.
+ * If not, prints an error message and exits.
+ *
+ * @param opts The set of short options.
+ * @param req_opts The set of required options for \a opts.
+ */
+static void opt_check_required( char const *opts, char const *req_opts ) {
+  assert( opts != NULL );
+  assert( opts[0] != '\0' );
+  assert( req_opts != NULL );
+  assert( req_opts[0] != '\0' );
+
+  for ( char const *opt = opts; *opt; ++opt ) {
+    if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
+      for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
+        if ( opts_given[ STATIC_CAST( char8_t, *req_opt ) ] )
+          return;
+      char opt_buf[ OPT_BUF_SIZE ];
+      bool const reqs_multiple = req_opts[1] != '\0';
+      fatal_error( EX_USAGE,
+        "%s requires %sthe -%s option%s to be given also\n",
+        opt_format( *opt, opt_buf, sizeof opt_buf ),
+        (reqs_multiple ? "one of " : ""),
+        req_opts, (reqs_multiple ? "s" : "")
+      );
+    }
   } // for
 }
 
@@ -1097,15 +1098,20 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(UTF8_PADDING)
     SOPT(VERBOSE)
   );
-  opt_check_mutually_exclusive( SOPT(DECIMAL),
-    SOPT(HEXADECIMAL)
-    SOPT(OCTAL)
+  opt_check_mutually_exclusive( SOPT(BIG_ENDIAN),
+    SOPT(HOST_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
   );
+  opt_check_mutually_exclusive( SOPT(DECIMAL), SOPT(HEXADECIMAL) SOPT(OCTAL) );
   opt_check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
   );
   opt_check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
+  opt_check_mutually_exclusive( SOPT(HOST_ENDIAN),
+    SOPT(BIG_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+  );
   opt_check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
     SOPT(BIG_ENDIAN)
     SOPT(FORMAT)
@@ -1133,18 +1139,18 @@ void options_init( int argc, char const *argv[] ) {
   );
 
   // check for options that require other options
-  check_required( SOPT(BITS) SOPT(BYTES),
+  opt_check_required( SOPT(BITS) SOPT(BYTES),
     SOPT(BIG_ENDIAN) SOPT(LITTLE_ENDIAN)
   );
-  check_required( SOPT(IGNORE_CASE), SOPT(STRING) );
-  check_required(
+  opt_check_required( SOPT(IGNORE_CASE), SOPT(STRING) );
+  opt_check_required(
     SOPT(MATCHING_ONLY) SOPT(TOTAL_MATCHES) SOPT(TOTAL_MATCHES_ONLY),
     SOPT(BIG_ENDIAN)
     SOPT(LITTLE_ENDIAN)
     SOPT(STRING)
     SOPT(STRINGS)
   );
-  check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
+  opt_check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 
   if ( opt_help )
     usage( argc > 2 ? EX_USAGE : EX_OK );
