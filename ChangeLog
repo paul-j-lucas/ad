@@ -1,5 +1,8 @@
 2024-04-12  Paul J. Lucas <paul@lucasmail.org>
 
+   * configure.ac, options.c: Now actually parsing --host-endian/-H options;
+     added more mutual exclusivity tests for --{big|host|little}-endian
+     options.
    * options.c: Added opt_check_exclusive().
 
 2024-04-07  Paul J. Lucas <paul@lucasmail.org>
