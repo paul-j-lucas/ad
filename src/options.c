@@ -224,45 +224,6 @@ static char const*  opt_format( char, char[const], size_t ),
 /////////// local functions ///////////////////////////////////////////////////
 
 /**
- * Checks that no options were given that are among the two given mutually
- * exclusive sets of short options.
- * Prints an error message and exits if any such options are found.
- *
- * @param opts1 The first set of short options.
- * @param opts2 The second set of short options.
- */
-static void check_mutually_exclusive( char const *opts1, char const *opts2 ) {
-  assert( opts1 != NULL );
-  assert( opts2 != NULL );
-
-  unsigned gave_count = 0;
-  char const *opt = opts1;
-  char gave_opt1 = '\0';
-
-  for ( unsigned i = 0; i < 2; ++i ) {
-    for ( ; *opt != '\0'; ++opt ) {
-      if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
-        if ( ++gave_count > 1 ) {
-          char const gave_opt2 = *opt;
-          char opt1_buf[ OPT_BUF_SIZE ];
-          char opt2_buf[ OPT_BUF_SIZE ];
-          fatal_error( EX_USAGE,
-            "%s and %s are mutually exclusive\n",
-            opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
-            opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
-          );
-        }
-        gave_opt1 = *opt;
-        break;
-      }
-    } // for
-    if ( gave_count == 0 )
-      break;
-    opt = opts2;
-  } // for
-}
-
-/**
  * Checks that the number of bits or bytes given for \ref search_number are
  * sufficient to contain it: if not, prints an error message and exits if \a
  * given_size &lt; \a actual_size.
@@ -366,6 +327,73 @@ static char const* make_short_opts( struct option const opts[static const 2] ) {
   *s = '\0';
 
   return short_opts;
+}
+
+/**
+ * If \a opt was given, checks that _only_ it was given and, if not, prints an
+ * error message and exits; if \a opt was not given, does nothing.
+ *
+ * @param opt The option to check for.
+ *
+ * @sa opt_check_mutually_exclusive()
+ */
+static void opt_check_exclusive( char opt ) {
+  if ( !opts_given[ STATIC_CAST( unsigned, opt ) ] )
+    return;
+  for ( size_t i = '0'; i < ARRAY_SIZE( opts_given ); ++i ) {
+    char const curr_opt = STATIC_CAST( char, i );
+    if ( curr_opt == opt )
+      continue;
+    if ( opts_given[ STATIC_CAST( unsigned, curr_opt ) ] ) {
+      char opt_buf[ OPT_BUF_SIZE ];
+      fatal_error( EX_USAGE,
+        "%s can be given only by itself\n",
+        opt_format( opt, opt_buf, sizeof opt_buf )
+      );
+    }
+  } // for
+}
+
+/**
+ * Checks that no options were given that are among the two given mutually
+ * exclusive sets of short options.
+ * Prints an error message and exits if any such options are found.
+ *
+ * @param opts1 The first set of short options.
+ * @param opts2 The second set of short options.
+ *
+ * @sa opt_check_exclusive()
+ */
+static void opt_check_mutually_exclusive( char const *opts1,
+                                          char const *opts2 ) {
+  assert( opts1 != NULL );
+  assert( opts2 != NULL );
+
+  unsigned gave_count = 0;
+  char const *opt = opts1;
+  char gave_opt1 = '\0';
+
+  for ( unsigned i = 0; i < 2; ++i ) {
+    for ( ; *opt != '\0'; ++opt ) {
+      if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
+        if ( ++gave_count > 1 ) {
+          char const gave_opt2 = *opt;
+          char opt1_buf[ OPT_BUF_SIZE ];
+          char opt2_buf[ OPT_BUF_SIZE ];
+          fatal_error( EX_USAGE,
+            "%s and %s are mutually exclusive\n",
+            opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
+            opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
+          );
+        }
+        gave_opt1 = *opt;
+        break;
+      }
+    } // for
+    if ( gave_count == 0 )
+      break;
+    opt = opts2;
+  } // for
 }
 
 /**
@@ -1025,9 +1053,13 @@ void options_init( int argc, char const *argv[] ) {
     ++argv;
   }
 
+  // check for exclusive options
+  opt_check_exclusive( COPT(HELP) );
+  opt_check_exclusive( COPT(VERSION) );
+
   // check for mutually exclusive options
-  check_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
-  check_mutually_exclusive( SOPT(C_ARRAY),
+  opt_check_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
+  opt_check_mutually_exclusive( SOPT(C_ARRAY),
     SOPT(BIG_ENDIAN)
     SOPT(COLOR)
     SOPT(GROUP_BY)
@@ -1044,100 +1076,37 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(UTF8_PADDING)
     SOPT(VERBOSE)
   );
-  check_mutually_exclusive( SOPT(DECIMAL),
+  opt_check_mutually_exclusive( SOPT(DECIMAL),
     SOPT(HEXADECIMAL)
     SOPT(OCTAL)
   );
-  check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
+  opt_check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
   );
-  check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
-  check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
+  opt_check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
+  opt_check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
     SOPT(BIG_ENDIAN)
     SOPT(HOST_ENDIAN)
   );
-  check_mutually_exclusive(
+  opt_check_mutually_exclusive(
     SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
     SOPT(STRING) SOPT(STRINGS) SOPT(STRINGS_OPTS)
   );
-  check_mutually_exclusive( SOPT(HELP),
-    SOPT(BIG_ENDIAN)
-    SOPT(BITS)
-    SOPT(BYTES)
-    SOPT(CONFIG)
-    SOPT(DECIMAL)
-    SOPT(GROUP_BY)
-    SOPT(HEXADECIMAL)
-    SOPT(HOST_ENDIAN)
-    SOPT(IGNORE_CASE)
-    SOPT(LITTLE_ENDIAN)
-    SOPT(MATCHING_ONLY)
-    SOPT(MAX_BYTES)
-    SOPT(MAX_LINES)
-    SOPT(NO_ASCII)
-    SOPT(NO_CONFIG)
-    SOPT(NO_OFFSETS)
-    SOPT(OCTAL)
-    SOPT(PLAIN)
-    SOPT(PRINTING_ONLY)
-    SOPT(REVERSE)
-    SOPT(SKIP_BYTES)
-    SOPT(STRING)
-    SOPT(STRINGS)
-    SOPT(STRINGS_OPTS)
-    SOPT(TOTAL_MATCHES)
-    SOPT(TOTAL_MATCHES_ONLY)
-    SOPT(UTF8)
-    SOPT(UTF8_PADDING)
-    SOPT(VERBOSE)
-    SOPT(VERSION)
-  );
-  check_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
-  check_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
-  check_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
+  opt_check_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
+  opt_check_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
+  opt_check_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
     SOPT(VERBOSE)
   );
-  check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
-  check_mutually_exclusive( SOPT(REVERSE),
+  opt_check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
+  opt_check_mutually_exclusive( SOPT(REVERSE),
     "AbBcCeEgimLNOpPsStTuUv"
   );
-  check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
-  check_mutually_exclusive( SOPT(STRINGS),
+  opt_check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
+  opt_check_mutually_exclusive( SOPT(STRINGS),
     SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN)
     SOPT(IGNORE_CASE)
     SOPT(STRING)
-  );
-  check_mutually_exclusive( SOPT(VERSION),
-    SOPT(BIG_ENDIAN)
-    SOPT(BITS)
-    SOPT(BYTES)
-    SOPT(CONFIG)
-    SOPT(DECIMAL)
-    SOPT(GROUP_BY)
-    SOPT(HEXADECIMAL)
-    SOPT(HOST_ENDIAN)
-    SOPT(IGNORE_CASE)
-    SOPT(LITTLE_ENDIAN)
-    SOPT(MATCHING_ONLY)
-    SOPT(MAX_BYTES)
-    SOPT(MAX_LINES)
-    SOPT(NO_ASCII)
-    SOPT(NO_CONFIG)
-    SOPT(NO_OFFSETS)
-    SOPT(OCTAL)
-    SOPT(PLAIN)
-    SOPT(PRINTING_ONLY)
-    SOPT(REVERSE)
-    SOPT(SKIP_BYTES)
-    SOPT(STRING)
-    SOPT(STRINGS)
-    SOPT(STRINGS_OPTS)
-    SOPT(TOTAL_MATCHES)
-    SOPT(TOTAL_MATCHES_ONLY)
-    SOPT(UTF8)
-    SOPT(UTF8_PADDING)
-    SOPT(VERBOSE)
   );
 
   // check for options that require other options
