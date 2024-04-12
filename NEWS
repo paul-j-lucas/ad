@@ -5,6 +5,13 @@ See the end of the file for license conditions.
 
 -------------------------------------------------------------------------------
 
+* Changes in Ad 3.4.1
+
+** Added missing `--host-endian` and `-H` options
+The options were documented, but not actually recognized by the option parser;
+fixed.
+
+
 * Changes in Ad 3.4
 
 ** Dumping C arrays
