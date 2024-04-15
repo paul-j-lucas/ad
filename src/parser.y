@@ -189,11 +189,6 @@
 #define DUMP_BOOL(KEY,BOOL)  IF_AD_DEBUG( \
   DUMP_KEY_IMPL( KEY ": %s", ((BOOL) ? "true" : "false") ); )
 
-/**
- * Dumps a comma followed by a newline the _second_ and subsequent times it's
- * called.  It's used to separate items being dumped.
- */
-#define DUMP_COMMA                fput_sep( ",\n", &dump_comma, stdout )
 
 /**
  * Ends a dump block.
@@ -230,8 +225,9 @@
  *
  * @param ... The `printf()` arguments.
  */
-#define DUMP_KEY_IMPL(...) BLOCK( \
-  DUMP_COMMA; PRINTF( "  " __VA_ARGS__ ); )
+#define DUMP_KEY_IMPL(...) BLOCK(           \
+  fput_sep( ",\n", &dump_comma, stdout );   \
+  PRINTF( "  " __VA_ARGS__ ); )
 
 /**
  * Dumps an integer.
