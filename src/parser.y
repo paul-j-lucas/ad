@@ -235,8 +235,8 @@
  * @param KEY The key name to print.
  * @param NUM The integer to dump.
  */
-#define DUMP_INT(KEY,NUM) \
-  DUMP_KEY_IMPL( KEY ": %d", STATIC_CAST( int, (NUM) ) )
+#define DUMP_INT(KEY,NUM) IF_AD_DEBUG( \
+  DUMP_KEY_IMPL( KEY ": %d", STATIC_CAST( int, (NUM) ) ); )
 
 /**
  * Dumps a C string.
