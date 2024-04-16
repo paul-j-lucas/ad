@@ -239,6 +239,24 @@
   DUMP_KEY_IMPL( KEY ": %d", STATIC_CAST( int, (NUM) ) ); )
 
 /**
+ * Dumps \a REP.
+ *
+ * @param KEY The key name to print.
+ * @param REP The \ref ad_rep to dump.
+ */
+#define DUMP_REP(KEY,REP) IF_AD_DEBUG( \
+  DUMP_KEY_IMPL( KEY ": " ); ad_rep_dump( (REP), stdout ); )
+
+/**
+ * Dumps an \ref ad_statement.
+ *
+ * @param KEY The key name to print.
+ * @param statement The \ref ad_statement to dump.
+ */
+#define DUMP_STATEMENT(KEY,STATEMENT) IF_AD_DEBUG( \
+  DUMP_KEY_IMPL( KEY ": " ); ad_statement_dump( (STATEMENT), stdout ); )
+
+/**
  * Dumps a C string.
  *
  * @param KEY The key name to print.
@@ -342,22 +360,19 @@ static bool define_type( ad_type_t const *type ) {
   assert( type != NULL );
 
   ad_typedef_t const *const tdef = ad_typedef_add( type );
-  if ( tdef->type != type ) {
-    //
-    // Type was NOT added because a previously declared type having the same
-    // name was returned : check if the types are equal.
-    //
-    if ( !ad_type_equal( tdef->type, type ) ) {
-      print_error( &type->loc, "type " );
-      print_type_aka( type, stderr );
-      EPUTS( " redefinition incompatible with original type \"" );
-      print_type( tdef->type, stderr );
-      EPUTS( "\"\n" );
-      return false;
-    }
-  }
+  if ( ad_type_equal( tdef->type, type ) )
+    return true;
 
-  return true;
+  //
+  // Type was NOT added because a previously declared type having the same
+  // name was returned and the types are _not_ equal.
+  //
+  print_error( &type->loc, "type " );
+  print_type_aka( type, stderr );
+  EPUTS( " redefinition incompatible with original type \"" );
+  print_type( tdef->type, stderr );
+  EPUTS( "\"\n" );
+  return false;
 }
 
 /**
@@ -837,7 +852,7 @@ enum_declaration
         }
       };
       PARSE_ASSERT( define_type( new_type ) );
-      $$ = NULL;
+      $$ = NULL;                        // do not add to statement_list
     }
   ;
 
@@ -865,8 +880,14 @@ enumerator
 /// field declaration /////////////////////////////////////////////////////////
 
 field_declaration
-  : alignas_opt[align] type name_exp[name] array_opt[array]
+  : alignas_opt[align] type name_exp[name] array_opt[rep]
     {
+      DUMP_START( "field_declaration", "alignas_opt type name array_opt" );
+      DUMP_INT( "alignas", $align );
+      DUMP_TYPE( "type", $type );
+      DUMP_STR( "name", $name );
+      DUMP_REP( "rep", &$rep );
+
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
         .kind = S_DECLARATION,
@@ -875,9 +896,12 @@ field_declaration
           .name = $name,
           .type = $type,
           .align = $align,
-          .rep = $array
+          .rep = $rep
         }
       };
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
     }
   ;
 
@@ -925,17 +949,20 @@ struct_declaration
         }
       };
       PARSE_ASSERT( define_type( new_type ) );
-      $$ = NULL;
+      $$ = NULL;                        // do not add to statement_list
     }
   ;
 
 /// typedef declaration ///////////////////////////////////////////////////////
 
 typedef_declaration
-  : Y_typedef field_declaration[statement]
+  : Y_typedef field_declaration[field]
     {
-      assert( $statement->kind == S_DECLARATION );
-      ad_decl_t *const decl = &$statement->decl_s;
+      DUMP_START( "typedef_declaration", "TYPEDEF field_declaration" );
+      DUMP_STATEMENT( "field_declaration", $field );
+
+      assert( $field->kind == S_DECLARATION );
+      ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
         .sname = sname_current( decl->name ),
@@ -945,7 +972,10 @@ typedef_declaration
         .typedef_t = { .type = decl->type }
       };
       PARSE_ASSERT( define_type( new_type ) );
-      $$ = NULL;
+      $$ = NULL;                        // do not add to statement_list
+
+      DUMP_TYPE( "$$_type", new_type );
+      DUMP_END();
     }
   ;
 

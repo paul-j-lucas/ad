@@ -47,7 +47,7 @@
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
- * Dumps \a expr (for debugging).
+ * Dumps \a expr in [JSON5](https://json5.org) format (for debugging).
  *
  * @param expr The expression to dump.  If NULL and \a key is not NULL, dumps
  * only \a key followed by `=&nbsp;NULL`.
@@ -58,7 +58,23 @@
 void ad_expr_dump( ad_expr_t const *expr, FILE *fout );
 
 /**
- * Dumps \a tid (for debugging).
+ * Dumps \a rep in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param rep The \ref ad_rep to dump.
+ * @param fout The `FILE` to dump to.
+ */
+void ad_rep_dump( ad_rep_t const *rep, FILE *fout );
+
+/**
+ * Dump \a statement in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param statement The \ref ad_statement to dump.
+ * @param fout The `FILE` to dump to.
+ */
+void ad_statement_dump( ad_statement_t const *statement, FILE *fout );
+
+/**
+ * Dumps \a tid in [JSON5](https://json5.org) format (for debugging).
  *
  * @param tid The \ref ad_tid_t to dump.
  * @param fout The `FILE` to dump to.
@@ -68,7 +84,7 @@ void ad_expr_dump( ad_expr_t const *expr, FILE *fout );
 void ad_tid_dump( ad_tid_t tid, FILE *fout );
 
 /**
- * Dumps \a type (for debugging).
+ * Dumps \a type in [JSON5](https://json5.org) format (for debugging).
  *
  * @param type The \ref ad_type to dump.
  * @param fout The `FILE` to dump to.
@@ -78,7 +94,7 @@ void ad_tid_dump( ad_tid_t tid, FILE *fout );
 void ad_type_dump( ad_type_t const *type, FILE *fout );
 
 /**
- * Dumps a Boolean value (for debugging).
+ * Dumps a Boolean value in [JSON5](https://json5.org) format (for debugging).
  *
  * @param b The Boolean to dump.
  * @param fout The `FILE` to dump to.

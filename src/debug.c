@@ -65,11 +65,20 @@
 #define DUMP_SNAME(D,KEY,SNAME) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); sname_dump( (SNAME), (D)->fout ); )
 
+#define DUMP_STATEMENT(D,KEY,STATEMENT) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); ad_statement_dump_impl( (STATEMENT), (D) ); )
+
+#define DUMP_STATEMENT_LIST(D,KEY,LIST) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); ad_statement_list_dump_impl( (LIST), (D) ); )
+
 #define DUMP_STR(D,KEY,STR) BLOCK( \
   DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', (D)->fout ); )
 
 #define DUMP_TID(D,KEY,TID) BLOCK( \
   DUMP_KEY( dump, KEY ": " ); ad_tid_dump( (TID), (D)->fout ); )
+
+#define DUMP_TYPE(D,KEY,TYPE) BLOCK( \
+  DUMP_KEY( dump, KEY ": " ); ad_type_dump_impl( (TYPE), (D) ); )
 
 /// @endcond
 
@@ -96,8 +105,14 @@ enum json_state {
 typedef enum json_state json_state_t;
 
 // local functions
+static void ad_expr_dump_impl( ad_expr_t const*, dump_state_t* );
 static void ad_literal_expr_dump( ad_literal_expr_t const*, dump_state_t* );
 static void ad_loc_dump( ad_loc_t const*, FILE* );
+static void ad_rep_dump_impl( ad_rep_t const*, dump_state_t* );
+NODISCARD
+static char const* ad_statement_kind_name( ad_statement_kind_t );
+static void ad_switch_dump_impl( ad_switch_statement_t const*, dump_state_t* );
+static void ad_type_dump_impl( ad_type_t const*, dump_state_t* );
 static void dump_init( dump_state_t*, unsigned, FILE* );
 NODISCARD
 static json_state_t json_object_begin( json_state_t, char const*,
@@ -108,6 +123,30 @@ static void json_object_end( json_state_t, dump_state_t* );
 static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Dumps \a decl in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param decl The \ref ad_decl to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_decl_dump_impl( ad_decl_t const *decl, dump_state_t *dump ) {
+  assert( decl != NULL );
+  assert( dump != NULL );
+
+  json_state_t const decl_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_STR( dump, "name", decl->name );
+  DUMP_TYPE( dump, "type", decl->type );
+  DUMP_KEY( dump, "align: %u", decl->align );
+  DUMP_REP( dump, "rep", &decl->rep );
+  if ( decl->match_expr != NULL )
+    DUMP_EXPR( dump, "match_expr", decl->match_expr );
+  DUMP_STR( dump, "printf_fmt", decl->printf_fmt );
+
+  json_object_end( decl_json, dump );
+}
 
 /**
  * Helper function for ad_expr_dump().
@@ -313,6 +352,121 @@ static void ad_rep_dump_impl( ad_rep_t const *rep, dump_state_t *dump ) {
 }
 
 /**
+ * Dumps \a statment in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param statement The \ref ad_statement to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_statement_dump_impl( ad_statement_t const *statement,
+                                    dump_state_t *dump ) {
+  assert( statement != NULL );
+  assert( dump != NULL );
+
+  json_state_t const statement_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_KEY( dump,
+    "kind: { value: 0x%X, string: \"%s\" }",
+    statement->kind, ad_statement_kind_name( statement->kind )
+  );
+  DUMP_LOC( dump, "loc", &statement->loc );
+
+  switch ( statement->kind ) {
+    case S_BREAK:
+      break;
+    case S_DECLARATION:
+      DUMP_KEY( dump, "declaration: " );
+      ad_decl_dump_impl( &statement->decl_s, dump );
+      break;
+    case S_SWITCH:
+      DUMP_KEY( dump, "switch: " );
+      ad_switch_dump_impl( &statement->switch_s, dump );
+      break;
+  } // switch
+
+  json_object_end( statement_json, dump );
+}
+
+/**
+ * Dumps \a list in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param list The list of \ref ad_statement to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_statement_list_dump_impl( ad_statement_list_t const *list,
+                                         dump_state_t *dump ) {
+  assert( list != NULL );
+  assert( dump != NULL );
+
+  if ( slist_empty( list ) ) {
+    FPUTS( "[]", dump->fout );
+    return;
+  }
+  FPUTS( "[\n", dump->fout );
+
+  dump_state_t list_dump;
+  dump_init( &list_dump, dump->indent + 1, dump->fout );
+  FOREACH_SLIST_NODE( statement_node, list ) {
+    ad_statement_t const *const statement = statement_node->data;
+    ad_statement_dump_impl( statement, &list_dump );
+  } // for
+
+  FPUTC( '\n', dump->fout );
+  DUMP_FORMAT( dump, "]" );
+}
+
+/**
+ * Gets the name of \a kind.
+ *
+ * @param kind The \ref ad_statement_kind to get the name for.
+ * @return Returns said name.
+ */
+static char const* ad_statement_kind_name( ad_statement_kind_t kind ) {
+  switch ( kind ) {
+    case S_BREAK      : return "break";
+    case S_DECLARATION: return "declaration";
+    case S_SWITCH     : return "switch";
+  } // switch
+  UNEXPECTED_INT_VALUE( kind );
+  return NULL;
+}
+
+/**
+ * Dumps \a switch_s in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param switch_s The \ref ad_switch_statement to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_switch_dump_impl( ad_switch_statement_t const *switch_s,
+                                 dump_state_t *dump ) {
+  assert( switch_s != NULL );
+  assert( dump != NULL );
+
+  json_state_t const switch_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_EXPR( dump, "expr", switch_s->expr );
+
+  if ( slist_empty( &switch_s->case_list ) ) {
+    DUMP_KEY( dump, "cases: []\n" );
+  }
+  else {
+    FPUTS( "[\n", dump->fout );
+    dump_state_t list_dump;
+    dump_init( &list_dump, dump->indent + 1, dump->fout );
+    FOREACH_SLIST_NODE( case_node, &switch_s->case_list ) {
+      ad_switch_case_t const *const case_s = case_node->data;
+      DUMP_EXPR( &list_dump, "expr", case_s->expr );
+      DUMP_STATEMENT_LIST( &list_dump, "statements", &case_s->statement_list );
+    } // for
+    FPUTC( '\n', dump->fout );
+    DUMP_FORMAT( dump, "]" );
+  }
+
+  json_object_end( switch_json, dump );
+}
+
+/**
  * Dumps \a tid in [JSON5](https://json5.org) format (for debugging).
  *
  * @param tid The \ref ad_tid_t to dump.
@@ -468,19 +622,31 @@ void bool_dump( bool value, FILE *fout ) {
 
 void ad_expr_dump( ad_expr_t const *expr, FILE *fout ) {
   dump_state_t dump;
-  dump_init( &dump, 1, fout );
+  dump_init( &dump, /*indent=*/1, fout );
   ad_expr_dump_impl( expr, &dump );
+}
+
+void ad_rep_dump( ad_rep_t const *rep, FILE *fout ) {
+  dump_state_t dump;
+  dump_init( &dump, /*indent=*/1, fout );
+  ad_rep_dump_impl( rep, &dump );
+}
+
+void ad_statement_dump( ad_statement_t const *statement, FILE *fout ) {
+  dump_state_t dump;
+  dump_init( &dump, /*indent=*/1, fout );
+  ad_statement_dump_impl( statement, &dump );
 }
 
 void ad_tid_dump( ad_tid_t tid, FILE *fout ) {
   dump_state_t dump;
-  dump_init( &dump, 1, fout );
+  dump_init( &dump, /*indent=*/1, fout );
   ad_tid_dump_impl( tid, &dump );
 }
 
 void ad_type_dump( ad_type_t const *type, FILE *fout ) {
   dump_state_t dump;
-  dump_init( &dump, 1, fout );
+  dump_init( &dump, /*indent=*/1, fout );
   ad_type_dump_impl( type, &dump );
 }
 
