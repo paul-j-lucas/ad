@@ -131,33 +131,37 @@ char const* ad_rep_kind_name( ad_rep_kind_t kind ) {
 }
 
 void ad_statement_free( ad_statement_t *statement ) {
-  if ( statement != NULL ) {
-    switch ( statement->kind ) {
-      case S_BREAK:
-        // nothing to do
-        break;
+  if ( statement == NULL )
+    return;
 
-      case S_DECLARATION:
-        FREE( statement->decl_s.name );
-        ad_type_free( statement->decl_s.type );
-        FREE( statement->decl_s.printf_fmt );
-        break;
+  switch ( statement->kind ) {
+    case S_BREAK:
+      // nothing to do
+      break;
 
-      case S_SWITCH:
-        ad_expr_free( statement->switch_s.expr );
-        FOREACH_SWITCH_CASE( case_node, statement ) {
-          ad_switch_case_t *const switch_case = case_node->data;
-          ad_expr_free( switch_case->expr );
-          FOREACH_SLIST_NODE( case_statement_node,
-                              &switch_case->statement_list ) {
-            ad_statement_t *const case_statement = case_statement_node->data;
-            ad_statement_free( case_statement );
-          } // for
-        } // for
-        break;
-    } // switch
-    free( statement );
-  }
+    case S_DECLARATION:
+      FREE( statement->decl_s.name );
+      ad_type_free( statement->decl_s.type );
+      FREE( statement->decl_s.printf_fmt );
+      break;
+
+    case S_SWITCH:
+      ad_expr_free( statement->switch_s.expr );
+      FOREACH_SWITCH_CASE( case_node, statement ) {
+        ad_switch_case_t *const switch_case = case_node->data;
+        ad_expr_free( switch_case->expr );
+        ad_statement_list_cleanup( &switch_case->statement_list );
+      } // for
+      break;
+  } // switch
+
+  free( statement );
+}
+
+void ad_statement_list_cleanup( ad_statement_list_t *statement_list ) {
+  slist_cleanup(
+    statement_list, POINTER_CAST( slist_free_fn_t, &ad_statement_free )
+  );
 }
 
 char const* ad_tid_kind_name( ad_tid_kind_t kind ) {

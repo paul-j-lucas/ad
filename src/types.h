@@ -719,9 +719,21 @@ char const* ad_rep_kind_name( ad_rep_kind_t kind );
 /**
  * Frees all the memory used by \a statement.
  *
- * @param statement The `ad_statement` to free.  May be NULL.
+ * @param statement The `ad_statement` to free.  If NULL, does nothing.
+ *
+ * @sa ad_statement_list_cleanup()
  */
 void ad_statement_free( ad_statement_t *statement );
+
+/**
+ * Cleans-up all memory associated with \a statement_list.
+ *
+ * @param statement_list The \ref ad_statement_list_t to clean-up.  If NULL,
+ * does nothing.
+ *
+ * @sa ad_statement_free()
+ */
+void ad_statement_list_cleanup( ad_statement_list_t *statement_list );
 
 /**
  * Gets whether \a is a null-terminated string (as opposed to a single
@@ -806,7 +818,7 @@ bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type );
 /**
  * Frees all the memory used by \a type.
  *
- * @param type The `ad_type` to free.  May be null.
+ * @param type The `ad_type` to free.  If NULL, does nothing.
  *
  * @sa ad_type_new()
  */

@@ -1847,7 +1847,7 @@ static void fl_elaborate_error( char const *file, int line,
  * Cleans up global parser data at program termination.
  */
 void parser_cleanup( void ) {
-  // do nothing
+  ad_statement_list_cleanup( &statement_list );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
