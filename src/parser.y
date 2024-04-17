@@ -751,11 +751,16 @@ statement
 break_statement
   : Y_break
     {
+      DUMP_START( "break_statement", "break" );
+
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
         .kind = S_BREAK,
         .loc = @$
       };
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
     }
   ;
 
@@ -765,6 +770,9 @@ switch_statement
   : Y_switch lparen_exp expr rparen_exp
     lbrace_exp switch_case_list_opt[case_list] '}'
     {
+      DUMP_START( "switch_statement",
+                  "switch '(' expr ')' '{' switch_case_list_opt '}'" );
+
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
         .kind = S_SWITCH,
@@ -774,6 +782,9 @@ switch_statement
           .case_list = slist_move( &$case_list )
         }
       };
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
     }
   ;
 
@@ -842,6 +853,10 @@ enum_declaration
   : Y_enum name_exp[name] colon_exp type
     lbrace_exp enumerator_list[values] rbrace_exp
     {
+      DUMP_START( "enum_declaration",
+                  "enum NAME ':' type '{' enumerator_list '}'" );
+      DUMP_STR( "name", $name );
+
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
         .sname = sname_current( $name ),
@@ -853,6 +868,9 @@ enum_declaration
       };
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
+
+      DUMP_TYPE( "$$_type", new_type );
+      DUMP_END();
     }
   ;
 
@@ -939,6 +957,10 @@ match_expr_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp statement_list_opt[members] rbrace_exp
     {
+      DUMP_START( "struct_declaration",
+                  "struct NAME '{' statement_list_opt '}'" );
+      DUMP_STR( "name", $name );
+
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
         .sname = sname_current( $name ),
@@ -950,6 +972,9 @@ struct_declaration
       };
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
+
+      DUMP_TYPE( "$$_type", new_type );
+      DUMP_END();
     }
   ;
 
