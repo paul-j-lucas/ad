@@ -189,7 +189,6 @@
 #define DUMP_BOOL(KEY,BOOL)  IF_AD_DEBUG( \
   DUMP_KEY_IMPL( KEY ": %s", ((BOOL) ? "true" : "false") ); )
 
-
 /**
  * Ends a dump block.
  *
