@@ -518,9 +518,7 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
     DUMP_EXPR( dump, "size_expr", type->size_expr );
   if ( type->endian_expr != NULL )
     DUMP_EXPR( dump, "endian_expr", type->endian_expr );
-
   DUMP_REP( dump, "rep", &type->rep );
-
 
   switch ( ad_tid_kind( type->tid ) ) {
     case T_NONE:
