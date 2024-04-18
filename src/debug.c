@@ -49,6 +49,9 @@
   FPUTNSP( (D)->indent * DUMP_INDENT, (D)->fout );  \
   FPRINTF( (D)->fout, __VA_ARGS__ ); )
 
+#define DUMP_INT(D,KEY,INT) \
+  DUMP_KEY( (D), KEY ": %lld", STATIC_CAST( long long, (INT) ) )
+
 #define DUMP_KEY(D,...) BLOCK( \
   fput_sep( ",\n", &(D)->comma, (D)->fout ); DUMP_FORMAT( (D), __VA_ARGS__ ); )
 
@@ -406,10 +409,8 @@ static void ad_statement_list_dump_impl( ad_statement_list_t const *list,
 
   dump_state_t list_dump;
   dump_init( &list_dump, dump->indent + 1, dump->fout );
-  FOREACH_SLIST_NODE( statement_node, list ) {
-    ad_statement_t const *const statement = statement_node->data;
-    ad_statement_dump_impl( statement, &list_dump );
-  } // for
+  FOREACH_SLIST_NODE( statement_node, list )
+    ad_statement_dump_impl( statement_node->data, &list_dump );
 
   FPUTC( '\n', dump->fout );
   DUMP_FORMAT( dump, "]" );
@@ -519,6 +520,94 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
     DUMP_EXPR( dump, "endian_expr", type->endian_expr );
 
   DUMP_REP( dump, "rep", &type->rep );
+
+
+  switch ( ad_tid_kind( type->tid ) ) {
+    case T_NONE:
+    case T_ERROR:
+      break;
+    case T_BOOL: {
+      json_state_t const bool_json =
+        json_object_begin( JSON_INIT, "bool", dump );
+      DUMP_STR( dump, "printf_fmt", type->bool_t.printf_fmt );
+      json_object_end( bool_json, dump );
+      break;
+    }
+    case T_ENUM: {
+      json_state_t const enum_json =
+        json_object_begin( JSON_INIT, "enum", dump );
+      DUMP_STR( dump, "printf_fmt", type->enum_t.printf_fmt );
+      DUMP_KEY( dump, "value_list" );
+      if ( slist_empty( &type->enum_t.value_list ) ) {
+        FPUTS( "[]", dump->fout );
+      }
+      else {
+        FPUTS( "[\n", dump->fout );
+        dump_state_t list_dump;
+        dump_init( &list_dump, dump->indent + 1, dump->fout );
+        FOREACH_SLIST_NODE( value_node, &type->enum_t.value_list ) {
+          ad_enum_value_t const *const value = value_node->data;
+          json_state_t const enum_value_json =
+            json_object_begin( JSON_INIT, /*key=*/NULL, &list_dump );
+          DUMP_STR( dump, "name", value->name );
+          DUMP_INT( dump, "value", value->value );
+          DUMP_STR( dump, "printf_fmt", value->printf_fmt );
+          json_object_end( enum_value_json, &list_dump );
+        } // for
+        FPUTC( '\n', dump->fout );
+        DUMP_FORMAT( dump, "]" );
+      }
+      json_object_end( enum_json, dump );
+      break;
+    }
+    case T_FLOAT: {
+      json_state_t const float_json =
+        json_object_begin( JSON_INIT, "float", dump );
+      DUMP_STR( dump, "printf_fmt", type->float_t.printf_fmt );
+      json_object_end( float_json, dump );
+      break;
+    }
+    case T_INT: {
+      json_state_t const int_json =
+        json_object_begin( JSON_INIT, "int", dump );
+      DUMP_STR( dump, "printf_fmt", type->int_t.printf_fmt );
+      json_object_end( int_json, dump );
+      break;
+    }
+    case T_STRUCT: {
+      json_state_t const struct_json =
+        json_object_begin( JSON_INIT, "struct", dump );
+      DUMP_KEY( dump, "member_list" );
+      if ( slist_empty( &type->struct_t.member_list ) ) {
+        FPUTS( "[]", dump->fout );
+      }
+      else {
+        FPUTS( "[\n", dump->fout );
+        dump_state_t list_dump;
+        dump_init( &list_dump, dump->indent + 1, dump->fout );
+        FOREACH_SLIST_NODE( member_node, &type->struct_t.member_list )
+          ad_statement_dump_impl( member_node->data, &list_dump );
+        FPUTC( '\n', dump->fout );
+        DUMP_FORMAT( dump, "]" );
+      }
+      json_object_end( struct_json, dump );
+      break;
+    }
+    case T_TYPEDEF: {
+      json_state_t const typedef_json =
+        json_object_begin( JSON_INIT, "typedef", dump );
+      DUMP_TYPE( dump, "type", type->typedef_t.type );
+      json_object_end( typedef_json, dump );
+      break;
+    }
+    case T_UTF: {
+      json_state_t const utf_json =
+        json_object_begin( JSON_INIT, "utf", dump );
+      DUMP_STR( dump, "printf_fmt", type->utf_t.printf_fmt );
+      json_object_end( utf_json, dump );
+      break;
+    }
+  } // switch
 
   json_object_end( type_json, dump );
 }
