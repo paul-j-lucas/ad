@@ -162,7 +162,6 @@ static void ad_decl_dump_impl( ad_decl_t const *decl, dump_state_t *dump ) {
  * @sa ad_expr_list_dump()
  */
 static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
-  assert( expr != NULL );
   assert( dump != NULL );
 
   if ( expr == NULL ) {
@@ -447,9 +446,10 @@ static void ad_switch_dump_impl( ad_switch_statement_t const *switch_s,
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   DUMP_EXPR( dump, "expr", switch_s->expr );
+  DUMP_KEY( dump, "cases: " );
 
   if ( slist_empty( &switch_s->case_list ) ) {
-    DUMP_KEY( dump, "cases: []\n" );
+    FPUTS( "[]", dump->fout );
   }
   else {
     FPUTS( "[\n", dump->fout );
@@ -457,8 +457,11 @@ static void ad_switch_dump_impl( ad_switch_statement_t const *switch_s,
     dump_init( &list_dump, dump->indent + 1, dump->fout );
     FOREACH_SLIST_NODE( case_node, &switch_s->case_list ) {
       ad_switch_case_t const *const case_s = case_node->data;
+      json_state_t const case_json =
+        json_object_begin( JSON_INIT, /*key=*/NULL, &list_dump );
       DUMP_EXPR( &list_dump, "expr", case_s->expr );
       DUMP_STATEMENT_LIST( &list_dump, "statements", &case_s->statement_list );
+      json_object_end( case_json, &list_dump );
     } // for
     FPUTC( '\n', dump->fout );
     DUMP_FORMAT( dump, "]" );
