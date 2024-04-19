@@ -93,7 +93,8 @@ typedef uint8_t   utf8_t[ UTF8_CHAR_SIZE_MAX ];
  * @param cp The Unicode code-point to check.
  * @return Returns \c true only if \a cp is an ASCII character.
  */
-AD_UNICODE_H_INLINE bool cp_is_ascii( char32_t cp ) {
+NODISCARD AD_UNICODE_H_INLINE
+bool cp_is_ascii( char32_t cp ) {
   return cp <= 0x7F;
 }
 
