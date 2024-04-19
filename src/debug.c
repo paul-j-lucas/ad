@@ -292,7 +292,12 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
         FPRINTF( dump->fout, "%llu", (unsigned long long)literal->uval );
       break;
     case T_UTF:
-      // TODO
+      if ( (literal->type->tid & T_MASK_NULL) != 0 ) {
+        // TODO
+      }
+      else {
+        // TODO
+      }
       break;
     case T_ENUM:
     case T_STRUCT:
