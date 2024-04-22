@@ -170,8 +170,8 @@ unsigned utf8c_len( char8_t start ) {
  */
 NODISCARD AD_UNICODE_H_INLINE
 bool utf8c_equal( utf8_t const u1, utf8_t const u2 ) {
-  extern uint8_t const UTF8_CHAR_LEN_TABLE[];
-  return memcmp( u1, u2, UTF8_CHAR_LEN_TABLE[ u1[0] ] ) == 0;
+  extern uint8_t const UTF8C_LEN_TABLE[];
+  return memcmp( u1, u2, UTF8C_LEN_TABLE[ u1[0] ] ) == 0;
 }
 
 /**
