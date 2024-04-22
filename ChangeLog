@@ -1,3 +1,7 @@
+2024-04-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * unicode.c, unicode.h: s/size_t/unsigned/
+
 2024-04-12  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac, options.c: Now actually parsing --host-endian/-H options;

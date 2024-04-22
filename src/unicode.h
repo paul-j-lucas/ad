@@ -34,7 +34,6 @@
 
 // standard
 #include <stdbool.h>
-#include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint*_t */
 #include <string.h>                     /* for memcmp(3) */
 #if HAVE_CHAR8_T || HAVE_CHAR32_T
