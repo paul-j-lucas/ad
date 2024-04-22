@@ -89,14 +89,14 @@ bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
   assert( u16 != NULL );
   assert( u32 != NULL );
 
-  char16_t const *const end16 = u16 + u16_size;
-  while ( u16 < end16 ) {
+  char16_t const *const u16_end = u16 + u16_size;
+  while ( u16 < u16_end ) {
     char16_t const c16 = uint16xx_host16( *u16++, endian );
     if ( likely( !utf16_is_surrogate( c16 ) ) ) {
       *u32++ = c16;
     }
     else if ( utf16_is_high_surrogate( c16 ) &&
-              u16 < end16 && utf16_is_low_surrogate( *u16 ) ) {
+              u16 < u16_end && utf16_is_low_surrogate( *u16 ) ) {
       *u32 = utf16_surrogate_to_utf32( c16, *u16++ );
     }
     else {
