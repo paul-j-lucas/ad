@@ -158,8 +158,8 @@ char32_t utf8c_32c( char const *s ) {
  */
 NODISCARD AD_UNICODE_H_INLINE
 unsigned utf8c_len( char8_t start ) {
-  extern char8_t const UTF8_CHAR_LEN_TABLE[];
-  return UTF8_CHAR_LEN_TABLE[ start ];
+  extern char8_t const UTF8C_LEN_TABLE[];
+  return UTF8C_LEN_TABLE[ start ];
 }
 
 /**
