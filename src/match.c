@@ -166,8 +166,8 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
   static size_t   kmp;                  // bytes partially matched
   static state_t  state = S_READING;    // current state
   static size_t   string_chars_matched; // strings(1) characters matched
-  static unsigned utf8_char_bytes;      // bytes comprising UTF-8 character
-  static unsigned utf8_char_bytes_left; // bytes left to match UTF-8 character
+  static unsigned utf8c_bytes;          // bytes comprising UTF-8 character
+  static unsigned utf8c_bytes_left;     // bytes left to match UTF-8 character
 
   assert( pbyte != NULL );
   assert( matches != NULL );
@@ -208,13 +208,13 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
         buf_matched = SIZE_MAX;         // assume all bytes read matched
         buf_pos = 0;
         kmp = 0;
-        string_chars_matched = utf8_char_bytes = utf8_char_bytes_left = 0;
+        string_chars_matched = utf8c_bytes = utf8c_bytes_left = 0;
         GOTO_STATE( S_MATCHING );
 
       case S_MATCHING:
         ++buf_pos;
         if ( opt_strings ) {
-          if ( utf8_char_bytes_left == 0 ) {
+          if ( utf8c_bytes_left == 0 ) {
             //
             // We've matched all the bytes comprising a UTF-8 character: bump
             // the number of characers matched and reset for the next UTF-8
@@ -224,7 +224,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
             // ASCII since ASCII is a subset of UTF-8.
             //
             ++string_chars_matched;
-            utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( *pbyte );
+            utf8c_bytes = utf8c_bytes_left = utf8c_len( *pbyte );
           }
         }
         else if ( buf_pos == opt_search_len ) {
@@ -257,7 +257,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
           //
           buf_drain = buf_pos;
         }
-        else if ( is_match( *pbyte, buf_pos, --utf8_char_bytes_left > 0 ) ) {
+        else if ( is_match( *pbyte, buf_pos, --utf8c_bytes_left > 0 ) ) {
           //
           // The next byte matched: keep storing bytes in the match buffer and
           // keep matching.
@@ -299,7 +299,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
             // before the E2, but just set *is_match to false for E2 and 96.
             // To do that, we set buf_matched.
             //
-            buf_matched = buf_pos - utf8_char_bytes + utf8_char_bytes_left - 1;
+            buf_matched = buf_pos - utf8c_bytes + utf8c_bytes_left - 1;
           }
 
           //

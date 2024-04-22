@@ -91,7 +91,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * UTF-8.
  */
 PJL_DISCARD
-size_t utf32_8( char32_t cp, char *u8 );
+size_t utf32c_8c( char32_t cp, char *u8 );
 
 /**
  * Gets the number of bytes comprising a UTF-8 character.
@@ -101,9 +101,9 @@ size_t utf32_8( char32_t cp, char *u8 );
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
 NODISCARD AD_UNICODE_H_INLINE
-unsigned utf8_char_len( char8_t start ) {
-  extern char8_t const UTF8_CHAR_LEN_TABLE[];
-  return UTF8_CHAR_LEN_TABLE[ start ];
+unsigned utf8c_len( char8_t start ) {
+  extern char8_t const UTF8C_LEN_TABLE[];
+  return UTF8C_LEN_TABLE[ start ];
 }
 
 /**

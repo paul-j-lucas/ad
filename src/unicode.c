@@ -44,7 +44,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // extern constant definitions
-char8_t const UTF8_CHAR_LEN_TABLE[] = {
+char8_t const UTF8C_LEN_TABLE[] = {
   /*      0 1 2 3 4 5 6 7 8 9 A B C D E F */
   /* 0 */ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   /* 1 */ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -66,7 +66,7 @@ char8_t const UTF8_CHAR_LEN_TABLE[] = {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-size_t utf32_8( char32_t cp, char *u8 ) {
+size_t utf32c_8c( char32_t cp, char *u8 ) {
   assert( u8 != NULL );
 
   static unsigned const Mask1 = 0x80;
