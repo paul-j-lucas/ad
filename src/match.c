@@ -224,7 +224,7 @@ static bool match_byte( char8_t *pbyte, bool *matches, size_t const *kmps,
             // ASCII since ASCII is a subset of UTF-8.
             //
             ++string_chars_matched;
-            utf8_char_bytes = utf8_char_bytes_left = utf8_char_len( *pbyte );
+            utf8_char_bytes = utf8_char_bytes_left = utf8c_len( *pbyte );
           }
         }
         else if ( buf_pos == opt_search_len ) {

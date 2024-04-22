@@ -112,7 +112,7 @@ static unsigned utf8_collect( row_buf_t const *curr, size_t curr_pos,
   assert( next != NULL );
   assert( utf8_char != NULL );
 
-  unsigned const len = utf8_char_len( curr->bytes[ curr_pos ] );
+  unsigned const len = utf8c_len( curr->bytes[ curr_pos ] );
   if ( len > 1 ) {
     row_buf_t const *row = curr;
     *utf8_char++ = row->bytes[ curr_pos++ ];

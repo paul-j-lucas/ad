@@ -1269,7 +1269,7 @@ void options_init( int argc, char const *argv[] ) {
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad ) {
     static char utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
-    utf32_8( utf8_pad, utf8_pad_buf );
+    utf32c_8c( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }
 

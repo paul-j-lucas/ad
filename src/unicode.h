@@ -119,8 +119,8 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * successfully.
  */
 NODISCARD
-bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
-               char32_t *u32 );
+bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
+                 char32_t *u32 );
 
 /**
  * Encodes a Unicode code-point into UTF-8.
@@ -132,7 +132,7 @@ bool utf16_32( char16_t const *u16, size_t u16_size, endian_t endian,
  * UTF-8.
  */
 PJL_DISCARD
-size_t utf32_8( char32_t cp, char *u8 );
+unsigned utf32c_8c( char32_t cp, char *u8 );
 
 /**
  * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
@@ -143,10 +143,10 @@ size_t utf32_8( char32_t cp, char *u8 );
  * is invalid.
  */
 NODISCARD AD_UNICODE_H_INLINE
-char32_t utf8_32( char const *s ) {
-  extern char32_t utf8_32_impl( char const* );
+char32_t utf8c_32c( char const *s ) {
+  extern char32_t utf8c_32c_impl( char const* );
   char32_t const cp = (uint8_t)*s;
-  return cp_is_ascii( cp ) ? cp : utf8_32_impl( s );
+  return cp_is_ascii( cp ) ? cp : utf8c_32c_impl( s );
 }
 
 /*
@@ -157,7 +157,7 @@ char32_t utf8_32( char const *s ) {
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
 NODISCARD AD_UNICODE_H_INLINE
-unsigned utf8_char_len( char8_t start ) {
+unsigned utf8c_len( char8_t start ) {
   extern char8_t const UTF8_CHAR_LEN_TABLE[];
   return UTF8_CHAR_LEN_TABLE[ start ];
 }
@@ -170,7 +170,7 @@ unsigned utf8_char_len( char8_t start ) {
  * @return Returns `true` only if \a u1 equals \a u2.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8_equal( utf8_t const u1, utf8_t const u2 ) {
+bool utf8c_equal( utf8_t const u1, utf8_t const u2 ) {
   extern uint8_t const UTF8_CHAR_LEN_TABLE[];
   return memcmp( u1, u2, UTF8_CHAR_LEN_TABLE[ u1[0] ] ) == 0;
 }

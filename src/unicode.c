@@ -84,12 +84,12 @@ static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool utf16_32( char16_t const *u16, size_t size16, endian_t endian,
-               char32_t *u32 ) {
+bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
+                 char32_t *u32 ) {
   assert( u16 != NULL );
   assert( u32 != NULL );
 
-  char16_t const *const end16 = u16 + size16;
+  char16_t const *const end16 = u16 + u16_size;
   while ( u16 < end16 ) {
     char16_t const c16 = uint16xx_host16( *u16++, endian );
     if ( likely( !utf16_is_surrogate( c16 ) ) ) {
@@ -106,7 +106,7 @@ bool utf16_32( char16_t const *u16, size_t size16, endian_t endian,
   return true;
 }
 
-size_t utf32_8( char32_t cp, char *u8 ) {
+unsigned utf32c_8c( char32_t cp, char *u8 ) {
   assert( u8 != NULL );
 
   static unsigned const Mask1 = 0x80;
@@ -138,15 +138,15 @@ size_t utf32_8( char32_t cp, char *u8 ) {
     *u8++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else {
-    return STATIC_CAST( size_t, -1 );
+    return STATIC_CAST( unsigned, -1 );
   }
 
-  return STATIC_CAST( size_t, u8 - u8_orig );
+  return STATIC_CAST( unsigned, u8 - u8_orig );
 }
 
-char32_t utf8_32_impl( char const *s ) {
+char32_t utf8c_32c_impl( char const *s ) {
   assert( s != NULL );
-  unsigned const len = utf8_char_len( STATIC_CAST( char8_t, *s ) );
+  unsigned const len = utf8c_len( STATIC_CAST( char8_t, *s ) );
   assert( len >= 1 );
 
   char32_t cp = 0;
