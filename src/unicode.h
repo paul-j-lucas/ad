@@ -28,6 +28,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -49,9 +50,6 @@ typedef uint16_t char16_t;              /* C11's char16_t */
 #if !HAVE_CHAR32_T
 typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
-
-// local
-#include "ad.h"
 
 _GL_INLINE_HEADER_BEGIN
 #ifndef AD_UNICODE_H_INLINE
