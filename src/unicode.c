@@ -66,7 +66,7 @@ char8_t const UTF8C_LEN_TABLE[] = {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-size_t utf32c_8c( char32_t cp, char *u8 ) {
+unsigned utf32c_8c( char32_t cp, char *u8 ) {
   assert( u8 != NULL );
 
   static unsigned const Mask1 = 0x80;
@@ -98,10 +98,10 @@ size_t utf32c_8c( char32_t cp, char *u8 ) {
     *u8++ = STATIC_CAST( char, Mask1 | ( cp        & 0x3F) );
   }
   else {
-    return STATIC_CAST( size_t, -1 );
+    return STATIC_CAST( unsigned, -1 );
   }
 
-  return STATIC_CAST( size_t, u8 - u8_orig );
+  return STATIC_CAST( unsigned, u8 - u8_orig );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

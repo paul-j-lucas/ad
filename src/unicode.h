@@ -33,7 +33,6 @@
 
 // standard
 #include <stdbool.h>
-#include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint*_t */
 #if HAVE_CHAR8_T || HAVE_CHAR32_T
 #include <uchar.h>
@@ -91,7 +90,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * UTF-8.
  */
 PJL_DISCARD
-size_t utf32c_8c( char32_t cp, char *u8 );
+unsigned utf32c_8c( char32_t cp, char *u8 );
 
 /**
  * Gets the number of bytes comprising a UTF-8 character.
