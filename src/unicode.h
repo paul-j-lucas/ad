@@ -125,27 +125,37 @@ bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
  * Encodes a Unicode code-point into UTF-8.
  *
  * @param cp The Unicode code-point to encode.
- * @param u8 A pointer to the start of a buffer to receive the UTF-8 bytes;
+ * @param u8c A pointer to the start of a buffer to receive the UTF-8 bytes;
  * must be at least #UTF8_CHAR_SIZE_MAX long.  No NULL byte is appended.
  * @return Returns the number of bytes comprising the code-point encoded as
  * UTF-8.
  */
 PJL_DISCARD
-unsigned utf32c_8c( char32_t cp, char *u8 );
+unsigned utf32c_8c( char32_t cp, char8_t *u8c );
+
+/**
+ * Encodes a Unicode string into UTF-8.
+ *
+ * @param u32s The Unicode string to encode.
+ * @return Returns the UTF-8 encoded string. The caller is responsible for
+ * free'ing it.
+ */
+NODISCARD
+char8_t* utf32s_8s( char32_t const *u32s );
 
 /**
  * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.
  * (This inline version is optimized for the common case of ASCII.)
  *
- * @param s A pointer to the first byte of the UTF-8 encoded character.
+ * @param u8s A pointer to the first byte of the UTF-8 encoded character.
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
  */
 NODISCARD AD_UNICODE_H_INLINE
-char32_t utf8c_32c( char const *s ) {
+char32_t utf8c_32c( char const *u8s ) {
   extern char32_t utf8c_32c_impl( char const* );
-  char32_t const cp = (uint8_t)*s;
-  return cp_is_ascii( cp ) ? cp : utf8c_32c_impl( s );
+  char32_t const cp = (uint8_t)*u8s;
+  return cp_is_ascii( cp ) ? cp : utf8c_32c_impl( u8s );
 }
 
 /*
