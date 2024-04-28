@@ -1006,6 +1006,8 @@ typedef_declaration
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
 
+      // TODO: do something with the rest of $field
+
       DUMP_TYPE( "$$_type", new_type );
       DUMP_END();
     }
@@ -1587,6 +1589,7 @@ type
     {
       DUMP_START( "type", "builtin_tid '<' expr type_endian_expr_opt '>'" );
       DUMP_TID( "builtin_tid", $tid );
+      DUMP_EXPR( "expr", $size );
       DUMP_EXPR( "type_endian_expr_opt", $endian );
 
       $$ = MALLOC( ad_type_t, 1 );
