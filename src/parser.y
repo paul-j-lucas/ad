@@ -771,6 +771,7 @@ switch_statement
     {
       DUMP_START( "switch_statement",
                   "switch '(' expr ')' '{' switch_case_list_opt '}'" );
+      DUMP_EXPR( "expr", $expr );
 
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
@@ -838,9 +839,16 @@ declaration
   : enum_declaration
   | field_declaration[field] match_expr_opt[match_expr]
     {
+      DUMP_START( "declaration", "field_declaration match_expr_opt" );
+      DUMP_STATEMENT( "field_declaration", $field );
+      DUMP_EXPR( "match_expr_opt", $match_expr );
+
       assert( $field->kind = S_DECLARATION );
       $field->decl_s.match_expr = $match_expr;
       $$ = $field;
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
     }
   | struct_declaration
   | typedef_declaration
