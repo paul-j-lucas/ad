@@ -106,7 +106,6 @@
  * @endcode
  *
  * @sa elaborate_error_dym()
- * @sa keyword_expected()
  * @sa punct_expected()
  */
 #define elaborate_error(...) \
@@ -127,7 +126,6 @@
  * ```
  *
  * @sa elaborate_error()
- * @sa keyword_expected()
  * @sa punct_expected()
  */
 #define elaborate_error_dym(DYM_KINDS,...) BLOCK( \
@@ -163,7 +161,6 @@
  *
  * @sa elaborate_error()
  * @sa elaborate_error_dym()
- * @sa keyword_expected()
  */
 #define punct_expected(PUNCT) BLOCK( \
   fl_punct_expected( __FILE__, __LINE__, (PUNCT) ); PARSE_ABORT(); )
@@ -460,10 +457,9 @@ static sname_t sname_current( char const *name ) {
  * is not done because printing a (perhaps long) list of all the possible
  * expected tokens isn't helpful.
  * @par
- * It's also more flexible to be able to call one of #elaborate_error(),
- * #keyword_expected(), or #punct_expected() at the point of the error rather
- * than having a single function try to figure out the best type of error
- * message to print.
+ * It's also more flexible to be able to call either #elaborate_error() or
+ * #punct_expected() at the point of the error rather than having a single
+ * function try to figure out the best type of error message to print.
  *
  * @note A newline is _not_ printed since the error message will be appended to
  * by fl_elaborate_error().  For example, the parts of an error message are
