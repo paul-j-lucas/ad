@@ -161,7 +161,7 @@ ad_strings_t    opt_strings_opts = STRINGS_LINEFEED
                                  | STRINGS_SPACE
                                  | STRINGS_TAB ;
 bool            opt_utf8;
-char const     *opt_utf8_pad = "\xE2\x96\xA1"; /* U+25A1: "white square" */
+char8_t const  *opt_utf8_pad = UTF8_STR( "\xE2\x96\xA1" ); // 25A1 white square
 bool            opt_verbose;
 
 /// @endcond
@@ -1225,8 +1225,8 @@ void options_init( int argc, char const *argv[] ) {
     exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 
   opt_utf8 = should_utf8( utf8_when );
-  if ( utf8_pad ) {
-    static char utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
+  if ( utf8_pad != 0 ) {
+    static char8_t utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
     utf32c_8c( utf8_pad, utf8_pad_buf );
     opt_utf8_pad = utf8_pad_buf;
   }

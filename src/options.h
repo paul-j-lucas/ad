@@ -30,6 +30,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
+#include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -149,7 +150,7 @@ extern size_t         opt_search_len;   ///< Bytes in \ref opt_search_buf.
 extern bool           opt_strings;      ///< **strings**(1)-like search?
 extern ad_strings_t   opt_strings_opts; ///< **strings**(1)-like options.
 extern bool           opt_utf8;         ///< Dump as UTF-8?
-extern char const    *opt_utf8_pad;     ///< UTF-8 padding character.
+extern char8_t const *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
 
 ////////// extern functions ///////////////////////////////////////////////////
