@@ -80,6 +80,14 @@ typedef uint32_t char32_t;              /**< C11's `char32_t` */
 #define CP_VALID_MAX              0x10FFFFu /**< Maximum valid code-point. */
 #define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
+/**
+ * Casts an ordinary C string to a UTF-8 string.
+ *
+ * @param S The C string to cast.
+ * @return Returns said UTF-8 string.
+ */
+#define UTF8_STR(S)               ((char8_t const*)(S))
+
 /** A small array large enough to contain any UTF-8 encoded character. */
 typedef uint8_t utf8c_t[ UTF8_CHAR_SIZE_MAX ];
 

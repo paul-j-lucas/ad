@@ -240,7 +240,7 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
 
       static unsigned utf8_count;
       if ( utf8_count > 1 ) {
-        PUTS( opt_utf8_pad );
+        PUTS( POINTER_CAST( char const*, opt_utf8_pad ) );
         --utf8_count;
       } else {
         char8_t utf8_char[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];

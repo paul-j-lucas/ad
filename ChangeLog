@@ -1,3 +1,7 @@
+2024-04-30  Paul J. Lucas <paul@lucasmail.org>
+
+   * dump.c, options.c, options.h, unicode.c, unicode.h: Unicode clean-up.
+
 2024-04-22  Paul J. Lucas <paul@lucasmail.org>
 
    * unicode.c, unicode.h: s/size_t/unsigned/

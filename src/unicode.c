@@ -34,6 +34,7 @@
 
 // standard
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 /// @endcond
@@ -186,6 +187,8 @@ char32_t utf8c_32c_impl( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
   };
   cp -= OFFSET_TABLE[ len ];
   return cp_is_valid( cp ) ? cp : CP_INVALID;
+=======
+>>>>>>> master
 }
 
 ///////////////////////////////////////////////////////////////////////////////
