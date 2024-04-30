@@ -914,6 +914,22 @@ void fput_list( FILE *out, void const *elt,
                 char const* (*gets)( void const **ppelt ) );
 
 /**
+ * Prints \a u16s as a quoted sqeuence of escaped UTF-16 characters.
+ *
+ * @param u16s The UTF-16 string to print.
+ * @param fout The `FILE` to print to.
+ */
+void fputs16( char16_t const *u16s, FILE *fout );
+
+/**
+ * Prints \a u32s as a quoted sqeuence of escaped UTF-32 characters.
+ *
+ * @param u32s The UTF-32 string to print.
+ * @param fout The `FILE` to print to.
+ */
+void fputs32( char32_t const *u32s, FILE *fout );
+
+/**
  * Adds a pointer to the head of the free-later-list.
  *
  * @param p The pointer to add.

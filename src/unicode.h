@@ -117,11 +117,11 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
 }
 
 /**
- * Decodes UTF-16 encoded characters into their corresponding Unicode code-
- * points.
+ * Decodes a UTF-16 encoded string into its corresponding UTF-32 string.
  *
- * @param u16s A pointer to the first byte of the UTF-16 encoded characters.
- * @param u16_size The number of UTF-16 characters.
+ * @param u16s A pointer to the UTF-16 encoded string.
+ * @param u16_len The length of \a u16s.  Decoding stops when either this
+ * number of characters has been decoded or a null byte is encountered.
  * @param endian The endianness of \a u16s.
  * @param u32s A pointer to receive the code-points.
  * @return Returns `true` only if the UTF-16 bytes were valid and decoded
@@ -130,7 +130,7 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * @sa utf16s_8s()
  */
 NODISCARD
-bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
+bool utf16s_32s( char16_t const *u16s, size_t u16_len, endian_t endian,
                  char32_t *u32s );
 
 /**
@@ -138,7 +138,8 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
  * string.
  *
  * @param u16s The UTF-16 string.
- * @param u16_size TODO
+ * @param u16_len The lenth of \a u16s.  Decoding stops when either this
+ * number of characters has been decoded or a null byte is encountered.
  * @param endian The endianness of \a u16s.
  * @return Returns said UTF-8 string or NULL if \a u16s contains any invalid
  * bytes.
@@ -146,7 +147,7 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
  * @sa utf16s_32s()
  */
 NODISCARD
-char8_t* utf16s_8s( char16_t const *u16s, size_t u16_size, endian_t endian );
+char8_t* utf16s_8s( char16_t const *u16s, size_t u16_len, endian_t endian );
 
 /**
  * Encodes a Unicode code-point into UTF-8.
@@ -155,6 +156,8 @@ char8_t* utf16s_8s( char16_t const *u16s, size_t u16_size, endian_t endian );
  * @param u8c A pointer to the start of a buffer to receive the UTF-8 bytes;
  * must be at least #UTF8_CHAR_SIZE_MAX long.  No NULL byte is appended.
  * @return Returns `true` only if \a cp is valid.
+ *
+ * @sa utf32s_8s()
  */
 PJL_DISCARD
 bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] );
@@ -163,11 +166,15 @@ bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] );
  * Encodes a Unicode string into UTF-8.
  *
  * @param u32s The Unicode string to encode.
+ * @param u32_len The length of \a u32s.  Encoding stops when either this
+ * number of characters has been encoded or a null byte is encountered.
  * @return Returns the UTF-8 encoded string. The caller is responsible for
  * free'ing it.
+ *
+ * @sa utf32c_8c()
  */
 NODISCARD
-char8_t* utf32s_8s( char32_t const *u32s );
+char8_t* utf32s_8s( char32_t const *u32s, size_t u32_len );
 
 /**
  * Decodes a UTF-8 encoded character into its corresponding Unicode code-point.

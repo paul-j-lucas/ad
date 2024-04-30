@@ -87,35 +87,37 @@ static inline char32_t utf16_surrogate_to_utf32( char16_t high, char16_t low ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
+bool utf16s_32s( char16_t const *u16s, size_t u16_len, endian_t endian,
                  char32_t *u32s ) {
   assert( u16s != NULL );
   assert( u32s != NULL );
 
-  char16_t const *const u16_end = u16s + u16_size;
-  while ( u16s < u16_end ) {
+  for ( size_t i = 0; i++ < u16_len; ) {
     char16_t const u16c = uint16xx_16he( *u16s++, endian );
     if ( likely( !utf16_is_surrogate( u16c ) ) ) {
       *u32s++ = u16c;
     }
     else if ( utf16_is_high_surrogate( u16c ) &&
-              u16s < u16_end && utf16_is_low_surrogate( *u16s ) ) {
-      *u32s = utf16_surrogate_to_utf32( u16c, *u16s++ );
+              i < u16_len && utf16_is_low_surrogate( *u16s ) ) {
+      ++i;
+      *u32s++ = utf16_surrogate_to_utf32( u16c, *u16s++ );
     }
     else {
       return false;
     }
-  } // while
+    if ( u16c == 0 )
+      break;
+  } // for
   return true;
 }
 
-char8_t* utf16s_8s( char16_t const *u16s, size_t u16_size, endian_t endian ) {
+char8_t* utf16s_8s( char16_t const *u16s, size_t u16_len, endian_t endian ) {
   assert( u16s != NULL );
 
-  char32_t *const u32s = MALLOC( char32_t, u16_size );
+  char32_t *const u32s = MALLOC( char32_t, u16_len + 1 /*NULL*/ );
 
-  char8_t *const u8s = utf16s_32s( u16s, u16_size, endian, u32s ) ?
-    utf32s_8s( u32s ) : NULL;
+  char8_t *const u8s = utf16s_32s( u16s, u16_len, endian, u32s ) ?
+    utf32s_8s( u32s, u16_len ) : NULL;
 
   free( u32s );
   return u8s;
@@ -158,12 +160,17 @@ bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] ) {
   return true;
 }
 
-char8_t* utf32s_8s( char32_t const *u32s ) {
+char8_t* utf32s_8s( char32_t const *u32s, size_t u32_len ) {
+  assert( u32s != NULL );
+
   strbuf_t sbuf;
   strbuf_init( &sbuf );
   utf8c_t u8c;
-  for ( ; *u32s != 0; ++u32s )
+  for ( size_t i = 0; i++ < u32_len; ) {
+    if ( *u32s == 0 )
+      break;
     strbuf_putsn( &sbuf, POINTER_CAST( char*, u8c ), utf32c_8c( *u32s, u8c ) );
+  } // for
   return POINTER_CAST( char8_t*, strbuf_take( &sbuf ) );
 }
 

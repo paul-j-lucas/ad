@@ -295,14 +295,29 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
       if ( (literal->type->tid & T_MASK_NULL) != 0 ) {
         switch ( ad_type_size( literal->type ) ) {
           case 8:
-            // literal->c8
+            FPUTS( literal->s, dump->fout );
             break;
-          case 16:
-            // literal->c16
+          case 16: {
+            char8_t *const u8s =
+              utf16s_8s( literal->s16, SIZE_MAX, ENDIAN_HOST );
+            if ( u8s == NULL ) {        // conversion failed
+              fputs16( literal->s16, dump->fout );
+            } else {
+              FPUTS( u8s, dump->fout );
+              free( u8s );
+            }
             break;
-          case 32:
-            // literal->c32
+          }
+          case 32: {
+            char8_t *const u8s = utf32s_8s( literal->s32, SIZE_MAX );
+            if ( u8s == NULL ) {        // conversion failed
+              fputs32( literal->s32, dump->fout );
+            } else {
+              FPUTS( u8s, dump->fout );
+              free( u8s );
+            }
             break;
+          }
         } // switch
       }
       else {

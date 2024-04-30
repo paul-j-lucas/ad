@@ -184,6 +184,22 @@ void* free_later( void *p ) {
   return p;
 }
 
+void fputs16( char16_t const *u16s, FILE *fout ) {
+  assert( u16s != NULL );
+  FPUTC( '"', fout );
+  for ( ; *u16s != 0; ++u16s )
+    FPRINTF( fout, "\\u%04X", *u16s );
+  FPUTC( '"', fout );
+}
+
+void fputs32( char32_t const *u32s, FILE *fout ) {
+  assert( u32s != NULL );
+  FPUTC( '"', fout );
+  for ( ; *u32s != 0; ++u32s )
+    FPRINTF( fout, "\\u%08X", *u32s );
+  FPUTC( '"', fout );
+}
+
 void free_now( void ) {
   slist_cleanup( &free_later_list, &free );
 }
