@@ -34,6 +34,7 @@
 
 // standard
 #include <assert.h>
+#include <stdlib.h>
 
 /// @endcond
 
@@ -92,7 +93,7 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
 
   char16_t const *const u16_end = u16s + u16_size;
   while ( u16s < u16_end ) {
-    char16_t const u16c = uint16xx_host16( *u16s++, endian );
+    char16_t const u16c = uint16xx_16he( *u16s++, endian );
     if ( likely( !utf16_is_surrogate( u16c ) ) ) {
       *u32s++ = u16c;
     }
@@ -107,7 +108,19 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
   return true;
 }
 
-unsigned utf32c_8c( char32_t cp, char8_t *u8c ) {
+char8_t* utf16s_8s( char16_t const *u16s, size_t u16_size, endian_t endian ) {
+  assert( u16s != NULL );
+
+  char32_t *const u32s = MALLOC( char32_t, u16_size );
+
+  char8_t *const u8s = utf16s_32s( u16s, u16_size, endian, u32s ) ?
+    utf32s_8s( u32s ) : NULL;
+
+  free( u32s );
+  return u8s;
+}
+
+bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] ) {
   assert( u8c != NULL );
 
   static unsigned const Mask1 = 0x80;
@@ -115,58 +128,56 @@ unsigned utf32c_8c( char32_t cp, char8_t *u8c ) {
   static unsigned const Mask3 = 0xE0;
   static unsigned const Mask4 = 0xF0;
 
-  char8_t *const u8c_orig = u8c;
   if ( cp < 0x80 ) {
     // 0xxxxxxx
-    *u8c++ = STATIC_CAST( char8_t, cp );
+    u8c[0] = STATIC_CAST( char8_t, cp );
   }
   else if ( cp < 0x800 ) {
     // 110xxxxx 10xxxxxx
-    *u8c++ = STATIC_CAST( char8_t, Mask2 |  (cp >>  6)         );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
+    u8c[0] = STATIC_CAST( char8_t, Mask2 |  (cp >>  6)         );
+    u8c[1] = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
   }
   else if ( cp < 0x10000 ) {
     // 1110xxxx 10xxxxxx 10xxxxxx
-    *u8c++ = STATIC_CAST( char8_t, Mask3 |  (cp >> 12)         );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ((cp >>  6) & 0x3F) );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
+    u8c[0] = STATIC_CAST( char8_t, Mask3 |  (cp >> 12)         );
+    u8c[1] = STATIC_CAST( char8_t, Mask1 | ((cp >>  6) & 0x3F) );
+    u8c[2] = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
   }
-  else if ( cp < 0x200000 ) {
+  else if ( cp <= CP_VALID_MAX ) {
     // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-    *u8c++ = STATIC_CAST( char8_t, Mask4 |  (cp >> 18)         );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ((cp >> 12) & 0x3F) );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ((cp >>  6) & 0x3F) );
-    *u8c++ = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
+    u8c[0] = STATIC_CAST( char8_t, Mask4 |  (cp >> 18)         );
+    u8c[1] = STATIC_CAST( char8_t, Mask1 | ((cp >> 12) & 0x3F) );
+    u8c[2] = STATIC_CAST( char8_t, Mask1 | ((cp >>  6) & 0x3F) );
+    u8c[3] = STATIC_CAST( char8_t, Mask1 | ( cp        & 0x3F) );
   }
   else {
-    return STATIC_CAST( unsigned, -1 );
+    return false;
   }
 
-  return STATIC_CAST( unsigned, u8c - u8c_orig );
+  return true;
 }
 
-char8_t* utf32s_8s( char32_t const *cps ) {
+char8_t* utf32s_8s( char32_t const *u32s ) {
   strbuf_t sbuf;
   strbuf_init( &sbuf );
-  utf8_t u8c;
-  for ( ; *cps != 0; ++cps )
-    strbuf_putsn( &sbuf, POINTER_CAST( char*, u8c ), utf32c_8c( *cps, u8c ) );
+  utf8c_t u8c;
+  for ( ; *u32s != 0; ++u32s )
+    strbuf_putsn( &sbuf, POINTER_CAST( char*, u8c ), utf32c_8c( *u32s, u8c ) );
   return POINTER_CAST( char8_t*, strbuf_take( &sbuf ) );
 }
 
-char32_t utf8c_32c_impl( char const *s ) {
-  assert( s != NULL );
-  unsigned const len = utf8c_len( STATIC_CAST( char8_t, *s ) );
-  assert( len >= 1 );
+char32_t utf8c_32c_impl( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
+  assert( u8c != NULL );
+  unsigned const len = utf8c_len( u8c[0] );
 
   char32_t cp = 0;
-  uint8_t const *u8 = POINTER_CAST( uint8_t const*, s );
 
   switch ( len ) {
-    case 4: cp += *u8++; cp <<= 6; FALLTHROUGH;
-    case 3: cp += *u8++; cp <<= 6; FALLTHROUGH;
-    case 2: cp += *u8++; cp <<= 6; FALLTHROUGH;
-    case 1: cp += *u8;
+    case 4 : cp += *u8c++; cp <<= 6; FALLTHROUGH;
+    case 3 : cp += *u8c++; cp <<= 6; FALLTHROUGH;
+    case 2 : cp += *u8c++; cp <<= 6; FALLTHROUGH;
+    case 1 : cp += *u8c;             break;
+    default: return CP_INVALID;
   } // switch
 
   static char32_t const OFFSET_TABLE[] = {

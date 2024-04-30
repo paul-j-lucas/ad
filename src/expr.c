@@ -102,7 +102,7 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
 
   switch ( expr->literal.type->tid ) {
     case T_UTF8:
-      return utf8c_32c( (char const*)&expr->literal.c32 );
+      return utf8c_32c( &expr->literal.c8 );
     case T_UTF16BE:
       return utf16s_32s( &expr->literal.c16, 1, ENDIAN_BIG, &cp ) ?
         cp : CP_INVALID;

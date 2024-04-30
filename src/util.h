@@ -1156,7 +1156,7 @@ uint64_t swap_64( uint64_t n );
  * @sa false_set()
  * @sa true_clear()
  */
-AD_UTIL_H_INLINE NODISCARD
+NODISCARD AD_UTIL_H_INLINE
 bool true_or_set( bool *flag ) {
   return *flag || !(*flag = true);
 }
@@ -1181,7 +1181,8 @@ void fput_sep( char const *sep, bool *sep_flag, FILE *sout ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint16_t uint16be_host16( uint16_t n ) {
+NODISCARD AD_UTIL_H_INLINE
+uint16_t uint16be_16he( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return n;
 #else /* machine words are little endian */
@@ -1195,7 +1196,8 @@ AD_UTIL_H_INLINE uint16_t uint16be_host16( uint16_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint16_t uint16le_host16( uint16_t n ) {
+NODISCARD AD_UTIL_H_INLINE
+uint16_t uint16le_16he( uint16_t n ) {
 #ifdef WORDS_BIGENDIAN
   return swap_16( n );
 #else /* machine words are little endian */
@@ -1210,9 +1212,9 @@ AD_UTIL_H_INLINE uint16_t uint16le_host16( uint16_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint16_t uint16xx_host16( uint16_t n, endian_t endian ) {
-  return endian == ENDIAN_LITTLE ?
-    uint16le_host16( n ) : uint16be_host16( n );
+NODISCARD AD_UTIL_H_INLINE
+uint16_t uint16xx_16he( uint16_t n, endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? uint16le_16he( n ) : uint16be_16he( n );
 }
 
 /**
@@ -1221,7 +1223,8 @@ AD_UTIL_H_INLINE uint16_t uint16xx_host16( uint16_t n, endian_t endian ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint32_t uint32be_host32( uint32_t n ) {
+NODISCARD AD_UTIL_H_INLINE
+uint32_t uint32be_32he( uint32_t n ) {
 #ifdef WORDS_BIGENDIAN
   return n;
 #else /* machine words are little endian */
@@ -1235,7 +1238,8 @@ AD_UTIL_H_INLINE uint32_t uint32be_host32( uint32_t n ) {
  * @param n The integer to convert.
  * @return Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint32_t uint32le_host32( uint32_t n ) {
+NODISCARD AD_UTIL_H_INLINE
+uint32_t uint32le_32he( uint32_t n ) {
 #ifdef WORDS_BIGENDIAN
   return swap_32( n );
 #else /* machine words are little endian */
@@ -1250,9 +1254,9 @@ AD_UTIL_H_INLINE uint32_t uint32le_host32( uint32_t n ) {
  * @param endian The endianness of \a n.
  * @Returns \a n converted to the host's representation.
  */
-AD_UTIL_H_INLINE uint32_t uint32xx_host32( uint32_t n, endian_t endian ) {
-  return endian == ENDIAN_LITTLE ?
-    uint32le_host32( n ) : uint32be_host32( n );
+NODISCARD AD_UTIL_H_INLINE
+uint32_t uint32xx_32he( uint32_t n, endian_t endian ) {
+  return endian == ENDIAN_LITTLE ? uint32le_32he( n ) : uint32be_32he( n );
 }
 
 /**

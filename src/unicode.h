@@ -80,7 +80,8 @@ typedef uint32_t char32_t;              /**< C11's `char32_t` */
 #define CP_VALID_MAX              0x10FFFFu /**< Maximum valid code-point. */
 #define UTF8_CHAR_SIZE_MAX        4     /**< Bytes needed for UTF-8 char. */
 
-typedef uint8_t   utf8_t[ UTF8_CHAR_SIZE_MAX ];
+/** A small array large enough to contain any UTF-8 encoded character. */
+typedef uint8_t utf8c_t[ UTF8_CHAR_SIZE_MAX ];
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -111,15 +112,33 @@ bool cp_is_valid( unsigned long long cp_candidate ) {
  * Decodes UTF-16 encoded characters into their corresponding Unicode code-
  * points.
  *
- * @param u16 A pointer to the first byte of the UTF-16 encoded characters.
+ * @param u16s A pointer to the first byte of the UTF-16 encoded characters.
  * @param u16_size The number of UTF-16 characters.
- * @param u32 A pointer to receive the code-points.
+ * @param endian The endianness of \a u16s.
+ * @param u32s A pointer to receive the code-points.
  * @return Returns `true` only if the UTF-16 bytes were valid and decoded
  * successfully.
+ *
+ * @sa utf16s_8s()
  */
 NODISCARD
-bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
-                 char32_t *u32 );
+bool utf16s_32s( char16_t const *u16s, size_t u16_size, endian_t endian,
+                 char32_t *u32s );
+
+/**
+ * Transcodes a UTF-16 encoded string into its corresponding UTF-8 encoded
+ * string.
+ *
+ * @param u16s The UTF-16 string.
+ * @param u16_size TODO
+ * @param endian The endianness of \a u16s.
+ * @return Returns said UTF-8 string or NULL if \a u16s contains any invalid
+ * bytes.
+ *
+ * @sa utf16s_32s()
+ */
+NODISCARD
+char8_t* utf16s_8s( char16_t const *u16s, size_t u16_size, endian_t endian );
 
 /**
  * Encodes a Unicode code-point into UTF-8.
@@ -127,11 +146,10 @@ bool utf16s_32s( char16_t const *u16, size_t u16_size, endian_t endian,
  * @param cp The Unicode code-point to encode.
  * @param u8c A pointer to the start of a buffer to receive the UTF-8 bytes;
  * must be at least #UTF8_CHAR_SIZE_MAX long.  No NULL byte is appended.
- * @return Returns the number of bytes comprising the code-point encoded as
- * UTF-8.
+ * @return Returns `true` only if \a cp is valid.
  */
 PJL_DISCARD
-unsigned utf32c_8c( char32_t cp, char8_t *u8c );
+bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] );
 
 /**
  * Encodes a Unicode string into UTF-8.
@@ -152,10 +170,9 @@ char8_t* utf32s_8s( char32_t const *u32s );
  * is invalid.
  */
 NODISCARD AD_UNICODE_H_INLINE
-char32_t utf8c_32c( char const *u8s ) {
-  extern char32_t utf8c_32c_impl( char const* );
-  char32_t const cp = (uint8_t)*u8s;
-  return cp_is_ascii( cp ) ? cp : utf8c_32c_impl( u8s );
+char32_t utf8c_32c( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
+  extern char32_t utf8c_32c_impl( char8_t const[static UTF8_CHAR_SIZE_MAX] );
+  return cp_is_ascii( *u8c ) ? *u8c : utf8c_32c_impl( u8c );
 }
 
 /*
@@ -174,14 +191,14 @@ unsigned utf8c_len( char8_t start ) {
 /**
  * Compares two UTF-8 characters for equality.
  *
- * @param u1 The first UTF-8 character.
- * @param u2 The second UTF-8 character.
- * @return Returns `true` only if \a u1 equals \a u2.
+ * @param u8c_i The first UTF-8 character.
+ * @param u8c_j The second UTF-8 character.
+ * @return Returns `true` only if \a u8c_i equals \a u8c_j.
  */
 NODISCARD AD_UNICODE_H_INLINE
-bool utf8c_equal( utf8_t const u1, utf8_t const u2 ) {
+bool utf8c_equal( utf8c_t const u8c_i, utf8c_t const u8c_j ) {
   extern uint8_t const UTF8C_LEN_TABLE[];
-  return memcmp( u1, u2, UTF8C_LEN_TABLE[ u1[0] ] ) == 0;
+  return memcmp( u8c_i, u8c_j, UTF8C_LEN_TABLE[ u8c_i[0] ] ) == 0;
 }
 
 /**

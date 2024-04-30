@@ -293,10 +293,30 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
       break;
     case T_UTF:
       if ( (literal->type->tid & T_MASK_NULL) != 0 ) {
-        // TODO
+        switch ( ad_type_size( literal->type ) ) {
+          case 8:
+            // literal->c8
+            break;
+          case 16:
+            // literal->c16
+            break;
+          case 32:
+            // literal->c32
+            break;
+        } // switch
       }
       else {
-        // TODO
+        switch ( ad_type_size( literal->type ) ) {
+          case 8:
+            // literal->s8
+            break;
+          case 16:
+            // literal->s16
+            break;
+          case 32:
+            // literal->s32
+            break;
+        } // switch
       }
       break;
     case T_ENUM:
