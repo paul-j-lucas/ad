@@ -92,14 +92,14 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_len, endian_t endian,
   assert( u16s != NULL );
   assert( u32s != NULL );
 
-  for ( size_t i = 0; i++ < u16_len; ) {
+  while ( u16_len-- > 0 ) {
     char16_t const u16c = uint16xx_16he( *u16s++, endian );
     if ( likely( !utf16_is_surrogate( u16c ) ) ) {
       *u32s++ = u16c;
     }
     else if ( utf16_is_high_surrogate( u16c ) &&
-              i < u16_len && utf16_is_low_surrogate( *u16s ) ) {
-      ++i;
+              u16_len > 0 && utf16_is_low_surrogate( *u16s ) ) {
+      --u16_len;
       *u32s++ = utf16_surrogate_to_utf32( u16c, *u16s++ );
     }
     else {
@@ -107,7 +107,7 @@ bool utf16s_32s( char16_t const *u16s, size_t u16_len, endian_t endian,
     }
     if ( u16c == 0 )
       break;
-  } // for
+  } // while
   return true;
 }
 
@@ -166,11 +166,11 @@ char8_t* utf32s_8s( char32_t const *u32s, size_t u32_len ) {
   strbuf_t sbuf;
   strbuf_init( &sbuf );
   utf8c_t u8c;
-  for ( size_t i = 0; i++ < u32_len; ) {
+  while ( u32_len-- > 0 ) {
     if ( *u32s == 0 )
       break;
     strbuf_putsn( &sbuf, POINTER_CAST( char*, u8c ), utf32c_8c( *u32s, u8c ) );
-  } // for
+  } // while
   return POINTER_CAST( char8_t*, strbuf_take( &sbuf ) );
 }
 
