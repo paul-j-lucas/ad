@@ -158,6 +158,7 @@ char8_t* utf16s_8s( char16_t const *u16s, size_t u16_len, endian_t endian );
  * @return Returns `true` only if \a cp is valid.
  *
  * @sa utf32s_8s()
+ * @sa utf8c_32c()
  */
 PJL_DISCARD
 bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] );
@@ -183,6 +184,8 @@ char8_t* utf32s_8s( char32_t const *u32s, size_t u32_len );
  * @param u8s A pointer to the first byte of the UTF-8 encoded character.
  * @return Returns said code-point or \c CP_INVALID if the UTF-8 byte sequence
  * is invalid.
+ *
+ * @sa utf32c_8c()
  */
 NODISCARD AD_UNICODE_H_INLINE
 char32_t utf8c_32c( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {

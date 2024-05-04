@@ -52,9 +52,6 @@
 #define DUMP_INT(D,KEY,INT) \
   DUMP_KEY( (D), KEY ": %lld", STATIC_CAST( long long, (INT) ) )
 
-#define DUMP_KEY(D,...) BLOCK( \
-  fput_sep( ",\n", &(D)->comma, (D)->fout ); DUMP_FORMAT( (D), __VA_ARGS__ ); )
-
 #define DUMP_KEY(D,...) BLOCK(                \
   fput_sep( ",\n", &(D)->comma, (D)->fout );  \
   DUMP_FORMAT( (D), __VA_ARGS__ ); )
@@ -274,33 +271,33 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
 
   switch ( tid_base ) {
     case T_NONE:
-      FPUTS( "\"none\"", dump->fout );
       break;
     case T_BOOL:
-      FPRINTF( dump->fout, "%u", !!literal->uval );
+      DUMP_BOOL( dump, "bool", !!literal->uval );
       break;
     case T_FLOAT:
-      FPRINTF( dump->fout, "%f", literal->fval );
+      DUMP_KEY( dump, "float: %f", literal->fval );
       break;
     case T_INT:
       if ( ad_tid_is_signed( literal->type->tid ) )
-        FPRINTF( dump->fout, "%lld", (long long)literal->ival );
+        DUMP_INT( dump, "int", literal->ival );
       else
-        FPRINTF( dump->fout, "%llu", (unsigned long long)literal->uval );
+        DUMP_KEY( dump, "uint: %llu", (unsigned long long)literal->uval );
       break;
     case T_UTF:
       if ( (literal->type->tid & T_MASK_NULL) != 0 ) {
         switch ( ad_type_size( literal->type ) ) {
           case 8:
-            FPUTS( literal->s, dump->fout );
+            DUMP_STR( dump, "s", literal->s );
             break;
           case 16: {
             char8_t *const u8s =
               utf16s_8s( literal->s16, SIZE_MAX, ENDIAN_HOST );
             if ( u8s == NULL ) {        // conversion failed
+              DUMP_KEY( dump, "s16: " );
               fputs16( literal->s16, dump->fout );
             } else {
-              FPUTS( u8s, dump->fout );
+              DUMP_STR( dump, "s16", STATIC_CAST( char const*, u8s ) );
               free( u8s );
             }
             break;
@@ -308,9 +305,10 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
           case 32: {
             char8_t *const u8s = utf32s_8s( literal->s32, SIZE_MAX );
             if ( u8s == NULL ) {        // conversion failed
+              DUMP_KEY( dump, "s32: " );
               fputs32( literal->s32, dump->fout );
             } else {
-              FPUTS( u8s, dump->fout );
+              DUMP_STR( dump, "s32", STATIC_CAST( char const*, u8s ) );
               free( u8s );
             }
             break;
@@ -320,13 +318,13 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
       else {
         switch ( ad_type_size( literal->type ) ) {
           case 8:
-            // literal->s8
+            DUMP_KEY( dump, "c8: '%c'", literal->c8 );
             break;
           case 16:
-            // literal->s16
+            // TODO: literal->c16
             break;
           case 32:
-            // literal->s32
+            DUMP_KEY( dump, "c32: '%04X'", literal->c32 );
             break;
         } // switch
       }
