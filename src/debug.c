@@ -178,14 +178,11 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
   );
   DUMP_LOC( dump, "loc", &expr->loc );
 
-  json_state_t kind_json = JSON_INIT;
+  json_state_t kind_json;
 
   switch ( expr->expr_kind ) {
     case AD_EXPR_NONE:
-      break;
-
     case AD_EXPR_ERROR:
-      FPUTS( "\"error\"", dump->fout );
       break;
 
     case AD_EXPR_LITERAL:
@@ -248,8 +245,8 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
     case AD_EXPR_IF_ELSE:
       kind_json = json_object_begin( JSON_INIT, "ternary", dump );
       DUMP_EXPR( dump, "cond_expr", expr->ternary.cond_expr );
-      DUMP_EXPR( dump, "sub_expr[0]", expr->ternary.sub_expr[0] );
-      DUMP_EXPR( dump, "sub_expr[1]", expr->ternary.sub_expr[1] );
+      DUMP_EXPR( dump, "true_expr[0]", expr->ternary.true_expr );
+      DUMP_EXPR( dump, "false_expr[1]", expr->ternary.false_expr );
       json_object_end( kind_json, dump );
       break;
   } // switch

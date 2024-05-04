@@ -437,8 +437,11 @@ static bool ad_expr_cast( ad_expr_t const *expr, ad_expr_t *rv ) {
  */
 static bool ad_expr_if_else( ad_expr_t const *expr, ad_expr_t *rv ) {
   EVAL_EXPR( ternary, cond );
-  bool const is_zero = ad_expr_is_zero( &cond_expr );
-  return ad_expr_eval( expr->ternary.sub_expr[ !is_zero ], rv );
+  return ad_expr_eval(
+    ad_expr_is_zero( &cond_expr ) ?
+      expr->ternary.false_expr : expr->ternary.true_expr,
+    rv
+  );
 }
 
 /**
@@ -1304,7 +1307,7 @@ void ad_expr_free( ad_expr_t *expr ) {
       FREE( expr->name );
       break;
     case AD_EXPR_TERNARY:
-      ad_expr_free( expr->ternary.sub_expr[1] );
+      ad_expr_free( expr->ternary.false_expr );
       FALLTHROUGH;
     case AD_EXPR_BINARY:
       ad_expr_free( expr->binary.rhs_expr );

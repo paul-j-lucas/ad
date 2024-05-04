@@ -1162,8 +1162,8 @@ conditional_expr
 
       $$ = ad_expr_new( AD_EXPR_IF_ELSE, &@$ );
       $$->ternary.cond_expr = $c_expr;
-      $$->ternary.sub_expr[0] = $t_expr;
-      $$->ternary.sub_expr[1] = $f_expr;
+      $$->ternary.true_expr = $t_expr;
+      $$->ternary.false_expr = $f_expr;
 
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();

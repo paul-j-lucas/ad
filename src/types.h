@@ -601,7 +601,7 @@ struct ad_literal_expr {
  *  + Negation
  */
 struct ad_unary_expr {
-  ad_expr_t *sub_expr;
+  ad_expr_t *sub_expr;                  ///< Sub-expression.
 };
 
 /**
@@ -620,12 +620,8 @@ struct ad_unary_expr {
  *  + Subtraction
  */
 struct ad_binary_expr {
-#if 1
-  ad_expr_t *lhs_expr;
-  ad_expr_t *rhs_expr;
-#else
-  ad_expr_t *sub_expr[2];
-#endif
+  ad_expr_t *lhs_expr;                  ///< Left-hand-side expression.
+  ad_expr_t *rhs_expr;                  ///< Right-hand-side expression.
 };
 
 /**
@@ -633,8 +629,9 @@ struct ad_binary_expr {
  *  + `?:`
  */
 struct ad_ternary_expr {
-  ad_expr_t *cond_expr;
-  ad_expr_t *sub_expr[2];
+  ad_expr_t *cond_expr;                 ///< Condition expression.
+  ad_expr_t *true_expr;                 ///< True-expression.
+  ad_expr_t *false_expr;                ///< False-expression.
 };
 
 /**
