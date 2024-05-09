@@ -54,11 +54,11 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Kinds of symbols in the symbol table.
+ * Kinds of symbols in the %symbol table.
  */
 enum sym_kind {
-  SYM_DECL,
-  SYM_TYPE,
+  SYM_DECL,                       ///< A declaration.
+  SYM_TYPE,                       ///< A type: `enum`, `struct`, or `typedef`.
 };
 typedef enum sym_kind sym_kind_t;
 
@@ -79,7 +79,7 @@ struct synfo {
 typedef struct synfo synfo_t;
 
 /**
- * TODO
+ * A %symbol in a %symbol table.
  */
 struct symbol {
   char const *name;                     ///< Symbol name.

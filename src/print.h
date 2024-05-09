@@ -250,7 +250,7 @@ PJL_DISCARD
 bool print_suggestions( dym_kind_t kinds, char const *unknown_token );
 
 /**
- * TODO
+ * Prints \a type.
  *
  * @param type The \ref ad_type to print.
  * @param fout The `FILE` to print to.
@@ -258,7 +258,12 @@ bool print_suggestions( dym_kind_t kinds, char const *unknown_token );
 void print_type( ad_type_t const *type, FILE *fout );
 
 /**
- * TODO
+ * If \a type is:
+ *
+ *  + A `typedef`, prints the name of the type followed by `(aka` followed by
+ *    the underlying type.
+ *
+ *  + Otherwise prints only the type.
  *
  * @note A newline is _not_ printed.
  *

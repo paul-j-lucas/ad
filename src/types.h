@@ -554,9 +554,10 @@ struct ad_statement {
 };
 
 /**
- * TODO
+ * Convenience macro to iterate over the cases of a `switch` statement.
  *
- * @param VAR The `slist_node` loop variable.
+ * @param VAR The \ref slist_node loop variable.
+ * @param STATEMENT The \ref ad_switch_statement to iterate the cases of.
  */
 #define FOREACH_SWITCH_CASE(VAR,STATEMENT) \
   FOREACH_SLIST_NODE( VAR, &(STATEMENT)->switch_s.case_list )

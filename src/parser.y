@@ -435,10 +435,20 @@ static void parse_cleanup( bool fatal_error ) {
 }
 
 /**
- * TODO
+ * Gets the current full scoped name.
  *
- * @param name TODO
- * @return TODO
+ * @remarks
+ * Given the declarations:
+ * @code
+ *  struct APP0 {
+ *    enum unit_t : uint<8> {
+ *      // ...
+ * @endcode
+ * and a \a name of `"unit_t"`, this function would return the scoped name of
+ * `APP0::unit_t`.
+ *
+ * @param name The local name.
+ * @return Returns the current full scoped name.
  */
 static sname_t sname_current( char const *name ) {
   sname_t sname;

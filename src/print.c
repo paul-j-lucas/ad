@@ -413,7 +413,19 @@ void print_type( ad_type_t const *type, FILE *fout ) {
   assert( type != NULL );
   assert( fout != NULL );
 
-  // TODO
+  fputs( sname_local_name( &type->sname ), fout );
+  switch ( type->rep.kind ) {
+    case AD_REP_1:
+      break;
+    case AD_REP_EXPR:
+      // TODO
+      break;
+    case AD_REP_0_1:
+    case AD_REP_0_MORE:
+    case AD_REP_1_MORE:
+      FPRINTF( fout, "[%s]", ad_rep_kind_name( type->rep.kind ) );
+      break;
+  } // switch
 }
 
 void print_type_aka( ad_type_t const *type, FILE *fout ) {
@@ -421,14 +433,10 @@ void print_type_aka( ad_type_t const *type, FILE *fout ) {
   assert( fout != NULL );
 
   ad_type_t const *const raw_type = ad_type_untypedef( type );
-  if ( raw_type == type ) {             // not a typedef
-    FPUTC( '"', fout );
-    // c_ast_gibberish( ast, C_GIB_USING, fout );
-    FPUTC( '"', fout );
-  }
-  else {
+  if ( raw_type == type )               // not a typedef
+    FPRINTF( fout, "\"%s\"", sname_full_name( &type->sname ) );
+  else
     print_type_name_aka( raw_type, fout );
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
