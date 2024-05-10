@@ -122,7 +122,8 @@ static char32_t ad_expr_utfxx_he32( ad_expr_t const *expr ) {
  * string.
  *
  * @param ps8 A pointer to the pointer to receive the UTF-8 string.
- * @return Returns `true` only if the entire Unicode string TODO.
+ * @return Returns `true` only if the entire Unicode string was decoded
+ * successfully.
  */
 static bool ad_expr_utfxx_8_0( ad_expr_t const *expr, char8_t **ps8 ) {
   switch ( expr->literal.type->tid ) {

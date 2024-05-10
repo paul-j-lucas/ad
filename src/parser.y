@@ -1009,10 +1009,9 @@ typedef_declaration
         .rep = decl->rep,
         .typedef_t = { .type = decl->type }
       };
+      ad_statement_free( $field );
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
-
-      // TODO: do something with the rest of $field
 
       DUMP_TYPE( "$$_type", new_type );
       DUMP_END();
@@ -1307,7 +1306,7 @@ postfix_expr
     }
   | postfix_expr[expr] '(' argument_expr_list_opt[arg_list] ')'
     {
-      // TODO
+      // TODO: call a function
       (void)$expr;
       (void)$arg_list;
       $$ = NULL;
