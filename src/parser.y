@@ -171,8 +171,8 @@
 
 /**
  * @defgroup parser-dump-group Debugging Macros
- * Macros that are used to dump a trace during parsing when `opt_ad_debug` is
- * `true`.
+ * Macros that are used to dump a trace during parsing when \ref opt_ad_debug
+ * is `true`.
  * @ingroup parser-group
  * @{
  */
