@@ -172,6 +172,8 @@ bool            opt_verbose;
 
 /**
  * Command-line options.
+ *
+ * @sa OPTIONS_HELP
  */
 static struct option const OPTIONS[] = {
   { "bits",               required_argument,  NULL, COPT(BITS)                },
@@ -209,6 +211,48 @@ static struct option const OPTIONS[] = {
   { "verbose",            no_argument,        NULL, COPT(VERBOSE)             },
   { "version",            no_argument,        NULL, COPT(VERSION)             },
   { NULL,                 0,                  NULL, 0                         }
+};
+
+/**
+ * Command-line options help.
+ *
+ * @note It is indexed by short option characters.
+ *
+ * @sa OPTIONS
+ * @sa opt_help()
+ */
+static char const *const OPTIONS_HELP[ 128 ] = {
+  [ COPT(BIG_ENDIAN) ] = "Highlight big-endian number",
+  [ COPT(BITS) ] = "Number size in bits: 8-64 [default: auto]",
+  [ COPT(BYTES) ] = "Number size in bytes: 1-8 [default: auto]",
+  [ COPT(C_ARRAY) ] = "Dump bytes as a C array",
+  [ COPT(COLOR) ] = "When to colorize output [default: not_file]",
+  [ COPT(DECIMAL) ] = "Print offsets in decimal",
+  [ COPT(GROUP_BY) ] = "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "]",
+  [ COPT(HELP) ] = "Print this help and exit",
+  [ COPT(HEXADECIMAL) ] = "Print offsets in hexadecimal [default]",
+  [ COPT(HOST_ENDIAN) ] = "Highlight host-endian number",
+  [ COPT(IGNORE_CASE) ] = "Ignore case for --string matches",
+  [ COPT(LITTLE_ENDIAN) ] = "Highlight little-endian number",
+  [ COPT(MATCHING_ONLY) ] = "Only dump rows having matches",
+  [ COPT(MAX_BYTES) ] = "Dump max number of bytes [default: unlimited]",
+  [ COPT(MAX_LINES) ] = "Dump max number of lines [default: unlimited]",
+  [ COPT(NO_ASCII) ] = "Suppress printing the ASCII part",
+  [ COPT(NO_OFFSETS) ] = "Suppress printing offsets",
+  [ COPT(OCTAL) ] = "Print offsets in octal",
+  [ COPT(PLAIN) ] = "Dump in plain format; same as: -AOg32",
+  [ COPT(PRINTING_ONLY) ] = "Only dump rows having printable characters",
+  [ COPT(REVERSE) ] = "Reverse from dump back to binary",
+  [ COPT(SKIP_BYTES) ] = "Jump to offset before dumping [default: 0]",
+  [ COPT(STRING) ] = "Highlight string",
+  [ COPT(STRINGS) ] = "Highlight strings at least length ARG [default: " STRINGIFY(STRINGS_LEN_DEFAULT) "]",
+  [ COPT(STRINGS_OPTS) ] = "Options for --strings matches [default: 0nst]",
+  [ COPT(TOTAL_MATCHES) ] = "Also print total number of matches",
+  [ COPT(TOTAL_MATCHES_ONLY) ] = "Only print total number of matches",
+  [ COPT(UTF8) ] = "When to dump in UTF-8 [default: never]",
+  [ COPT(UTF8_PADDING) ] = "Set UTF-8 padding character [default: U+2581]",
+  [ COPT(VERBOSE) ] = "Dump repeated rows also",
+  [ COPT(VERSION) ] = "Print version and exit",
 };
 
 // local variable definitions
@@ -436,6 +480,21 @@ static char const* opt_get_long( char short_opt ) {
       return opt->name;
   } // for
   return "";
+}
+
+/**
+ * Gets the help message for \a opt.
+ *
+ * @param opt The option to get the help for.
+ * @return Returns said help message.
+ */
+NODISCARD
+static char const* opt_help( int opt ) {
+  unsigned const uopt = STATIC_CAST( unsigned, opt );
+  assert( uopt < ARRAY_SIZE( OPTIONS_HELP ) );
+  char const *const help = OPTIONS_HELP[ uopt ];
+  assert( help != NULL );
+  return help;
 }
 
 /**
@@ -781,85 +840,66 @@ static bool should_utf8( utf8_when_t when ) {
 
 /**
  * Prints the usage message to standard error and exits.
+ *
+ * @param status The status to exit with.  If it is `EX_OK`, prints to standard
+ * output; otherwise prints to standard error.
  */
 _Noreturn
-static void usage( int status ) {
-  fprintf( status == EX_OK ? stdout : stderr,
+static void print_usage( int status ) {
+  // pre-flight to calculate longest long option length
+  size_t longest_opt_len = 0;
+  for ( struct option const *opt = OPTIONS; opt->name != NULL; ++opt ) {
+    size_t opt_len = strlen( opt->name );
+    switch ( opt->has_arg ) {
+      case no_argument:
+        break;
+      case optional_argument:
+        opt_len += STRLITLEN( "[=ARG]" );
+        break;
+      case required_argument:
+        opt_len += STRLITLEN( "=ARG" );
+        break;
+    } // switch
+    if ( opt_len > longest_opt_len )
+      longest_opt_len = opt_len;
+  } // for
+
+  FILE *const fout = status == EX_OK ? stdout : stderr;
+
+  FPRINTF( fout,
 "usage: %s [options] [+offset] [infile [outfile]]\n"
 "       %s --reverse [-" SOPT(DECIMAL) SOPT(OCTAL) SOPT(HEXADECIMAL) "] [infile [outfile]]\n"
 "       %s --help\n"
 "       %s --version\n"
-"options:\n"
-"  --big-endian=NUM    " UOPT(BIG_ENDIAN)
-                        "Highlight big-endian number.\n"
-"  --bits=NUM          " UOPT(BITS)
-                        "Number size in bits: 8-64 [default: auto].\n"
-"  --bytes=NUM         " UOPT(BYTES)
-                        "Number size in bytes: 1-8 [default: auto].\n"
-"  --c-array[=FMT]     " UOPT(C_ARRAY)
-                        "Dump bytes as a C array.\n"
-"  --color=WHEN        " UOPT(COLOR)
-                        "When to colorize output [default: not_file].\n"
-"  --decimal           " UOPT(DECIMAL)
-                        "Print offsets in decimal.\n"
-"  --group-by=NUM      " UOPT(GROUP_BY)
-                        "Group bytes by 1/2/4/8/16/32 [default: " STRINGIFY(GROUP_BY_DEFAULT) "].\n"
-"  --help              " UOPT(HELP)
-                        "Print this help and exit.\n"
-"  --hexadecimal       " UOPT(HEXADECIMAL)
-                        "Print offsets in hexadecimal [default].\n"
-"  --host-endian=NUM   " UOPT(HOST_ENDIAN)
-                        "Highlight host-endian number.\n"
-"  --ignore-case       " UOPT(IGNORE_CASE)
-                        "Ignore case for --string matches.\n"
-"  --little-endian=NUM " UOPT(LITTLE_ENDIAN)
-                        "Highlight little-endian number.\n"
-"  --matching-only     " UOPT(MATCHING_ONLY)
-                        "Only dump rows having matches.\n"
-"  --max-bytes=NUM     " UOPT(MAX_BYTES)
-                        "Dump max number of bytes [default: unlimited].\n"
-"  --max-lines=NUM     " UOPT(MAX_LINES)
-                        "Dump max number of lines [default: unlimited].\n"
-"  --no-ascii          " UOPT(NO_ASCII)
-                        "Suppress printing the ASCII part.\n"
-"  --no-offsets        " UOPT(NO_OFFSETS)
-                        "Suppress printing offsets.\n"
-"  --octal             " UOPT(OCTAL)
-                        "Print offsets in octal.\n"
-"  --plain             " UOPT(PLAIN)
-                        "Dump in plain format; same as: -AOg32.\n"
-"  --printing-only     " UOPT(PRINTING_ONLY)
-                        "Only dump rows having printable characters.\n"
-"  --reverse           " UOPT(REVERSE)
-                        "Reverse from dump back to binary.\n"
-"  --skip-bytes=NUM    " UOPT(SKIP_BYTES)
-                        "Jump to offset before dumping [default: 0].\n"
-"  --string=STR        " UOPT(STRING)
-                        "Highlight string.\n"
-"  --strings[=NUM]     " UOPT(STRINGS)
-                        "Highlight strings at least length NUM [default: " STRINGIFY(STRINGS_LEN_DEFAULT) "].\n"
-"  --strings-opts=OPTS " UOPT(STRINGS_OPTS)
-                        "Options for --strings matches [default: 0nst].\n"
-"  --total-matches     " UOPT(TOTAL_MATCHES)
-                        "Also print total number of matches.\n"
-"  --total-matches-only" UOPT(TOTAL_MATCHES_ONLY)
-                        "Only print total number of matches.\n"
-"  --utf8=WHEN         " UOPT(UTF8)
-                        "Dump in UTF-8 WHEN [default: never].\n"
-"  --utf8-padding=NUM  " UOPT(UTF8_PADDING)
-                        "Set UTF-8 padding character [default: U+2581].\n"
-"  --verbose           " UOPT(VERBOSE)
-                        "Dump repeated rows also.\n"
-"  --version           " UOPT(VERSION)
-                        "Print version and exit.\n"
-"\n"
-PACKAGE_NAME " home page: " PACKAGE_URL "\n"
-"Report bugs to: " PACKAGE_BUGREPORT "\n",
-    me,
-    me,
-    me,
-    me
+"options:\n",
+    me, me, me, me
   );
+
+  for ( struct option const *opt = OPTIONS; opt->name != NULL; ++opt ) {
+    FPRINTF( fout, "  --%s", opt->name );
+    size_t opt_len = strlen( opt->name );
+    switch ( opt->has_arg ) {
+      case no_argument:
+        break;
+      case optional_argument:
+        opt_len += STATIC_CAST( size_t, fprintf( fout, "[=ARG]" ) );
+        break;
+      case required_argument:
+        opt_len += STATIC_CAST( size_t, fprintf( fout, "=ARG" ) );
+        break;
+    } // switch
+    assert( opt_len <= longest_opt_len );
+    FPUTNSP( longest_opt_len - opt_len, fout );
+    FPRINTF( fout, " (-%c) %s.\n", opt->val, opt_help( opt->val ) );
+  } // for
+
+  FPUTS(
+    "\n"
+    PACKAGE_NAME " home page: " PACKAGE_URL "\n"
+    "Report bugs to: " PACKAGE_BUGREPORT "\n",
+    fout
+  );
+
   exit( status );
 }
 
@@ -1153,7 +1193,7 @@ void options_init( int argc, char const *argv[] ) {
   opt_check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 
   if ( opt_help )
-    usage( argc > 2 ? EX_USAGE : EX_OK );
+    print_usage( argc > 2 ? EX_USAGE : EX_OK );
 
   if ( opt_version ) {
     puts( PACKAGE_STRING );
@@ -1227,7 +1267,7 @@ void options_init( int argc, char const *argv[] ) {
       break;
 
     default:
-      usage( EX_USAGE );
+      print_usage( EX_USAGE );
   } // switch
 
   if ( opt_format_file != NULL ) {
