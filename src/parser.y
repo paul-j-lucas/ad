@@ -560,52 +560,52 @@ static void yyerror( char const *msg ) {
 %left               Y_COLON_COLON           "::"
 
                     // C operators: precedence 16
-%token  <oper_id>   Y_PLUS_PLUS             "++"
-%token  <oper_id>   Y_MINUS_MINUS           "--"
-%left   <oper_id>                           '(' ')'
+%token              Y_PLUS_PLUS             "++"
+%token              Y_MINUS_MINUS           "--"
+%left                                       '(' ')'
                                             '[' ']'
-%token  <oper_id>                           '.'
-%token  <oper_id>   Y_ARROW                 "->"
+%token                                      '.'
+%token              Y_ARROW                 "->"
                     // C operators: precedence 15
-%token  <oper_id>                           '&'
+%token                                      '&'
                                             '*'
                                             '!'
                  // Y_UMINUS             // '-' -- covered by '-' below
                  // Y_PLUS               // '+' -- covered by '+' below
-%right  <oper_id>   Y_sizeof
-%right  <oper_id>                           '~'
+%right              Y_sizeof
+%right                                      '~'
                     // C operators: precedence 14
                     // C operators: precedence 13
                                          // '*' -- covered by '*' above
-%left   <oper_id>                           '/'
+%left                                       '/'
                                             '%'
                     // C operators: precedence 12
-%left   <oper_id>                           '+'
+%left                                       '+'
                                             '-'
                     // C operators: precedence 11
-%left   <oper_id>   Y_LESS_LESS             "<<"
+%left               Y_LESS_LESS             "<<"
                     Y_GREATER_GREATER       ">>"
                     // C operators: precedence 10
                     // C operators: precedence 9
-%left   <oper_id>                           '<' '>'
+%left                                       '<' '>'
                     Y_LESS_EQUAL            "<="
                     Y_GREATER_EQUAL         ">="
 
                     // C operators: precedence 8
-%left   <oper_id>   Y_EQUAL_EQUAL           "=="
+%left               Y_EQUAL_EQUAL           "=="
                     Y_EXCLAM_EQUAL          "!="
                     // C operators: precedence 7
                     Y_BIT_AND            // '&' -- covered by Y_AMPER
                     // C operators: precedence 6
-%left   <oper_id>                           '^'
+%left                                       '^'
                     // C operators: precedence 5
-%left   <oper_id>                           '|'
+%left                                       '|'
                     // C operators: precedence 4
-%token  <oper_id>   Y_AMPER_AMPER           "&&"
+%token              Y_AMPER_AMPER           "&&"
                     // C operators: precedence 3
-%left   <oper_id>   Y_PIPE_PIPE             "||"
+%left               Y_PIPE_PIPE             "||"
                     // C operators: precedence 2
-%right  <oper_id>                           '?' ':'
+%right                                      '?' ':'
                                             '='
                     Y_PERCENT_EQUAL         "%="
                     Y_AMPER_EQUAL           "&="
@@ -619,7 +619,7 @@ static void yyerror( char const *msg ) {
                     Y_PIPE_EQUAL            "|="
 
                     // C operators: precedence 1
-%left   <oper_id>                           ','
+%left                                       ','
 
 
                     // Miscellaneous
