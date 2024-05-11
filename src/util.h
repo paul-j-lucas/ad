@@ -384,6 +384,21 @@ _GL_INLINE_HEADER_BEGIN
 # define IS_ARRAY(A)              1
 #endif /* HAVE___TYPEOF__ */
 
+/**
+ * Checks (at compile-time) whether the type of \a T is a C string type, i.e.,
+ * <code>char*</code> or <code>char const*</code>.
+ *
+ * @param T An expression. It is _not_ evaluated.
+ * @return Returns 1 (true) only if \a T is a C string type; 0 (false)
+ * otherwise.
+ */
+#define IS_C_STR(T)   \
+  _Generic( (T),      \
+    char*       : 1,  \
+    char const* : 1,  \
+    default     : 0   \
+  )
+
 #ifdef __GNUC__
 
 /**
@@ -595,6 +610,15 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #CHARIFY()
  */
 #define STRINGIFY(X)              STRINGIFY_HELPER(X)
+
+/**
+ * Gets the length of \a S.
+ *
+ * @param S The C string literal to get the length of.
+ * @return Returns said length.
+ */
+#define STRLITLEN(S) \
+  (ARRAY_SIZE(S) - STATIC_ASSERT_EXPR( IS_C_STR(S), #S " must be a C string literal" ))
 
 /**
  * A special-case of #INTERNAL_ERROR() that prints an unexpected integer value.
