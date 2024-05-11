@@ -553,13 +553,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 {S}+          ;                         /* ignore all other whitespace */
 \\\n          ;                         /* eat escaped newlines */
-
-\n            {
-                SET_TOKEN;
-                newline();
-                BEGIN( INITIAL );
-                return Y_END;
-              }
+\n            { newline(); }            /* ignore newlines */
 
   /***************************************************************************/
   /*  NON-MATCH & EOF                                                        */
