@@ -1,3 +1,7 @@
+2024-05-10  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, util.h: Added OPTIONS.
+
 2024-04-30  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c, options.c, options.h, unicode.c, unicode.h: Unicode clean-up.
