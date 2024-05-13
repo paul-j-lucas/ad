@@ -953,7 +953,7 @@ void options_init( int argc, char const *argv[] ) {
 
   size_t            max_lines = 0;
   int               opt;
-  char const       *opt_format_file = NULL;
+  char const       *opt_format_path = NULL;
   bool              opt_help = false;
   bool              opt_version = false;
   char const *const short_opts = make_short_opts( OPTIONS );
@@ -996,7 +996,7 @@ void options_init( int argc, char const *argv[] ) {
       case COPT(FORMAT):
         if ( *SKIP_WS( optarg ) == '\0' )
           goto missing_arg;
-        opt_format_file = optarg;
+        opt_format_path = optarg;
         break;
       case COPT(GROUP_BY):
         opt_group_by = parse_group_by( optarg );
@@ -1272,8 +1272,8 @@ void options_init( int argc, char const *argv[] ) {
       print_usage( EX_USAGE );
   } // switch
 
-  if ( opt_format_file != NULL ) {
-    FILE *const file = fopen( opt_format_file, "r" );
+  if ( opt_format_path != NULL ) {
+    FILE *const file = fopen( opt_format_path, "r" );
     PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
     yyrestart( file );
     int const rv = yyparse();
