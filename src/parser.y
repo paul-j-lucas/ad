@@ -601,7 +601,7 @@ static void yyerror( char const *msg ) {
                     // C operators: precedence 5
 %left                                       '|'
                     // C operators: precedence 4
-%token              Y_AMPER_AMPER           "&&"
+%left               Y_AMPER_AMPER           "&&"
                     // C operators: precedence 3
 %left               Y_PIPE_PIPE             "||"
                     // C operators: precedence 2
