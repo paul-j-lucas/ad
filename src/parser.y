@@ -565,7 +565,7 @@ static void yyerror( char const *msg ) {
 %left                                       '(' ')'
                                             '[' ']'
 %token                                      '.'
-%token              Y_ARROW                 "->"
+%token              Y_MINUS_GREATER         "->"
                     // C operators: precedence 15
 %token                                      '&'
                                             '*'

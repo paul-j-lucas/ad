@@ -337,7 +337,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 "+="          { SET_TOKEN; return Y_PLUS_EQUAL            ; }
 "--"          { SET_TOKEN; return Y_MINUS_MINUS           ; }
 "-="          { SET_TOKEN; return Y_MINUS_EQUAL           ; }
-"->"          { SET_TOKEN; return Y_ARROW                 ; }
+"->"          { SET_TOKEN; return Y_MINUS_GREATER         ; }
 "/="          { SET_TOKEN; return Y_SLASH_EQUAL           ; }
 "<<"          { SET_TOKEN; return Y_LESS_LESS             ; }
 "<<="         { SET_TOKEN; return Y_LESS_LESS_EQUAL       ; }
