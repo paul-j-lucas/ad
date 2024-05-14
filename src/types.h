@@ -370,6 +370,17 @@ typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  print_params          print_params_t;
 typedef slist_t                       sname_t;    ///< Scoped name.
 
+/**
+ * The signature for a function passed to **bsearch**(3).
+ *
+ * @param i_data A pointer to data.
+ * @param j_data A pointer to data.
+ * @return Returns an integer less than, equal to, or greater than 0, according
+ * to whether the data pointed to by \a i_data is less than, equal to, or
+ * greater than the data pointed to by \a j_data.
+ */
+typedef int (*bsearch_cmp_fn_t)( void const *i_data, void const *j_data );
+
 typedef ad_loc_t YYLTYPE;               ///< Source location type for Bison.
 /// @cond DOXYGEN_IGNORE
 #define YYLTYPE_IS_DECLARED       1
