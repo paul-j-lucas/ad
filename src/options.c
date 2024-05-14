@@ -221,7 +221,7 @@ static struct option const OPTIONS[] = {
  * @sa OPTIONS
  * @sa opt_help()
  */
-static char const *const OPTIONS_HELP[ 128 ] = {
+static char const *const OPTIONS_HELP[] = {
   [ COPT(BIG_ENDIAN) ] = "Highlight big-endian number",
   [ COPT(BITS) ] = "Number size in bits: 8-64 [default: auto]",
   [ COPT(BYTES) ] = "Number size in bytes: 1-8 [default: auto]",

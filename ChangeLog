@@ -1,3 +1,7 @@
+2024-05-14  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Removed 128 specified size of OPTIONS_HELP.
+
 2024-05-10  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, util.h: Added OPTIONS.
