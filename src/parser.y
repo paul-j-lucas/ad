@@ -27,7 +27,7 @@
 /** @cond DOXYGEN_IGNORE */
 
 %define api.header.include { "parser.h" }
-%expect 6
+%expect 4
 
 %{
 /** @endcond */
@@ -336,6 +336,8 @@ typedef struct in_attr in_attr_t;
 PJL_PRINTF_LIKE_FUNC(4)
 static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
                                 ... );
+PJL_DISCARD
+static bool print_error_token( char const* );
 
 // local variables
 static in_attr_t      in_attr;          ///< Inherited attributes.
@@ -400,11 +402,8 @@ static bool define_type( ad_type_t const *type ) {
 static void fl_punct_expected( char const *file, int line, char punct ) {
   EPUTS( ": " );
   print_debug_file_line( file, line );
-
-  char const *const error_token = lexer_printable_token();
-  if ( error_token != NULL )
-    EPRINTF( "\"%s\": ", error_token );
-
+  if ( print_error_token( lexer_printable_token() ) )
+    EPUTS( ": " );
   EPRINTF( "'%c' expected\n", punct );
 }
 
@@ -631,6 +630,7 @@ static void yyerror( char const *msg ) {
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
 %token  <str_val>   Y_STR_LIT
+%token              Y_TEMPLATE_END
 %token  <type>      Y_TYPEDEF_TYPE
 
                     //
@@ -672,7 +672,7 @@ static void yyerror( char const *msg ) {
 %type <expr>        cast_expr
 %type <expr>        conditional_expr
 %type <expr>        equality_expr
-%type <expr>        expr expr_exp
+%type <expr>        expr
 %type <expr>        logical_and_expr
 %type <expr>        logical_or_expr
 %type <expr>        match_expr_opt
@@ -814,7 +814,7 @@ switch_case_list
   ;
 
 switch_case
-  : Y_case expr_exp[expr] colon_exp statement_list_opt[statement_list]
+  : Y_case assign_expr[expr] colon_exp statement_list_opt[statement_list]
     {
       DUMP_START( "switch_case", "CASE expr ':' statement_list_opt" );
       DUMP_EXPR( "expr", $expr );
@@ -858,6 +858,11 @@ declaration
     }
   | struct_declaration
   | typedef_declaration
+  ;
+
+match_expr_opt
+  : /* empty */                   { $$ = NULL; }
+  | Y_EQUAL_EQUAL expr            { $$ = $expr; }
   ;
 
 /// enum declaration //////////////////////////////////////////////////////////
@@ -960,11 +965,6 @@ array_opt
     }
   ;
 
-match_expr_opt
-  : /* empty */                   { $$ = NULL; }
-  | "==" expr                     { $$ = $expr; }
-  ;
-
 /// struct declaration ////////////////////////////////////////////////////////
 
 struct_declaration
@@ -1036,15 +1036,6 @@ expr
 
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
-    }
-  ;
-
-expr_exp
-  : expr
-  | error
-    {
-      elaborate_error( "expression expected" );
-      $$ = NULL;
     }
   ;
 
@@ -1590,8 +1581,14 @@ unary_op
 ///////////////////////////////////////////////////////////////////////////////
 
 type
-  : builtin_tid[tid] lt_exp expr_exp[size] type_endian_expr_opt[endian] gt_exp
+  : builtin_tid[tid]
     {
+      lexer_in_template = true;
+    }
+    lt_exp assign_expr[size] type_endian_expr_opt[endian] template_end_exp
+    {
+      lexer_in_template = false;
+
       DUMP_START( "type", "builtin_tid '<' expr type_endian_expr_opt '>'" );
       DUMP_TID( "builtin_tid", $tid );
       DUMP_EXPR( "expr", $size );
@@ -1609,6 +1606,14 @@ type
       DUMP_END();
     }
   | Y_TYPEDEF_TYPE
+  ;
+
+template_end_exp
+  : Y_TEMPLATE_END
+  | error
+    {
+      punct_expected( '>' );
+    }
   ;
 
 builtin_tid
@@ -1692,14 +1697,6 @@ equals_exp
   | error
     {
       punct_expected( '=' );
-    }
-  ;
-
-gt_exp
-  : '>'
-  | error
-    {
-      punct_expected( '>' );
     }
   ;
 
@@ -1826,22 +1823,8 @@ static void fl_elaborate_error( char const *file, int line,
   print_debug_file_line( file, line );
 
   char const *const error_token = lexer_printable_token();
-  if ( error_token != NULL ) {
-    EPRINTF( "\"%s\"", error_token );
-    if ( opt_ad_debug != AD_DEBUG_NO ) {
-      switch ( yychar ) {
-        case YYEMPTY:
-          EPUTS( " [<empty>]" );
-          break;
-        case YYEOF:
-          EPUTS( " [<EOF>]" );
-          break;
-        default:
-          EPRINTF( " [%d]", yychar );
-      } // switch
-    }
+  if ( print_error_token( error_token ) )
     EPUTS( ": " );
-  }
 
   va_list args;
   va_start( args, format );
@@ -1854,6 +1837,32 @@ static void fl_elaborate_error( char const *file, int line,
   }
 
   EPUTC( '\n' );
+}
+
+/**
+ * Prints \a token, quoted; if \ref opt_ad_debug `!=` #AD_DEBUG_NO, also prints
+ * the look-ahead character within `[]`.
+ *
+ * @param token The error token to print, if any.
+ * @return Returns `true` only if anything was printed.
+ */
+static bool print_error_token( char const *token ) {
+  if ( token == NULL )
+    return false;
+  EPRINTF( "\"%s\"", token );
+  if ( opt_ad_debug != AD_DEBUG_NO ) {
+    switch ( yychar ) {
+      case YYEMPTY:
+        EPUTS( " [<empty>]" );
+        break;
+      case YYEOF:
+        EPUTS( " [<EOF>]" );
+        break;
+      default:
+        EPRINTF( " [%d]", yychar );
+    } // switch
+  }
+  return true;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////

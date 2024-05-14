@@ -42,6 +42,15 @@
 ////////// extern variables ///////////////////////////////////////////////////
 
 /**
+ * When `true`, the lexer will keep track of the nesting depth of `<`
+ * characters balanced by `>` characters.
+ *
+ * When the outermost `>` is encountered, the lexer will return
+ * `Y_TEMPLATE_END` instead of `>`.
+ */
+extern bool         lexer_in_template;
+
+/**
  * Text of current token.
  *
  * @sa lexer_printable_token()

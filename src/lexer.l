@@ -115,8 +115,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// extern variables
 static char const lexer_token_init_buf; ///< So lexer_token is never null.
+
+// extern variables
+bool              lexer_in_template;
 
 // A separate pointer for the current token allows it:
 //  + To be `const`.
@@ -128,6 +130,7 @@ static char      *input_buf;            ///< Entire current input line.
 static size_t     input_len;            ///< Length of line in `input_buf`.
 static size_t     input_sent;           ///< How many bytes returned to flex.
 static bool       is_eof;               ///< Encountered EOF?
+static unsigned   less_depth;           ///< Depth of `<>`.
 static int        newline_column;       ///< Column position of newline.
 static strbuf_t   str_lit_buf;          ///< String (or character) literal.
 static ad_loc_t   str_lit_loc;          ///< String literal starting location.
@@ -350,6 +353,20 @@ hex_int       0[xX]{H}+{int_sfx}?
 "|="          { SET_TOKEN; return Y_PIPE_EQUAL            ; }
 "||"          { SET_TOKEN; return Y_PIPE_PIPE             ; }
 
+"<"           {
+                SET_TOKEN;
+                if ( lexer_in_template )
+                  ++less_depth;
+                return '<';
+              }
+
+">"           {
+                SET_TOKEN;
+                if ( lexer_in_template && less_depth > 0 && --less_depth == 0 )
+                  return Y_TEMPLATE_END;
+                return '>';
+              }
+
               /* Single-character operators and miscellaneous punctuation. */
 "!"           |
 "%"           |
@@ -364,9 +381,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 "/"           |
 ":"           |
 ";"           |
-"<"           |
 "="           |
-">"           |
 "?"           |
 "["           |
 "]"           |
