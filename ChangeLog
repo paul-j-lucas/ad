@@ -1,5 +1,6 @@
 2024-05-15  Paul J. Lucas <paul@lucasmail.org>
 
+   * util.h: Eliminated FATAL_ERR().
    * reverse.c: Added #include "ad.h".
    * reverse.c: Undefining FWRITE.
    * options.c: Now using SOPT() in all cases.
