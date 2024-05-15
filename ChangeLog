@@ -1,5 +1,6 @@
 2024-05-15  Paul J. Lucas <paul@lucasmail.org>
 
+   * util.h: Added STATIC_CAST() to FPUTS().
    * util.h: Eliminated FATAL_ERR().
    * reverse.c: Added #include "ad.h".
    * reverse.c: Undefining FWRITE.
