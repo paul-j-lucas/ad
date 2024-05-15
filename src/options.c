@@ -36,6 +36,7 @@
 #include <assert.h>
 #include <ctype.h>                      /* for islower(), toupper() */
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
+#include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
