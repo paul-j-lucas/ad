@@ -25,6 +25,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad.h"
 #include "options.h"
 #include "unicode.h"
 #include "util.h"
