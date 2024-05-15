@@ -202,7 +202,7 @@
  * @sa #DUMP_EXPR_LIST()
  */
 #define DUMP_EXPR(KEY,EXPR) IF_AD_DEBUG( \
-  DUMP_KEY_IMPL( KEY ":" ); ad_expr_dump( (EXPR), stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); ad_expr_dump( (EXPR), stdout ); )
 
 /**
  * Dumps an `s_list` of ad_expr_t.

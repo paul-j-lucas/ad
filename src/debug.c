@@ -75,7 +75,7 @@
   DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', (D)->fout ); )
 
 #define DUMP_TID(D,KEY,TID) BLOCK( \
-  DUMP_KEY( dump, KEY ": " ); ad_tid_dump( (TID), (D)->fout ); )
+  DUMP_KEY( dump, KEY ": " ); ad_tid_dump_impl( (TID), (D) ); )
 
 #define DUMP_TYPE(D,KEY,TYPE) BLOCK( \
   DUMP_KEY( dump, KEY ": " ); ad_type_dump_impl( (TYPE), (D) ); )
@@ -112,6 +112,7 @@ static void ad_rep_dump_impl( ad_rep_t const*, dump_state_t* );
 NODISCARD
 static char const* ad_statement_kind_name( ad_statement_kind_t );
 static void ad_switch_dump_impl( ad_switch_statement_t const*, dump_state_t* );
+static void ad_tid_dump_impl( ad_tid_t, dump_state_t* );
 static void ad_type_dump_impl( ad_type_t const*, dump_state_t* );
 static void dump_init( dump_state_t*, unsigned, FILE* );
 NODISCARD
