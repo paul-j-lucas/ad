@@ -636,7 +636,7 @@ _GL_INLINE_HEADER_BEGIN
 /**
  * Whitespace characters.
  */
-#define WS_CHARS                  " \f\n\t\r\v"
+#define WS_CHARS                  " \f\n\r\t\v"
 
 ///////////////////////////////////////////////////////////////////////////////
 
