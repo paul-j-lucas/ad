@@ -48,7 +48,6 @@ void reverse_dump_file( void );
 // extern variable definitions
 off_t       fin_offset;
 char const *fin_path = "-";
-char const *fout_path = "-";
 char const *me;
 unsigned    row_bytes = ROW_BYTES_DEFAULT;
 
