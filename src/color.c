@@ -268,7 +268,7 @@ void colors_init( void ) {
     COLOR_CAP_ERROR         "=" SGR_FG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
     COLOR_CAP_LOCUS         "="                         SGR_BOLD  SGR_CAP_SEP
     COLOR_CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
-    COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN
+    COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN                       SGR_CAP_SEP
     COLOR_CAP_WARNING       "=" SGR_FG_YELLOW   SGR_SEP SGR_BOLD  SGR_CAP_SEP;
 
   MAYBE_UNUSED bool const ok = colors_parse( COLORS_DEFAULT );
