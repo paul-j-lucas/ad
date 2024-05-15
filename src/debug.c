@@ -139,8 +139,8 @@ static void ad_decl_dump_impl( ad_decl_t const *decl, dump_state_t *dump ) {
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   DUMP_STR( dump, "name", decl->name );
-  DUMP_TYPE( dump, "type", decl->type );
   DUMP_KEY( dump, "align: %u", decl->align );
+  DUMP_TYPE( dump, "type", decl->type );
   DUMP_REP( dump, "rep", &decl->rep );
   if ( decl->match_expr != NULL )
     DUMP_EXPR( dump, "match_expr", decl->match_expr );
