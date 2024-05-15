@@ -35,21 +35,31 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 NODISCARD
-static bool statement_check( ad_statement_t const *statement ) {
+static bool ad_statement_check( ad_statement_t const *statement ) {
   assert( statement != NULL );
+
+  // TODO
 
   return true;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool statement_list_check( slist_t const *statement_list ) {
+bool ad_statement_list_check( slist_t const *statement_list ) {
   assert( statement_list != NULL );
 
   FOREACH_SLIST_NODE( statement_node, statement_list ) {
-    if ( !statement_check( statement_node->data ) )
+    if ( !ad_statement_check( statement_node->data ) )
       return false;
   } // for
+
+  return true;
+}
+
+bool ad_type_check( ad_type_t const *type ) {
+  assert( type != NULL );
+
+  // TODO
 
   return true;
 }

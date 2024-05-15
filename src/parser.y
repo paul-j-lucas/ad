@@ -334,7 +334,8 @@ typedef struct in_attr in_attr_t;
 
 // extern functions
 NODISCARD
-bool statement_list_check( slist_t const* );
+bool  ad_statement_list_check( slist_t const* ),
+      ad_type_check( ad_type_t const* );
 
 // local functions
 PJL_PRINTF_LIKE_FUNC(4)
@@ -361,13 +362,16 @@ NODISCARD
 static bool define_type( ad_type_t const *type ) {
   assert( type != NULL );
 
+  if ( !ad_type_check( type ) )
+    return false;                       // error message was already printed
+
   ad_typedef_t const *const tdef = ad_typedef_add( type );
   if ( ad_type_equal( tdef->type, type ) )
     return true;
 
   //
   // Type was NOT added because a previously declared type having the same
-  // name was returned and the types are _not_ equal.
+  // name was returned and the types are NOT equal.
   //
   print_error( &type->loc, "type " );
   print_type_aka( type, stderr );
@@ -721,7 +725,7 @@ static void yyerror( char const *msg ) {
 ad_file
   : statement_list_opt Y_END
     {
-      PARSE_ASSERT( statement_list_check( &statement_list ) );
+      PARSE_ASSERT( ad_statement_list_check( &statement_list ) );
     }
   | error
     {
