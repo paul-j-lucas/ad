@@ -1,5 +1,6 @@
 2024-05-15  Paul J. Lucas <paul@lucasmail.org>
 
+   * reverse.c: Added #include "ad.h".
    * reverse.c: Undefining FWRITE.
    * options.c: Now using SOPT() in all cases.
    * ad.c, ad.h, options.c: Made fout_path local.
