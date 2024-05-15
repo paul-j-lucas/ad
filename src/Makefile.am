@@ -35,6 +35,7 @@ ad_SOURCES =	parser.y\
 		lexer.l lexer.h \
 		pjl_config.h \
 		ad.c ad.h \
+		check.c \
 		color.c color.h \
 		dam_lev.c dam_lev.h \
 		did_you_mean.c did_you_mean.h \

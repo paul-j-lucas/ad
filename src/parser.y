@@ -332,6 +332,10 @@ struct in_attr {
 };
 typedef struct in_attr in_attr_t;
 
+// extern functions
+NODISCARD
+bool statement_list_check( slist_t const* );
+
 // local functions
 PJL_PRINTF_LIKE_FUNC(4)
 static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
@@ -716,6 +720,13 @@ static void yyerror( char const *msg ) {
 
 ad_file
   : statement_list_opt Y_END
+    {
+      PARSE_ASSERT( statement_list_check( &statement_list ) );
+    }
+  | error
+    {
+      elaborate_error( "statement list expected" );
+    }
   ;
 
 ///////////////////////////////////////////////////////////////////////////////
