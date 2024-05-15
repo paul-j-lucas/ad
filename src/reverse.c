@@ -41,6 +41,10 @@
 #include <string.h>                     /* for str...() */
 #include <sysexits.h>
 
+#ifdef FWRITE
+#undef FWRITE
+#endif /* FWRITE */
+
 /// @endcond
 
 /**
