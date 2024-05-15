@@ -27,9 +27,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
-#include "lexer.h"
 #include "options.h"
-#include "typedef.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -45,6 +43,7 @@
 // extern function declarations
 void dump_file( void );
 void dump_file_c( void );
+void dump_file_format( void );
 void reverse_dump_file( void );
 
 // extern variable definitions
@@ -81,6 +80,8 @@ int main( int argc, char const *argv[const] ) {
 
   if ( opt_c_array != C_ARRAY_NONE )
     dump_file_c();
+  else if ( opt_format_path != NULL )
+    dump_file_format();
   else if ( opt_reverse )
     reverse_dump_file();
   else

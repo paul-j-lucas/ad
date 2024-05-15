@@ -27,10 +27,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
 #include "color.h"
-#include "lexer.h"
 #include "options.h"
-#include "parser.h"
-#include "typedef.h"
 #include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -1294,27 +1291,8 @@ void options_init( int argc, char const *argv[] ) {
       print_usage( EX_USAGE );
   } // switch
 
-  if ( opt_format_path != NULL ) {
-    FILE *const file = fopen( opt_format_path, "r" );
-    PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
-    lexer_init();
-    ad_typedefs_init();
-    yyrestart( file );
-    int const rv = yyparse();
-    PJL_IGNORE_RV( fclose( file ) );
-    if ( unlikely( rv == 2 ) ) {
-      //
-      // Bison has already printed "memory exhausted" via yyerror() that
-      // doesn't print a newline, so print one now.
-      //
-      EPUTC( '\n' );
-      _Exit( EX_SOFTWARE );
-    }
-
-    if ( rv != 0 )
-      exit( EX_DATAERR );
+  if ( opt_format_path != NULL )
     return;
-  }
 
   if ( !opt_strings ) {
     if ( opt_search_buf != NULL ) {
