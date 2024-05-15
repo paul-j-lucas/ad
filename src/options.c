@@ -1240,8 +1240,7 @@ void options_init( int argc, char const *argv[] ) {
 
   switch ( argc ) {
     case 2:                             // infile & outfile
-      fout_path = argv[2];
-      if ( strcmp( fout_path, "-" ) != 0 ) {
+      if ( strcmp( argv[2], "-" ) != 0 ) {
         //
         // We can't use fopen(3) because there's no mode that specifies opening
         // a file for writing and NOT truncating it to zero length if it
@@ -1250,9 +1249,9 @@ void options_init( int argc, char const *argv[] ) {
         // Hence we have to use open(2) so we can specify only O_WRONLY and
         // O_CREAT but not O_TRUNC.
         //
-        int const fd = open( fout_path, O_WRONLY | O_CREAT, 0644 );
+        int const fd = open( argv[2], O_WRONLY | O_CREAT, 0644 );
         if ( fd == -1 )
-          fatal_error( EX_CANTCREAT, "\"%s\": %s\n", fout_path, STRERROR() );
+          fatal_error( EX_CANTCREAT, "\"%s\": %s\n", argv[2], STRERROR() );
         DUP2( fd, STDOUT_FILENO );
         close( fd );
       }
