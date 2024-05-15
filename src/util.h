@@ -219,19 +219,6 @@ _GL_INLINE_HEADER_BEGIN
 #define EPRINTF(...)              fprintf( stderr, __VA_ARGS__ )
 
 /**
- * Prints an error message to standard error and exits with \a STATUS code.
- *
- * @param STATUS The status code to **exit**(3) with.
- * @param FORMAT The `printf()` format to use.
- * @param ... The `printf()` arguments.
- *
- * @sa #INTERNAL_ERROR()
- * @sa #PERROR_EXIT_IF()
- */
-#define FATAL_ERR(STATUS,FORMAT,...) \
-  BLOCK( EPRINTF( "%s: " FORMAT, me, __VA_ARGS__ ); _Exit( STATUS ); )
-
-/**
  * Calls **fflush(3)** on \a STREAM, checks for an error, and exits if there
  * was one.
  *
@@ -364,7 +351,7 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #UNEXPECTED_INT_VALUE()
  */
 #define INTERNAL_ERROR(FORMAT,...) \
-  FATAL_ERR( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
+  fatal_error( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
 /**
  * Checks (at compile-time) whether \a A is an array.
