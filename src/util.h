@@ -636,7 +636,7 @@ _GL_INLINE_HEADER_BEGIN
 /**
  * Whitespace characters.
  */
-#define WS_CHARS                  " \n\t\r\f\v"
+#define WS_CHARS                  " \f\n\t\r\v"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -716,6 +716,9 @@ void check_dup2( int old_fd, int new_fd );
  * @param p The pointer to reallocate.  If NULL, new memory is allocated.
  * @param size The number of bytes to allocate.
  * @return Returns a pointer to the allocated memory.
+ *
+ * @sa #MALLOC()
+ * @sa #REALLOC()
  */
 NODISCARD
 void* check_realloc( void *p, size_t size );
