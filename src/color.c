@@ -216,47 +216,39 @@ static bool colors_parse( char const *capabilities ) {
 /**
  * Determines whether we should emit escape sequences for color.
  *
- * @param when The color_when value.
+ * @param when The \ref color_when value.
  * @return Returns `true` only if we should do color.
  */
 NODISCARD
 static bool should_colorize( color_when_t when ) {
-  switch ( when ) {                     // handle easy cases
-    case COLOR_ALWAYS: return true;
-    case COLOR_NEVER : return false;
-    default          : break;
+  switch ( when ) {
+    case COLOR_ALWAYS:
+      return true;
+    case COLOR_ISATTY:
+      return isatty( STDOUT_FILENO );   // emulate gcc's --color=auto
+    case COLOR_NEVER:
+      return false;
+    case COLOR_NOT_FILE:
+      //
+      // Do color only we're writing either to a TTY or to a pipe (so the
+      // common case of piping to less(1) will still show color) but NOT when
+      // writing to a file because we don't want the escape sequences polluting
+      // it.
+      //
+      // Results from testing using isatty(3) and fstat(3) are given in the
+      // following table:
+      //
+      //      COMMAND   Should? isatty ISCHR ISFIFO ISREG
+      //      ========= ======= ====== ===== ====== =====
+      //      ad           T      T      T     F      F
+      //      ad > file    F      F      F     F    >>T<<
+      //      ad | less    T      F      F     T      F
+      //
+      // Hence, we want to do color _except_ when ISREG=T.
+      //
+      return !fd_is_file( STDOUT_FILENO );
   } // switch
-
-  //
-  // If TERM is unset, empty, or "dumb", color probably won't work.
-  //
-  char const *const term = getenv( "TERM" );
-  if ( term == NULL || term[0] == '\0' || strcmp( term, "dumb" ) == 0 )
-    return false;
-
-  int const fd_out = fileno( stdout );
-  if ( when == COLOR_ISATTY )           // emulate grep's --color=auto
-    return isatty( fd_out );
-
-  assert( when == COLOR_NOT_FILE );
-  //
-  // Otherwise we want to do color only we're writing either to a TTY or to a
-  // pipe (so the common case of piping to less(1) will still show color) but
-  // NOT when writing to a file because we don't want the escape sequences
-  // polluting it.
-  //
-  // Results from testing using isatty(3) and fstat(3) are given in the
-  // following table:
-  //
-  //    COMMAND   Should? isatty ISCHR ISFIFO ISREG
-  //    ========= ======= ====== ===== ====== =====
-  //    ad           T      T      T     F      F
-  //    ad > file    F      F      F     F    >>T<<
-  //    ad | less    T      F      F     T      F
-  //
-  // Hence, we want to do color _except_ when ISREG=T.
-  //
-  return !fd_is_file( fd_out );
+  UNEXPECTED_INT_VALUE( when );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////

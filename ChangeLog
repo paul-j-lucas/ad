@@ -1,3 +1,7 @@
+2024-05-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * color.c: Removed checking of TERM from should_colorize().
+
 2024-05-14  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c: Removed 128 specified size of OPTIONS_HELP.
