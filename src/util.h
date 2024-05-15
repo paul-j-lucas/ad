@@ -37,7 +37,6 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <regex.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
@@ -1117,39 +1116,6 @@ void perror_exit( int status );
  */
 NODISCARD
 char const* printable_char( char c );
-
-/**
- * Compiles a regular expression pattern.
- *
- * @param re A pointer to the wregex_t to compile to.
- * @param pattern The regular expression pattern to compile.
- */
-void regex_compile( regex_t *re, char const *pattern );
-
-/**
- * Frees all memory used by a wregex_t.
- *
- * @param re A pointer to the wregex_t to free.
- */
-AD_UTIL_H_INLINE
-void regex_free( regex_t *re ) {
-  regfree( re );
-}
-
-/**
- * Attempts to match \a s against the previously compiled regular expression
- * pattern in \a re.
- *
- * @param re A pointer to the wregex_t to match against.
- * @param s The string to match.
- * @param offset The offset into \a s to start.
- * @param range A pointer to an array of size 2 to receive the beginning
- * position and one past the end position of the match -- set only if not NULL
- * and there was a match.
- * @return Returns \c true only if there was a match.
- */
-NODISCARD
-bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range );
 
 /**
  * Decrements \a *s_len as if to trim whitespace, if any, from the end of \a s.

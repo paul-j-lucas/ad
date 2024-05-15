@@ -83,20 +83,6 @@ static char const* fputs_list_apc_gets( void const **ppelt ) {
   return *ps;
 }
 
-/**
- * Gets the regular expression error message corresponding to \a err_code.
- *
- * @param re The regex_t involved in the error.
- * @param err_code The error code.
- * @return Returns a pointer to a static buffer containing the error message.
- */
-static char const* regex_error( regex_t *re, int err_code ) {
-  assert( re != NULL );
-  static char err_buf[ 128 ];
-  (void)regerror( err_code, re, err_buf, sizeof err_buf );
-  return err_buf;
-}
-
 ////////// extern funtions ////////////////////////////////////////////////////
 
 bool ascii_any_printable( char const *s, size_t s_len ) {
@@ -451,43 +437,6 @@ uint64_t swap_64( uint64_t n ) {
         | ((n & 0x0000000000FF0000ull) << 24)
         | ((n & 0x000000000000FF00ull) << 40)
         | ( n                          << 56);
-}
-
-void regex_compile( regex_t *re, char const *pattern ) {
-  assert( re != NULL );
-  assert( pattern != NULL );
-  int const rv = regcomp( re, pattern, REG_EXTENDED );
-  if ( rv != 0 ) {
-    fatal_error( EX_DATAERR,
-      "\"%s\": invalid regular expression (%d): %s\n",
-      pattern, rv, regex_error( re, rv )
-    );
-  }
-}
-
-bool regex_match( regex_t *re, char const *s, size_t offset, size_t *range ) {
-  assert( re != NULL );
-  assert( s != NULL );
-
-  char const *const so = s + offset;
-  regmatch_t match[ re->re_nsub + 1 ];
-
-  int const err_code = regexec( re, so, re->re_nsub + 1, match, /*eflags=*/0 );
-
-  if ( err_code == REG_NOMATCH )
-    return false;
-  if ( err_code < 0 ) {
-    fatal_error( EX_SOFTWARE,
-      "regular expression error (%d): %s\n",
-      err_code, regex_error( re, err_code )
-    );
-  }
-
-  if ( range != NULL ) {
-    range[0] = (size_t)match[0].rm_so + offset;
-    range[1] = (size_t)match[0].rm_eo + offset;
-  }
-  return true;
 }
 
 char* tolower_s( char *s ) {
