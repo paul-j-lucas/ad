@@ -85,8 +85,8 @@
 #define OPT_MAX_BYTES           N
 #define OPT_NO_OFFSETS          O
 #define OPT_OCTAL               o
-#define OPT_PLAIN               P
 #define OPT_PRINTING_ONLY       p
+#define OPT_PLAIN               P
 #define OPT_REVERSE             r
 #define OPT_STRING              s
 #define OPT_STRINGS_OPTS        S
@@ -1171,7 +1171,29 @@ void options_init( int argc, char const *argv[] ) {
   );
   opt_check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
   opt_check_mutually_exclusive( SOPT(REVERSE),
-    "AbBcCeEgimLNOpPsStTuUv"
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(COLOR)
+    SOPT(C_ARRAY)
+    SOPT(GROUP_BY)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_OFFSETS)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+    SOPT(STRING)
+    SOPT(STRINGS)
+    SOPT(STRINGS_OPTS)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
   );
   opt_check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
   opt_check_mutually_exclusive( SOPT(STRINGS),

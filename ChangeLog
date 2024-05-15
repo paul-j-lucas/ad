@@ -1,5 +1,6 @@
 2024-05-15  Paul J. Lucas <paul@lucasmail.org>
 
+   * options.c: Now using SOPT() in all cases.
    * ad.c, ad.h, options.c: Made fout_path local.
    * color.c: Removed checking of TERM from should_colorize().
 
