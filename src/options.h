@@ -136,6 +136,7 @@ extern ad_debug_t     opt_ad_debug;
 extern ad_c_array_t   opt_c_array;      ///< Dump as C array in this format.
 extern color_when_t   opt_color_when;   ///< When to colorize output.
 extern bool           opt_dump_ascii;   ///< Dump ASCII part?
+extern char const    *opt_format_path;  ///< Dump format path.
 extern unsigned       opt_group_by;     ///< Group by this number of bytes.
 extern bool           opt_ignore_case;  ///< Case-insensitive matching?
 extern size_t         opt_max_bytes;    ///< Maximum number of bytes to dump.

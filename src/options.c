@@ -30,6 +30,7 @@
 #include "lexer.h"
 #include "options.h"
 #include "parser.h"
+#include "typedef.h"
 #include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -148,6 +149,7 @@ ad_debug_t      opt_ad_debug;
 ad_c_array_t    opt_c_array;
 color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
 bool            opt_dump_ascii = true;
+char const     *opt_format_path;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
 bool            opt_ignore_case;
 size_t          opt_max_bytes = SIZE_MAX;
@@ -953,7 +955,6 @@ void options_init( int argc, char const *argv[] ) {
 
   size_t            max_lines = 0;
   int               opt;
-  char const       *opt_format_path = NULL;
   bool              opt_help = false;
   bool              opt_version = false;
   char const *const short_opts = make_short_opts( OPTIONS );
@@ -1296,6 +1297,8 @@ void options_init( int argc, char const *argv[] ) {
   if ( opt_format_path != NULL ) {
     FILE *const file = fopen( opt_format_path, "r" );
     PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
+    lexer_init();
+    ad_typedefs_init();
     yyrestart( file );
     int const rv = yyparse();
     PJL_IGNORE_RV( fclose( file ) );
@@ -1310,6 +1313,7 @@ void options_init( int argc, char const *argv[] ) {
 
     if ( rv != 0 )
       exit( EX_DATAERR );
+    return;
   }
 
   if ( !opt_strings ) {
