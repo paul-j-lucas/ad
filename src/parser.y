@@ -346,7 +346,7 @@ static bool print_error_token( char const* );
 
 // local variables
 static in_attr_t      in_attr;          ///< Inherited attributes.
-static slist_t        statement_list;   ///< List of non-declaration statements.
+slist_t               statement_list;   ///< List of non-declaration statements.
 
 ////////// local functions ////////////////////////////////////////////////////
 

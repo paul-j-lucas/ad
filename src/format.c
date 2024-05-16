@@ -35,6 +35,7 @@
 
 // standard
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
@@ -49,8 +50,69 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// local functions
+NODISCARD
+static bool ad_switch_run( ad_switch_statement_t const* );
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * TODO
+ *
+ * @param decl TODO
+ * @return Returns `true` only if successful.
+ */
+NODISCARD
+static bool ad_decl_run( ad_decl_t const *decl ) {
+  assert( decl != NULL );
+
+  // TODO
+
+  return true;
+}
+
+/**
+ * TODO
+ *
+ * @param statement TODO
+ * @return Returns `true` only if successful.
+ */
+NODISCARD
+static bool ad_statement_run( ad_statement_t const *statement ) {
+  assert( statement != NULL );
+
+  switch ( statement->kind ) {
+    case S_BREAK:
+      // TODO
+      break;
+    case S_DECLARATION:
+      // TODO
+      if ( !ad_decl_run( &statement->decl_s ) )
+        return false;
+      break;
+    case S_SWITCH:
+      if ( !ad_switch_run( &statement->switch_s ) )
+        return false;
+      break;
+  } // switch
+
+  return true;
+}
+
+/**
+ * TODO
+ *
+ * @param switch_ TODO
+ * @return Returns `true` only if successful.
+ */
+NODISCARD
+static bool ad_switch_run( ad_switch_statement_t const *switch_ ) {
+  assert( switch_ != NULL );
+
+  // TODO
+
+  return true;
+}
 
 /////////// extern functions //////////////////////////////////////////////////
 
@@ -67,8 +129,8 @@ void dump_file_format( void ) {
   fclose( file );
   if ( unlikely( rv == 2 ) ) {
     //
-    // Bison has already printed "memory exhausted" via yyerror() that
-    // doesn't print a newline, so print one now.
+    // Bison has already printed "memory exhausted" via yyerror() that doesn't
+    // print a newline, so print one now.
     //
     EPUTC( '\n' );
     _Exit( EX_SOFTWARE );
@@ -76,6 +138,12 @@ void dump_file_format( void ) {
 
   if ( rv != 0 )
     exit( EX_DATAERR );
+
+  extern slist_t statement_list;
+  FOREACH_SLIST_NODE( statement_node, &statement_list ) {
+    if ( !ad_statement_run( statement_node->data ) )
+      break;
+  } // for
 
   parser_cleanup();
 }
