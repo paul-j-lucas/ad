@@ -31,10 +31,11 @@ LDADD =		$(top_builddir)/lib/libgnu.a
 
 BUILT_SOURCES =	parser.c parser.h lexer.c
 
-ad_SOURCES =	parser.y\
+ad_SOURCES =	parser.y \
 		lexer.l lexer.h \
 		pjl_config.h \
 		ad.c ad.h \
+		ad_parser.h \
 		check.c \
 		color.c color.h \
 		dam_lev.c dam_lev.h \

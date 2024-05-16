@@ -45,7 +45,7 @@
 #include "strbuf.h"
 #include "typedef.h"
 #include "util.h"
-#include "parser.h"                     /* must go last */
+#include "ad_parser.h"                  /* must go last */
 
 /// @cond DOXYGEN_IGNORE
 

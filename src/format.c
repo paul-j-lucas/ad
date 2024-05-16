@@ -25,9 +25,9 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "ad_parser.h"
 #include "lexer.h"
 #include "options.h"
-#include "parser.h"
 #include "typedef.h"
 #include "util.h"
 
@@ -76,6 +76,8 @@ void dump_file_format( void ) {
 
   if ( rv != 0 )
     exit( EX_DATAERR );
+
+  parser_cleanup();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

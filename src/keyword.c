@@ -27,7 +27,7 @@
 #include "pjl_config.h"                 /* must go first */
 #include "keyword.h"
 #include "literals.h"
-#include "parser.h"                     /* must go last */
+#include "ad_parser.h"                  /* must go last */
 
 // standard
 #include <assert.h>
