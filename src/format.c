@@ -25,11 +25,12 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "ad_parser.h"
+#include "expr.h"
 #include "lexer.h"
 #include "options.h"
 #include "typedef.h"
 #include "util.h"
+#include "ad_parser.h"                  /* must go last */
 
 /// @cond DOXYGEN_IGNORE
 
@@ -109,7 +110,16 @@ NODISCARD
 static bool ad_switch_run( ad_switch_statement_t const *switch_ ) {
   assert( switch_ != NULL );
 
-  // TODO
+  ad_expr_t switch_rv_expr;
+  if ( !ad_expr_eval( switch_->expr, &switch_rv_expr ) )
+    return false;
+  FOREACH_SLIST_NODE( case_expr_node, &switch_->case_list ) {
+    ad_expr_t const *const case_expr = case_expr_node->data;
+    ad_expr_t case_rv_expr;
+    if ( !ad_expr_eval( case_expr, &case_rv_expr ) )
+      return false;
+    // TODO
+  } // for
 
   return true;
 }
