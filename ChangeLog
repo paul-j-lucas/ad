@@ -1,3 +1,7 @@
+2024-05-22  Paul J. Lucas <paul@lucasmail.org>
+
+   * pjl_config.h: s/PJL_IGNORE_RV/PJL_DISCARD_RV/
+
 2024-05-15  Paul J. Lucas <paul@lucasmail.org>
 
    * util.h: Added STATIC_CAST() to FPUTS().
