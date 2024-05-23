@@ -1,6 +1,6 @@
 /*
 **      ad -- ASCII dump
-**      src/format.c
+**      src/dump_format.c
 **
 **      Copyright (C) 2024  Paul J. Lucas
 **

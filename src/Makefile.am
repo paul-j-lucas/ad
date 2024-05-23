@@ -43,8 +43,8 @@ ad_SOURCES =	parser.y \
 		debug.c debug.h \
 		dump.c \
 		dump_c.c \
+		dump_format.c \
 		expr.c expr.h \
-		format.c \
 		keyword.c keyword.h \
 		literals.c literals.h \
 		match.c match.h \
