@@ -1,3 +1,7 @@
+2024-05-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * src/Makefile.am, dump.c, dump_c.c: Split out dump_file_c() into dump_c.c.
+
 2024-05-22  Paul J. Lucas <paul@lucasmail.org>
 
    * pjl_config.h: s/PJL_IGNORE_RV/PJL_DISCARD_RV/
