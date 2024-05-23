@@ -20,7 +20,7 @@
 
 /**
  * @file
- * Defines types and functions for dumping a file.
+ * Defines types and functions for dumping a file in hexadecimal.
  */
 
 // local
@@ -263,37 +263,6 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
   dumped_offset = fin_offset;
 }
 
-/**
- * Dumps a single row of bytes as C array data.
- *
- * @param offset_format The \c printf() format for the offset.
- * @param buf A pointer to the current set of bytes to dump.
- * @param buf_len The number of bytes pointed to by \a buf.
- */
-static void dump_row_c( char const *offset_format, char8_t const *buf,
-                        size_t buf_len ) {
-  assert( offset_format != NULL );
-  assert( buf != NULL );
-
-  if ( unlikely( buf_len == 0 ) )
-    return;
-
-  if ( opt_offsets == OFFSETS_NONE ) {
-    PUTC( ' ' );
-  } else {
-    // print offset
-    PUTS( "  /* " );
-    PRINTF( offset_format, fin_offset );
-    PUTS( " */" );
-  }
-
-  // dump hex part
-  char8_t const *const end = buf + buf_len;
-  while ( buf < end )
-    PRINTF( " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
-  PUTC( '\n' );
-}
-
 /////////// extern functions //////////////////////////////////////////////////
 
 /**
@@ -380,65 +349,6 @@ void dump_file( void ) {
 
   if ( opt_search_len > 0 && !any_matches )
     exit( EX_NO_MATCHES );
-}
-
-/**
- * Dumps a file as a C array.
- */
-void dump_file_c( void ) {
-  char8_t       bytes[ ROW_BYTES_C ];   // bytes in buffer
-  match_bits_t  match_bits;             // not used when dumping in C
-
-  // prime the pump by reading the first row
-  size_t row_len = match_row(
-    bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
-    /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
-  );
-  if ( row_len == 0 )
-    return;
-
-  char const *const array_name = strcmp( fin_path, "-" ) == 0 ?
-    "stdin" : free_later( identify( base_name( fin_path ) ) );
-
-  PRINTF(
-    "%s%s %s%s[] = {\n",
-    ((opt_c_array & C_ARRAY_STATIC ) != 0 ? "static " : ""),
-    ((opt_c_array & C_ARRAY_CHAR8_T) != 0 ? "char8_t" : "unsigned char"),
-    ((opt_c_array & C_ARRAY_CONST  ) != 0 ? "const "  : ""),
-    array_name
-  );
-
-  size_t array_len = 0;
-  char const *const offset_format = get_offsets_format();
-
-  for (;;) {
-    dump_row_c( offset_format, bytes, row_len );
-    fin_offset += STATIC_CAST( off_t, row_len );
-    array_len += row_len;
-    if ( row_len != ROW_BYTES_C )
-      break;
-    row_len = match_row(
-      bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
-      /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
-    );
-  } // for
-
-  PUTS( "};\n" );
-
-  if ( (opt_c_array & C_ARRAY_LEN_ANY) != C_ARRAY_NONE ) {
-    PRINTF(
-      "%s%s%s%s%s%s%s_len = %zu%s%s;\n",
-      ((opt_c_array & C_ARRAY_STATIC      ) != 0 ? "static "   : ""),
-      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "unsigned " : ""),
-      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "long "     : ""),
-      ((opt_c_array & C_ARRAY_LEN_INT     ) != 0 ? "int "      : ""),
-      ((opt_c_array & C_ARRAY_LEN_SIZE_T  ) != 0 ? "size_t "   : ""),
-      ((opt_c_array & C_ARRAY_CONST       ) != 0 ? "const "    : ""),
-      array_name, array_len,
-      ((opt_c_array & C_ARRAY_LEN_UNSIGNED) != 0 ? "u" : ""),
-      ((opt_c_array & C_ARRAY_LEN_LONG    ) != 0 ? "L" : "")
-    );
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
