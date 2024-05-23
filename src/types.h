@@ -236,17 +236,17 @@ enum ad_statement_kind {
   /**
    * A `break` statement.
    */
-  S_BREAK,
+  AD_STMNT_BREAK,
 
   /**
    * A single declaration statement.
    */
-  S_DECLARATION,
+  AD_STMNT_DECLARATION,
 
   /**
    * A `switch` statement.
    */
-  S_SWITCH
+  AD_STMNT_SWITCH
 };
 
 /**

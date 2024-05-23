@@ -410,13 +410,13 @@ static void ad_statement_dump_impl( ad_statement_t const *statement,
   DUMP_LOC( dump, "loc", &statement->loc );
 
   switch ( statement->kind ) {
-    case S_BREAK:
+    case AD_STMNT_BREAK:
       break;
-    case S_DECLARATION:
+    case AD_STMNT_DECLARATION:
       DUMP_KEY( dump, "declaration: " );
       ad_decl_dump_impl( &statement->decl_s, dump );
       break;
-    case S_SWITCH:
+    case AD_STMNT_SWITCH:
       DUMP_KEY( dump, "switch: " );
       ad_switch_dump_impl( &statement->switch_s, dump );
       break;
@@ -459,9 +459,9 @@ static void ad_statement_list_dump_impl( ad_statement_list_t const *list,
  */
 static char const* ad_statement_kind_name( ad_statement_kind_t kind ) {
   switch ( kind ) {
-    case S_BREAK      : return "break";
-    case S_DECLARATION: return "declaration";
-    case S_SWITCH     : return "switch";
+    case AD_STMNT_BREAK       : return "break";
+    case AD_STMNT_DECLARATION : return "declaration";
+    case AD_STMNT_SWITCH      : return "switch";
   } // switch
   UNEXPECTED_INT_VALUE( kind );
   return NULL;

@@ -135,17 +135,17 @@ void ad_statement_free( ad_statement_t *statement ) {
     return;
 
   switch ( statement->kind ) {
-    case S_BREAK:
+    case AD_STMNT_BREAK:
       // nothing to do
       break;
 
-    case S_DECLARATION:
+    case AD_STMNT_DECLARATION:
       FREE( statement->decl_s.name );
       ad_type_free( statement->decl_s.type );
       FREE( statement->decl_s.printf_fmt );
       break;
 
-    case S_SWITCH:
+    case AD_STMNT_SWITCH:
       ad_expr_free( statement->switch_s.expr );
       FOREACH_SWITCH_CASE( case_node, statement ) {
         ad_switch_case_t *const switch_case = case_node->data;

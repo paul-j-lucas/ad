@@ -779,7 +779,7 @@ break_statement
 
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
-        .kind = S_BREAK,
+        .kind = AD_STMNT_BREAK,
         .loc = @$
       };
 
@@ -800,7 +800,7 @@ switch_statement
 
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
-        .kind = S_SWITCH,
+        .kind = AD_STMNT_SWITCH,
         .loc = @$,
         .switch_s = {
           .expr = $expr,
@@ -868,7 +868,7 @@ declaration
       DUMP_STATEMENT( "field_declaration", $field );
       DUMP_EXPR( "match_expr_opt", $match_expr );
 
-      assert( $field->kind = S_DECLARATION );
+      assert( $field->kind = AD_STMNT_DECLARATION );
       $field->decl_s.match_expr = $match_expr;
       $$ = $field;
 
@@ -945,7 +945,7 @@ field_declaration
 
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
-        .kind = S_DECLARATION,
+        .kind = AD_STMNT_DECLARATION,
         .loc = @$,
         .decl_s = {
           .name = $name,
@@ -1018,7 +1018,7 @@ typedef_declaration
       DUMP_START( "typedef_declaration", "TYPEDEF field_declaration" );
       DUMP_STATEMENT( "field_declaration", $field );
 
-      assert( $field->kind == S_DECLARATION );
+      assert( $field->kind == AD_STMNT_DECLARATION );
       ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){

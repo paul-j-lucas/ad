@@ -53,18 +53,18 @@
 
 // local functions
 NODISCARD
-static bool ad_switch_run( ad_switch_statement_t const* );
+static bool ad_switch_exec( ad_switch_statement_t const* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * TODO
+ * Executes and **ad** declaration.
  *
- * @param decl TODO
+ * @param decl The \ref ad_decl to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_decl_run( ad_decl_t const *decl ) {
+static bool ad_decl_exec( ad_decl_t const *decl ) {
   assert( decl != NULL );
 
   // TODO
@@ -73,26 +73,26 @@ static bool ad_decl_run( ad_decl_t const *decl ) {
 }
 
 /**
- * TODO
+ * Executes an **ad** statement.
  *
- * @param statement TODO
+ * @param statement The \ref ad_statement to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_statement_run( ad_statement_t const *statement ) {
+static bool ad_statement_exec( ad_statement_t const *statement ) {
   assert( statement != NULL );
 
   switch ( statement->kind ) {
-    case S_BREAK:
+    case AD_STMNT_BREAK:
       // TODO
       break;
-    case S_DECLARATION:
+    case AD_STMNT_DECLARATION:
       // TODO
-      if ( !ad_decl_run( &statement->decl_s ) )
+      if ( !ad_decl_exec( &statement->decl_s ) )
         return false;
       break;
-    case S_SWITCH:
-      if ( !ad_switch_run( &statement->switch_s ) )
+    case AD_STMNT_SWITCH:
+      if ( !ad_switch_exec( &statement->switch_s ) )
         return false;
       break;
   } // switch
@@ -101,13 +101,13 @@ static bool ad_statement_run( ad_statement_t const *statement ) {
 }
 
 /**
- * TODO
+ * Executes an **ad** `switch` statement.
  *
- * @param switch_ TODO
+ * @param switch_ The \ref ad_switch_statement to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_switch_run( ad_switch_statement_t const *switch_ ) {
+static bool ad_switch_exec( ad_switch_statement_t const *switch_ ) {
   assert( switch_ != NULL );
 
   ad_expr_t switch_rv_expr;
@@ -151,7 +151,7 @@ void dump_file_format( void ) {
 
   extern slist_t statement_list;
   FOREACH_SLIST_NODE( statement_node, &statement_list ) {
-    if ( !ad_statement_run( statement_node->data ) )
+    if ( !ad_statement_exec( statement_node->data ) )
       break;
   } // for
 
