@@ -44,8 +44,7 @@
 /// @endcond
 
 /**
- * @defgroup dump-group Dumping
- * Types and functions for dumping a file.
+ * @addtogroup dump-group
  * @{
  */
 
