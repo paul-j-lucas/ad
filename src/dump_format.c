@@ -50,9 +50,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Dump state.
+ */
+struct dump_state {
+  unsigned indent;                      ///< Current indentation.
+};
+typedef struct dump_state dump_state_t;
+
 // local functions
 NODISCARD
-static bool ad_switch_exec( ad_switch_statement_t const* );
+static bool ad_switch_exec( ad_switch_statement_t const*, dump_state_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -63,10 +71,20 @@ static bool ad_switch_exec( ad_switch_statement_t const* );
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_decl_exec( ad_decl_t const *decl ) {
+static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
   assert( decl != NULL );
+  assert( dump != NULL );
+
+  if ( decl->match_expr != NULL ) {
+    ad_expr_t match_rv_expr;
+    if ( !ad_expr_eval( decl->match_expr, &match_rv_expr ) )
+      return false;
+  }
 
   // TODO
+  // decl->name
+  // decl->type
+  // decl->rep
 
   return true;
 }
@@ -78,8 +96,10 @@ static bool ad_decl_exec( ad_decl_t const *decl ) {
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_statement_exec( ad_statement_t const *statement ) {
+static bool ad_statement_exec( ad_statement_t const *statement,
+                               dump_state_t *dump ) {
   assert( statement != NULL );
+  assert( dump != NULL );
 
   switch ( statement->kind ) {
     case AD_STMNT_BREAK:
@@ -87,11 +107,11 @@ static bool ad_statement_exec( ad_statement_t const *statement ) {
       break;
     case AD_STMNT_DECLARATION:
       // TODO
-      if ( !ad_decl_exec( &statement->decl_s ) )
+      if ( !ad_decl_exec( &statement->decl_s, dump ) )
         return false;
       break;
     case AD_STMNT_SWITCH:
-      if ( !ad_switch_exec( &statement->switch_s ) )
+      if ( !ad_switch_exec( &statement->switch_s, dump ) )
         return false;
       break;
   } // switch
@@ -106,8 +126,10 @@ static bool ad_statement_exec( ad_statement_t const *statement ) {
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_switch_exec( ad_switch_statement_t const *switch_ ) {
+static bool ad_switch_exec( ad_switch_statement_t const *switch_,
+                            dump_state_t *dump ) {
   assert( switch_ != NULL );
+  assert( dump != NULL );
 
   ad_expr_t switch_rv_expr;
   if ( !ad_expr_eval( switch_->expr, &switch_rv_expr ) )
@@ -119,6 +141,51 @@ static bool ad_switch_exec( ad_switch_statement_t const *switch_ ) {
       return false;
     // TODO
   } // for
+
+  return true;
+}
+
+/**
+ * Gets a byte.
+ *
+ * @param pbyte A pointer to the byte to receive the newly read byte.
+ * @return Returns `true` only if a byte was read successfully.
+ */
+NODISCARD
+static bool get_byte( char8_t *pbyte ) {
+  assert( pbyte != NULL );
+
+  int const c = getchar();
+  if ( unlikely( c == EOF ) ) {
+    if ( unlikely( ferror( stdin ) ) ) {
+      fatal_error( EX_IOERR,
+        "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
+      );
+    }
+    return false;
+  }
+
+  *pbyte = STATIC_CAST( char8_t, c );
+  return true;
+}
+
+/**
+ * TODO.
+ *
+ * @param buf TODO
+ * @param size The number of bytes to read.
+ * @return TODO
+ */
+NODISCARD
+static bool get_buf( char8_t *buf, size_t size ) {
+  assert( buf != NULL );
+
+  size_t const bytes_read = fread( buf, size, 1, stdin );
+  if ( unlikely( ferror( stdin ) ) ) {
+    fatal_error( EX_IOERR,
+      "\"%s\": read bytes failed: %s\n", fin_path, STRERROR()
+    );
+  }
 
   return true;
 }
@@ -148,9 +215,10 @@ void dump_file_format( void ) {
   if ( rv != 0 )
     exit( EX_DATAERR );
 
+  dump_state_t dump = { .indent = 0 };
   extern slist_t statement_list;
   FOREACH_SLIST_NODE( statement_node, &statement_list ) {
-    if ( !ad_statement_exec( statement_node->data ) )
+    if ( !ad_statement_exec( statement_node->data, &dump ) )
       break;
   } // for
 
