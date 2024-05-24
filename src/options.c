@@ -916,20 +916,20 @@ char const* get_offsets_format( void ) {
         strcpy( format, "%00" );
         break;
       case OFFSETS_DEC:
-        sprintf( format, "%%0%zu" PRIu64, get_offsets_width() );
+        sprintf( format, "%%0%u" PRIu64, get_offsets_width() );
         break;
       case OFFSETS_HEX:
-        sprintf( format, "%%0%zu" PRIX64, get_offsets_width() );
+        sprintf( format, "%%0%u" PRIX64, get_offsets_width() );
         break;
       case OFFSETS_OCT:
-        sprintf( format, "%%0%zu" PRIo64, get_offsets_width() );
+        sprintf( format, "%%0%u" PRIo64, get_offsets_width() );
         break;
     } // switch
   }
   return format;
 }
 
-size_t get_offsets_width( void ) {
+unsigned get_offsets_width( void ) {
   return  (opt_group_by == 1 && opt_dump_ascii) ||
           (row_bytes > ROW_BYTES_DEFAULT && !opt_dump_ascii) ?
       OFFSET_WIDTH_MIN : OFFSET_WIDTH_MAX;

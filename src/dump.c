@@ -165,7 +165,7 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
     );
     if ( offset_delta > 0 && any_dumped ) {
       color_start( stdout, sgr_elided );
-      for ( size_t i = get_offsets_width(); i > 0; --i )
+      for ( unsigned i = get_offsets_width(); i > 0; --i )
         PUTC( ELIDED_SEP_CHAR );
       color_end( stdout, sgr_elided );
       color_start( stdout, sgr_sep );
