@@ -210,7 +210,7 @@ char const* get_offsets_format( void );
  * @return Returns said width.
  */
 NODISCARD
-size_t get_offsets_width( void );
+unsigned get_offsets_width( void );
 
 /**
  * Initializes **ad** options from the command-line.
