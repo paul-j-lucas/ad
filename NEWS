@@ -5,6 +5,12 @@ See the end of the file for license conditions.
 
 -------------------------------------------------------------------------------
 
+* Changes in Ad 3.4.2
+
+** `--version` with arguments
+Giving command-line arguments after `--version` is now caught as an error.
+
+
 * Changes in Ad 3.4.1
 
 ** Added missing `--host-endian` and `-H` options
