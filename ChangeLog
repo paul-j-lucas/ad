@@ -1,5 +1,7 @@
 2024-05-24  Paul J. Lucas <paul@lucasmail.org>
 
+   * configure.ac, options.c: Giving command-line arguments after `--version`
+     is now caught as an error.
    * dump.c, options.c, options.h: s/size_t/unsigned/
 
 2024-05-23  Paul J. Lucas <paul@lucasmail.org>

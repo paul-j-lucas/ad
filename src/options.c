@@ -1216,9 +1216,11 @@ void options_init( int argc, char const *argv[] ) {
   opt_check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
 
   if ( opt_help )
-    print_usage( argc > 2 ? EX_USAGE : EX_OK );
+    print_usage( argc > 0 ? EX_USAGE : EX_OK );
 
   if ( opt_version ) {
+    if ( argc > 0 )                     // ad -v foo
+      print_usage( EX_USAGE );
     puts( PACKAGE_STRING );
     exit( EX_OK );
   }
