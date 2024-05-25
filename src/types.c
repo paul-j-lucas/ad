@@ -193,7 +193,7 @@ bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
 void ad_type_free( ad_type_t *type ) {
   if ( type == NULL )
     return;
-  switch ( type->tid & T_MASK_TYPE ) {
+  switch ( ad_tid_kind( type->tid ) ) {
     case T_BOOL:
     case T_FLOAT:
     case T_INT:
@@ -213,6 +213,8 @@ void ad_type_free( ad_type_t *type ) {
       );
       break;
     case T_ERROR:
+    case T_NONE:
+    case T_TYPEDEF:
       // nothing to do
       break;
   } // switch
