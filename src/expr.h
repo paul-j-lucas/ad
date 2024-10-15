@@ -52,11 +52,25 @@ char const* ad_expr_err_name( ad_expr_err_t err );
  * Evalulates an expression.
  *
  * @param expr The expression to evaluate.
- * @param rv The evaluated expression's value.
+ * @param rv Receives the evaluated expression's value.
  * @return Returns `true` only if the evaluation succeeded.
+ *
+ * @sa ad_expr_eval_uint()
  */
 NODISCARD
 bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv );
+
+/**
+ * Evaluates an expression that is expected to be unsigned integral.
+ *
+ * @param expr The expression to evaluate.
+ * @param rv Receives the evaluated expression's value.
+ * @return Returns `true` only if the evaluation succeeded.
+ *
+ * @sa ad_expr_eval()
+ */
+NODISCARD
+bool ad_expr_eval_uint( ad_expr_t const *expr, uint64_t *rv );
 
 /**
  * Frees an expression.

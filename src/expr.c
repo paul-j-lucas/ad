@@ -24,6 +24,7 @@
 #define AD_EXPR_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "expr.h"
+#include "print.h"
 #include "util.h"
 
 // standard
@@ -1295,6 +1296,39 @@ bool ad_expr_eval( ad_expr_t const *expr, ad_expr_t *rv ) {
   } // switch
 
   return false;
+}
+
+bool ad_expr_eval_uint( ad_expr_t const *expr, uint64_t *rv ) {
+  assert( expr != NULL );
+  assert( rv != NULL );
+
+  ad_expr_t rv_expr;
+  if ( !ad_expr_eval( expr, &rv_expr ) )
+    return false;
+  assert( rv_expr.expr_kind == AD_EXPR_LITERAL );
+  switch ( ad_tid_kind( rv_expr.literal.type->tid ) ) {
+    case T_NONE:
+    case T_ERROR:
+      return false;
+    case T_BOOL:
+    case T_ENUM:
+    case T_INT:
+      *rv = rv_expr.literal.uval;
+      return true;
+    case T_UTF:
+      if ( ad_tid_is_null_term( rv_expr.literal.type->tid ) )
+        return false;
+      *rv = STATIC_CAST( uint64_t, rv_expr.literal.fval );
+      return true;
+    case T_FLOAT:
+      print_error( &expr->loc,
+        "expression must be integral\n"
+      );
+      return false;
+    case T_STRUCT:
+      return false;
+    case T_TYPEDEF:
+  } // switch
 }
 
 void ad_expr_free( ad_expr_t *expr ) {

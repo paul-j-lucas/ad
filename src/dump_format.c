@@ -41,6 +41,19 @@
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
+#define DUMP_FORMAT(D,...) BLOCK(               \
+  FPUTNSP( (D)->indent * DUMP_INDENT, stdout ); \
+  PRINTF( __VA_ARGS__ ); )
+
+#define DUMP_INT(D,KEY,INT) \
+  DUMP_KEY( (D), KEY ": %lld", STATIC_CAST( long long, (INT) ) )
+
+#define DUMP_KEY(D,...) BLOCK(                \
+  DUMP_FORMAT( (D), __VA_ARGS__ ); )
+
+#define DUMP_STR(D,KEY,STR) BLOCK( \
+  DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', stdout ); )
+
 /// @endcond
 
 /**
@@ -62,7 +75,14 @@ typedef struct dump_state dump_state_t;
 NODISCARD
 static bool ad_switch_exec( ad_switch_statement_t const*, dump_state_t* );
 
+// local constants
+static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
+
 ////////// local functions ////////////////////////////////////////////////////
+
+NODISCARD
+static bool ad_type_match( ad_type_t const *type, dump_state_t *dump ) {
+}
 
 /**
  * Executes and **ad** declaration.
@@ -75,9 +95,19 @@ static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
   assert( decl != NULL );
   assert( dump != NULL );
 
+  if ( decl->rep.kind == AD_REP_EXPR ) {
+    // TODO
+  }
+
+  if ( ad_tid_kind( decl->type->tid ) == T_STRUCT ) {
+    // decl->type->struct_t.member_list
+  }
+
   if ( decl->match_expr != NULL ) {
     ad_expr_t match_rv_expr;
     if ( !ad_expr_eval( decl->match_expr, &match_rv_expr ) )
+      return false;
+    if ( ad_expr_is_zero( &match_rv_expr ) )
       return false;
   }
 
@@ -87,6 +117,20 @@ static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
   // decl->rep
 
   return true;
+}
+
+/**
+ * Dumps \a literal.
+ *
+ * @param literal The \ref ad_literal_expr to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
+                                  dump_state_t *dump ) {
+  assert( literal != NULL );
+  assert( dump != NULL );
+
+  // TODO
 }
 
 /**

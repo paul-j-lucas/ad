@@ -407,6 +407,13 @@ struct ad_rep {
   ad_expr_t      *expr;                 ///< Used only if rep == AD_REP_EXPR
 };
 
+/**
+ */
+struct ad_rep_range {
+  unsigned  low;
+  unsigned  high;
+};
+
 ////////// ad types ///////////////////////////////////////////////////////////
 
 /**
