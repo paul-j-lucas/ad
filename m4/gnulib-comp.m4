@@ -47,6 +47,10 @@ AC_DEFUN([gl_EARLY],
   # Code from module c99:
   # Code from module errno:
   # Code from module extensions:
+  # This is actually already done in the pre-early phase.
+  # AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  # Code from module extensions-aix:
+  AC_REQUIRE([gl_USE_AIX_EXTENSIONS])
   # Code from module extern-inline:
   # Code from module gen-header:
   # Code from module getdelim:
@@ -78,6 +82,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module string:
   # Code from module strsep:
   # Code from module sys_types:
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
   # Code from module sysexits:
   # Code from module unistd:
   # Code from module vararrays:
@@ -445,6 +450,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/c-bool.m4
   m4/codeset.m4
   m4/errno_h.m4
+  m4/extensions-aix.m4
   m4/extensions.m4
   m4/extern-inline.m4
   m4/getdelim.m4
@@ -453,11 +459,12 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/limits-h.m4
-  m4/locale-fr.m4
+  m4/locale-en.m4
   m4/malloc.m4
   m4/multiarch.m4
   m4/musl.m4
   m4/nocrash.m4
+  m4/off64_t.m4
   m4/off_t.m4
   m4/pid_t.m4
   m4/ssize_t.m4
@@ -470,13 +477,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strerror.m4
   m4/string_h.m4
   m4/strsep.m4
+  m4/sys_cdefs_h.m4
   m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/sysexits.m4
   m4/unistd_h.m4
   m4/vararrays.m4
   m4/warn-on-use.m4
-  m4/wchar_t.m4
   m4/wint_t.m4
   m4/zzgnulib.m4
 ])
