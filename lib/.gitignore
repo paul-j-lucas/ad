@@ -3,15 +3,12 @@
 /getopt-cdefs.h
 /getopt.h
 /limits.h
+/stdckdint.h
 /stddef.h
 /stdint.h
 /stdio.h
 /stdlib.h
-/stdnoreturn.h
 /string.h
 /sys
 /sysexits.h
 /unistd.h
-/xalloc-oversized.h
-/assert.in.h
-/intprops-internal.h

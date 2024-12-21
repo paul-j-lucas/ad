@@ -58,6 +58,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
+  # Code from module gnulib-i18n:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module limits-h:
@@ -71,6 +72,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module ssize_t:
   # Code from module std-gnu11:
   # Code from module stdbool:
+  # Code from module stdckdint:
   # Code from module stddef:
   # Code from module stdint:
   # Code from module stdio:
@@ -86,7 +88,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module sysexits:
   # Code from module unistd:
   # Code from module vararrays:
-  # Code from module xalloc-oversized:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -145,6 +146,7 @@ AC_DEFUN([gl_INIT],
   gl_UNISTD_MODULE_INDICATOR([getopt-posix])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  GNULIB_I18N
   gl_LIMITS_H
   gl_CONDITIONAL_HEADER([limits.h])
   AC_PROG_MKDIR_P
@@ -156,6 +158,14 @@ AC_DEFUN([gl_INIT],
   gl_MULTIARCH
   gt_TYPE_SSIZE_T
   gl_C_BOOL
+  AC_CHECK_HEADERS_ONCE([stdckdint.h])
+  if test $ac_cv_header_stdckdint_h = yes; then
+    GL_GENERATE_STDCKDINT_H=false
+  else
+    GL_GENERATE_STDCKDINT_H=true
+  fi
+  gl_CONDITIONAL_HEADER([stdckdint.h])
+  AC_PROG_MKDIR_P
   gl_STDDEF_H
   gl_STDDEF_H_REQUIRE_DEFAULTS
   gl_CONDITIONAL_HEADER([stddef.h])
@@ -425,11 +435,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/intprops.h
   lib/limits.in.h
   lib/malloc.c
+  lib/stdckdint.in.h
   lib/stddef.in.h
   lib/stdint.in.h
   lib/stdio-read.c
   lib/stdio-write.c
   lib/stdio.in.h
+  lib/stdlib.c
   lib/stdlib.in.h
   lib/strdup.c
   lib/strerror-override.c
@@ -443,10 +455,10 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/unistd.in.h
   lib/verify.h
   lib/warn-on-use.h
-  lib/xalloc-oversized.h
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/assert_h.m4
+  m4/build-to-host.m4
   m4/c-bool.m4
   m4/codeset.m4
   m4/errno_h.m4
@@ -457,6 +469,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/getline.m4
   m4/getopt.m4
   m4/gnulib-common.m4
+  m4/gnulib-i18n.m4
   m4/include_next.m4
   m4/limits-h.m4
   m4/locale-en.m4
