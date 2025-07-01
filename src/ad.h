@@ -35,6 +35,30 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+/**
+ * **ad** primary author.
+ */
+#define AD_AUTHOR                 "Paul J. Lucas"
+
+/**
+ * **ad** latest copyright year.
+ */
+#define AD_COPYRIGHT_YEAR         "2025"
+
+/**
+ * **ad** license.
+ *
+ * @sa #AD_LICENSE_URL
+ */
+#define AD_LICENSE                "GPLv3+: GNU GPL version 3 or later"
+
+/**
+ * **ad** license URL.
+ *
+ * @sa #AD_LICENSE
+ */
+#define AD_LICENSE_URL            "https://gnu.org/licenses/gpl.html"
+
 #define ELIDED_SEP_CHAR           '-'   /**< Elided row separator character. */
 #define EX_NO_MATCHES             1     /**< Exit status for no matches. */
 #define GROUP_BY_DEFAULT          2     /**< Bytes to group together. */
