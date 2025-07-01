@@ -5,6 +5,12 @@ See the end of the file for license conditions.
 
 -------------------------------------------------------------------------------
 
+* Changes in Ad 3.5
+
+** Printing license
+The `--version` or `-v` options now also prints the license information.
+
+
 * Changes in Ad 3.4.2
 
 ** `--version` with arguments

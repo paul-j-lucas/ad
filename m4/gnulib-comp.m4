@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2024 Free Software Foundation, Inc.
+# Copyright (C) 2002-2025 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -44,19 +44,27 @@ AC_DEFUN([gl_EARLY],
 
   # Code from module absolute-header:
   # Code from module assert-h:
+  # Code from module bool:
   # Code from module c99:
-  # Code from module errno:
+  # Code from module errno-h:
   # Code from module extensions:
+  # This is actually already done in the pre-early phase.
+  # AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
+  # Code from module extensions-aix:
+  AC_REQUIRE([gl_USE_AIX_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module fcntl-h:
   # Code from module gen-header:
   # Code from module getdelim:
   # Code from module getline:
   # Code from module getopt-gnu:
   # Code from module getopt-posix:
   # Code from module gettext-h:
+  # Code from module gnulib-i18n:
   # Code from module include_next:
   # Code from module intprops:
   # Code from module limits-h:
+  # Code from module locale-h:
   # Code from module malloc-posix:
   # Code from module multiarch:
   # Code from module nocrash:
@@ -67,21 +75,24 @@ AC_DEFUN([gl_EARLY],
   # Code from module ssize_t:
   # Code from module std-gnu11:
   # Code from module stdbool:
+  # Code from module stdckdint-h:
   # Code from module stddef:
-  # Code from module stdint:
-  # Code from module stdio:
+  # Code from module stddef-h:
+  # Code from module stdint-h:
+  # Code from module stdio-h:
   gl_STDIO_H_EARLY
-  # Code from module stdlib:
+  # Code from module stdlib-h:
   # Code from module strdup-posix:
   # Code from module strerror:
   # Code from module strerror-override:
-  # Code from module string:
+  # Code from module string-h:
   # Code from module strsep:
-  # Code from module sys_types:
+  # Code from module sys_types-h:
+  AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
   # Code from module sysexits:
-  # Code from module unistd:
+  # Code from module sysexits-h:
+  # Code from module unistd-h:
   # Code from module vararrays:
-  # Code from module xalloc-oversized:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -106,10 +117,14 @@ AC_DEFUN([gl_INIT],
   gl_ASSERT_H
   gl_CONDITIONAL_HEADER([assert.h])
   AC_PROG_MKDIR_P
+  gl_C_BOOL
   gl_HEADER_ERRNO_H
   gl_CONDITIONAL_HEADER([errno.h])
   AC_PROG_MKDIR_P
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FCNTL_H
+  gl_FCNTL_H_REQUIRE_DEFAULTS
+  AC_PROG_MKDIR_P
   gl_FUNC_GETDELIM
   gl_CONDITIONAL([GL_COND_OBJ_GETDELIM],
                  [test $HAVE_GETDELIM = 0 || test $REPLACE_GETDELIM = 1])
@@ -138,10 +153,15 @@ AC_DEFUN([gl_INIT],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_UNISTD_H_GETOPT], [1])
   ])
   gl_UNISTD_MODULE_INDICATOR([getopt-posix])
+  gl_MUSL_LIBC
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  GNULIB_I18N
   gl_LIMITS_H
   gl_CONDITIONAL_HEADER([limits.h])
+  AC_PROG_MKDIR_P
+  gl_LOCALE_H
+  gl_LOCALE_H_REQUIRE_DEFAULTS
   AC_PROG_MKDIR_P
   AC_REQUIRE([gl_FUNC_MALLOC_POSIX])
   if test $REPLACE_MALLOC_FOR_MALLOC_POSIX = 1; then
@@ -150,7 +170,9 @@ AC_DEFUN([gl_INIT],
   gl_STDLIB_MODULE_INDICATOR([malloc-posix])
   gl_MULTIARCH
   gt_TYPE_SSIZE_T
-  gl_C_BOOL
+  gl_STDCKDINT_H
+  gl_CONDITIONAL_HEADER([stdckdint.h])
+  AC_PROG_MKDIR_P
   gl_STDDEF_H
   gl_STDDEF_H_REQUIRE_DEFAULTS
   gl_CONDITIONAL_HEADER([stddef.h])
@@ -250,27 +272,35 @@ AC_DEFUN([gl_INIT],
     gl_libobjs=
     gl_ltlibobjs=
     gl_libobjdeps=
+    gl_libgnu_libobjs=
+    gl_libgnu_ltlibobjs=
+    gl_libgnu_libobjdeps=
     if test -n "$gl_LIBOBJS"; then
       # Remove the extension.
 changequote(,)dnl
       sed_drop_objext='s/\.o$//;s/\.obj$//'
       sed_dirname1='s,//*,/,g'
       sed_dirname2='s,\(.\)/$,\1,'
-      sed_dirname3='s,^[^/]*$,.,'
-      sed_dirname4='s,\(.\)/[^/]*$,\1,'
+      sed_dirname3='s,[^/]*$,,'
       sed_basename1='s,.*/,,'
 changequote([, ])dnl
       for i in `for i in $gl_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gl_libobjs="$gl_libobjs $i.$ac_objext"
         gl_ltlibobjs="$gl_ltlibobjs $i.lo"
-        i_dir=`echo "$i" | sed -e "$sed_dirname1" -e "$sed_dirname2" -e "$sed_dirname3" -e "$sed_dirname4"`
+        i_dir=`echo "$i" | sed -e "$sed_dirname1" -e "$sed_dirname2" -e "$sed_dirname3"`
         i_base=`echo "$i" | sed -e "$sed_basename1"`
-        gl_libobjdeps="$gl_libobjdeps $i_dir/\$(DEPDIR)/$i_base.Po"
+        gl_libgnu_libobjs="$gl_libgnu_libobjs $i_dir""libgnu_a-$i_base.$ac_objext"
+        gl_libgnu_ltlibobjs="$gl_libgnu_ltlibobjs $i_dir""libgnu_la-$i_base.lo"
+        gl_libobjdeps="$gl_libobjdeps $i_dir\$(DEPDIR)/$i_base.Po"
+        gl_libgnu_libobjdeps="$gl_libgnu_libobjdeps $i_dir\$(DEPDIR)/libgnu_a-$i_base.Po"
       done
     fi
     AC_SUBST([gl_LIBOBJS], [$gl_libobjs])
     AC_SUBST([gl_LTLIBOBJS], [$gl_ltlibobjs])
     AC_SUBST([gl_LIBOBJDEPS], [$gl_libobjdeps])
+    AC_SUBST([gl_libgnu_LIBOBJS], [$gl_libgnu_libobjs])
+    AC_SUBST([gl_libgnu_LTLIBOBJS], [$gl_libgnu_ltlibobjs])
+    AC_SUBST([gl_libgnu_LIBOBJDEPS], [$gl_libgnu_libobjdeps])
   ])
   gltests_libdeps=
   gltests_ltlibdeps=
@@ -313,27 +343,35 @@ changequote([, ])dnl
     gltests_libobjs=
     gltests_ltlibobjs=
     gltests_libobjdeps=
+    gltests_libgnu_libobjs=
+    gltests_libgnu_ltlibobjs=
+    gltests_libgnu_libobjdeps=
     if test -n "$gltests_LIBOBJS"; then
       # Remove the extension.
 changequote(,)dnl
       sed_drop_objext='s/\.o$//;s/\.obj$//'
       sed_dirname1='s,//*,/,g'
       sed_dirname2='s,\(.\)/$,\1,'
-      sed_dirname3='s,^[^/]*$,.,'
-      sed_dirname4='s,\(.\)/[^/]*$,\1,'
+      sed_dirname3='s,[^/]*$,,'
       sed_basename1='s,.*/,,'
 changequote([, ])dnl
       for i in `for i in $gltests_LIBOBJS; do echo "$i"; done | sed -e "$sed_drop_objext" | sort | uniq`; do
         gltests_libobjs="$gltests_libobjs $i.$ac_objext"
         gltests_ltlibobjs="$gltests_ltlibobjs $i.lo"
-        i_dir=`echo "$i" | sed -e "$sed_dirname1" -e "$sed_dirname2" -e "$sed_dirname3" -e "$sed_dirname4"`
+        i_dir=`echo "$i" | sed -e "$sed_dirname1" -e "$sed_dirname2" -e "$sed_dirname3"`
         i_base=`echo "$i" | sed -e "$sed_basename1"`
-        gltests_libobjdeps="$gltests_libobjdeps $i_dir/\$(DEPDIR)/$i_base.Po"
+        gltests_libgnu_libobjs="$gltests_libgnu_libobjs $i_dir""libgnu_a-$i_base.$ac_objext"
+        gltests_libgnu_ltlibobjs="$gltests_libgnu_ltlibobjs $i_dir""libgnu_la-$i_base.lo"
+        gltests_libobjdeps="$gltests_libobjdeps $i_dir\$(DEPDIR)/$i_base.Po"
+        gltests_libgnu_libobjdeps="$gltests_libgnu_libobjdeps $i_dir\$(DEPDIR)/libgnu_a-$i_base.Po"
       done
     fi
     AC_SUBST([gltests_LIBOBJS], [$gltests_libobjs])
     AC_SUBST([gltests_LTLIBOBJS], [$gltests_ltlibobjs])
     AC_SUBST([gltests_LIBOBJDEPS], [$gltests_libobjdeps])
+    AC_SUBST([gltests_libgnu_LIBOBJS], [$gltests_libgnu_libobjs])
+    AC_SUBST([gltests_libgnu_LTLIBOBJS], [$gltests_libgnu_ltlibobjs])
+    AC_SUBST([gltests_libgnu_LIBOBJDEPS], [$gltests_libgnu_libobjdeps])
   ])
   AC_REQUIRE([gl_CC_GNULIB_WARNINGS])
   LIBGNU_LIBDEPS="$gl_libdeps"
@@ -404,6 +442,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/assert.in.h
   lib/c++defs.h
   lib/errno.in.h
+  lib/fcntl.in.h
   lib/getdelim.c
   lib/getline.c
   lib/getopt-cdefs.in.h
@@ -419,12 +458,15 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/intprops-internal.h
   lib/intprops.h
   lib/limits.in.h
+  lib/locale.in.h
   lib/malloc.c
+  lib/stdckdint.in.h
   lib/stddef.in.h
   lib/stdint.in.h
   lib/stdio-read.c
   lib/stdio-write.c
   lib/stdio.in.h
+  lib/stdlib.c
   lib/stdlib.in.h
   lib/strdup.c
   lib/strerror-override.c
@@ -438,30 +480,37 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/unistd.in.h
   lib/verify.h
   lib/warn-on-use.h
-  lib/xalloc-oversized.h
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/assert_h.m4
+  m4/build-to-host.m4
   m4/c-bool.m4
   m4/codeset.m4
   m4/errno_h.m4
+  m4/extensions-aix.m4
   m4/extensions.m4
   m4/extern-inline.m4
+  m4/fcntl-o.m4
+  m4/fcntl_h.m4
   m4/getdelim.m4
   m4/getline.m4
   m4/getopt.m4
   m4/gnulib-common.m4
+  m4/gnulib-i18n.m4
   m4/include_next.m4
   m4/limits-h.m4
-  m4/locale-fr.m4
+  m4/locale-en.m4
+  m4/locale_h.m4
   m4/malloc.m4
   m4/multiarch.m4
   m4/musl.m4
   m4/nocrash.m4
+  m4/off64_t.m4
   m4/off_t.m4
   m4/pid_t.m4
   m4/ssize_t.m4
   m4/std-gnu11.m4
+  m4/stdckdint_h.m4
   m4/stddef_h.m4
   m4/stdint.m4
   m4/stdio_h.m4
@@ -470,13 +519,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/strerror.m4
   m4/string_h.m4
   m4/strsep.m4
+  m4/sys_cdefs_h.m4
   m4/sys_socket_h.m4
   m4/sys_types_h.m4
   m4/sysexits.m4
   m4/unistd_h.m4
   m4/vararrays.m4
   m4/warn-on-use.m4
-  m4/wchar_t.m4
   m4/wint_t.m4
   m4/zzgnulib.m4
 ])

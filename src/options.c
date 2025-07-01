@@ -830,7 +830,7 @@ static bool should_utf8( utf8_when_t when ) {
     default         : break;
   } // switch
 
-#if defined( HAVE_SETLOCALE ) && defined( HAVE_NL_LANGINFO )
+#if HAVE_SETLOCALE && HAVE_NL_LANGINFO
   setlocale( LC_CTYPE, "" );
   char const *const encoding = nl_langinfo( CODESET );
   return  strcasecmp( encoding, "utf8"  ) == 0 ||
@@ -903,6 +903,19 @@ static void print_usage( int status ) {
   );
 
   exit( status );
+}
+
+/**
+ * Prints the **ad** version.
+ */
+static void print_version( void ) {
+  PUTS(
+    PACKAGE_STRING "\n"
+    "Copyright (C) " AD_COPYRIGHT_YEAR " " AD_AUTHOR "\n"
+    "License " AD_LICENSE " <" AD_LICENSE_URL ">.\n"
+    "This is free software: you are free to change and redistribute it.\n"
+    "There is NO WARRANTY to the extent permitted by law.\n"
+  );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -1221,7 +1234,7 @@ void options_init( int argc, char const *argv[] ) {
   if ( opt_version ) {
     if ( argc > 0 )                     // ad -v foo
       print_usage( EX_USAGE );
-    puts( PACKAGE_STRING );
+    print_version();
     exit( EX_OK );
   }
 

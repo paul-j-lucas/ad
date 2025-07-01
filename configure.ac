@@ -21,7 +21,7 @@
 ##
 
 AC_PREREQ([2.69])
-AC_INIT([ad],[3.4.2],[https://github.com/paul-j-lucas/ad/issues],[],[https://github.com/paul-j-lucas/ad])
+AC_INIT([ad],[3.5],[https://github.com/paul-j-lucas/ad/issues],[],[https://github.com/paul-j-lucas/ad])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
@@ -89,6 +89,10 @@ gl_INIT
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
+AC_C__GENERIC
+AS_IF([test "x$ac_cv_c__Generic" != xyes], [
+  AC_MSG_ERROR([C11 _Generic support required to compile $PACKAGE_NAME])
+])
 AC_C_INLINE
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
@@ -147,6 +151,7 @@ AX_C___ATTRIBUTE__
 
 # Compiler warnings.
 AC_SUBST([AD_CFLAGS])
+AD_CFLAGS="-D_ISOC11_SOURCE"
 AX_CFLAGS_WARN_ALL([AD_CFLAGS])
 AX_CHECK_COMPILE_FLAG([-Wcast-align], [AD_CFLAGS="$AD_CFLAGS -Wcast-align"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wcast-function-type], [AD_CFLAGS="$AD_CFLAGS -Wcast-function-type"], [], [-Werror])
@@ -163,13 +168,13 @@ AX_CHECK_COMPILE_FLAG([-Wfloat-equal], [AD_CFLAGS="$AD_CFLAGS -Wfloat-equal"], [
 AX_CHECK_COMPILE_FLAG([-Wfor-loop-analysis], [AD_CFLAGS="$AD_CFLAGS -Wfor-loop-analysis"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wformat-signedness], [AD_CFLAGS="$AD_CFLAGS -Wformat-signedness"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wformat-type-confusion], [AD_CFLAGS="$AD_CFLAGS -Wformat-type-confusion"], [], [-Werror])
-AX_CHECK_COMPILE_FLAG([-Wformat], [AD_CFLAGS="$AD_CFLAGS -Wformat"], [], [-Werror])
+AX_CHECK_COMPILE_FLAG([-Wformat=2], [AD_CFLAGS="$AD_CFLAGS -Wformat=2"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Widiomatic-parentheses], [AD_CFLAGS="$AD_CFLAGS -Widiomatic-parentheses"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wimplicit-fallthrough], [AD_CFLAGS="$AD_CFLAGS -Wimplicit-fallthrough"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wlogical-op-parentheses], [AD_CFLAGS="$AD_CFLAGS -Wlogical-op-parentheses"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wmisleading-indentation], [AD_CFLAGS="$AD_CFLAGS -Wmisleading-indentation"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wnewline-eof], [AD_CFLAGS="$AD_CFLAGS -Wnewline-eof"], [], [-Werror])
-AX_CHECK_COMPILE_FLAG([-Wpedantic], [AD_CFLAGS="$AD_CFLAGS -Wpedantic"], [], [-Werror])
+AX_CHECK_COMPILE_FLAG([-Wno-format-nonliteral], [AD_CFLAGS="$AD_CFLAGS -Wno-format-nonliteral"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wredundant-decls], [AD_CFLAGS="$AD_CFLAGS -Wredundant-decls"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wreserved-identifier], [AD_CFLAGS="$AD_CFLAGS -Wreserved-identifier"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wshadow], [AD_CFLAGS="$AD_CFLAGS -Wshadow"], [], [-Werror])

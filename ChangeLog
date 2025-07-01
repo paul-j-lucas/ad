@@ -1,3 +1,41 @@
+2025-07-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Sorted warning options.
+   * configure.ac: Removed -Wpedantic.
+   * configure.ac: Added -D_ISOC11_SOURCE.
+   * configure.ac: Now requiring _Generic.
+   * configure.ac, ad.h, options.c: -v or --version now also prints license
+     information.
+
+2024-12-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * pjl_compile.m4: Added missing $.
+
+2024-12-21  Paul J. Lucas <paul@lucasmail.org>
+
+   * pjl_compile.m4: Removed extraneous '$' -- don't know how it ever worked.
+
+2024-11-13  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Removed defined -- not needed.
+
+2024-11-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * lib/Makefile.am, _Noreturn.h, assert.h, c++defs.h, errno.in.h,
+     getopt-cdefs.in.h, getopt-pfx-core.h, getopt.c, intprops-internal.h,
+     stddef.in.h, stdint.in.h, stdio.in.h, stdlib.in.h, strerror-override.c,
+     strerror-override.h, string.in.h, sys_types.in.h, unistd.in.h, verify.h,
+     warn-on-use.h, xalloc-oversized.h, 00gnulib.m4, absolute-header.m4,
+     assert_h.m4, c-bool.m4, codeset.m4, errno_h.m4, extensions-aix.m4,
+     extensions.m4, extern-inline.m4, getdelim.m4, getline.m4, getopt.m4,
+     gnulib-common.m4, gnulib-comp.m4, gnulib-tool.m4, include_next.m4,
+     limits-h.m4, locale-en.m4, malloc.m4, multiarch.m4, musl.m4, nocrash.m4,
+     off64_t.m4, off_t.m4, pid_t.m4, ssize_t.m4, std-gnu11.m4, stddef_h.m4,
+     stdint.m4, stdio_h.m4, stdlib_h.m4, strdup.m4, strerror.m4, string_h.m4,
+     strsep.m4, sys_cdefs_h.m4, sys_socket_h.m4, sys_types_h.m4, sysexits.m4,
+     unistd_h.m4, vararrays.m4, warn-on-use.m4, wint_t.m4, zzgnulib.m4: Updated
+     GNUlib.
+
 2024-05-24  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac, options.c: Giving command-line arguments after `--version`
