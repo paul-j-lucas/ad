@@ -89,6 +89,7 @@ AX_C___ATTRIBUTE__
 
 # Compiler warnings.
 AC_SUBST([AD_CFLAGS])
+AD_CFLAGS="-D_ISOC11_SOURCE"
 AX_CFLAGS_WARN_ALL([AD_CFLAGS])
 AX_CHECK_COMPILE_FLAG([-Wcast-align], [AD_CFLAGS="$AD_CFLAGS -Wcast-align"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wcast-function-type], [AD_CFLAGS="$AD_CFLAGS -Wcast-function-type"], [], [-Werror])
