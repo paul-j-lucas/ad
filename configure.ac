@@ -57,6 +57,10 @@ gl_INIT
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
+AC_C__GENERIC
+AS_IF([test "x$ac_cv_c__Generic" != xyes], [
+  AC_MSG_ERROR([C11 _Generic support required to compile $PACKAGE_NAME])
+])
 AC_C_INLINE
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
