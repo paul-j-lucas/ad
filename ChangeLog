@@ -1,3 +1,12 @@
+2025-07-01  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Sorted warning options.
+   * configure.ac: Removed -Wpedantic.
+   * configure.ac: Added -D_ISOC11_SOURCE.
+   * configure.ac: Now requiring _Generic.
+   * configure.ac, ad.h, options.c: -v or --version now also prints license
+     information.
+
 2024-12-24  Paul J. Lucas <paul@lucasmail.org>
 
    * pjl_compile.m4: Added missing $.
