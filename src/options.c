@@ -199,11 +199,11 @@ static struct option const OPTIONS[] = {
   { "octal",              no_argument,        NULL, COPT(OCTAL)               },
   { "printable-only",     no_argument,        NULL, COPT(PRINTING_ONLY)       },
   { "plain",              no_argument,        NULL, COPT(PLAIN)               },
-  { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
-  { "revert",             no_argument,        NULL, COPT(REVERSE)             },
 #ifdef __APPLE__
   { "resource-fork",      no_argument,        NULL, COPT(RESOURCE_FORK)       },
 #endif /* __APPLE__ */
+  { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
+  { "revert",             no_argument,        NULL, COPT(REVERSE)             },
   { "string",             required_argument,  NULL, COPT(STRING)              },
   { "strings",            optional_argument,  NULL, COPT(STRINGS)             },
   { "strings-opts",       required_argument,  NULL, COPT(STRINGS_OPTS)        },
