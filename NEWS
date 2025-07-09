@@ -5,6 +5,13 @@ See the end of the file for license conditions.
 
 -------------------------------------------------------------------------------
 
+* Changes in Ad 3.6
+
+** Resource fork support on macOS
+On macOS only, the `--resource-fork` or `-R` options dump a file's resource
+fork, if any.
+
+
 * Changes in Ad 3.5
 
 ** Printing license

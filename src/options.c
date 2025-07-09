@@ -86,6 +86,9 @@
 #define OPT_OCTAL               o
 #define OPT_PRINTING_ONLY       p
 #define OPT_PLAIN               P
+#ifdef __APPLE__
+#define OPT_RESOURCE_FORK       R
+#endif /* __APPLE__ */
 #define OPT_REVERSE             r
 #define OPT_STRING              s
 #define OPT_STRINGS_OPTS        S
@@ -155,6 +158,9 @@ ad_matches_t    opt_matches;
 ad_offsets_t    opt_offsets = OFFSETS_HEX;
 bool            opt_only_matching;
 bool            opt_only_printing;
+#ifdef __APPLE__
+bool            opt_resource_fork;
+#endif /* __APPLE__ */
 bool            opt_reverse;
 char           *opt_search_buf;
 endian_t        opt_search_endian;
@@ -201,6 +207,9 @@ static struct option const OPTIONS[] = {
   { "plain",              no_argument,        NULL, COPT(PLAIN)               },
   { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
   { "revert",             no_argument,        NULL, COPT(REVERSE)             },
+#ifdef __APPLE__
+  { "resource-fork",      no_argument,        NULL, COPT(RESOURCE_FORK)       },
+#endif /* __APPLE__ */
   { "string",             required_argument,  NULL, COPT(STRING)              },
   { "strings",            optional_argument,  NULL, COPT(STRINGS)             },
   { "strings-opts",       required_argument,  NULL, COPT(STRINGS_OPTS)        },
@@ -245,6 +254,9 @@ static char const *const OPTIONS_HELP[] = {
   [ COPT(PLAIN) ] = "Dump in plain format; same as: -AOg32",
   [ COPT(PRINTING_ONLY) ] = "Only dump rows having printable characters",
   [ COPT(REVERSE) ] = "Reverse from dump back to binary",
+#ifdef __APPLE__
+  [ COPT(RESOURCE_FORK) ] = "Dump file's macOS resource fork",
+#endif /* __APPLE__ */
   [ COPT(SKIP_BYTES) ] = "Jump to offset before dumping [default: 0]",
   [ COPT(STRING) ] = "Highlight string",
   [ COPT(STRINGS) ] = "Highlight strings at least length ARG [default: " STRINGIFY(STRINGS_LEN_DEFAULT) "]",
@@ -275,6 +287,34 @@ static char const*  opt_format( char, char[const], size_t ),
                  *  opt_get_long( char );
 
 /////////// local functions ///////////////////////////////////////////////////
+
+/**
+ * A version of **freopen**(3) that can open the resource fork of a file on
+ * macOS.
+ *
+ * @param path The path of the file to open.
+ * @param mode The file mode to use.
+ * @param stream The `FILE` stream to replace.
+ * @return Returns the opened file upon success or `NULL` upon failure.
+ */
+static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
+#ifdef __APPLE__
+  if ( opt_resource_fork ) {
+    // First check whether the file exists so we can distinguish between the
+    // file not existing and it existing but having no resource fork.
+    struct stat stat_buf;
+    if ( stat( path, &stat_buf ) == -1 )
+      return NULL;
+    char rsrc_path[ PATH_MAX ];
+    snprintf( rsrc_path, sizeof rsrc_path, "%s/..namedfork/rsrc", path );
+    FILE *const file = freopen( rsrc_path, mode, stream );
+    if ( file == NULL && errno == ENOENT )
+      fatal_error( EX_NOINPUT, "\"%s\": File has no resource fork\n", path );
+    return file;
+  }
+#endif /* __APPLE__ */
+  return freopen( path, mode, stream );
+}
 
 /**
  * Checks that the number of bits or bytes given for \ref search_number are
@@ -1063,6 +1103,11 @@ void options_init( int argc, char const *argv[] ) {
       case COPT(REVERSE):
         opt_reverse = true;
         break;
+#ifdef __APPLE__
+      case COPT(RESOURCE_FORK):
+        opt_resource_fork = true;
+        break;
+#endif /* __APPLE__ */
       case COPT(SKIP_BYTES):
         fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
@@ -1198,6 +1243,7 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
     SOPT(PRINTING_ONLY)
+    SOPT(RESOURCE_FORK)
     SOPT(STRING)
     SOPT(STRINGS)
     SOPT(STRINGS_OPTS)
@@ -1241,12 +1287,13 @@ void options_init( int argc, char const *argv[] ) {
   char opt_buf[ OPT_BUF_SIZE ];
 
   if ( opts_given[ COPT(BITS) ] ) {
-    if ( size_in_bits % 8 != 0 || size_in_bits > 64 )
+    if ( size_in_bits % 8 != 0 || size_in_bits > 64 ) {
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s;"
         " must be a multiple of 8 in 8-64\n",
         size_in_bits, opt_format( COPT(BITS), opt_buf, sizeof opt_buf )
       );
+    }
     opt_search_len = size_in_bits * 8;
     check_number_size(
       size_in_bits, int_len( search_number ) * 8, COPT(BITS)
@@ -1254,11 +1301,12 @@ void options_init( int argc, char const *argv[] ) {
   }
 
   if ( opts_given[ COPT(BYTES) ] ) {
-    if ( size_in_bytes > 8 )
+    if ( size_in_bytes > 8 ) {
       fatal_error( EX_USAGE,
         "\"%zu\": invalid value for %s; must be in 1-8\n",
         size_in_bytes, opt_format( COPT(BYTES), opt_buf, sizeof opt_buf )
       );
+    }
     opt_search_len = size_in_bytes;
     check_number_size(
       size_in_bytes, int_len( search_number ), COPT(BYTES)
@@ -1270,6 +1318,13 @@ void options_init( int argc, char const *argv[] ) {
 
   if ( opt_group_by > row_bytes )
     row_bytes = opt_group_by;
+
+  if ( opt_resource_fork && argc == 0 ) {
+    fatal_error( EX_USAGE,
+      "%s requires infile argument\n",
+      opt_format( COPT(RESOURCE_FORK), opt_buf, sizeof opt_buf )
+    );
+  }
 
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
@@ -1295,7 +1350,7 @@ void options_init( int argc, char const *argv[] ) {
 
     case 1:                             // infile only
       fin_path = argv[1];
-      if ( strcmp( fin_path, "-" ) != 0 && !freopen( fin_path, "r", stdin ) )
+      if ( strcmp( fin_path, "-" ) != 0 && !ad_freopen( fin_path, "r", stdin ) )
         fatal_error( EX_NOINPUT, "\"%s\": %s\n", fin_path, STRERROR() );
       FALLTHROUGH;
 
