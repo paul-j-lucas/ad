@@ -17,7 +17,7 @@
 .\"     You should have received a copy of the GNU General Public License
 .\"     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .\"
-.TH \f3ad\f1 1 "April 3, 2024" "PJL TOOLS"
+.TH \f3ad\f1 1 "July 9, 2025" "PJL TOOLS"
 .SH NAME
 ad \- ASCII dump
 .SH SYNOPSIS
@@ -416,6 +416,11 @@ same as:
 .TP
 .BR \-\-printing-only " | " \-p
 Only dumps rows having printable characters.
+.TP
+.BR \-\-resource-fork " | " \-R
+On macOS only,
+dumps a file's resource fork,
+if any.
 .TP
 .BR \-\-reverse " | " \-\-revert " | " \-r
 Reverse dumps a previous dump from
