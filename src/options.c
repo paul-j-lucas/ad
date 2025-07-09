@@ -1079,14 +1079,14 @@ void options_init( int argc, char const *argv[] ) {
       case COPT(PRINTING_ONLY):
         opt_only_printing = true;
         break;
-      case COPT(REVERSE):
-        opt_reverse = true;
-        break;
 #ifdef __APPLE__
       case COPT(RESOURCE_FORK):
         opt_resource_fork = true;
         break;
 #endif /* __APPLE__ */
+      case COPT(REVERSE):
+        opt_reverse = true;
+        break;
       case COPT(SKIP_BYTES):
         fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
