@@ -245,10 +245,10 @@ static char const *const OPTIONS_HELP[] = {
   [ COPT(OCTAL) ] = "Print offsets in octal",
   [ COPT(PLAIN) ] = "Dump in plain format; same as: -AOg32",
   [ COPT(PRINTING_ONLY) ] = "Only dump rows having printable characters",
-  [ COPT(REVERSE) ] = "Reverse from dump back to binary",
 #ifdef __APPLE__
   [ COPT(RESOURCE_FORK) ] = "Dump file's macOS resource fork",
 #endif /* __APPLE__ */
+  [ COPT(REVERSE) ] = "Reverse from dump back to binary",
   [ COPT(SKIP_BYTES) ] = "Jump to offset before dumping [default: 0]",
   [ COPT(STRING) ] = "Highlight string",
   [ COPT(STRINGS) ] = "Highlight strings at least length ARG [default: " STRINGIFY(STRINGS_LEN_DEFAULT) "]",
