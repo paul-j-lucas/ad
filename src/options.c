@@ -290,6 +290,10 @@ static char const*  opt_format( char, char[const], size_t ),
  * @return Returns the opened file upon success or `NULL` upon failure.
  */
 static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
+  assert( path != NULL );
+  assert( mode != NULL );
+  assert( stream != NULL );
+
 #ifdef __APPLE__
   if ( opt_resource_fork ) {
     // First check whether the file exists so we can distinguish between the
@@ -305,6 +309,7 @@ static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
     return file;
   }
 #endif /* __APPLE__ */
+
   return freopen( path, mode, stream );
 }
 
