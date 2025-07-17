@@ -1224,7 +1224,9 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
     SOPT(PRINTING_ONLY)
+#ifdef __APPLE__
     SOPT(RESOURCE_FORK)
+#endif /* __APPLE__ */
     SOPT(STRING)
     SOPT(STRINGS)
     SOPT(STRINGS_OPTS)
@@ -1300,12 +1302,14 @@ void options_init( int argc, char const *argv[] ) {
   if ( opt_group_by > row_bytes )
     row_bytes = opt_group_by;
 
+#ifdef __APPLE__
   if ( opt_resource_fork && argc == 0 ) {
     fatal_error( EX_USAGE,
       "%s requires infile argument\n",
       opt_format( COPT(RESOURCE_FORK), opt_buf, sizeof opt_buf )
     );
   }
+#endif /* __APPLE__ */
 
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
