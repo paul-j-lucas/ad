@@ -32,15 +32,15 @@
 #  --no-conditional-dependencies \
 #  --no-libtool \
 #  --macro-prefix=gl \
+#  bool \
 #  extern-inline \
 #  getline \
 #  getopt-gnu \
-#  stdbool \
-#  stddef \
+#  stddef-h \
 #  strdup-posix \
 #  strerror \
 #  strsep \
-#  sysexits
+#  sysexits-h
 
 AUTOMAKE_OPTIONS = 1.14 gnits
 
