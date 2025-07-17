@@ -1296,12 +1296,6 @@ void options_init( int argc, char const *argv[] ) {
     );
   }
 
-  if ( opt_ignore_case )
-    tolower_s( opt_search_buf );
-
-  if ( opt_group_by > row_bytes )
-    row_bytes = opt_group_by;
-
 #ifdef __APPLE__
   if ( opt_resource_fork && argc == 0 ) {
     fatal_error( EX_USAGE,
@@ -1310,6 +1304,15 @@ void options_init( int argc, char const *argv[] ) {
     );
   }
 #endif /* __APPLE__ */
+
+  if ( opt_max_bytes == 0 )             // degenerate case
+    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
+
+  if ( opt_ignore_case )
+    tolower_s( opt_search_buf );
+
+  if ( opt_group_by > row_bytes )
+    row_bytes = opt_group_by;
 
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
@@ -1360,9 +1363,6 @@ void options_init( int argc, char const *argv[] ) {
       opt_search_buf = POINTER_CAST( char*, &search_number );
     }
   }
-
-  if ( opt_max_bytes == 0 )             // degenerate case
-    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad != 0 ) {
