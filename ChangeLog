@@ -1,5 +1,22 @@
+2025-07-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.h: Put NO_OP back.
+
+2025-07-17  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Reorganized option checks.
+   * options.c, util.h: Eliminated NO_OP.
+   * pjl_config.h: Removed #ifdef.
+
+2025-07-16  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: Added missing #ifdef __APPLE__ ... #endif.
+   * options.c: Added asserts.
+
 2025-07-09  Paul J. Lucas <paul@lucasmail.org>
 
+   * options.c: Sorted options in options_init.
+   * options.c: Sorted --help options.
    * configure.ac, ad.1, options.c, options.h: Added --resource-fork/-R option.
 
 2025-07-01  Paul J. Lucas <paul@lucasmail.org>
