@@ -61,7 +61,6 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /// @cond DOXYGEN_IGNORE
-
 #define CHARIFY_0 '0'
 #define CHARIFY_1 '1'
 #define CHARIFY_2 '2'
@@ -125,10 +124,6 @@ _GL_INLINE_HEADER_BEGIN
 #define CHARIFY_x 'x'
 #define CHARIFY_y 'y'
 #define CHARIFY_z 'z'
-
-#define NAME2_HELPER(A,B)         A##B
-#define STRINGIFY_HELPER(X)       #X
-
 /// @endcond
 
 /**
@@ -560,6 +555,17 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define NAME2(A,B)                NAME2_HELPER(A,B)
 
+/// @cond DOXYGEN_IGNORE
+#define NAME2_HELPER(A,B)         A ## B
+/// @endcond
+
+/**
+ * No-operation statement.
+ *
+ * @remarks This is useful for do-nothing statements.
+ */
+#define NO_OP                     ((void)0)
+
 /**
  * If \a EXPR is `true`, prints an error message for `errno` to standard error
  * and exits with status \a STATUS.
@@ -701,6 +707,10 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #CHARIFY()
  */
 #define STRINGIFY(X)              STRINGIFY_HELPER(X)
+
+/// @cond DOXYGEN_IGNORE
+#define STRINGIFY_HELPER(X)       #X
+/// @endcond
 
 /**
  * Gets the length of \a S.
