@@ -205,11 +205,11 @@ static struct option const OPTIONS[] = {
   { "octal",              no_argument,        NULL, COPT(OCTAL)               },
   { "printable-only",     no_argument,        NULL, COPT(PRINTING_ONLY)       },
   { "plain",              no_argument,        NULL, COPT(PLAIN)               },
-  { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
-  { "revert",             no_argument,        NULL, COPT(REVERSE)             },
 #ifdef __APPLE__
   { "resource-fork",      no_argument,        NULL, COPT(RESOURCE_FORK)       },
 #endif /* __APPLE__ */
+  { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
+  { "revert",             no_argument,        NULL, COPT(REVERSE)             },
   { "string",             required_argument,  NULL, COPT(STRING)              },
   { "strings",            optional_argument,  NULL, COPT(STRINGS)             },
   { "strings-opts",       required_argument,  NULL, COPT(STRINGS_OPTS)        },
@@ -253,10 +253,10 @@ static char const *const OPTIONS_HELP[] = {
   [ COPT(OCTAL) ] = "Print offsets in octal",
   [ COPT(PLAIN) ] = "Dump in plain format; same as: -AOg32",
   [ COPT(PRINTING_ONLY) ] = "Only dump rows having printable characters",
-  [ COPT(REVERSE) ] = "Reverse from dump back to binary",
 #ifdef __APPLE__
   [ COPT(RESOURCE_FORK) ] = "Dump file's macOS resource fork",
 #endif /* __APPLE__ */
+  [ COPT(REVERSE) ] = "Reverse from dump back to binary",
   [ COPT(SKIP_BYTES) ] = "Jump to offset before dumping [default: 0]",
   [ COPT(STRING) ] = "Highlight string",
   [ COPT(STRINGS) ] = "Highlight strings at least length ARG [default: " STRINGIFY(STRINGS_LEN_DEFAULT) "]",
@@ -298,6 +298,10 @@ static char const*  opt_format( char, char[const], size_t ),
  * @return Returns the opened file upon success or `NULL` upon failure.
  */
 static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
+  assert( path != NULL );
+  assert( mode != NULL );
+  assert( stream != NULL );
+
 #ifdef __APPLE__
   if ( opt_resource_fork ) {
     // First check whether the file exists so we can distinguish between the
@@ -313,6 +317,7 @@ static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
     return file;
   }
 #endif /* __APPLE__ */
+
   return freopen( path, mode, stream );
 }
 
@@ -1100,14 +1105,14 @@ void options_init( int argc, char const *argv[] ) {
       case COPT(PRINTING_ONLY):
         opt_only_printing = true;
         break;
-      case COPT(REVERSE):
-        opt_reverse = true;
-        break;
 #ifdef __APPLE__
       case COPT(RESOURCE_FORK):
         opt_resource_fork = true;
         break;
 #endif /* __APPLE__ */
+      case COPT(REVERSE):
+        opt_reverse = true;
+        break;
       case COPT(SKIP_BYTES):
         fin_offset += STATIC_CAST( off_t, parse_offset( optarg ) );
         break;
@@ -1243,7 +1248,9 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
     SOPT(PRINTING_ONLY)
+#ifdef __APPLE__
     SOPT(RESOURCE_FORK)
+#endif /* __APPLE__ */
     SOPT(STRING)
     SOPT(STRINGS)
     SOPT(STRINGS_OPTS)
@@ -1313,18 +1320,23 @@ void options_init( int argc, char const *argv[] ) {
     );
   }
 
-  if ( opt_ignore_case )
-    tolower_s( opt_search_buf );
-
-  if ( opt_group_by > row_bytes )
-    row_bytes = opt_group_by;
-
+#ifdef __APPLE__
   if ( opt_resource_fork && argc == 0 ) {
     fatal_error( EX_USAGE,
       "%s requires infile argument\n",
       opt_format( COPT(RESOURCE_FORK), opt_buf, sizeof opt_buf )
     );
   }
+#endif /* __APPLE__ */
+
+  if ( opt_max_bytes == 0 )             // degenerate case
+    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
+
+  if ( opt_ignore_case )
+    tolower_s( opt_search_buf );
+
+  if ( opt_group_by > row_bytes )
+    row_bytes = opt_group_by;
 
   if ( max_lines > 0 )
     opt_max_bytes = max_lines * row_bytes;
@@ -1379,9 +1391,6 @@ void options_init( int argc, char const *argv[] ) {
     }
   }
 
-  if ( opt_max_bytes == 0 )             // degenerate case
-    exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
-
   opt_utf8 = should_utf8( utf8_when );
   if ( utf8_pad != 0 ) {
     static char8_t utf8_pad_buf[ UTF8_CHAR_SIZE_MAX + 1 /*NULL*/ ];
@@ -1391,8 +1400,7 @@ void options_init( int argc, char const *argv[] ) {
 
   return;
 
-invalid_opt:
-  NO_OP;
+invalid_opt:;
   // Determine whether the invalid option was short or long.
   char const *const invalid_opt = argv[ optind - 1 ];
   EPRINTF( "%s: ", me );

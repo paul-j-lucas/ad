@@ -561,11 +561,6 @@ _GL_INLINE_HEADER_BEGIN
 #define NAME2(A,B)                NAME2_HELPER(A,B)
 
 /**
- * No-operation statement.  (Useful for a `goto` target.)
- */
-#define NO_OP                     ((void)0)
-
-/**
  * If \a EXPR is `true`, prints an error message for `errno` to standard error
  * and exits with status \a STATUS.
  *

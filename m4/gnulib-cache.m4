@@ -37,28 +37,28 @@
 #  --no-conditional-dependencies \
 #  --no-libtool \
 #  --macro-prefix=gl \
+#  bool \
 #  extern-inline \
 #  getline \
 #  getopt-gnu \
-#  stdbool \
-#  stddef \
+#  stddef-h \
 #  strdup-posix \
 #  strerror \
 #  strsep \
-#  sysexits
+#  sysexits-h
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
 gl_MODULES([
+  bool
   extern-inline
   getline
   getopt-gnu
-  stdbool
-  stddef
+  stddef-h
   strdup-posix
   strerror
   strsep
-  sysexits
+  sysexits-h
 ])
 gl_AVOID([])
 gl_SOURCE_BASE([lib])

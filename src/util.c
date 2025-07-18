@@ -230,7 +230,7 @@ void fskip( off_t bytes_to_skip, FILE *file ) {
     if ( bytes_to_read > STATIC_CAST( size_t, bytes_to_skip ) )
       bytes_to_read = STATIC_CAST( size_t, bytes_to_skip );
     size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
-    if ( unlikely( ferror( file ) ) )
+    if ( unlikely( ferror( file ) != 0 ) )
       fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
     bytes_to_skip -= STATIC_CAST( off_t, bytes_read );
   } // while

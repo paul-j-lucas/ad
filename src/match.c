@@ -79,7 +79,7 @@ static bool get_byte( char8_t *pbyte ) {
 
   int const c = getchar();
   if ( unlikely( c == EOF ) ) {
-    if ( unlikely( ferror( stdin ) ) ) {
+    if ( unlikely( ferror( stdin ) != 0 ) ) {
       fatal_error( EX_IOERR,
         "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
       );

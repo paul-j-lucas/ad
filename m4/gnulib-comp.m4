@@ -74,9 +74,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
   # Code from module std-gnu11:
-  # Code from module stdbool:
   # Code from module stdckdint-h:
-  # Code from module stddef:
   # Code from module stddef-h:
   # Code from module stdint-h:
   # Code from module stdio-h:
@@ -89,7 +87,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module strsep:
   # Code from module sys_types-h:
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
-  # Code from module sysexits:
   # Code from module sysexits-h:
   # Code from module unistd-h:
   # Code from module vararrays:
