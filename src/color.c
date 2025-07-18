@@ -84,11 +84,25 @@ char const *sgr_hex_match;
 char const *sgr_offset;
 char const *sgr_sep;
 
+// local variables
+static char const *color_capabilities;  ///< Parsed color capabilities.
+
 // local functions
 NODISCARD
 static bool sgr_is_valid( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Cleans-up all memory used by colors at program termination.
+ *
+ * @note This function is called only via **atexit**(3).
+ *
+ * @sa colors_init()
+ */
+static void colors_cleanup( void ) {
+  FREE( color_capabilities );
+}
 
 /**
  * Sets the SGR color for the given capability.
@@ -166,43 +180,75 @@ static void sgr_set_cap_MB( char const *sgr_color ) {
 /**
  * Parses and sets the sequence of grep color capabilities.
  *
- * @param capabilities The grep capabilities to parse.
- * @return Returns `true` only if at least one capability was parsed
- * successfully.
+ * @param capabilities The SGR capabilities to parse.  It's of the form:
+ *  <table border="0">
+ *    <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+ *    <tr>
+ *      <td><i>capapilities</i></td>
+ *      <td>::= <i>capability</i> [<tt>:</tt><i>capability</i>]*</td>
+ *    </tr>
+ *    <tr>
+ *      <td><i>capability</i></td>
+ *      <td>::= <i>cap-name</i><tt>=</tt><i>sgr-list</i></td>
+ *    </tr>
+ *    <tr>
+ *      <td><i>cap-name</i></td>
+ *      <td>::= [<tt>a-zA-Z-</tt>]+</td>
+ *    </tr>
+ *    <tr>
+ *      <td><i>sgr-list</i></td>
+ *      <td>::= <i>sgr</i>[<tt>;</tt><i>sgr</i>]*</td>
+ *    </tr>
+ *    <tr>
+ *      <td><i>sgr</i></td>
+ *      <td>::= [<tt>1-9</tt>][<tt>0-9</tt>]*</td>
+ *    </tr>
+ *    <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
+ *  </table>
+ * where <i>sgr</i> is a [Select Graphics
+ * Rendition](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR) code.  An
+ * example \a capabilities is: `caret=42;1:error=41;1:warning=43;1`.  If NULL,
+ * does nothing.
+ * @return Returns a pointer to the parsed color capabilities string only if at
+ * least one capability was parsed successfully.  The caller is responsible for
+ * freeing it.  Otherwise returns NULL.
  */
 NODISCARD
-static bool colors_parse( char const *capabilities ) {
+static char const* colors_parse( char const *capabilities ) {
+  if ( null_if_empty( capabilities ) == NULL )
+    return NULL;
+
+  char *const capabilities_dup = check_strdup( capabilities );
   bool set_any = false;
 
-  if ( capabilities != NULL ) {
-    // free this later since the sgr_* variables point to substrings
-    char *next_cap = free_later( check_strdup( capabilities ) );
+  static color_cap_t const COLOR_CAPS[] = {
+    { "bn", SET_SGR( offset       ) },    // grep: byte offset
+    { "EC", SET_SGR( elided       ) },    // elided count
+    { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
+    { "MH", SET_SGR( hex_match    ) },    // matched hex
+    { "MB", CALL_FN( set_cap_MB   ) },    // matched both
+    { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
+    { "se", SET_SGR( sep          ) },    // grep: separator
+  };
 
-    static color_cap_t const COLOR_CAPS[] = {
-      { "bn", SET_SGR( offset       ) },    // grep: byte offset
-      { "EC", SET_SGR( elided       ) },    // elided count
-      { "MA", SET_SGR( ascii_match  ) },    // matched ASCII
-      { "MH", SET_SGR( hex_match    ) },    // matched hex
-      { "MB", CALL_FN( set_cap_MB   ) },    // matched both
-      { "mt", CALL_FN( set_cap_MB   ) },    // grep: matched text (both)
-      { "se", SET_SGR( sep          ) },    // grep: separator
-    };
-
-    for ( char *cap_name_val;
-          (cap_name_val = strsep( &next_cap, ":" )) != NULL; ) {
-      char const *const cap_name = strsep( &cap_name_val, "=" );
-      FOREACH_ARRAY_ELEMENT( color_cap_t, cap, COLOR_CAPS ) {
-        if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
-          char const *const cap_value = strsep( &cap_name_val, "=" );
-          if ( sgr_cap_set( cap, cap_value ) )
-            set_any = true;
-          break;
-        }
-      } // for
+  for ( char *next_cap = capabilities_dup, *cap_name_val;
+        (cap_name_val = strsep( &next_cap, SGR_CAP_SEP )) != NULL; ) {
+    char const *const cap_name = strsep( &cap_name_val, "=" );
+    FOREACH_ARRAY_ELEMENT( color_cap_t, cap, COLOR_CAPS ) {
+      if ( strcmp( cap_name, cap->cap_name ) == 0 ) {
+        char const *const cap_value = strsep( &cap_name_val, "=" );
+        if ( sgr_cap_set( cap, cap_value ) )
+          set_any = true;
+        break;
+      }
     } // for
-  }
+  } // for
 
-  return set_any;
+  if ( set_any )
+    return capabilities_dup;
+
+  free( capabilities_dup );
+  return NULL;
 }
 
 /**
@@ -250,17 +296,20 @@ void colors_init( void ) {
 
   if ( !should_colorize( opt_color_when ) )
     return;
-  if ( colors_parse( getenv( "AD_COLORS" ) ) )
-    return;
 
-  char const COLORS_DEFAULT[] =
-    COLOR_CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
-    COLOR_CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
-    COLOR_CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
-    COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN;
+  color_capabilities = colors_parse( getenv( "AD_COLORS" ) );
+  if ( color_capabilities == NULL ) {
+    char const COLORS_DEFAULT[] =
+      COLOR_CAP_BYTE_OFFSET   "=" SGR_FG_GREEN                      SGR_CAP_SEP
+      COLOR_CAP_ELIDED_COUNT  "=" SGR_FG_MAGENTA                    SGR_CAP_SEP
+      COLOR_CAP_MATCHED_BOTH  "=" SGR_BG_RED      SGR_SEP SGR_BOLD  SGR_CAP_SEP
+      COLOR_CAP_SEPARATOR     "=" SGR_FG_CYAN;
 
-  MAYBE_UNUSED bool const ok = colors_parse( COLORS_DEFAULT );
-  assert( ok );
+    color_capabilities = colors_parse( COLORS_DEFAULT );
+    assert( color_capabilities != NULL );
+  }
+
+  ATEXIT( &colors_cleanup );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
