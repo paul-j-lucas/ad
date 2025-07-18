@@ -1,5 +1,7 @@
 2025-07-18  Paul J. Lucas <paul@lucasmail.org>
 
+   * color.c, util.h: Eliminated goto.
+   * color.h, options.c: Eliminated COLOR_WHEN_DEFAULT.
    * util.h: Put NO_OP back.
 
 2025-07-17  Paul J. Lucas <paul@lucasmail.org>
