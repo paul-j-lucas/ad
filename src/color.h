@@ -95,9 +95,6 @@ _GL_INLINE_HEADER_BEGIN
  * @{
  */
 
-/** When to colorize default. */
-#define COLOR_WHEN_DEFAULT  COLOR_NOT_FILE
-
 /**
  * When to colorize output.
  */
@@ -116,7 +113,7 @@ extern char const  *sgr_hex_match;      ///< Hex match color.
 extern char const  *sgr_offset;         ///< Offset color.
 extern char const  *sgr_sep;            ///< Separator color.
 
-///////////////////////////////////////////////////////////////////////////////
+////////// extern functions ///////////////////////////////////////////////////
 
 /**
  * Ends printing in \a sgr_color.

@@ -145,7 +145,7 @@ typedef enum utf8_when utf8_when_t;
 
 // option extern variable definitions
 ad_c_array_t    opt_c_array;
-color_when_t    opt_color_when = COLOR_WHEN_DEFAULT;
+color_when_t    opt_color_when = COLOR_NOT_FILE;
 bool            opt_dump_ascii = true;
 unsigned        opt_group_by = GROUP_BY_DEFAULT;
 bool            opt_ignore_case;
