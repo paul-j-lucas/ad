@@ -165,16 +165,16 @@ ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname ) {
   return found_rb != NULL ? found_rb->data : NULL;
 }
 
-void ad_typedefs_init( void ) {
-  ASSERT_RUN_ONCE();
-  rb_tree_init( &typedef_set, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp ) );
-  ATEXIT( &ad_typedefs_cleanup );
-}
-
 void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
   assert( visit_fn != NULL );
   tdef_rb_visit_data_t trvd = { visit_fn, v_data };
   rb_tree_visit( &typedef_set, &rb_visitor, &trvd );
+}
+
+void ad_typedefs_init( void ) {
+  ASSERT_RUN_ONCE();
+  rb_tree_init( &typedef_set, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp ) );
+  ATEXIT( &ad_typedefs_cleanup );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
