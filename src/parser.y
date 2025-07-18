@@ -538,7 +538,7 @@ static void yyerror( char const *msg ) {
 }
 
                     // ad keywords
-%token              Y_alignas;
+%token              Y_alignas
 %token  <expr_kind> Y_bool
 %token              Y_break
 %token              Y_case
