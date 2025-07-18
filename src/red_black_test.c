@@ -183,8 +183,7 @@ static void test_script( void ) {
       case RB_TEST_INSERT:
         TEST( rb_tree_insert( &tree, (void*)i->key ).inserted );
         break;
-      case RB_TEST_DELETE:
-        NO_OP;
+      case RB_TEST_DELETE:;
         rb_node_t *const found = rb_tree_find( &tree, (void*)i->key );
         if ( TEST( found != NULL ) ) {
           char const *const data = rb_tree_delete( &tree, found );
