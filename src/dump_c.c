@@ -2,7 +2,7 @@
 **      ad -- ASCII dump
 **      src/dump_c.c
 **
-**      Copyright (C) 2015-2024  Paul J. Lucas
+**      Copyright (C) 2015-2025  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -84,12 +84,12 @@ static void dump_row_c( char const *offset_format, char8_t const *buf,
  * Dumps a file as a C array.
  */
 void dump_file_c( void ) {
-  char8_t       bytes[ ROW_BYTES_C ];   // bytes in buffer
+  char8_t       buf[ ROW_BYTES_C ];     // buffer of bytes
   match_bits_t  match_bits;             // not used when dumping in C
 
   // prime the pump by reading the first row
   size_t row_len = match_row(
-    bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
+    buf, sizeof buf, &match_bits, /*kmps=*/NULL,
     /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
   );
   if ( row_len == 0 )
@@ -110,13 +110,13 @@ void dump_file_c( void ) {
   char const *const offset_format = get_offsets_format();
 
   for (;;) {
-    dump_row_c( offset_format, bytes, row_len );
+    dump_row_c( offset_format, buf, row_len );
     fin_offset += STATIC_CAST( off_t, row_len );
     array_len += row_len;
-    if ( row_len != ROW_BYTES_C )
+    if ( row_len != sizeof buf )
       break;
     row_len = match_row(
-      bytes, ROW_BYTES_C, &match_bits, /*kmps=*/NULL,
+      buf, sizeof buf, &match_bits, /*kmps=*/NULL,
       /*pmatch_buf=*/NULL, /*pmatch_len=*/NULL
     );
   } // for
