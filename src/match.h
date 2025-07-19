@@ -52,24 +52,6 @@ typedef uint32_t  match_bits_t;         ///< Bit _i_ means byte _i_ matches.
 extern unsigned long total_matches;     ///< Total number of matches.
 
 /**
- * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
- * string searching algorithm.
- *
- * @remarks For the small search patterns and there being no requirement for
- * super-fast performance for this application, brute-force searching would
- * have been fine.  However, KMP has the advantage of never having to back up
- * within the string being searched which is a requirement when reading from
- * stdin.
- *
- * @param pattern The search pattern to use.
- * @param pattern_len The length of \a pattern.
- * @return Returns an array containing the values comprising the partial-match
- * table.  The caller is responsible for freeing the array.
- */
-NODISCARD
-size_t* kmp_new( char const *pattern, size_t pattern_len );
-
-/**
  * Gets a row of bytes and whether each byte matches bytes in the search
  * buffer.
  *
