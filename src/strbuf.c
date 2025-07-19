@@ -2,7 +2,7 @@
 **      PJL Library
 **      src/strbuf.c
 **
-**      Copyright (C) 2021-2024  Paul J. Lucas
+**      Copyright (C) 2021-2025  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 // standard
 #include <assert.h>
 #include <stdarg.h>
+#include <stddef.h>                     /* for NULL, size_t */
 #include <stdlib.h>                     /* for free(3) */
 
 /// @endcond
@@ -45,23 +46,6 @@
  * @{
  */
 
-////////// local functions ////////////////////////////////////////////////////
-
-/**
- * Calculates the next power of 2 &gt; \a n.
- *
- * @param n The initial value.
- * @return Returns said power of 2.
- */
-NODISCARD
-static size_t next_pow_2( size_t n ) {
-  if ( n == 0 )
-    return 1;                           // LCOV_EXCL_LINE
-  while ( (n & (n - 1)) != 0 )
-    n &= n - 1;
-  return n << 1;
-}
-
 ////////// extern functions ///////////////////////////////////////////////////
 
 void strbuf_cleanup( strbuf_t *sbuf ) {
@@ -70,13 +54,13 @@ void strbuf_cleanup( strbuf_t *sbuf ) {
   strbuf_init( sbuf );
 }
 
-void strbuf_paths( strbuf_t *sbuf, char const *component ) {
+char* strbuf_paths( strbuf_t *sbuf, char const *component ) {
   assert( sbuf != NULL );
   assert( component != NULL );
 
   size_t comp_len = strlen( component );
   if ( comp_len == 0 )
-    return;
+    return sbuf->str;
 
   if ( sbuf->len > 0 ) {
     if ( sbuf->str[ sbuf->len - 1 ] == '/' ) {
@@ -92,28 +76,14 @@ void strbuf_paths( strbuf_t *sbuf, char const *component ) {
     }
   }
 
-  strbuf_putsn( sbuf, component, comp_len );
+  return strbuf_putsn( sbuf, component, comp_len );
 }
 
-void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
+char* strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   assert( sbuf != NULL );
   assert( format != NULL );
 
-  char *buf;
-  size_t buf_rem;
-
-  if ( sbuf->str == NULL ) {
-    //
-    // Avoid the undefined behavior of adding an offset to a null pointer.  We
-    // have to check for this only in this function since we don't initially
-    // call strbuf_reserve() like in every other function.
-    //
-    buf = NULL;
-    buf_rem = 0;
-  } else {
-    buf = sbuf->str + sbuf->len;
-    buf_rem = sbuf->cap - sbuf->len;
-  }
+  char *buf = sbuf->str == NULL ? NULL: sbuf->str + sbuf->len;
 
   //
   // Attempt to concatenate onto the existing buffer: vsnprintf() returns the
@@ -122,7 +92,7 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   //
   va_list args;
   va_start( args, format );
-  int raw_len = vsnprintf( buf, buf_rem, format, args );
+  int raw_len = vsnprintf( buf, sbuf->cap - sbuf->len, format, args );
   va_end( args );
   PERROR_EXIT_IF( raw_len < 0, EX_IOERR );
 
@@ -136,29 +106,28 @@ void strbuf_printf( strbuf_t *sbuf, char const *format, ... ) {
   size_t const args_len = STATIC_CAST( size_t, raw_len );
   if ( strbuf_reserve( sbuf, args_len ) ) {
     buf = sbuf->str + sbuf->len;
-    buf_rem = sbuf->cap - sbuf->len;
     va_start( args, format );
-    raw_len = vsnprintf( buf, buf_rem, format, args );
+    raw_len = vsnprintf( buf, args_len + 1/*'\0'*/, format, args );
     va_end( args );
     PERROR_EXIT_IF( raw_len < 0, EX_IOERR );
   }
 
   sbuf->len += args_len;
+  return sbuf->str;
 }
 
-void strbuf_putsn( strbuf_t *sbuf, char const *s, size_t s_len ) {
+char* strbuf_putsn( strbuf_t *sbuf, char const *s, size_t n ) {
   assert( s != NULL );
-  strbuf_reserve( sbuf, s_len );
 
-  // Use memcpy() to eliminate "'strncpy' output truncated before terminating
-  // nul copying 1 byte from a string of the same length" warning.
-  memcpy( sbuf->str + sbuf->len, s, s_len );
-
-  sbuf->len += s_len;
+  n = strnlen( s, n );
+  strbuf_reserve( sbuf, n );
+  memcpy( sbuf->str + sbuf->len, s, n );
+  sbuf->len += n;
   sbuf->str[ sbuf->len ] = '\0';
+  return sbuf->str;
 }
 
-void strbuf_puts_quoted( strbuf_t *sbuf, char quote, char const *s ) {
+char* strbuf_puts_quoted( strbuf_t *sbuf, char quote, char const *s ) {
   assert( sbuf != NULL );
   assert( quote == '\'' || quote == '"' );
   assert( s != NULL );
@@ -197,40 +166,39 @@ void strbuf_puts_quoted( strbuf_t *sbuf, char quote, char const *s ) {
     strbuf_putc( sbuf, *s );
   } // for
   strbuf_putc( sbuf, quote );
+
+  return sbuf->str;
 }
 
 bool strbuf_reserve( strbuf_t *sbuf, size_t res_len ) {
   assert( sbuf != NULL );
-  size_t const buf_rem = sbuf->cap - sbuf->len;
-  if ( res_len < buf_rem )
+  if ( res_len < sbuf->cap - sbuf->len )
     return false;
-  //
-  // We don't need to add +1 for the terminating '\0' since next_pow_2(n) is
-  // guaranteed to be at least n+1.
-  //
-  sbuf->cap = next_pow_2( sbuf->len + res_len );
+  if ( sbuf->cap == 0 )
+    sbuf->cap = 2;
+  size_t const new_len = sbuf->len + res_len;
+  while ( sbuf->cap <= new_len )
+    sbuf->cap <<= 1;
   REALLOC( sbuf->str, sbuf->cap );
   return true;
 }
 
 void strbuf_reset( strbuf_t *sbuf ) {
   assert( sbuf != NULL );
-  if ( sbuf->str != NULL ) {
+  if ( sbuf->str != NULL )
     sbuf->str[0] = '\0';
-    sbuf->len = 0;
-  }
-}
-
-void strbuf_sepsn( strbuf_t *sbuf, char const *sep, size_t sep_len,
-                   bool *sep_flag ) {
-  assert( sep_flag != NULL );
-  if ( true_or_set( sep_flag ) )
-    strbuf_putsn( sbuf, sep, sep_len );
+  sbuf->len = 0;
 }
 
 void strbuf_sepsn_putsn( strbuf_t *sbuf, char const *sep, size_t sep_len,
                          bool *sep_flag, char const *s, size_t s_len ) {
-  strbuf_sepsn( sbuf, sep, sep_len, sep_flag );
+  assert( sep_flag != NULL );
+
+  if ( true_or_set( sep_flag ) ) {
+    strbuf_reserve( sbuf, sep_len + s_len );
+    strbuf_putsn( sbuf, sep, sep_len );
+  }
+
   strbuf_putsn( sbuf, s, s_len );
 }
 

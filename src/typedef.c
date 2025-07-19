@@ -137,14 +137,14 @@ ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
   assert( type != NULL );
 
   ad_typedef_t *const new_tdef = ad_typedef_new( type );
-  rb_insert_rv_t const rv = rb_tree_insert( &typedef_set, new_tdef );
+  rb_insert_rv_t const rv = rb_tree_insert( &typedef_set, new_tdef, 0 );
   if ( !rv.inserted ) {
     //
     // A typedef with the same name exists, so we don't need the new one.
     //
     FREE( new_tdef );
   }
-  return rv.node->data;
+  return RB_DPTR( rv.node );
 }
 
 ad_typedef_t const* ad_typedef_find_name( char const *name ) {
@@ -173,7 +173,9 @@ void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
 
 void ad_typedefs_init( void ) {
   ASSERT_RUN_ONCE();
-  rb_tree_init( &typedef_set, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp ) );
+  rb_tree_init(
+    &typedef_set, RB_DINT, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp )
+  );
   ATEXIT( &ad_typedefs_cleanup );
 }
 

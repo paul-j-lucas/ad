@@ -118,7 +118,7 @@ symbol_t* sym_find_name( char const *name ) {
 
 void sym_init( void ) {
   ASSERT_RUN_ONCE();
-  rb_tree_init( &sym_table, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
+  rb_tree_init( &sym_table, RB_DPTR, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
   ATEXIT( &sym_cleanup );
 }
 
