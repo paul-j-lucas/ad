@@ -367,25 +367,6 @@ static void unget_byte( char8_t byte ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-size_t* kmp_new( char const *pattern, size_t pattern_len ) {
-  assert( pattern != NULL );
-
-  // allocating +1 eliminates "past the end" checking
-  size_t *const kmps = MALLOC( size_t, pattern_len + 1 );
-  memset( kmps, 0, sizeof( size_t ) * (pattern_len + 1) );
-
-  for ( size_t i = 1, j = 0; i < pattern_len; ) {
-    assert( j < pattern_len );
-    if ( pattern[i] == pattern[j] )
-      kmps[++i] = ++j;
-    else if ( j > 0 )
-      j = kmps[j-1];
-    else
-      kmps[++i] = 0;
-  } // for
-  return kmps;
-}
-
 size_t match_row( char8_t *row_buf, size_t row_len, match_bits_t *match_bits,
                   size_t const *kmps, char8_t **pmatch_buf,
                   size_t *pmatch_len ) {

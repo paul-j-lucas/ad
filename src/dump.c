@@ -263,6 +263,41 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
   dumped_offset = fin_offset;
 }
 
+/**
+ * Consructs the partial-match table used by the Knuth-Morris-Pratt (KMP)
+ * string searching algorithm.
+ *
+ * @remarks For the small search patterns and there being no requirement for
+ * super-fast performance for this application, brute-force searching would
+ * have been fine.  However, KMP has the advantage of never having to back up
+ * within the string being searched which is a requirement when reading from
+ * stdin.
+ *
+ * @param pattern The search pattern to use.
+ * @param pattern_len The length of \a pattern.
+ * @return Returns an array containing the values comprising the partial-match
+ * table.  The caller is responsible for freeing the array.
+ */
+NODISCARD
+static size_t* kmp_new( char const *pattern, size_t pattern_len ) {
+  assert( pattern != NULL );
+
+  // allocating +1 eliminates "past the end" checking
+  size_t *const kmps = MALLOC( size_t, pattern_len + 1 );
+  memset( kmps, 0, sizeof( size_t ) * (pattern_len + 1) );
+
+  for ( size_t i = 1, j = 0; i < pattern_len; ) {
+    assert( j < pattern_len );
+    if ( pattern[i] == pattern[j] )
+      kmps[++i] = ++j;
+    else if ( j > 0 )
+      j = kmps[j-1];
+    else
+      kmps[++i] = 0;
+  } // for
+  return kmps;
+}
+
 /////////// extern functions //////////////////////////////////////////////////
 
 /**
