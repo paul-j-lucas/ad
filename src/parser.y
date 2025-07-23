@@ -573,13 +573,13 @@ static void yyerror( char const *msg ) {
 %token                                      '&'
                                             '*'
                                             '!'
-                 // Y_UMINUS             // '-' -- covered by '-' below
-                 // Y_PLUS               // '+' -- covered by '+' below
+                 // Y_UMINUS            // '-' -- covered by '-' below
+                 // Y_PLUS              // '+' -- covered by '+' below
 %right              Y_sizeof
 %right                                      '~'
                     // C operators: precedence 14
                     // C operators: precedence 13
-                                         // '*' -- covered by '*' above
+                                        // '*' -- covered by '*' above
 %left                                       '/'
                                             '%'
                     // C operators: precedence 12
@@ -598,7 +598,7 @@ static void yyerror( char const *msg ) {
 %left               Y_EQUAL_EQUAL           "=="
                     Y_EXCLAM_EQUAL          "!="
                     // C operators: precedence 7
-                    Y_BIT_AND            // '&' -- covered by Y_AMPER
+                    Y_BIT_AND           // '&' -- covered by Y_AMPER
                     // C operators: precedence 6
 %left                                       '^'
                     // C operators: precedence 5
@@ -634,7 +634,7 @@ static void yyerror( char const *msg ) {
 %token  <int_val>   Y_INT_LIT
 %token  <name>      Y_NAME
 %token  <str_val>   Y_STR_LIT
-%token              Y_TEMPLATE_END
+%token              Y_TEMPLATE_END      // '>' matching '<'
 %token  <type>      Y_TYPEDEF_TYPE
 
                     //
