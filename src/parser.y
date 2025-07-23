@@ -1875,8 +1875,14 @@ static bool print_error_token( char const *token ) {
       case YYEOF:
         EPUTS( " [<EOF>]" );
         break;
+      case YYerror:
+        EPUTS( " [<error>]" );
+        break;
+      case YYUNDEF:
+        EPUTS( " [<UNDEF>]" );
+        break;
       default:
-        EPRINTF( " [%d]", yychar );
+        EPRINTF( isprint( yychar ) ? " ['%c']" : " [%d]", yychar );
     } // switch
   }
   return true;
