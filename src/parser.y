@@ -93,7 +93,7 @@
 /**
  * Calls #elaborate_error_dym() with a \ref dym_kind_t of #DYM_NONE.
  *
- * @param ... Arguments passed to fl_elaborate_error().
+ * @param ... Arguments passed to l_elaborate_error().
  *
  * @note This must be used _only_ after an `error` token, e.g.:
  * @code
@@ -110,10 +110,10 @@
   elaborate_error_dym( DYM_NONE, __VA_ARGS__ )
 
 /**
- * Calls fl_elaborate_error() followed by #PARSE_ABORT().
+ * Calls l_elaborate_error() followed by #PARSE_ABORT().
  *
  * @param DYM_KINDS The bitwise-or of the kind(s) of things possibly meant.
- * @param ... Arguments passed to fl_elaborate_error().
+ * @param ... Arguments passed to l_elaborate_error().
  *
  * @note This must be used _only_ after an `error` token, e.g.:
  * ```
@@ -127,7 +127,7 @@
  * @sa punct_expected()
  */
 #define elaborate_error_dym(DYM_KINDS,...) BLOCK( \
-  fl_elaborate_error( __FILE__, __LINE__, (DYM_KINDS), __VA_ARGS__ ); PARSE_ABORT(); )
+  l_elaborate_error( __LINE__, (DYM_KINDS), __VA_ARGS__ ); PARSE_ABORT(); )
 
 /**
  * Aborts the current parse (presumably after an error message has been
@@ -336,9 +336,8 @@ bool  ad_statement_list_check( slist_t const* ),
       ad_type_check( ad_type_t const* );
 
 // local functions
-PJL_PRINTF_LIKE_FUNC(4)
-static void fl_elaborate_error( char const*, int, dym_kind_t, char const*,
-                                ... );
+PJL_PRINTF_LIKE_FUNC(3)
+static void l_elaborate_error( int, dym_kind_t, char const*, ... );
 PJL_DISCARD
 static bool print_error_token( char const* );
 
@@ -1815,7 +1814,6 @@ semi_exp
  * @note This function isn't normally called directly; use the
  * #elaborate_error() or #elaborate_error_dym() macros instead.
  *
- * @param file The name of the file where this function was called from.
  * @param line The line number within \a file where this function was called
  * from.
  * @param dym_kinds The bitwise-or of the kind(s) of things possibly meant.
@@ -1828,14 +1826,12 @@ semi_exp
  * @sa fl_punct_expected()
  * @sa yyerror()
  */
-PJL_PRINTF_LIKE_FUNC(4)
-static void fl_elaborate_error( char const *file, int line,
-                                dym_kind_t dym_kinds, char const *format,
-                                ... ) {
+static void l_elaborate_error( int line, dym_kind_t dym_kinds,
+                               char const *format, ... ) {
   assert( format != NULL );
 
   EPUTS( ": " );
-  print_debug_file_line( file, line );
+  print_debug_file_line( __FILE__, line );
 
   char const *const error_token = lexer_printable_token();
   if ( print_error_token( error_token ) )
