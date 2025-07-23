@@ -70,7 +70,8 @@ static char const* sname_name_impl( strbuf_t *sbuf, sname_t const *sname,
   bool colon2 = false;
 
   FOREACH_SNAME_SCOPE_UNTIL( scope, sname, end_scope ) {
-    strbuf_sepsn( sbuf, "::", 2, &colon2 );
+    if ( true_or_set( &colon2 ) )
+      strbuf_putsn( sbuf, "::", 2 );
     sname_scope_t const *const data = sname_scope_data( scope );
     strbuf_puts( sbuf, data->name );
   } // for
