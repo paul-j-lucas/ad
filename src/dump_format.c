@@ -243,6 +243,7 @@ void dump_file_format( void ) {
   FILE *const file = fopen( opt_format_path, "r" );
   PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
   lexer_init();
+  parser_init();
   ad_typedefs_init();
   yyrestart( file );
   int const rv = yyparse();
@@ -265,8 +266,6 @@ void dump_file_format( void ) {
     if ( !ad_statement_exec( statement_node->data, &dump ) )
       break;
   } // for
-
-  parser_cleanup();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

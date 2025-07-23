@@ -25,7 +25,7 @@
  * @file
  * Wrapper around the Bison-generated `parser.h` to add necessary `#include`s
  * for the types in Bison's <code>\%union</code> declaration as well as a
- * declaration for the parser_cleanup() function.
+ * declaration for the parser_init() function.
  */
 
 // local
@@ -43,14 +43,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Cleans up global parser data at program termination.
+ * Initializes the parser.
  *
- * @remarks The parser uses a "cleanup" function rather than an "init" function
- * (that calls **atexit**(3) with <code>%parser_cleanup()</code>) because
- * parser clean-up needs to be done at a specific point in the program's clean-
- * up sequence and that's trivial to do by having to call this explicitly.
+ * @note This function must be called exactly once.
  */
-void parser_cleanup( void );
+void parser_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
 
