@@ -144,7 +144,7 @@
 #define PARSE_ASSERT(EXPR)        BLOCK( if ( !(EXPR) ) PARSE_ABORT(); )
 
 /**
- * Calls fl_punct_expected() followed by #PARSE_ABORT().
+ * Calls l_punct_expected() followed by #PARSE_ABORT().
  *
  * @param PUNCT The punctuation character that was expected.
  *
@@ -161,7 +161,7 @@
  * @sa elaborate_error_dym()
  */
 #define punct_expected(PUNCT) BLOCK( \
-  fl_punct_expected( __FILE__, __LINE__, (PUNCT) ); PARSE_ABORT(); )
+  l_punct_expected( __LINE__, (PUNCT) ); PARSE_ABORT(); )
 
 /** @} */
 
@@ -379,11 +379,19 @@ static bool define_type( ad_type_t const *type ) {
 }
 
 /**
- * A special case of fl_elaborate_error() that prevents oddly worded error
+ * Cleans-up all resources used by \ref in_attr "inherited attributes".
+ */
+static void ia_cleanup( void ) {
+  sname_cleanup( &in_attr.scope_sname );
+  in_attr = (in_attr_t){ 0 };
+}
+
+/**
+ * A special case of l_elaborate_error() that prevents oddly worded error
  * messages when a punctuation character is expected by not doing keyword look-
  * ups of the error token.
  *
- * For example, if fl_elaborate_error() were used for the following \b ad
+ * For example, if l_elaborate_error() were used for the following \b ad
  * command, you'd get the following:
  * @code
  * explain void f(int g const)
@@ -396,28 +404,19 @@ static bool define_type( ad_type_t const *type ) {
  * @note This function isn't normally called directly; use the
  * #punct_expected() macro instead.
  *
- * @param file The name of the file where this function was called from.
  * @param line The line number within \a file where this function was called
  * from.
  * @param punct The punctuation character that was expected.
  *
- * @sa fl_elaborate_error()
+ * @sa l_elaborate_error()
  * @sa yyerror()
  */
-static void fl_punct_expected( char const *file, int line, char punct ) {
+static void l_punct_expected( int line, char punct ) {
   EPUTS( ": " );
-  print_debug_file_line( file, line );
+  print_debug_file_line( __FILE__, line );
   if ( print_error_token( lexer_printable_token() ) )
     EPUTS( ": " );
   EPRINTF( "'%c' expected\n", punct );
-}
-
-/**
- * Cleans-up all resources used by \ref in_attr "inherited attributes".
- */
-static void ia_cleanup( void ) {
-  sname_cleanup( &in_attr.scope_sname );
-  in_attr = (in_attr_t){ 0 };
 }
 
 /**
@@ -476,21 +475,21 @@ static sname_t sname_current( char const *name ) {
  * function try to figure out the best type of error message to print.
  *
  * @note A newline is _not_ printed since the error message will be appended to
- * by fl_elaborate_error().  For example, the parts of an error message are
+ * by l_elaborate_error().  For example, the parts of an error message are
  * printed by the functions shown:
  *
  *      42: syntax error: "int": "into" expected
  *      |--||----------||----------------------|
  *      |   |           |
- *      |   yyerror()   fl_elaborate_error()
+ *      |   yyerror()   l_elaborate_error()
  *      |
  *      print_loc()
  *
  * @param msg The error message to print.  Bison invariably passes `syntax
  * error`.
  *
- * @sa fl_elaborate_error()
- * @sa fl_punct_expected()
+ * @sa l_elaborate_error()
+ * @sa l_punct_expected()
  * @sa print_loc()
  */
 static void yyerror( char const *msg ) {
@@ -1823,7 +1822,7 @@ semi_exp
  *
  * @sa #elaborate_error()
  * @sa #elaborate_error_dym()
- * @sa fl_punct_expected()
+ * @sa l_punct_expected()
  * @sa yyerror()
  */
 static void l_elaborate_error( int line, dym_kind_t dym_kinds,
@@ -1848,6 +1847,13 @@ static void l_elaborate_error( int line, dym_kind_t dym_kinds,
   }
 
   EPUTC( '\n' );
+}
+
+/**
+ * Cleans up global parser data at program termination.
+ */
+static void parser_cleanup( void ) {
+  ad_statement_list_cleanup( &statement_list );
 }
 
 /**
@@ -1878,11 +1884,9 @@ static bool print_error_token( char const *token ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-/**
- * Cleans up global parser data at program termination.
- */
-void parser_cleanup( void ) {
-  ad_statement_list_cleanup( &statement_list );
+void parser_init( void ) {
+  ASSERT_RUN_ONCE();
+  ATEXIT( &parser_cleanup );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
