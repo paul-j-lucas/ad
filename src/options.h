@@ -132,7 +132,7 @@ typedef enum ad_strings ad_strings_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-extern ad_debug_t     opt_ad_debug;
+extern ad_debug_t     opt_ad_debug;     ///< Dump format debug info?
 extern ad_c_array_t   opt_c_array;      ///< Dump as C array in this format.
 extern color_when_t   opt_color_when;   ///< When to colorize output.
 extern bool           opt_dump_ascii;   ///< Dump ASCII part?
