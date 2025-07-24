@@ -1374,9 +1374,6 @@ void options_init( int argc, char const *argv[] ) {
       print_usage( EX_USAGE );
   } // switch
 
-  if ( opt_format_path != NULL )
-    return;
-
   if ( !opt_strings ) {
     if ( opt_search_buf != NULL ) {
       // searching for a string
