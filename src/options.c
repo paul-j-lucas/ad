@@ -41,7 +41,6 @@
 #ifdef HAVE_LANGINFO_H
 #include <langinfo.h>
 #endif /* HAVE_LANGINFO_H */
-#include <limits.h>                     /* for PATH_MAX */
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif /* HAVE_LOCALE_H */
@@ -128,6 +127,13 @@
 #define NF(N)                     (~0ull >> ((sizeof(long long)*2 - (N)) * 4))
 
 #define OPT_BUF_SIZE        32          /**< Maximum size for an option. */
+
+#ifdef __APPLE__
+/**
+ * Suffix to append to a path to open the file's resource fork.
+ */
+#define RSRC_FORK_PATH_SUFFIX     "/..namedfork/rsrc"
+#endif /* __APPLE__ */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -302,9 +308,14 @@ static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
     struct stat stat_buf;
     if ( stat( path, &stat_buf ) == -1 )
       return NULL;
-    char rsrc_path[ PATH_MAX ];
-    snprintf( rsrc_path, sizeof rsrc_path, "%s/..namedfork/rsrc", path );
+
+    size_t const rsrc_len = strlen( path ) + STRLITLEN( RSRC_FORK_PATH_SUFFIX );
+    char *const rsrc_path = MALLOC( char, rsrc_len + 1 );
+    snprintf( rsrc_path, rsrc_len + 1, "%s" RSRC_FORK_PATH_SUFFIX, path );
+
     FILE *const file = freopen( rsrc_path, mode, stream );
+    FREE( rsrc_path );
+
     if ( file == NULL && errno == ENOENT )
       fatal_error( EX_NOINPUT, "\"%s\": File has no resource fork\n", path );
     return file;
