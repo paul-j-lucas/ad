@@ -238,9 +238,12 @@ static bool get_buf( char8_t *buf, size_t size ) {
 
 /**
  * Dumps a file in a specified format.
+ *
+ * @param format_path The path of the format file to parse.
  */
-void dump_file_format( void ) {
-  FILE *const file = fopen( opt_format_path, "r" );
+void dump_file_format( char const *format_path ) {
+  assert( format_path != NULL );
+  FILE *const file = fopen( format_path, "r" );
   PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
   lexer_init();
   parser_init();
@@ -256,7 +259,6 @@ void dump_file_format( void ) {
     EPUTC( '\n' );
     _Exit( EX_SOFTWARE );
   }
-
   if ( rv != 0 )
     exit( EX_DATAERR );
 

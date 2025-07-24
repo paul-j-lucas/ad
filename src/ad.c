@@ -43,7 +43,7 @@
 // extern function declarations
 void dump_file( void );
 void dump_file_c( void );
-void dump_file_format( void );
+void dump_file_format( char const* );
 void reverse_dump_file( void );
 
 // extern variable definitions
@@ -81,7 +81,7 @@ int main( int argc, char const *argv[const] ) {
   if ( opt_c_array != C_ARRAY_NONE )
     dump_file_c();
   else if ( opt_format_path != NULL )
-    dump_file_format();
+    dump_file_format( opt_format_path );
   else if ( opt_reverse )
     reverse_dump_file();
   else
