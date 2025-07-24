@@ -1159,7 +1159,7 @@ cast_expr
   | '(' Y_NAME[name] rparen_exp cast_expr[expr]
     {
       $$ = ad_expr_new( AD_EXPR_CAST, &@$ );
-      //$$->binary.lhs_expr = $2;
+      // TODO: $$->binary.lhs_expr = $2;
       (void)$name;
       $$->binary.rhs_expr = $expr;
     }
