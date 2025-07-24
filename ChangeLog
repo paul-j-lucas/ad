@@ -1,3 +1,8 @@
+2025-07-24  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c: No longer using PATH_MAX.
+   * options.c: Added #include <limits.h> for PATH_MAX.
+
 2025-07-23  Paul J. Lucas <paul@lucasmail.org>
 
    * options.c, options.h: Added cli_option_next() and FOREACH_CLI_OPTION().
