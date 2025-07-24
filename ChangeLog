@@ -1,3 +1,7 @@
+2025-07-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * options.c, options.h: Added cli_option_next() and FOREACH_CLI_OPTION().
+
 2025-07-19  Paul J. Lucas <paul@lucasmail.org>
 
    * dump.c, match.c, match.h: Moved kmp_new().
