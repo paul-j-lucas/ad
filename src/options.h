@@ -35,6 +35,7 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
+#include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
@@ -46,6 +47,16 @@
  * Global variables and functions for **ad** options.
  * @{
  */
+
+/**
+ * Convenience macro for iterating over all **ad** command-line options.
+ *
+ * @param VAR The `struct option` loop variable.
+ *
+ * @sa cli_option_next()
+ */
+#define FOREACH_CLI_OPTION(VAR) \
+  for ( struct option const *VAR = NULL; (VAR = cli_option_next( VAR )) != NULL; )
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -157,6 +168,21 @@ extern char8_t const *opt_utf8_pad;     ///< UTF-8 padding character.
 extern bool           opt_verbose;      ///< Dump _all_ rows of data?
 
 ////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * Iterates to the next **ad** command-line option.
+ *
+ * @param opt A pointer to the previous option. For the first iteration, NULL
+ * should be passed.
+ * @return Returns the next command-line option or NULL for none.
+ *
+ * @note This function isn't normally called directly; use the
+ * #FOREACH_CLI_OPTION() macro instead.
+ *
+ * @sa #FOREACH_CLI_OPTION()
+ */
+NODISCARD
+struct option const* cli_option_next( struct option const *opt );
 
 /**
  * Gets the English word for the current offset format.

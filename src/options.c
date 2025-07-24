@@ -514,9 +514,10 @@ static char const* opt_format( char short_opt, char buf[const], size_t size ) {
  */
 NODISCARD
 static char const* opt_get_long( char short_opt ) {
-  for ( struct option const *opt = OPTIONS; opt->name; ++opt )
+  FOREACH_CLI_OPTION( opt ) {
     if ( opt->val == short_opt )
       return opt->name;
+  } // for
   return "";
 }
 
@@ -955,6 +956,10 @@ static void print_version( void ) {
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
+
+struct option const* cli_option_next( struct option const *opt ) {
+  return opt == NULL ? OPTIONS : (++opt)->name == NULL ? NULL : opt;
+}
 
 char const* gets_offsets_english( void ) {
   switch ( opt_offsets ) {
