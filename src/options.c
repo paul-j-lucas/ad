@@ -1021,7 +1021,7 @@ unsigned get_offsets_width( void ) {
 void options_init( int argc, char const *argv[] ) {
   ASSERT_RUN_ONCE();
 
-  size_t            max_lines = 0;
+  size_t            max_lines = SIZE_MAX;
   int               opt;
   bool              opt_help = false;
   bool              opt_version = false;
@@ -1341,7 +1341,7 @@ void options_init( int argc, char const *argv[] ) {
   }
 #endif /* HAVE_RSRC_FORK */
 
-  if ( opt_max_bytes == 0 )             // degenerate case
+  if ( opt_max_bytes == 0 || max_lines == 0 )
     exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );
 
   if ( opt_ignore_case )
@@ -1350,7 +1350,7 @@ void options_init( int argc, char const *argv[] ) {
   if ( opt_group_by > row_bytes )
     row_bytes = opt_group_by;
 
-  if ( max_lines > 0 )
+  if ( max_lines < SIZE_MAX && opt_max_bytes == SIZE_MAX )
     opt_max_bytes = max_lines * row_bytes;
 
   switch ( argc ) {

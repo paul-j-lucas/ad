@@ -5,6 +5,15 @@ See the end of the file for license conditions.
 
 -------------------------------------------------------------------------------
 
+* Changes in Ad 3.6.1
+
+** Exits if `--max-lines=0`
+If `--max-lines` is set to `0`, now exits.
+
+** Don't override `--max-bytes`
+If `--max-bytes` is set, don't override it if `--max-lines` is also set.
+
+
 * Changes in Ad 3.6
 
 ** Resource fork support on macOS
