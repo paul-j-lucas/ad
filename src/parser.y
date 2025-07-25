@@ -44,6 +44,7 @@
 #include "literals.h"
 #include "options.h"
 #include "print.h"
+#include "red_black.h"
 #include "slist.h"
 #include "sname.h"
 #include "symbol.h"
@@ -362,7 +363,7 @@ static bool define_type( ad_type_t const *type ) {
   if ( !ad_type_check( type ) )
     return false;                       // error message was already printed
 
-  ad_typedef_t const *const tdef = ad_typedef_add( type );
+  ad_typedef_t const *const tdef = RB_DINT( ad_typedef_add( type ) );
   if ( ad_type_equal( tdef->type, type ) )
     return true;
 

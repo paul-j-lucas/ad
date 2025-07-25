@@ -29,6 +29,7 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
+#include "red_black.h"
 #include "sname.h"
 #include "types.h"
 
@@ -84,7 +85,7 @@ typedef bool (*ad_typedef_visit_fn_t)( ad_typedef_t const *tdef, void *v_data );
  * + The previously added type having the same scoped name.
  */
 NODISCARD
-ad_typedef_t const* ad_typedef_add( ad_type_t const *type );
+rb_node_t* ad_typedef_add( ad_type_t const *type );
 
 /**
  * Gets the \ref ad_typedef for \a name.

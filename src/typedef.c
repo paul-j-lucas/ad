@@ -28,7 +28,6 @@
 #include "pjl_config.h"                 /* must go first */
 #include "typedef.h"
 #include "ad.h"
-#include "red_black.h"
 #include "types.h"
 #include "util.h"
 
@@ -100,15 +99,11 @@ static int ad_typedef_cmp( ad_typedef_t const *i_tdef,
  * Creates a new \ref ad_typedef.
  *
  * @param type The type.
- * @return Returns said \ref ad_typedef.
  */
-NODISCARD
-static ad_typedef_t* ad_typedef_new( ad_type_t const *type ) {
+static void ad_typedef_init( ad_typedef_t *tdef, ad_type_t const *type ) {
+  assert( tdef != NULL );
   assert( type != NULL );
-
-  ad_typedef_t *const tdef = MALLOC( ad_typedef_t, 1 );
   *tdef = (ad_typedef_t){ .type = type };
-  return tdef;
 }
 
 /**
@@ -133,18 +128,12 @@ static bool rb_visitor( void *node_data, void *v_data ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-ad_typedef_t const* ad_typedef_add( ad_type_t const *type ) {
+rb_node_t* ad_typedef_add( ad_type_t const *type ) {
   assert( type != NULL );
 
-  ad_typedef_t *const new_tdef = ad_typedef_new( type );
-  rb_insert_rv_t const rv = rb_tree_insert( &typedef_set, new_tdef, 0 );
-  if ( !rv.inserted ) {
-    //
-    // A typedef with the same name exists, so we don't need the new one.
-    //
-    FREE( new_tdef );
-  }
-  return RB_DPTR( rv.node );
+  ad_typedef_t tdef;
+  ad_typedef_init( &tdef, type );
+  return rb_tree_insert( &typedef_set, &tdef, sizeof tdef ).node;
 }
 
 ad_typedef_t const* ad_typedef_find_name( char const *name ) {
@@ -162,7 +151,7 @@ ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname ) {
   assert( sname != NULL );
   ad_typedef_t const tdef = { .type = &(ad_type_t const){ .sname = *sname } };
   rb_node_t const *const found_rb = rb_tree_find( &typedef_set, &tdef );
-  return found_rb != NULL ? found_rb->data : NULL;
+  return found_rb != NULL ? RB_DINT( found_rb ) : NULL;
 }
 
 void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
