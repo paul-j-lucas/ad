@@ -265,7 +265,8 @@ static bool get_buf( char8_t *buf, size_t size ) {
 void dump_file_format( char const *format_path ) {
   assert( format_path != NULL );
   FILE *const file = fopen( format_path, "r" );
-  PERROR_EXIT_IF( file == NULL, EX_NOINPUT );
+  if ( file == NULL )
+    fatal_error( EX_NOINPUT, "\"%s\": %s\n", format_path, STRERROR() );
   lexer_init();
   parser_init();
   ad_typedefs_init();
