@@ -84,9 +84,9 @@
 #define OPT_OCTAL               o
 #define OPT_PRINTING_ONLY       p
 #define OPT_PLAIN               P
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
 #define OPT_RESOURCE_FORK       R
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 #define OPT_REVERSE             r
 #define OPT_STRING              s
 #define OPT_STRINGS_OPTS        S
@@ -128,12 +128,12 @@
 
 #define OPT_BUF_SIZE        32          /**< Maximum size for an option. */
 
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
 /**
- * Suffix to append to a path to open the file's resource fork.
+ * Suffix to append to a path to open a file's resource fork.
  */
 #define RSRC_FORK_PATH_SUFFIX     "/..namedfork/rsrc"
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -161,9 +161,9 @@ ad_matches_t    opt_matches;
 ad_offsets_t    opt_offsets = OFFSETS_HEX;
 bool            opt_only_matching;
 bool            opt_only_printing;
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
 bool            opt_resource_fork;
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 bool            opt_reverse;
 char           *opt_search_buf;
 endian_t        opt_search_endian;
@@ -206,9 +206,9 @@ static struct option const OPTIONS[] = {
   { "octal",              no_argument,        NULL, COPT(OCTAL)               },
   { "printable-only",     no_argument,        NULL, COPT(PRINTING_ONLY)       },
   { "plain",              no_argument,        NULL, COPT(PLAIN)               },
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
   { "resource-fork",      no_argument,        NULL, COPT(RESOURCE_FORK)       },
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
   { "reverse",            no_argument,        NULL, COPT(REVERSE)             },
   { "revert",             no_argument,        NULL, COPT(REVERSE)             },
   { "string",             required_argument,  NULL, COPT(STRING)              },
@@ -252,9 +252,9 @@ static char const *const OPTIONS_HELP[] = {
   [ COPT(OCTAL) ] = "Print offsets in octal",
   [ COPT(PLAIN) ] = "Dump in plain format; same as: -AOg32",
   [ COPT(PRINTING_ONLY) ] = "Only dump rows having printable characters",
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
   [ COPT(RESOURCE_FORK) ] = "Dump file's macOS resource fork",
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
   [ COPT(REVERSE) ] = "Reverse from dump back to binary",
   [ COPT(SKIP_BYTES) ] = "Jump to offset before dumping [default: 0]",
   [ COPT(STRING) ] = "Highlight string",
@@ -301,7 +301,7 @@ static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
   assert( mode != NULL );
   assert( stream != NULL );
 
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
   if ( opt_resource_fork ) {
     // First check whether the file exists so we can distinguish between the
     // file not existing and it existing but having no resource fork.
@@ -320,7 +320,7 @@ static FILE* ad_freopen( char const *path, char const *mode, FILE *stream ) {
       fatal_error( EX_NOINPUT, "\"%s\": File has no resource fork\n", path );
     return file;
   }
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 
   return freopen( path, mode, stream );
 }
@@ -1101,11 +1101,11 @@ void options_init( int argc, char const *argv[] ) {
       case COPT(PRINTING_ONLY):
         opt_only_printing = true;
         break;
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
       case COPT(RESOURCE_FORK):
         opt_resource_fork = true;
         break;
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
       case COPT(REVERSE):
         opt_reverse = true;
         break;
@@ -1241,9 +1241,9 @@ void options_init( int argc, char const *argv[] ) {
     SOPT(NO_OFFSETS)
     SOPT(PLAIN)
     SOPT(PRINTING_ONLY)
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
     SOPT(RESOURCE_FORK)
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
     SOPT(STRING)
     SOPT(STRINGS)
     SOPT(STRINGS_OPTS)
@@ -1313,14 +1313,14 @@ void options_init( int argc, char const *argv[] ) {
     );
   }
 
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
   if ( opt_resource_fork && argc == 0 ) {
     fatal_error( EX_USAGE,
       "%s requires infile argument\n",
       opt_format( COPT(RESOURCE_FORK), opt_buf, sizeof opt_buf )
     );
   }
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 
   if ( opt_max_bytes == 0 )             // degenerate case
     exit( opt_search_len > 0 ? EX_NO_MATCHES : EX_OK );

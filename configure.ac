@@ -34,6 +34,19 @@ gl_EARLY
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+# Check host type.
+AC_CANONICAL_HOST
+case "x$host_os" in
+xdarwin*)
+  AC_DEFINE([HAVE_RSRC_FORK], [1], [Define to 1 if have resource forks.])
+  AM_CONDITIONAL([HAVE_RSRC_FORK], [true])
+  ;;
+*)
+  AC_DEFINE([HAVE_RSRC_FORK], [0], [Define to 1 if have resource forks.])
+  AM_CONDITIONAL([HAVE_RSRC_FORK], [false])
+  ;;
+esac
+
 # Checks for libraries.
 
 # Checks for header files.

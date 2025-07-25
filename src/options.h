@@ -141,9 +141,9 @@ extern ad_matches_t   opt_matches;      ///< When to print total matches.
 extern ad_offsets_t   opt_offsets;      ///< Dump offsets in this format.
 extern bool           opt_only_matching;///< Only dump matching rows?
 extern bool           opt_only_printing;///< Only dump printable rows?
-#ifdef __APPLE__
+#if HAVE_RSRC_FORK
 extern bool           opt_resource_fork;///< Dump file's macOS resource fork?
-#endif /* __APPLE__ */
+#endif /* HAVE_RSRC_FORK */
 extern bool           opt_reverse;      ///< Reverse dump (patch)?
 
 /**

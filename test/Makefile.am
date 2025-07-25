@@ -133,6 +133,10 @@ TESTS =	tests/ad-no_options.test \
 	tests/ad-v_02.test \
 	tests/ad-x.test
 
+if HAVE_RSRC_FORK
+TESTS+=	tests/ad-R_09.sh
+endif
+
 AM_TESTS_ENVIRONMENT = BUILD_SRC=$(top_builddir)/src; export BUILD_SRC ;
 TEST_EXTENSIONS = .sh .test
 
