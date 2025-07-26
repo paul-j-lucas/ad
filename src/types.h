@@ -270,6 +270,8 @@ enum ad_tid_kind {
  */
 #define T_ANY_SIZED               ( T_BOOL | T_FLOAT | T_INT | T_UTF )
 
+#define T_ANY_FORMAT              ( T_ANY_SIZED | T_ENUM )
+
 ////////// typedefs ///////////////////////////////////////////////////////////
 
 typedef struct  ad_binary_expr        ad_binary_expr_t;
@@ -283,6 +285,7 @@ typedef struct  ad_expr               ad_expr_t;
 typedef enum    ad_expr_err           ad_expr_err_t;
 typedef enum    ad_expr_kind          ad_expr_kind_t;
 typedef struct  ad_float_type         ad_float_type_t;
+typedef struct  ad_fmt_type           ad_fmt_type_t;
 typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
@@ -446,6 +449,13 @@ struct ad_enum_value {
  * `float` type.
  */
 struct ad_float_type {
+  char const *printf_fmt;               ///< `printf` format, if any.
+};
+
+/**
+ * Any type that can have a `printf` format.
+ */
+struct ad_fmt_type {
   char const *printf_fmt;               ///< `printf` format, if any.
 };
 

@@ -703,6 +703,7 @@ static void yyerror( char const *msg ) {
 %type <int_val>     alignas_opt
 %type <list>        argument_expr_list argument_expr_list_opt
 %type <expr_kind>   assign_op
+%type <str_val>     format_opt
 %type <int_val>     int_exp
 %type <name>        name_exp
 %type <type>        type
@@ -932,13 +933,26 @@ enumerator
 ////////// field declaration //////////////////////////////////////////////////
 
 field_declaration
-  : alignas_opt[align] type name_exp[name] array_opt[rep]
+  : alignas_opt[align] type name_exp[name] array_opt[rep] format_opt[format]
     {
-      DUMP_START( "field_declaration", "alignas_opt type name array_opt" );
+      DUMP_START( "field_declaration",
+                  "alignas_opt type name array_opt format_opt" );
       DUMP_INT( "alignas", $align );
       DUMP_TYPE( "type", $type );
       DUMP_STR( "name", $name );
       DUMP_REP( "rep", &$rep );
+      DUMP_STR( "format", $format );
+
+      if ( $format != NULL ) {
+        if ( ($type->tid & T_ANY_FORMAT) == 0 ) {
+          print_error( &@format,
+            "%s type can not have format\n",
+            ad_tid_kind_name( ad_tid_kind( $type->tid ) )
+          );
+          PARSE_ABORT();
+        }
+        ((ad_fmt_type_t*)$type)->printf_fmt = $format;
+      }
 
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
@@ -979,6 +993,11 @@ array_opt
     {
       elaborate_error( "array size expected" );
     }
+  ;
+
+format_opt
+  : /* empty */                   { $$ = NULL; }
+  | Y_STR_LIT
   ;
 
 ////////// struct declaration /////////////////////////////////////////////////

@@ -10,7 +10,7 @@ struct APP0 {
   };
 
   uint<16,b>  marker == 0xFFE0;
-  uint<16,b>  size                      %u;
+  uint<16,b>  size                      "%u";
   utf<8>      jfif[] == "JFIF";
   uint<8>     major;
   uint<8>     minor;
@@ -60,7 +60,7 @@ struct extension_APP0 {
   };
 
   uint<16,b>  marker == 0xFFE0;
-  uint<16,b>  size                      %u;
+  uint<16,b>  size                      "%u";
   utf<8>      jfxx[] == "JFXX";
   thumbnail_format thumb_fmt;
 
