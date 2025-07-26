@@ -112,8 +112,8 @@ void sym_close_scope( void ) {
 }
 
 symbol_t* sym_find_name( char const *name ) {
-  rb_node_t *const rb = rb_tree_find( &sym_table, name );
-  return rb != NULL ? rb->data : NULL;
+  rb_node_t *const found_rb = rb_tree_find( &sym_table, name );
+  return found_rb != NULL ? RB_DPTR( found_rb ) : NULL;
 }
 
 void sym_init( void ) {
