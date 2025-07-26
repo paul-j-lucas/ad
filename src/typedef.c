@@ -65,17 +65,24 @@ static rb_tree_t    typedef_set;        ///< Global set of `typedef`s.
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
+ * Cleans-up all memory associated with \a tdef but does _not_ free \a tdef
+ * itself.
+ *
+ * @param tdef The \ref ad_typedef to clean up.
+ */
+static void ad_typedef_cleanup( ad_typedef_t *tdef ) {
+  FREE( tdef->type );
+}
+
+/**
  * Cleans up \ref ad_typedef data.
  *
  * @sa ad_typedefs_init()
  */
 static void ad_typedefs_cleanup( void ) {
-  // There is no ad_typedef_free() function because ad_typedef_add() adds only
-  // ad_typedef_t nodes pointing to pre-existing AST nodes.  The AST nodes are
-  // freed independently in parser_cleanup().  Hence, this function frees only
-  // the red-black tree, its nodes, and the ad_typedef_t data each node points
-  // to, but not the AST nodes the ad_typedef_t data points to.
-  rb_tree_cleanup( &typedef_set, &free );
+  rb_tree_cleanup(
+    &typedef_set, POINTER_CAST( rb_free_fn_t, &ad_typedef_cleanup )
+  );
 }
 
 /**
