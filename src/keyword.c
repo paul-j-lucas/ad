@@ -57,6 +57,7 @@ static ad_keyword_t const AD_KEYWORDS[] = {
   { L_true,     Y_true,     T_NONE    },
   { L_typedef,  Y_typedef,  T_NONE    },
   { L_uint,     Y_uint,     T_INT     },
+  { L_utf,      Y_utf,      T_UTF     },
   { NULL,       0,          T_NONE    }
 };
 

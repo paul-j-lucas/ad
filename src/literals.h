@@ -44,6 +44,7 @@ extern char const L_switch[];
 extern char const L_true[];
 extern char const L_typedef[];
 extern char const L_uint[];
+extern char const L_utf[];
 
 ///////////////////////////////////////////////////////////////////////////////
 
