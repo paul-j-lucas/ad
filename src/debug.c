@@ -267,6 +267,7 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
     json_object_begin( JSON_INIT, "literal", dump );
 
   ad_tid_t const tid_base = literal->type->tid & T_MASK_TYPE;
+  char8_t *u8s;
 
   DUMP_TID( dump, "tid", literal->type->tid );
 
@@ -291,9 +292,8 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
           case 8:
             DUMP_STR( dump, "s", literal->s );
             break;
-          case 16: {
-            char8_t *const u8s =
-              utf16s_8s( literal->s16, SIZE_MAX, ENDIAN_HOST );
+          case 16:
+            u8s = utf16s_8s( literal->s16, SIZE_MAX, ENDIAN_HOST );
             if ( u8s == NULL ) {        // conversion failed
               DUMP_KEY( dump, "s16: " );
               fputs16( literal->s16, dump->fout );
@@ -302,9 +302,8 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
               free( u8s );
             }
             break;
-          }
-          case 32: {
-            char8_t *const u8s = utf32s_8s( literal->s32, SIZE_MAX );
+          case 32:
+            u8s = utf32s_8s( literal->s32, SIZE_MAX );
             if ( u8s == NULL ) {        // conversion failed
               DUMP_KEY( dump, "s32: " );
               fputs32( literal->s32, dump->fout );
@@ -313,7 +312,6 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
               free( u8s );
             }
             break;
-          }
         } // switch
       }
       else {
@@ -563,14 +561,15 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
     case T_NONE:
     case T_ERROR:
       break;
-    case T_BOOL: {
+
+    case T_BOOL:;
       json_state_t const bool_json =
         json_object_begin( JSON_INIT, "bool", dump );
       DUMP_STR( dump, "printf_fmt", type->bool_t.printf_fmt );
       json_object_end( bool_json, dump );
       break;
-    }
-    case T_ENUM: {
+
+    case T_ENUM:;
       json_state_t const enum_json =
         json_object_begin( JSON_INIT, "enum", dump );
       DUMP_STR( dump, "printf_fmt", type->enum_t.printf_fmt );
@@ -596,22 +595,22 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
       }
       json_object_end( enum_json, dump );
       break;
-    }
-    case T_FLOAT: {
+
+    case T_FLOAT:;
       json_state_t const float_json =
         json_object_begin( JSON_INIT, "float", dump );
       DUMP_STR( dump, "printf_fmt", type->float_t.printf_fmt );
       json_object_end( float_json, dump );
       break;
-    }
-    case T_INT: {
+
+    case T_INT:;
       json_state_t const int_json =
         json_object_begin( JSON_INIT, "int", dump );
       DUMP_STR( dump, "printf_fmt", type->int_t.printf_fmt );
       json_object_end( int_json, dump );
       break;
-    }
-    case T_STRUCT: {
+
+    case T_STRUCT:;
       json_state_t const struct_json =
         json_object_begin( JSON_INIT, "struct", dump );
       DUMP_KEY( dump, "member_list" );
@@ -629,21 +628,20 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
       }
       json_object_end( struct_json, dump );
       break;
-    }
-    case T_TYPEDEF: {
+
+    case T_TYPEDEF:;
       json_state_t const typedef_json =
         json_object_begin( JSON_INIT, "typedef", dump );
       DUMP_TYPE( dump, "type", type->typedef_t.type );
       json_object_end( typedef_json, dump );
       break;
-    }
-    case T_UTF: {
+
+    case T_UTF:;
       json_state_t const utf_json =
         json_object_begin( JSON_INIT, "utf", dump );
       DUMP_STR( dump, "printf_fmt", type->utf_t.printf_fmt );
       json_object_end( utf_json, dump );
       break;
-    }
   } // switch
 
   json_object_end( type_json, dump );

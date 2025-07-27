@@ -929,13 +929,12 @@ static bool ad_expr_rel_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
       break;
     case T_UTF:
       switch ( rhs_tid ) {
-        case T_UTF: {
+        case T_UTF:;
           int cmp;
           if ( !ad_expr_utfxx_cmp( &lhs_expr, &rhs_expr, &cmp ) )
             RETURN_ERR( BAD_OPERAND );
           ad_expr_set_b( rv, cmp == 0 );
           break;
-        }
       } // switch
       break;
   } // switch
