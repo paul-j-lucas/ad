@@ -400,6 +400,13 @@ NODISCARD
 size_t sname_parse( char const *s, sname_t *rv_sname );
 
 /**
+ * Pops the last name from \a sname.
+ *
+ * @param sname The scoped name to pop the last name from.
+ */
+void sname_pop_back( sname_t *sname );
+
+/**
  * Prepends \a src onto the beginning of \a dst.
  *
  * @param dst The scoped name to prepend to.

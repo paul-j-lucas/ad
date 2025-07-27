@@ -196,6 +196,19 @@ done:
   return STATIC_CAST( size_t, prev_end - s_orig );
 }
 
+void sname_pop_back( sname_t *sname ) {
+  assert( sname != NULL );
+  switch ( sname_count( sname ) ) {
+    case 0:
+      break;
+    case 1:
+      sname_cleanup( sname );
+      break;
+    default:
+      sname_scope_free( slist_pop_back( sname ) );
+  } // switch
+}
+
 char const* sname_scope_name( sname_t const *sname ) {
   static strbuf_t sbuf;
   return sname != NULL ? sname_name_impl( &sbuf, sname, sname->tail ) : "";
