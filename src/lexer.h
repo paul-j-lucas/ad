@@ -57,6 +57,22 @@ extern bool         lexer_in_template;
  */
 extern char const  *lexer_token;        ///< Text of current token.
 
+#pragma GCC diagnostic push
+// Declare yytext so they can be accessed from anywhere.  However, Flex
+// declares it in the generated .c file before it #includes headers, so we'd
+// get a redundant declaration warning -- so suppress that.
+#pragma GCC diagnostic ignored "-Wredundant-decls"
+
+/**
+ * Flex's current token.
+ *
+ * @sa printable_yytext()
+ * @sa set_yytext()
+ */
+extern char              *yytext;
+
+#pragma GCC diagnostic pop
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**

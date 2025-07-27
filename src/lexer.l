@@ -58,19 +58,21 @@
 #include <string.h>
 
 // Silence these warnings for Flex-generated code.
-#ifdef __clang__
+#pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wimplicit-int-conversion"
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
-#endif /* __clang__ */
-#ifdef __GNUC__
+
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #pragma GCC diagnostic ignored "-Wredundant-decls"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#endif /* __GNUC__ */
 
 /// @endcond
+
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * C++ raw string delimiter maximum length.
@@ -98,7 +100,7 @@
 #define YY_FATAL_ERROR(MSG)       lexer_fatal( (MSG) )
 
 /**
- * Overrides flex's input.
+ * Overrides Flex's input.
  *
  * @param BUF The buffer to use.
  * @param BYTES_READ Set to the number of bytes read.
@@ -131,13 +133,16 @@ static size_t     input_len;            ///< Length of line in `input_buf`.
 static size_t     input_sent;           ///< How many bytes returned to flex.
 static bool       is_eof;               ///< Encountered EOF?
 static unsigned   less_depth;           ///< Depth of `<>`.
-static int        newline_column;       ///< Column position of newline.
 static strbuf_t   str_lit_buf;          ///< String (or character) literal.
 static ad_loc_t   str_lit_loc;          ///< String literal starting location.
 static int        token_column;         ///< Column position of current token.
 
 /// C++ raw string literal delimiter.
 static char       rstr_delim[ RSTR_DELIM_LEN_MAX + 1/*"*/ + 1/*\0*/ ];
+
+// local functions
+_Noreturn
+static void       lexer_fatal( char const* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -151,36 +156,17 @@ static void lexer_cleanup( void ) {
 }
 
 /**
- * Called by flex only when there's a fatal error.
- *
- * @param msg The error message to print.
- */
-_Noreturn
-static void lexer_fatal( char const *msg ) {
-  if ( msg == NULL ) {
-    // Never true -- here just to silence the "unused function" warning.
-    yy_fatal_error( msg );
-  }
-
-  //
-  // This is defined down here to avoid having to declare yy_fatal_error
-  // ourselves and having to get it right being subject to possible changes in
-  // its signature in different Flex versions.
-  //
-  INTERNAL_ERROR( "%s\n", msg );
-}
-
-/**
  * Gets a line of input for flex and keeps a copy for use later if printing an
  * error message.
  *
  * @param buf A pointer to the buffer to write into.
- * @param buf_capacity The capacity of \a buf.
+ * @param buf_cap The capacity of \a buf.
  * @return Returns the number of bytes read.
  */
-static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
+NODISCARD
+static yy_size_t lexer_get_input( char *buf, yy_size_t buf_cap ) {
   assert( buf != NULL );
-  size_t input_avail = input_len - input_sent;
+  yy_size_t input_avail = input_len - input_sent;
   if ( input_avail == 0 ) {
     static size_t input_capacity;
     ssize_t bytes_read = getline( &input_buf, &input_capacity, yyin );
@@ -196,8 +182,8 @@ static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
   // 8192, it's unlikely that this will ever be true and that we'll have to
   // return the input line in chunks; but might as well code for the case.
   //
-  if ( unlikely( input_avail > buf_capacity ) )
-    input_avail = buf_capacity;
+  if ( unlikely( input_avail > buf_cap ) )
+    input_avail = buf_cap;
   memcpy( buf, input_buf + input_sent, input_avail );
   input_sent += input_avail;
   return input_avail;
@@ -205,7 +191,7 @@ static size_t lexer_get_input( char *buf, size_t buf_capacity ) {
 
 /**
  * Update the parser's location.
- * @note This is called by flex via `YY_USER_ACTION`.
+ * @note This is called by Flex via #YY_USER_ACTION.
  */
 static void lexer_update_loc( void ) {
   yylloc.first_line   = yylloc.last_line = yylineno;
@@ -215,10 +201,9 @@ static void lexer_update_loc( void ) {
 }
 
 /**
- * Resets the column position upon encountering a newline.
+ * Resets the token column position upon encountering a newline.
  */
 static inline void newline( void ) {
-  newline_column = token_column;
   token_column = 0;
 }
 
@@ -402,7 +387,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 char const *const p = strchr( ++q, '(' );
                 assert( p != NULL );
 
-                size_t const delim_len = (size_t)(p - q);
+                size_t const delim_len = STATIC_CAST( size_t, p - q );
                 if ( delim_len > RSTR_DELIM_LEN_MAX ) {
                   print_error( &yylloc,
                     "raw string literal delimiter "
@@ -599,6 +584,33 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 /// @endcond
 
+// Re-enable warnings.
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
+
+////////// local functions ////////////////////////////////////////////////////
+
+// LCOV_EXCL_START
+/**
+ * Called by flex only when there's a fatal error.
+ *
+ * @param msg The error message to print.
+ */
+_Noreturn
+static void lexer_fatal( char const *msg ) {
+  if ( msg == NULL ) {
+    // Never true -- here just to silence the "unused function" warning.
+    yy_fatal_error( msg );
+  }
+
+  //
+  // This is defined down here to avoid having to declare yy_fatal_error
+  // ourselves and having to get it right being subject to possible changes in
+  // its signature in different Flex versions.
+  //
+  INTERNAL_ERROR( "%s\n", msg );
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 void lexer_init( void ) {
@@ -606,32 +618,24 @@ void lexer_init( void ) {
   ATEXIT( &lexer_cleanup );
 }
 
-char const* lexer_input_line( size_t *plen ) {
-  if ( plen != NULL )
-    *plen = input_len;
+char const* lexer_input_line( size_t *rv_len ) {
+  assert( rv_len != NULL );
+  if ( rv_len != NULL )
+    *rv_len = input_len;
   return input_buf;
 }
 
 ad_loc_t lexer_loc( void ) {
-  ad_loc_t rv_loc;
-  rv_loc.first_line = yylineno;
-
-  if ( token_column == 0 )
-    rv_loc.first_column = newline_column;
-  else if ( lexer_token[0] == '\n' )
-    rv_loc.first_column = token_column;
-  else {
+  ad_loc_t rv_loc = yylloc;
+  if ( yytext[0] == '\n' ) {
     //
-    // This has to be the original yytext, not lexer_token, since lexer_token
-    // could have been set to something else via SET_TOKEN_TO().
+    // If the current token is '\n', it means first_line & last_line are
+    // already on the next line, but we want the line that the '\n' is on which
+    // is the previous line.
     //
-    rv_loc.first_column =
-      token_column - STATIC_CAST( ad_loc_num_t, strlen( yytext ) );
-    assert( rv_loc.first_column >= 0 );
+    --rv_loc.first_line;
+    --rv_loc.last_line;
   }
-
-  rv_loc.last_line = rv_loc.first_line;
-  rv_loc.last_column = rv_loc.first_column;
   return rv_loc;
 }
 
