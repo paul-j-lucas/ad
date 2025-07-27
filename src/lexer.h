@@ -50,13 +50,6 @@
  */
 extern bool         lexer_in_template;
 
-/**
- * Text of current token.
- *
- * @sa lexer_printable_token()
- */
-extern char const  *lexer_token;        ///< Text of current token.
-
 #pragma GCC diagnostic push
 // Declare yytext so they can be accessed from anywhere.  However, Flex
 // declares it in the generated .c file before it #includes headers, so we'd
@@ -101,20 +94,20 @@ NODISCARD
 ad_loc_t lexer_loc( void );
 
 /**
- * Gets a printable string of \ref lexer_token.
- *
- * @return Returns said string or NULL if \ref lexer_token is the empty string.
- */
-NODISCARD
-char const* lexer_printable_token( void );
-
-/**
  * Resets the lexer to its initial state.
  *
  * @param hard_reset If `true`, does a "hard" reset that currently resets the
  * EOF flag also.
  */
 void lexer_reset( bool hard_reset );
+
+/**
+ * Gets a printable string of \ref yytext.
+ *
+ * @return Returns said string or NULL if \ref yytext is the empty string.
+ */
+NODISCARD
+char const* printable_yytext( void );
 
 /**
  * Flex: gets the next token ID.

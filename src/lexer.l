@@ -80,18 +80,6 @@
 #define RSTR_DELIM_LEN_MAX        16u
 
 /**
- * Sets <code>\ref lexer_token</code> to the current Flex token.
- */
-#define SET_TOKEN                 SET_TOKEN_TO( yytext )
-
-/**
- * Sets <code>\ref lexer_token</code> to \a S.
- *
- * @param S The string to set the token to.
- */
-#define SET_TOKEN_TO(S)           (lexer_token = (S))
-
-/**
  * Overrides flex's fatal error message to print the message in our format and
  * also exit with the status code we want.
  *
@@ -117,15 +105,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static char const lexer_token_init_buf; ///< So lexer_token is never null.
-
 // extern variables
 bool              lexer_in_template;
-
-// A separate pointer for the current token allows it:
-//  + To be `const`.
-//  + To be assigned to either other `const` strings or string literals.
-char const       *lexer_token = &lexer_token_init_buf;
 
 // local variables
 static char      *input_buf;            ///< Entire current input line.
@@ -208,23 +189,52 @@ static inline void newline( void ) {
 }
 
 /**
- * Parses an integer from <code>\ref lexer_token</code>.
+ * Parses an integer from \ref yytext.
  *
  * @param base The integer base to use.
  * @return Returns the integer value.
  */
 NODISCARD
 static inline int parse_int( int base ) {
-  //
-  // We don't need to check for errors from strtol(3) here since the lexer
-  // guarantees that we'll be passed only a valid number token.
-  //
-  // Standard strtol(3) doesn't understand a "0b" (binary) prefix, so skip over
-  // it if the base is 2.
-  //
-  return STATIC_CAST( int,
-    strtol( lexer_token + (base == 2 ? 2 : 0), /*entptr=*/NULL, base )
-  );
+  char const *s = yytext;
+  bool const is_neg = s[0] == '-';
+
+  if ( is_neg )
+    ++s;
+
+  if ( base == 2 ) {
+    // Prior to C23, strtol(3) doesn't understand a "0b" (binary) prefix, so
+    // skip over it.
+    assert( s[0] == '0' );              // String should start with "0b" ...
+    assert( tolower( s[1] ) == 'b' );   // ... since it was just lex'd as such.
+    s += STRLITLEN( "0b" );
+  }
+
+  char no_digit_seps[ MAX_DEC_INT_DIGITS(uintmax_t) + 1/*\0*/ ];
+
+  if ( strchr( s, '\'' ) != NULL ) {
+    // Strip digit separator (') characters since strtol(3) doesn't understand
+    // them.
+    char *t = no_digit_seps;
+    do {
+      if ( *s != '\'' )
+        *t++ = *s;
+    } while ( *s++ != '\0' );
+    s = no_digit_seps;
+  }
+
+  errno = 0;
+  long rv = strtol( s, /*endptr=*/NULL, base );
+  if ( is_neg )
+    rv = -rv;
+  if ( unlikely( errno != 0 || rv < INT_MIN || rv > INT_MAX ) ) {
+    // LCOV_EXCL_START
+    rv = rv < INT_MIN ? INT_MIN : INT_MAX;
+    print_warning( &yylloc, "integer out of range; clamped to %ld\n", rv );
+    // LCOV_EXCL_STOP
+  }
+
+  return STATIC_CAST( int, rv );
 }
 
 /**
@@ -273,12 +283,10 @@ hex_int       0[xX]{H}+{int_sfx}?
   /***************************************************************************/
 
 {identifier}  {
-                SET_TOKEN;
-
                 //
                 // 1. See if it's an ad keyword.
                 //
-                ad_keyword_t const *const k = ad_keyword_find( lexer_token );
+                ad_keyword_t const *const k = ad_keyword_find( yytext );
                 if ( k != NULL ) {
                   yylval.tid = k->tid;
                   return k->yy_token_id;
@@ -288,7 +296,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 // 2. See if it's a typedef'd type.
                 //
                 ad_typedef_t const *const tdef =
-                  ad_typedef_find_name( lexer_token );
+                  ad_typedef_find_name( yytext );
                 if ( tdef != NULL ) {
                   yylval.tdef = tdef;
                   return Y_TYPEDEF_TYPE;
@@ -297,7 +305,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 4. Otherwise, it's just an ordinary name.
                 //
-                yylval.name = check_strdup( lexer_token );
+                yylval.name = check_strdup( yytext );
                 return Y_NAME;
               }
 
@@ -305,48 +313,46 @@ hex_int       0[xX]{H}+{int_sfx}?
   /*  NUMERIC LITERALS                                                       */
   /***************************************************************************/
 
-{bin_int}     { SET_TOKEN; yylval.int_val = parse_int(  2 ); return Y_INT_LIT; }
-{oct_int}     { SET_TOKEN; yylval.int_val = parse_int(  8 ); return Y_INT_LIT; }
-{dec_int}     { SET_TOKEN; yylval.int_val = parse_int( 10 ); return Y_INT_LIT; }
-{hex_int}     { SET_TOKEN; yylval.int_val = parse_int( 16 ); return Y_INT_LIT; }
+{bin_int}     { yylval.int_val = parse_int(  2 ); return Y_INT_LIT; }
+{oct_int}     { yylval.int_val = parse_int(  8 ); return Y_INT_LIT; }
+{dec_int}     { yylval.int_val = parse_int( 10 ); return Y_INT_LIT; }
+{hex_int}     { yylval.int_val = parse_int( 16 ); return Y_INT_LIT; }
 
   /***************************************************************************/
   /*  OPERATORS & PUNCTUATION                                                */
   /***************************************************************************/
 
               /* Multi-character operators. */
-"::"          { SET_TOKEN; return Y_COLON_COLON           ; }
-"!="          { SET_TOKEN; return Y_EXCLAM_EQUAL          ; }
-"%="          { SET_TOKEN; return Y_PERCENT_EQUAL         ; }
-"&&"          { SET_TOKEN; return Y_AMPER_AMPER           ; }
-"&="          { SET_TOKEN; return Y_AMPER_EQUAL           ; }
-"*="          { SET_TOKEN; return Y_STAR_EQUAL            ; }
-"++"          { SET_TOKEN; return Y_PLUS_PLUS             ; }
-"+="          { SET_TOKEN; return Y_PLUS_EQUAL            ; }
-"--"          { SET_TOKEN; return Y_MINUS_MINUS           ; }
-"-="          { SET_TOKEN; return Y_MINUS_EQUAL           ; }
-"->"          { SET_TOKEN; return Y_MINUS_GREATER         ; }
-"/="          { SET_TOKEN; return Y_SLASH_EQUAL           ; }
-"<<"          { SET_TOKEN; return Y_LESS_LESS             ; }
-"<<="         { SET_TOKEN; return Y_LESS_LESS_EQUAL       ; }
-"<="          { SET_TOKEN; return Y_LESS_EQUAL            ; }
-"=="          { SET_TOKEN; return Y_EQUAL_EQUAL           ; }
-">="          { SET_TOKEN; return Y_GREATER_EQUAL         ; }
-">>"          { SET_TOKEN; return Y_GREATER_GREATER       ; }
-">>="         { SET_TOKEN; return Y_GREATER_GREATER_EQUAL ; }
-"^="          { SET_TOKEN; return Y_CIRC_EQUAL            ; }
-"|="          { SET_TOKEN; return Y_PIPE_EQUAL            ; }
-"||"          { SET_TOKEN; return Y_PIPE_PIPE             ; }
+"::"          { return Y_COLON_COLON           ; }
+"!="          { return Y_EXCLAM_EQUAL          ; }
+"%="          { return Y_PERCENT_EQUAL         ; }
+"&&"          { return Y_AMPER_AMPER           ; }
+"&="          { return Y_AMPER_EQUAL           ; }
+"*="          { return Y_STAR_EQUAL            ; }
+"++"          { return Y_PLUS_PLUS             ; }
+"+="          { return Y_PLUS_EQUAL            ; }
+"--"          { return Y_MINUS_MINUS           ; }
+"-="          { return Y_MINUS_EQUAL           ; }
+"->"          { return Y_MINUS_GREATER         ; }
+"/="          { return Y_SLASH_EQUAL           ; }
+"<<"          { return Y_LESS_LESS             ; }
+"<<="         { return Y_LESS_LESS_EQUAL       ; }
+"<="          { return Y_LESS_EQUAL            ; }
+"=="          { return Y_EQUAL_EQUAL           ; }
+">="          { return Y_GREATER_EQUAL         ; }
+">>"          { return Y_GREATER_GREATER       ; }
+">>="         { return Y_GREATER_GREATER_EQUAL ; }
+"^="          { return Y_CIRC_EQUAL            ; }
+"|="          { return Y_PIPE_EQUAL            ; }
+"||"          { return Y_PIPE_PIPE             ; }
 
 "<"           {
-                SET_TOKEN;
                 if ( lexer_in_template )
                   ++less_depth;
                 return '<';
               }
 
 ">"           {
-                SET_TOKEN;
                 if ( lexer_in_template && less_depth > 0 && --less_depth == 0 )
                   return Y_TEMPLATE_END;
                 return '>';
@@ -374,7 +380,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 "{"           |
 "|"           |
 "}"           |
-"~"           { SET_TOKEN; return lexer_token[0]; }
+"~"           { return yytext[0]               ; }
 
   /***************************************************************************/
   /*  RAW STRING LITERALS                                                    */
@@ -560,12 +566,10 @@ hex_int       0[xX]{H}+{int_sfx}?
   /***************************************************************************/
 
 .             {
-                SET_TOKEN;
                 return Y_ERROR;
               }
 
 <*><<EOF>>    {
-                SET_TOKEN;
                 newline();
                 BEGIN( INITIAL );
                 //
@@ -639,14 +643,6 @@ ad_loc_t lexer_loc( void ) {
   return rv_loc;
 }
 
-char const* lexer_printable_token( void ) {
-  switch ( lexer_token[0] ) {
-    case '\0': return NULL;
-    case '\n': return "\\n";
-    default  : return lexer_token;
-  } // switch
-}
-
 void lexer_reset( bool hard_reset ) {
   if ( hard_reset ) {
     is_eof = false;
@@ -656,6 +652,16 @@ void lexer_reset( bool hard_reset ) {
   BEGIN( INITIAL );
   input_len = input_sent = 0;
   strbuf_reset( &str_lit_buf );
+}
+
+char const* printable_yytext( void ) {
+  switch ( yytext[0] ) {
+    case '\0':
+    case '\n':
+      return NULL;
+    default:
+      return yytext;
+  } // switch
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -415,7 +415,7 @@ static void ia_cleanup( void ) {
 static void l_punct_expected( int line, char punct ) {
   EPUTS( ": " );
   print_debug_file_line( __FILE__, line );
-  if ( print_error_token( lexer_printable_token() ) )
+  if ( print_error_token( printable_yytext() ) )
     EPUTS( ": " );
   EPRINTF( "'%c' expected\n", punct );
 }
@@ -760,7 +760,7 @@ statement
   | switch_statement
   | error
     {
-      if ( lexer_printable_token() != NULL )
+      if ( printable_yytext() != NULL )
         elaborate_error( "unexpected token" );
       else
         elaborate_error( "unexpected end of statement" );
@@ -1821,7 +1821,7 @@ semi_exp
  * Prints an additional parsing error message including a newline to standard
  * error that continues from where yyerror() left off.  Additionally:
  *
- * + If the lexer_printable_token() isn't NULL:
+ * + If the printable_yytext() isn't NULL:
  *     + Checks to see if it's a keyword: if it is, mentions that it's a
  *       keyword in the error message.
  *     + May print "did you mean ...?" \a dym_kinds suggestions.
@@ -1852,7 +1852,7 @@ static void l_elaborate_error( int line, dym_kind_t dym_kinds,
   EPUTS( ": " );
   print_debug_file_line( __FILE__, line );
 
-  char const *const error_token = lexer_printable_token();
+  char const *const error_token = printable_yytext();
   if ( print_error_token( error_token ) )
     EPUTS( ": " );
 
