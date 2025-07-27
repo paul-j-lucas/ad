@@ -80,7 +80,7 @@
 #define RSTR_DELIM_LEN_MAX        16u
 
 /**
- * Overrides flex's fatal error message to print the message in our format and
+ * Overrides Flex's fatal error message to print the message in our format and
  * also exit with the status code we want.
  *
  * @param MSG The error message to print.
@@ -98,7 +98,7 @@
   (BYTES_READ) = lexer_get_input( (BUF), STATIC_CAST( yy_size_t, (BYTES_MAX) ) )
 
 /**
- * This code is inserted by flex at the beginning of each rule to set the
+ * This code is inserted by Flex at the beginning of each rule to set the
  * current token location information.
  */
 #define YY_USER_ACTION            lexer_update_loc(); /* must include ';' */
@@ -110,8 +110,8 @@ bool              lexer_in_template;
 
 // local variables
 static char      *input_buf;            ///< Entire current input line.
-static size_t     input_len;            ///< Length of line in `input_buf`.
-static size_t     input_sent;           ///< How many bytes returned to flex.
+static yy_size_t  input_len;            ///< Length of line in `input_buf`.
+static size_t     input_sent;           ///< How many bytes returned to Flex.
 static bool       is_eof;               ///< Encountered EOF?
 static unsigned   less_depth;           ///< Depth of `<>`.
 static strbuf_t   str_lit_buf;          ///< String (or character) literal.
@@ -137,7 +137,7 @@ static void lexer_cleanup( void ) {
 }
 
 /**
- * Gets a line of input for flex and keeps a copy for use later if printing an
+ * Gets a line of input for Flex and keeps a copy for use later if printing an
  * error message.
  *
  * @param buf A pointer to the buffer to write into.
@@ -155,11 +155,12 @@ static yy_size_t lexer_get_input( char *buf, yy_size_t buf_cap ) {
       FERROR( yyin );
       bytes_read = 0;
     }
-    input_avail = input_len = (size_t)bytes_read;
+    input_avail = input_len = STATIC_CAST( yy_size_t, bytes_read );
     input_sent = 0;
+    ++yylineno;
   }
   //
-  // Given that the default buffer capacity (YY_READ_BUF_SIZE) for flex is
+  // Given that the default buffer capacity (YY_READ_BUF_SIZE) for Flex is
   // 8192, it's unlikely that this will ever be true and that we'll have to
   // return the input line in chunks; but might as well code for the case.
   //
@@ -596,7 +597,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 
 // LCOV_EXCL_START
 /**
- * Called by flex only when there's a fatal error.
+ * Called by Flex only when there's a fatal error.
  *
  * @param msg The error message to print.
  */
@@ -625,7 +626,7 @@ void lexer_init( void ) {
 char const* lexer_input_line( size_t *rv_len ) {
   assert( rv_len != NULL );
   if ( rv_len != NULL )
-    *rv_len = input_len;
+    *rv_len = STATIC_CAST( size_t, input_len );
   return input_buf;
 }
 
