@@ -943,17 +943,6 @@ field_declaration
       DUMP_REP( "rep", &$rep );
       DUMP_STR( "format", $format );
 
-      if ( $format != NULL ) {
-        if ( ($type->tid & T_ANY_FORMAT) == 0 ) {
-          print_error( &@format,
-            "%s type can not have format\n",
-            ad_tid_kind_name( ad_tid_kind( $type->tid ) )
-          );
-          PARSE_ABORT();
-        }
-        ((ad_fmt_type_t*)$type)->printf_fmt = $format;
-      }
-
       $$ = MALLOC( ad_statement_t, 1 );
       *$$ = (ad_statement_t){
         .kind = AD_STMNT_DECLARATION,
@@ -962,7 +951,8 @@ field_declaration
           .name = $name,
           .type = $type,
           .align = $align,
-          .rep = $rep
+          .rep = $rep,
+          .printf_fmt = $format
         }
       };
 
