@@ -544,7 +544,7 @@ struct ad_decl {
   unsigned          align;              ///< Alignment.
   ad_rep_t          rep;                ///< Repetition.
   ad_expr_t const  *match_expr;         ///< Match expression, if any.
-  char const       *printf_fmt;         ///< `printf` format.
+  char const       *printf_fmt;         ///< `printf` format, if any.
 };
 
 /**
