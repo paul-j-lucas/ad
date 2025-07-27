@@ -265,7 +265,7 @@ void reverse_dump_file( void ) {
 
     switch ( parse_row( ++line, row_buf, row_len, &new_offset,
                         bytes, &bytes_len ) ) {
-      case ROW_BYTES: {
+      case ROW_BYTES:;
         off_t const row_end_offset = offset + STATIC_CAST( off_t, row_bytes );
         if ( unlikely( new_offset < row_end_offset ) ) {
           char msg_fmt[ 128 ];
@@ -281,7 +281,6 @@ void reverse_dump_file( void ) {
         FWRITE( bytes, 1, bytes_len, stdout );
         offset = new_offset;
         break;
-      }
 
       case ROW_ELIDED:
         assert( bytes_len % row_bytes == 0 );
