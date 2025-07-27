@@ -292,7 +292,6 @@ void reverse_dump_file( void ) {
       case ROW_IGNORE:
         break;
     } // switch
-
   } // for
 }
 
