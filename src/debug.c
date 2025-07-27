@@ -442,8 +442,10 @@ static void ad_statement_list_dump_impl( ad_statement_list_t const *list,
 
   dump_state_t list_dump;
   dump_init( &list_dump, dump->indent + 1, dump->fout );
-  FOREACH_SLIST_NODE( statement_node, list )
+  FOREACH_SLIST_NODE( statement_node, list ) {
+    DUMP_KEY( &list_dump, "%s", "" );
     ad_statement_dump_impl( statement_node->data, &list_dump );
+  } // for
 
   FPUTC( '\n', dump->fout );
   DUMP_FORMAT( dump, "]" );
@@ -613,7 +615,7 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
     case T_STRUCT:;
       json_state_t const struct_json =
         json_object_begin( JSON_INIT, "struct", dump );
-      DUMP_KEY( dump, "member_list" );
+      DUMP_KEY( dump, "member_list: " );
       if ( slist_empty( &type->struct_t.member_list ) ) {
         FPUTS( "[]", dump->fout );
       }
@@ -621,8 +623,10 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
         FPUTS( "[\n", dump->fout );
         dump_state_t list_dump;
         dump_init( &list_dump, dump->indent + 1, dump->fout );
-        FOREACH_SLIST_NODE( member_node, &type->struct_t.member_list )
+        FOREACH_SLIST_NODE( member_node, &type->struct_t.member_list ) {
+          DUMP_KEY( &list_dump, "%s", "" );
           ad_statement_dump_impl( member_node->data, &list_dump );
+        }
         FPUTC( '\n', dump->fout );
         DUMP_FORMAT( dump, "]" );
       }
