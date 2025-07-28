@@ -40,14 +40,6 @@
 
 /// @endcond
 
-/**
- * Convenience macro for specifying a \ref ad_typedef literal having \a NAME.
- *
- * @param NAME The name.
- */
-#define AD_TYPEDEF_NAME_LIT(NAME) \
-  (ad_typedef_t const){ .name = (NAME) }
-
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
