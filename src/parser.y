@@ -243,6 +243,17 @@
   DUMP_KEY_IMPL( KEY ": " ); ad_rep_dump( (REP), stdout ); )
 
 /**
+ * Dumps a scoped name.
+ *
+ * @param KEY The key name to print.
+ * @param SNAME The scoped name to dump.
+ *
+ * @sa #DUMP_STR()
+ */
+#define DUMP_SNAME(KEY,SNAME) IF_AD_DEBUG( \
+  DUMP_KEY_IMPL( KEY ": " ); sname_dump( &(SNAME), stdout ); )
+
+/**
  * Dumps an \ref ad_statement.
  *
  * @param KEY The key name to print.
@@ -327,7 +338,8 @@
  * @sa ia_cleanup()
  */
 struct in_attr {
-  sname_t scope_sname;                  ///< Current scope name, if any.
+  sname_t     scope_sname;              ///< Current scope name, if any.
+  ad_type_t  *cur_type;
 };
 typedef struct in_attr in_attr_t;
 
@@ -993,26 +1005,33 @@ format_opt
 ////////// struct declaration /////////////////////////////////////////////////
 
 struct_declaration
-  : Y_struct name_exp[name] lbrace_exp statement_list_opt[members] rbrace_exp
+  : Y_struct name_exp[name] lbrace_exp
+    {
+      sname_append_name( &in_attr.scope_sname, $name );
+
+      in_attr.cur_type = MALLOC( ad_type_t, 1 );
+      *in_attr.cur_type = (ad_type_t){
+        .sname = sname_current( $name ),
+        .tid = T_STRUCT
+      };
+      PARSE_ASSERT( define_type( in_attr.cur_type ) );
+    }
+    statement_list_opt[members] rbrace_exp
     {
       DUMP_START( "struct_declaration",
                   "struct NAME '{' statement_list_opt '}'" );
+      DUMP_SNAME( "in_attr__scope_sname", in_attr.scope_sname );
       DUMP_STR( "name", $name );
 
-      ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
-      *new_type = (ad_type_t){
-        .sname = sname_current( $name ),
-        .tid = T_STRUCT,
-        .loc = @$,
-        .struct_t = {
-          .member_list = slist_move( &$members )
-        }
-      };
-      PARSE_ASSERT( define_type( new_type ) );
+      in_attr.cur_type->loc = @$;
+      in_attr.cur_type->struct_t.member_list = slist_move( &$members );
+
       $$ = NULL;                        // do not add to statement_list
 
-      DUMP_TYPE( "$$_type", new_type );
+      DUMP_TYPE( "$$_type", in_attr.cur_type );
       DUMP_END();
+
+      in_attr.cur_type = NULL;
     }
   ;
 
