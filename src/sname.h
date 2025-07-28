@@ -66,7 +66,7 @@ _GL_INLINE_HEADER_BEGIN
  * @warning sname_cleanup() must _not_ be called on \a VAR.
  */
 #define SNAME_VAR_INIT_NAME(VAR,NAME) \
-  SLIST_VAR_INIT( VAR, (&(sname_scope_t){ (NAME) }) )
+  SLIST_VAR_INIT( VAR, (&(sname_scope_t){ .name = (NAME) }) )
 
 /**
  * Gets the data associated with \a SCOPE.
