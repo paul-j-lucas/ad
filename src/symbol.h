@@ -30,6 +30,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "slist.h"
+#include "sname.h"
 #include "types.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -39,9 +40,9 @@
 #include <stdio.h>
 
 _GL_INLINE_HEADER_BEGIN
-#ifndef RED_BLACK_H_INLINE
-# define RED_BLACK_H_INLINE _GL_INLINE
-#endif /* RED_BLACK_H_INLINE */
+#ifndef SYMBOL_H_INLINE
+# define SYMBOL_H_INLINE _GL_INLINE
+#endif /* SYMBOL_H_INLINE */
 
 /// @endcond
 
@@ -82,12 +83,24 @@ typedef struct synfo synfo_t;
  * A %symbol in a %symbol table.
  */
 struct symbol {
-  char const *name;                     ///< Symbol name.
-  slist_t     synfo_list;               ///< Per-scope information.
+  sname_t sname;                        ///< Symbol name.
+  slist_t synfo_list;                   ///< Per-scope information.
 };
 typedef struct symbol symbol_t;
 
+extern unsigned sym_scope;              ///< The current scope level.
+
 ////////// extern functions ///////////////////////////////////////////////////
+
+/**
+ * TODO
+ *
+ * @param obj TODO
+ * @param sname TODO
+ */
+void* sym_add( void *obj, sname_t *sname, sym_kind_t kind );
+
+void* sym_add_global( void *obj, sname_t *sname );
 
 /**
  * Closes the current scope for the symbol table.
@@ -102,22 +115,38 @@ void sym_close_scope( void );
  * @param name The name to find.
  * @return Returns a pointer to the \ref symbol having \a name or NULL for
  * none.
+ *
+ * @sa sym_find_sname()
  */
 symbol_t* sym_find_name( char const *name );
 
 /**
- * Initializes all symbol table data.
+ * Attempts to find a symbol in the symbol table having \a sname.
  *
- * @note This function must be called exactly once.
+ * @param sname The scoped name to find.
+ * @return Returns a pointer to the \ref symbol having \a sname or NULL for
+ * none.
+ *
+ * @sa sym_find_name()
  */
-void sym_init( void );
+symbol_t* sym_find_sname( sname_t const *sname );
 
 /**
  * Opens a new scope for the symbol table.
  *
  * @sa sym_close_scope()
  */
-void sym_open_scope( void );
+SYMBOL_H_INLINE
+void sym_open_scope( void ) {
+  ++sym_scope;
+}
+
+/**
+ * Initializes the symbol table.
+ *
+ * @note This function must be called exactly once.
+ */
+void sym_table_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
 

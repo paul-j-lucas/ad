@@ -531,6 +531,7 @@ static void yyerror( char const *msg ) {
 %}
 
 %union {
+  ad_decl_t          *decl;
   endian_t            endian_val;
   ad_enum_value_t     enum_val;
   ad_expr_t          *expr;       // for the expression being built
@@ -642,6 +643,7 @@ static void yyerror( char const *msg ) {
 %token                                      ';'
 %token                                      '{' '}'
 %token  <str_val>   Y_CHAR_LIT
+%token  <decl>      Y_DECL
 %token              Y_END
 %token              Y_ERROR
 %token  <int_val>   Y_INT_LIT
@@ -1015,9 +1017,12 @@ struct_declaration
         .tid = T_STRUCT
       };
       PARSE_ASSERT( define_type( in_attr.cur_type ) );
+      sym_open_scope();
     }
     statement_list_opt[members] rbrace_exp
     {
+      sym_close_scope();
+
       DUMP_START( "struct_declaration",
                   "struct NAME '{' statement_list_opt '}'" );
       DUMP_SNAME( "in_attr__scope_sname", in_attr.scope_sname );

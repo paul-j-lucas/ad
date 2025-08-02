@@ -43,6 +43,7 @@
 #include "options.h"
 #include "print.h"
 #include "strbuf.h"
+#include "symbol.h"
 #include "typedef.h"
 #include "util.h"
 #include "ad_parser.h"                  /* must go last */
@@ -294,17 +295,24 @@ hex_int       0[xX]{H}+{int_sfx}?
                 }
 
                 //
-                // 2. See if it's a typedef'd type.
+                // 2. See if it's a type or declaration.
                 //
-                ad_typedef_t const *const tdef =
-                  ad_typedef_find_name( yytext );
-                if ( tdef != NULL ) {
-                  yylval.tdef = tdef;
-                  return Y_TYPEDEF_TYPE;
+                symbol_t const *const sym = sym_find_name( yytext );
+                if ( sym != NULL ) {
+                  synfo_t const *const synfo = slist_front( &sym->synfo_list );
+                  switch ( synfo->kind ) {
+                    case SYM_DECL:
+                      yylval.decl = synfo->decl;
+                      return Y_DECL;
+                    case SYM_TYPE:
+                      yylval.tdef = synfo->type;
+                      return Y_TYPEDEF_TYPE;
+                  } // switch
+                  UNEXPECTED_INT_VALUE( synfo->kind );
                 }
 
                 //
-                // 4. Otherwise, it's just an ordinary name.
+                // 3. Otherwise, it's just an ordinary name.
                 //
                 yylval.name = check_strdup( yytext );
                 return Y_NAME;

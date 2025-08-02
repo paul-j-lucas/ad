@@ -25,8 +25,11 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "symbol.h"
+/// @cond DOXYGEN_IGNORE
+#define SYMBOL_H_INLINE _GL_EXTERN_INLINE
+/// @endcond
 #include "red_black.h"
+#include "symbol.h"
 #include "util.h"
 
 // standard
@@ -35,8 +38,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// extern variables
+unsigned  sym_scope;
+
 // local variables
-static unsigned   curr_scope;
 static rb_tree_t  sym_table;
 
 // local functions
@@ -61,21 +66,12 @@ static bool rb_close_scope_visitor( void *node_data, void *v_data ) {
   for ( slist_t *const synfo_list = &sym->synfo_list;
         !slist_empty( synfo_list ); ) {
     synfo_t *const synfo = slist_front( synfo_list );
-    if ( synfo->scope != curr_scope )
+    if ( synfo->scope != sym_scope )
       break;
     free( slist_pop_front( synfo_list ) );
   } // for
 
   return false;
-}
-
-/**
- * Cleans up symbol table data.
- *
- * @sa sym_init()
- */
-static void sym_cleanup( void ) {
-  rb_tree_cleanup( &sym_table, POINTER_CAST( rb_free_fn_t, &sym_free ) );
 }
 
 /**
@@ -86,44 +82,92 @@ static void sym_cleanup( void ) {
 static void sym_free( symbol_t *sym ) {
   if ( sym != NULL ) {
     slist_cleanup( &sym->synfo_list, &free );
-    FREE( sym->name );
+    sname_cleanup( &sym->sname );
+    free( sym );
   }
 }
 
 /**
  * Comparison function for two \ref symbol.
  *
- * @param i_tdef A pointer to the first \ref symbol.
- * @param j_tdef A pointer to the second \ref symbol.
+ * @param i_sym A pointer to the first \ref symbol.
+ * @param j_sym A pointer to the second \ref symbol.
  * @return Returns an integer less than, equal to, or greater than 0, according
  * to whether the symbol name pointed to by \a i_sym is less than, equal to, or
  * greater than the `typedef` name pointed to by \a j_sym.
  */
 NODISCARD
 static int sym_cmp( symbol_t const *i_sym, symbol_t const *j_sym ) {
-  return strcmp( i_sym->name, j_sym->name );
+  return sname_cmp( &i_sym->sname, &j_sym->sname );
+}
+
+/**
+ * Initializes \a sym.
+ *
+ * @param sym The \ref symbol to initialize.
+ * @param sname TODO
+ */
+static void sym_init( symbol_t *sym, sname_t *sname ) {
+  assert( sym != NULL );
+  assert( sname != NULL );
+  *sym = (symbol_t){ .sname = sname_move( sname ) };
+}
+
+/**
+ * Cleans up symbol table data.
+ *
+ * @sa sym_table_init()
+ */
+static void sym_table_cleanup( void ) {
+  rb_tree_cleanup( &sym_table, POINTER_CAST( rb_free_fn_t, &sym_free ) );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+void* sym_add( void *obj, sname_t *sname, sym_kind_t kind ) {
+  (void)kind;
+  assert( obj != NULL );
+
+  symbol_t tmp_sym;
+  sym_init( &tmp_sym, sname );
+  rb_insert_rv_t rv = rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
+  symbol_t *const sym = RB_DINT( rv.node );
+  if ( rv.inserted ) {
+    // sym->synfo_list
+  }
+  else {
+  }
+
+  return NULL;
+}
+
+void* sym_add_global( void *obj, sname_t *sname ) {
+  (void)obj;
+  (void)sname;
+  return NULL;
+}
+
 void sym_close_scope( void ) {
-  assert( curr_scope > 0 );
+  assert( sym_scope > 0 );
   rb_tree_visit( &sym_table, &rb_close_scope_visitor, /*v_data=*/NULL );
 }
 
 symbol_t* sym_find_name( char const *name ) {
-  rb_node_t *const found_rb = rb_tree_find( &sym_table, name );
+  SNAME_VAR_INIT_NAME( sname, name );
+  return sym_find_sname( &sname );
+}
+
+symbol_t* sym_find_sname( sname_t const *sname ) {
+  assert( sname != NULL );
+  symbol_t const sym = { .sname = *sname };
+  rb_node_t *const found_rb = rb_tree_find( &sym_table, &sym );
   return found_rb != NULL ? RB_DPTR( found_rb ) : NULL;
 }
 
-void sym_init( void ) {
+void sym_table_init( void ) {
   ASSERT_RUN_ONCE();
   rb_tree_init( &sym_table, RB_DPTR, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
-  ATEXIT( &sym_cleanup );
-}
-
-void sym_open_scope( void ) {
-  ++curr_scope;
+  ATEXIT( &sym_table_cleanup );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
