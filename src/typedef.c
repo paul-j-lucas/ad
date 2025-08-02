@@ -46,8 +46,8 @@
  * Data passed to our red-black tree visitor function.
  */
 struct tdef_rb_visit_data {
-  ad_typedef_visit_fn_t   visit_fn;     ///< Caller's visitor function.
-  void                   *v_data;       ///< Caller's optional data.
+  ad_type_visit_fn_t  visit_fn;         ///< Caller's visitor function.
+  void               *v_data;           ///< Caller's optional data.
 };
 typedef struct tdef_rb_visit_data tdef_rb_visit_data_t;
 
@@ -57,57 +57,17 @@ static rb_tree_t    typedef_set;        ///< Global set of `typedef`s.
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Cleans-up all memory associated with \a tdef but does _not_ free \a tdef
- * itself.
- *
- * @param tdef The \ref ad_typedef to clean up.
- */
-static void ad_typedef_cleanup( ad_typedef_t *tdef ) {
-  FREE( tdef->type );
-}
-
-/**
- * Cleans up \ref ad_typedef data.
+ * Cleans up \ref ad_type data.
  *
  * @sa ad_typedefs_init()
  */
 static void ad_typedefs_cleanup( void ) {
-  rb_tree_cleanup(
-    &typedef_set, POINTER_CAST( rb_free_fn_t, &ad_typedef_cleanup )
-  );
+  rb_tree_cleanup( &typedef_set, POINTER_CAST( rb_free_fn_t, &ad_type_free ) );
 }
 
 /**
- * Comparison function for \ref ad_typedef objects.
- *
- * @param i_tdef A pointer to the first \ref ad_typedef.
- * @param j_tdef A pointer to the second \ref ad_typedef.
- * @return Returns an integer less than, equal to, or greater than 0, according
- * to whether the `typedef` name pointed to by \a i_tdef is less than, equal
- * to, or greater than the `typedef` name pointed to by \a j_tdef.
- */
-NODISCARD
-static int ad_typedef_cmp( ad_typedef_t const *i_tdef,
-                           ad_typedef_t const *j_tdef ) {
-  assert( i_tdef != NULL );
-  assert( j_tdef != NULL );
-  return sname_cmp( &i_tdef->type->sname, &j_tdef->type->sname );
-}
-
-/**
- * Creates a new \ref ad_typedef.
- *
- * @param type The type.
- */
-static void ad_typedef_init( ad_typedef_t *tdef, ad_type_t const *type ) {
-  assert( tdef != NULL );
-  assert( type != NULL );
-  *tdef = (ad_typedef_t){ .type = type };
-}
-
-/**
- * Red-black tree visitor function that forwards to the \ref
- * ad_typedef_visit_fn_t function.
+ * Red-black tree visitor function that forwards to the \ref ad_type_visit_fn_t
+ * function.
  *
  * @param node_data A pointer to the node's data.
  * @param v_data Data passed to to the visitor.
@@ -119,41 +79,38 @@ static bool rb_visitor( void *node_data, void *v_data ) {
   assert( node_data != NULL );
   assert( v_data != NULL );
 
-  ad_typedef_t const *const tdef = node_data;
+  ad_type_t const *const type = node_data;
   tdef_rb_visit_data_t const *const trvd = v_data;
 
-  return (*trvd->visit_fn)( tdef, trvd->v_data );
+  return (*trvd->visit_fn)( type, trvd->v_data );
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-rb_node_t* ad_typedef_add( ad_type_t const *type ) {
+ad_type_t* ad_typedef_add( ad_type_t *type ) {
   assert( type != NULL );
-
-  ad_typedef_t tdef;
-  ad_typedef_init( &tdef, type );
-  return rb_tree_insert( &typedef_set, &tdef, sizeof tdef ).node;
+  return RB_DINT( rb_tree_insert( &typedef_set, type, sizeof *type ).node );
 }
 
-ad_typedef_t const* ad_typedef_find_name( char const *name ) {
+ad_type_t const* ad_typedef_find_name( char const *name ) {
   assert( name != NULL );
   sname_t sname;
   if ( sname_parse( name, &sname ) ) {
-    ad_typedef_t const *const tdef = ad_typedef_find_sname( &sname );
+    ad_type_t const *const type = ad_typedef_find_sname( &sname );
     sname_cleanup( &sname );
-    return tdef;
+    return type;
   }
   return NULL;
 }
 
-ad_typedef_t const* ad_typedef_find_sname( sname_t const *sname ) {
+ad_type_t const* ad_typedef_find_sname( sname_t const *sname ) {
   assert( sname != NULL );
-  ad_typedef_t const tdef = { .type = &(ad_type_t const){ .sname = *sname } };
-  rb_node_t const *const found_rb = rb_tree_find( &typedef_set, &tdef );
+  ad_type_t const type = { .sname = *sname };
+  rb_node_t const *const found_rb = rb_tree_find( &typedef_set, &type );
   return found_rb != NULL ? RB_DINT( found_rb ) : NULL;
 }
 
-void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
+void ad_typedef_visit( ad_type_visit_fn_t visit_fn, void *v_data ) {
   assert( visit_fn != NULL );
   tdef_rb_visit_data_t trvd = { visit_fn, v_data };
   rb_tree_visit( &typedef_set, &rb_visitor, &trvd );
@@ -162,7 +119,7 @@ void ad_typedef_visit( ad_typedef_visit_fn_t visit_fn, void *v_data ) {
 void ad_typedefs_init( void ) {
   ASSERT_RUN_ONCE();
   rb_tree_init(
-    &typedef_set, RB_DINT, POINTER_CAST( rb_cmp_fn_t, &ad_typedef_cmp )
+    &typedef_set, RB_DINT, POINTER_CAST( rb_cmp_fn_t, &ad_type_cmp )
   );
   ATEXIT( &ad_typedefs_cleanup );
 }

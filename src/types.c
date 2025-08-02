@@ -179,6 +179,12 @@ char const* ad_tid_kind_name( ad_tid_kind_t kind ) {
   UNEXPECTED_INT_VALUE( kind );
 }
 
+int ad_type_cmp( ad_type_t const *i_type, ad_type_t const *j_type ) {
+  assert( i_type != NULL );
+  assert( j_type != NULL );
+  return sname_cmp( &i_type->sname, &j_type->sname );
+}
+
 bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
   if ( i_type == j_type )
     return true;
@@ -193,6 +199,9 @@ bool ad_type_equal( ad_type_t const *i_type, ad_type_t const *j_type ) {
 void ad_type_free( ad_type_t *type ) {
   if ( type == NULL )
     return;
+  ad_expr_free( type->endian_expr );
+  ad_expr_free( type->size_expr );
+
   switch ( ad_tid_kind( type->tid ) ) {
     case T_BOOL:
     case T_FLOAT:
@@ -218,6 +227,7 @@ void ad_type_free( ad_type_t *type ) {
       // nothing to do
       break;
   } // switch
+
   sname_cleanup( &type->sname );
   free( type );
 }

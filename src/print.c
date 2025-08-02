@@ -31,7 +31,6 @@
 #include "keyword.h"
 #include "lexer.h"
 #include "options.h"
-#include "typedef.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -241,10 +240,7 @@ static void print_type_name_aka( ad_type_t const *type, FILE *fout ) {
   assert( fout != NULL );
 
   FPRINTF( fout, "\"%s\" (aka, \"", sname_full_name( &type->sname ) );
-  // Look-up the type so we can print it how it was originally defined.
-  ad_typedef_t const *const tdef = ad_typedef_find_sname( &type->sname );
-  assert( tdef != NULL );
-  print_type( tdef->type, fout );
+  print_type( type, fout );
   FPUTS( "\")", fout );
 }
 

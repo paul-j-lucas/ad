@@ -39,15 +39,15 @@
 #include <string.h>
 
 /**
- * Used by copy_typedefs() and copy_typedef_visitor() to pass and return data.
+ * Used by copy_types() and copy_type_visitor() to pass and return data.
  */
-struct copy_typedef_visit_data {
+struct copy_type_visit_data {
   /// Pointer to a pointer to a candidate list or NULL to just get the count.
   did_you_mean_t  **pdym;
 
   size_t            count;              ///< The count.
 };
-typedef struct copy_typedef_visit_data copy_typedef_visit_data_t;
+typedef struct copy_type_visit_data copy_type_visit_data_t;
 
 /**
  * The signature for a function passed to qsort().
@@ -114,21 +114,21 @@ static size_t copy_cli_options( did_you_mean_t **pdym ) {
 }
 
 /**
- * A \ref ad_typedef visitor function to copy names of types that are only
- * valid in the current language to the candidate list pointed to
+ * An \ref ad_type visitor function to copy names of types that are only valid
+ * in the current language to the candidate list pointed to
  *
- * @param tdef The ad_typedef to visit.
- * @param data A pointer to a \ref copy_typedef_visit_data.
+ * @param type The ad_type to visit.
+ * @param data A pointer to a \ref copy_type_visit_data.
  * @return Always returns `false`.
  */
 PJL_DISCARD
-static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
-  assert( tdef != NULL );
+static bool copy_type_visitor( ad_type_t const *type, void *data ) {
+  assert( type != NULL );
   assert( data != NULL );
 
-  copy_typedef_visit_data_t *const ctvd = data;
+  copy_type_visit_data_t *const ctvd = data;
   if ( ctvd->pdym != NULL ) {
-    char const *const name = sname_full_name( &tdef->type->sname );
+    char const *const name = sname_full_name( &type->sname );
     (*ctvd->pdym)++->literal = check_strdup( name );
   }
   ++ctvd->count;
@@ -145,9 +145,9 @@ static bool copy_typedef_visitor( ad_typedef_t const *tdef, void *data ) {
  * @return Returns said number of `typedef`s.
  */
 PJL_DISCARD
-static size_t copy_typedefs( did_you_mean_t **const pdym ) {
-  copy_typedef_visit_data_t ctvd = { pdym, 0 };
-  ad_typedef_visit( &copy_typedef_visitor, &ctvd );
+static size_t copy_types( did_you_mean_t **const pdym ) {
+  copy_type_visit_data_t ctvd = { pdym, 0 };
+  ad_typedef_visit( &copy_type_visitor, &ctvd );
   return ctvd.count;
 }
 
@@ -232,7 +232,7 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_literal ) {
       copy_keywords( /*pdym=*/NULL, /*copy_types=*/false ) : 0) +
     ((kinds & DYM_TYPES) != DYM_NONE ?
       copy_keywords( /*pdym=*/NULL, /*copy_types=*/true ) +
-      copy_typedefs( /*pdym=*/NULL ) : 0);
+      copy_types( /*pdym=*/NULL ) : 0);
 
   if ( dym_size == 0 )
     return NULL;
@@ -249,7 +249,7 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_literal ) {
   }
   if ( (kinds & DYM_TYPES) != DYM_NONE ) {
     copy_keywords( &dym, /*copy_types=*/true );
-    copy_typedefs( &dym );
+    copy_types( &dym );
   }
   *dym = (did_you_mean_t){ 0 };         // one past last is zero'd
 

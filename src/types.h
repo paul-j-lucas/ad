@@ -368,7 +368,6 @@ typedef uint16_t                      ad_tid_t;
 
 typedef enum    ad_tid_kind           ad_tid_kind_t;
 typedef slist_t                       ad_type_list_t;
-typedef struct  ad_typedef            ad_typedef_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  print_params          print_params_t;
 typedef slist_t                       sname_t;    ///< Scoped name.
@@ -829,6 +828,18 @@ ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
  */
 NODISCARD
 char const* ad_tid_kind_name( ad_tid_kind_t kind );
+
+/**
+ * Comparison function for \ref ad_type objects.
+ *
+ * @param i_type A pointer to the first \ref ad_type.
+ * @param j_type A pointer to the second \ref ad_type.
+ * @return Returns an integer less than, equal to, or greater than 0, according
+ * to whether the type name pointed to by \a i_type is less than, equal to, or
+ * greater than the `typedef` name pointed to by \a j_type.
+ */
+NODISCARD
+int ad_type_cmp( ad_type_t const *i_tdef, ad_type_t const *j_tdef );
 
 /**
  * Checks whether two types are equal _except_ for their names.

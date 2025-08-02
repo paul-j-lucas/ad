@@ -375,8 +375,8 @@ static bool define_type( ad_type_t const *type ) {
   if ( !ad_type_check( type ) )
     return false;                       // error message was already printed
 
-  ad_typedef_t const *const tdef = RB_DINT( ad_typedef_add( type ) );
-  if ( ad_type_equal( tdef->type, type ) )
+  ad_type_t const *const new_type = ad_typedef_add( type );
+  if ( ad_type_equal( new_type, type ) )
     return true;
 
   //
@@ -386,7 +386,7 @@ static bool define_type( ad_type_t const *type ) {
   print_error( &type->loc, "type " );
   print_type_aka( type, stderr );
   EPUTS( " redefinition incompatible with original type \"" );
-  print_type( tdef->type, stderr );
+  print_type( new_type, stderr );
   EPUTS( "\"\n" );
   return false;
 }
@@ -545,7 +545,6 @@ static void yyerror( char const *msg ) {
   char               *str_val;    // quoted string value
   ad_switch_case_t   *switch_case;
   ad_type_t          *type;
-  ad_typedef_t const *tdef;       // typedef
   ad_tid_t            tid;
 }
 
@@ -1583,8 +1582,8 @@ unary_expr
       DUMP_START( "unary_expr", "SIZEOF '(' NAME ')'" );
       DUMP_STR( "NAME", $name );
 
-      ad_typedef_t const *const tdef = ad_typedef_find_name( $name );
-      if ( tdef == NULL ) {
+      ad_type_t const *const type = ad_typedef_find_name( $name );
+      if ( type == NULL ) {
         print_error( &@name, "\"%s\": no such type\n", $name );
         free( $name );
         PARSE_ABORT();
@@ -1593,7 +1592,7 @@ unary_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .uval = ad_type_size( tdef->type )
+        .uval = ad_type_size( type )
       };
       free( $name );
 
