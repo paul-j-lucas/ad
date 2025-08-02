@@ -98,8 +98,10 @@ extern unsigned sym_scope;              ///< The current scope level.
  * @param obj TODO
  * @param sname TODO
  */
+NODISCARD
 void* sym_add( void *obj, sname_t *sname, sym_kind_t kind );
 
+NODISCARD
 void* sym_add_global( void *obj, sname_t *sname );
 
 /**
@@ -118,6 +120,7 @@ void sym_close_scope( void );
  *
  * @sa sym_find_sname()
  */
+NODISCARD
 symbol_t* sym_find_name( char const *name );
 
 /**
@@ -129,6 +132,7 @@ symbol_t* sym_find_name( char const *name );
  *
  * @sa sym_find_name()
  */
+NODISCARD
 symbol_t* sym_find_sname( sname_t const *sname );
 
 /**
