@@ -140,49 +140,30 @@ slist_t slist_dup( slist_t const *src_list, ssize_t n,
   return dst_list;
 }
 
-bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *data ) {
+bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *pred_data ) {
   assert( list != NULL );
   assert( pred_fn != NULL );
 
-  size_t const len_orig = list->len;
+  size_t const orig_len = list->len;
 
-  // special case: predicate matches list->head
+  slist_node_t **pcurr = &list->head, *prev = NULL;
   for (;;) {
-    slist_node_t *const curr = list->head;
-    if ( curr == NULL )
-      goto done;
-    if ( !(*pred_fn)( curr, data ) )
-      break;
-    if ( list->tail == curr )
-      list->tail = NULL;
-    list->head = curr->next;
-    free( curr );
-    --list->len;
-  } // for
-
-  assert( list->head != NULL );
-  assert( list->tail != NULL );
-  assert( list->len > 0 );
-
-  // general case: predicate matches any node except list->head
-  slist_node_t *prev = list->head;
-  for (;;) {
-    slist_node_t *const curr = prev->next;
+    slist_node_t *const curr = *pcurr;
     if ( curr == NULL )
       break;
-    if ( !(*pred_fn)( curr, data ) ) {
+    if ( !(*pred_fn)( curr, pred_data ) ) {
       prev = curr;
+      pcurr = &curr->next;
       continue;
     }
-    if ( list->tail == curr )
+    if ( curr == list->tail )
       list->tail = prev;
-    prev->next = curr->next;
+    *pcurr = curr->next;
     free( curr );
     --list->len;
   } // for
 
-done:
-  return list->len < len_orig;
+  return list->len < orig_len;
 }
 
 slist_t slist_move( slist_t *list ) {
