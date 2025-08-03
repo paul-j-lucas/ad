@@ -173,11 +173,11 @@ typedef void (*rb_free_fn_t)( void *data );
  * The signature for a function passed to rb_tree_visit().
  *
  * @param node_data A pointer to the rb_node's data.
- * @param user_data Optional data passed to to the visitor.
+ * @param visit_data Optional data passed to to the visitor.
  * @return Returning `true` will cause traversal to stop and the current node
  * to be returned to the caller of rb_tree_visit().
  */
-typedef bool (*rb_visit_fn_t)( void *node_data, void *user_data );
+typedef bool (*rb_visit_fn_t)( void *node_data, void *visit_data );
 
 ////////// structs ////////////////////////////////////////////////////////////
 
