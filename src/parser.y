@@ -375,8 +375,8 @@ static bool define_type( ad_type_t const *type ) {
   if ( !ad_type_check( type ) )
     return false;                       // error message was already printed
 
-  ad_type_t const *const new_type = ad_typedef_add( type );
-  if ( ad_type_equal( new_type, type ) )
+  ad_type_t const *const old_type = ad_typedef_add( type );
+  if ( ad_type_equal( old_type, type ) )
     return true;
 
   //
@@ -386,7 +386,7 @@ static bool define_type( ad_type_t const *type ) {
   print_error( &type->loc, "type " );
   print_type_aka( type, stderr );
   EPUTS( " redefinition incompatible with original type \"" );
-  print_type( new_type, stderr );
+  print_type( old_type, stderr );
   EPUTS( "\"\n" );
   return false;
 }

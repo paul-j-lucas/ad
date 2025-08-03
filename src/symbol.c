@@ -29,6 +29,7 @@
 #define SYMBOL_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "red_black.h"
+#include "lexer.h"
 #include "symbol.h"
 #include "util.h"
 
@@ -105,7 +106,7 @@ static int sym_cmp( symbol_t const *i_sym, symbol_t const *j_sym ) {
  * Initializes \a sym.
  *
  * @param sym The \ref symbol to initialize.
- * @param sname TODO
+ * @param sname The scoped name for \a sym.
  */
 static void sym_init( symbol_t *sym, sname_t *sname ) {
   assert( sym != NULL );
@@ -124,27 +125,35 @@ static void sym_table_cleanup( void ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-void* sym_add( void *obj, sname_t *sname, sym_kind_t kind ) {
-  (void)kind;
+synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope ) {
   assert( obj != NULL );
+  assert( sname != NULL );
 
+  synfo_t *rv_synfo;
   symbol_t tmp_sym;
   sym_init( &tmp_sym, sname );
-  rb_insert_rv_t rv = rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
-  symbol_t *const sym = RB_DINT( rv.node );
-  if ( rv.inserted ) {
-    // sym->synfo_list
-  }
-  else {
+
+  rb_insert_rv_t const rbi_rv =
+    rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
+  symbol_t *const sym = RB_DINT( rbi_rv.node );
+
+  if ( !rbi_rv.inserted ) {
+    rv_synfo = slist_front( &sym->synfo_list );
+    assert( rv_synfo != NULL );
+    if ( rv_synfo->scope == scope )
+      return rv_synfo;
   }
 
-  return NULL;
-}
+  rv_synfo = MALLOC( synfo_t, 1 );
+  *rv_synfo = (synfo_t){
+    .first_loc = lexer_loc(),
+    .kind = kind,
+    .scope = scope,
+    .obj = obj
+  };
+  slist_push_front( &sym->synfo_list, rv_synfo );
 
-void* sym_add_global( void *obj, sname_t *sname ) {
-  (void)obj;
-  (void)sname;
-  return NULL;
+  return rv_synfo;
 }
 
 void sym_close_scope( void ) {

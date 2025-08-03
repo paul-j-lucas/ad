@@ -69,12 +69,13 @@ typedef enum sym_kind sym_kind_t;
 struct synfo {
   unsigned      scope;                  ///< Scope level.
   sym_kind_t    kind;                   ///< Kind of symbol information.
-  ad_loc_num_t  first_line;             ///< Line number first mentioned.
+  ad_loc_t      first_loc;              ///< Location first mentioned.
   bool          is_used;                ///< True only if actually used.
   
   union {
     ad_decl_t  *decl;
     ad_type_t  *type;
+    void       *obj;
   };
 };
 typedef struct synfo synfo_t;
@@ -88,6 +89,17 @@ struct symbol {
 };
 typedef struct symbol symbol_t;
 
+/**
+ * The signature for a function passed to sym_visit().
+ *
+ * @param sym The \ref symbol to visit.
+ * @param v_data Optional data passed to the visitor.
+ * @return Returning `true` will cause traversal to stop and a pointer to the
+ * \ref symbol the visitor stopped on to be returned to the caller of
+ * sym_visit().
+ */
+typedef bool (*sym_visit_fn_t)( symbol_t const *sym, void *v_data );
+
 extern unsigned sym_scope;              ///< The current scope level.
 
 ////////// extern functions ///////////////////////////////////////////////////
@@ -96,13 +108,11 @@ extern unsigned sym_scope;              ///< The current scope level.
  * TODO
  *
  * @param obj TODO
- * @param sname TODO
+ * @param sname The scoped name for the symbol.
+ * @return Returns TODO
  */
 NODISCARD
-void* sym_add( void *obj, sname_t *sname, sym_kind_t kind );
-
-NODISCARD
-void* sym_add_global( void *obj, sname_t *sname );
+synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope );
 
 /**
  * Closes the current scope for the symbol table.
@@ -144,6 +154,14 @@ SYMBOL_H_INLINE
 void sym_open_scope( void ) {
   ++sym_scope;
 }
+
+/**
+ * Does an in-order traversal of all \ref ad_type.
+ *
+ * @param visit_fn The visitor function to use.
+ * @param v_data Optional data passed to \a visit_fn.
+ */
+void sym_visit( sym_visit_fn_t visit_fn, void *v_data );
 
 /**
  * Initializes the symbol table.
