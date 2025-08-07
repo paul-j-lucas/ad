@@ -69,7 +69,7 @@ red_black_test_SOURCES = \
 		slist.c slist.h \
 		types.h \
 		util.c util.h \
-		unit_test.h
+		unit_test.c unit_test.h
 
 slist_test_SOURCES = \
 		ad.h \
@@ -78,7 +78,7 @@ slist_test_SOURCES = \
 		slist_test.c \
 		types.h \
 		util.c util.h \
-		unit_test.h
+		unit_test.c unit_test.h
 
 TESTS =		$(check_PROGRAMS)
 

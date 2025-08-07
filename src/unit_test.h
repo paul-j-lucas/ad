@@ -1,8 +1,8 @@
 /*
-**      ad -- ASCII dump
+**      PJL Library
 **      src/unit_test.h
 **
-**      Copyright (C) 2021-2022  Paul J. Lucas
+**      Copyright (C) 2021-2025  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -18,21 +18,18 @@
 **      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ad_unit_test_H
-#define ad_unit_test_H
+#ifndef pjl_unit_test_H
+#define pjl_unit_test_H
 
 #pragma GCC diagnostic ignored "-Wunused-value"
 
-///////////////////////////////////////////////////////////////////////////////
-
 /**
- * Prints that \a EXPR failed and increments the test failure count.
- *
- * @param EXPR The stringified expression that failed.
- * @return Always returns `false`.
+ * @defgroup unit-test-group Unit Tests
+ * Macros, variables, and functions for unit-test programs.
+ * @{
  */
-#define FAILED(EXPR) \
-  ( EPRINTF( "%s:%d: " EXPR "\n", me, __LINE__ ), !++test_failures )
+
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Tests \a EXPR and prints that it failed only if it failed.
@@ -40,7 +37,16 @@
  * @param EXPR The expression to evaluate.
  * @return Returns `true` only if \a EXPR is non-zero; `false` only if zero.
  */
-#define TEST(EXPR)                ( !!(EXPR) || FAILED( #EXPR ) )
+#define TEST(EXPR)                ( !!(EXPR) || TEST_FAILED( #EXPR ) )
+
+/**
+ * Prints that \a EXPR failed and increments the test failure count.
+ *
+ * @param EXPR The stringified expression that failed.
+ * @return Always returns `false`.
+ */
+#define TEST_FAILED(EXPR) \
+  ( EPRINTF( "%s:%d: " EXPR "\n", me, __LINE__ ), !++test_failures )
 
 /**
  * Begins a test function.
@@ -48,9 +54,9 @@
  * @remarks This should be the first thing inside a test function that must be
  * declared to return `bool`.
  *
- * @sa #TEST_FN_END()
+ * @sa #TEST_FUNC_END()
  */
-#define TEST_FN_BEGIN() \
+#define TEST_FUNC_BEGIN() \
   unsigned const test_failures_start = test_failures
 
 /**
@@ -58,12 +64,30 @@
  *
  * @remarks This should be the last thing inside a test function.
  *
- * @sa #TEST_FN_BEGIN()
+ * @sa #TEST_FUNC_BEGIN()
  */
-#define TEST_FN_END() \
+#define TEST_FUNC_END() \
   return test_failures == test_failures_start
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif /* ad_unit_test_H */
+// extern variables
+extern char const  *me;                 ///< Program name.
+extern unsigned     test_failures;      ///< Test failure count.
+
+/**
+ * Initializes a unit-test program.
+ *
+ * @note This function must be called exactly once.
+ *
+ * @param argc The command-line argument count.
+ * @param argv The command-line argument values.
+ */
+void test_prog_init( int argc, char const *const argv[] );
+
+///////////////////////////////////////////////////////////////////////////////
+
+/** @} */
+
+#endif /* pjl_unit_test_H */
 /* vim:set et sw=2 ts=2: */
