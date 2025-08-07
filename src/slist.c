@@ -151,19 +151,49 @@ bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *pred_data ) {
     slist_node_t *const curr = *pcurr;
     if ( curr == NULL )
       break;
-    if ( !(*pred_fn)( curr, pred_data ) ) {
+    if ( (*pred_fn)( curr, pred_data ) ) {
+      *pcurr = curr->next;
+      if ( curr == list->tail )
+        list->tail = prev;
+      free( curr );
+      --list->len;
+    }
+    else {
       prev = curr;
       pcurr = &curr->next;
-      continue;
     }
-    if ( curr == list->tail )
-      list->tail = prev;
-    *pcurr = curr->next;
-    free( curr );
-    --list->len;
   } // for
 
   return list->len < orig_len;
+}
+
+bool slist_insert_if( slist_t *list, void *data, slist_pred_fn_t pred_fn,
+                      void *pred_data ) {
+  assert( list != NULL );
+  assert( data != NULL );
+  assert( pred_fn != NULL );
+
+  size_t const len_orig = list->len;
+
+  slist_node_t **pcurr = &list->head, *prev = NULL;
+  for (;;) {
+    slist_node_t *const curr = *pcurr;
+    if ( (*pred_fn)( curr, pred_data ) ) {
+      slist_node_t *const new = MALLOC( slist_node_t, 1 );
+      *new = (slist_node_t){ .next = curr, .data = data };
+      *pcurr = new;
+      if ( prev == list->tail )
+        list->tail = new;
+      ++list->len;
+      break;
+    }
+    if ( curr == NULL )
+      break;
+    prev = curr;
+    pcurr = &curr->next;
+  } // for
+
+  return list->len > len_orig;
 }
 
 slist_t slist_move( slist_t *list ) {

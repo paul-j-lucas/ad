@@ -234,6 +234,22 @@ PJL_DISCARD
 bool slist_free_if( slist_t *list, slist_pred_fn_t pred_fn, void *pred_data );
 
 /**
+ * Inserts \a data into \a list when \a pred_fn returns `true`.
+ *
+ * @param list A pointer to the list to possibly insert into.
+ * @param data The data to insert.
+ * @param pred_fn The predicate function to use.  If passed a NULL pointer for
+ * `node`, it means either \a list is empty or the function is being asked if
+ * it's OK to append to the end of the list (assuming the function returned
+ * `false` on all previous calls).
+ * @param pred_data Optional data passed to \a pred_fn.
+ * @return Returns `true` only if \a data was inserted.
+ */
+PJL_DISCARD
+bool slist_insert_if( slist_t *list, void *data, slist_pred_fn_t pred_fn,
+                      void *pred_data );
+
+/**
  * Pops data from the back of \a list.
  *
  * @param list The pointer to the \ref slist.

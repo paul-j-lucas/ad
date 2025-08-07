@@ -26,12 +26,19 @@
 
 // standard
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
 
 ///////////////////////////////////////////////////////////////////////////////
+
+struct counter {
+  unsigned i;
+  unsigned n;
+};
+typedef struct counter counter_t;
 
 // local variables
 static char const  *str_equal_to;
@@ -43,6 +50,17 @@ static bool slist_node_str_equal( slist_node_t *node, void *data ) {
   char const *const s = node->data;
   return strcmp( s, str_equal_to ) == 0;
 }
+
+static bool slist_bool( slist_node_t *node, void *data ) {
+  (void)node;
+  return (uintptr_t)data != 0;
+}
+
+static bool slist_counter( slist_node_t *node, void *data ) {
+  (void)node;
+  counter_t *const c = data;
+  return c->i++ == c->n;
+};
 
 ////////// test functions /////////////////////////////////////////////////////
 
@@ -285,6 +303,60 @@ static bool test_slist_free_if( void ) {
     TEST( *p == 'A' );
   if ( TEST( (p = slist_back( &list )) != NULL ) )
     TEST( *p == 'A' );
+
+  slist_cleanup( &list, /*free_fn=*/NULL );
+  TEST_FUNC_END();
+}
+
+static bool test_slist_insert_if( void ) {
+  TEST_FUNC_BEGIN();
+  slist_t list;
+  slist_init( &list );
+  char *p;
+
+  // test not inserting into an empty list
+  slist_insert_if( &list, (void*)"X", &slist_bool, (void*)false );
+  TEST( slist_len( &list ) == 0 );
+  TEST( slist_front( &list ) == NULL );
+  TEST( slist_back( &list ) == NULL );
+
+  // test inserting into an empty list
+  slist_insert_if( &list, (void*)"C", &slist_bool, (void*)true );
+  TEST( slist_len( &list ) == 1 );
+  if ( TEST( (p = slist_front( &list )) != NULL ) )
+    TEST( *p == 'C' );
+  TEST( slist_front( &list ) == slist_back( &list ) );
+
+  // test inserting at position 0
+  slist_insert_if( &list, (void*)"A", &slist_bool, (void*)true );
+  TEST( slist_len( &list ) == 2 );
+  TEST( slist_front( &list ) != slist_back( &list ) );
+  if ( TEST( (p = slist_front( &list )) != NULL ) )
+    TEST( *p == 'A' );
+
+  // test inserting at position 1
+  counter_t c = { .n = 1 };
+  slist_insert_if( &list, (void*)"B", &slist_counter, &c );
+  TEST( slist_len( &list ) == 3 );
+  if ( TEST( (p = slist_front( &list )) != NULL ) )
+    TEST( *p == 'A' );
+  if ( TEST( (p = slist_at( &list, 1 )) != NULL ) )
+    TEST( *p == 'B' );
+  if ( TEST( (p = slist_back( &list )) != NULL ) )
+    TEST( *p == 'C' );
+
+  // test inserting at the end
+  c = (counter_t){ .n = 3 };
+  slist_insert_if( &list, (void*)"D", &slist_counter, &c );
+  TEST( slist_len( &list ) == 4 );
+  if ( TEST( (p = slist_front( &list )) != NULL ) )
+    TEST( *p == 'A' );
+  if ( TEST( (p = slist_at( &list, 1 )) != NULL ) )
+    TEST( *p == 'B' );
+  if ( TEST( (p = slist_at( &list, 2 )) != NULL ) )
+    TEST( *p == 'C' );
+  if ( TEST( (p = slist_back( &list )) != NULL ) )
+    TEST( *p == 'D' );
 
   slist_cleanup( &list, /*free_fn=*/NULL );
   TEST_FUNC_END();
@@ -644,6 +716,7 @@ int main( int argc, char const *const argv[] ) {
     test_slist_cmp();
     test_slist_dup();
     test_slist_free_if();
+    test_slist_insert_if();
     test_slist_push_list_front();
     test_slist_push_list_back();
     test_slist_pop_front();
