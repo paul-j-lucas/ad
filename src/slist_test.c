@@ -639,11 +639,11 @@ int main( int argc, char const *const argv[] ) {
   test_prog_init( argc, argv );
 
   if ( test_slist_push_front() && test_slist_push_back() ) {
-    test_slist_free_if();
     test_slist_at();
     test_slist_atr();
     test_slist_cmp();
     test_slist_dup();
+    test_slist_free_if();
     test_slist_push_list_front();
     test_slist_push_list_back();
     test_slist_pop_front();
