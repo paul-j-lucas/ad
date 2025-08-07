@@ -2,7 +2,7 @@
 **      PJL Library
 **      src/slist.c
 **
-**      Copyright (C) 2017-2024  Paul J. Lucas
+**      Copyright (C) 2017-2025  Paul J. Lucas
 **
 **      This program is free software: you can redistribute it and/or modify
 **      it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 
 // standard
 #include <assert.h>
-#include <stddef.h>                     /* for NULL */
+#include <stddef.h>                     /* for NULL, size_t */
 #include <stdint.h>
 
 /// @endcond
@@ -85,6 +85,7 @@ int slist_cmp( slist_t const *i_list, slist_t const *j_list,
                slist_cmp_fn_t cmp_fn ) {
   assert( i_list != NULL );
   assert( j_list != NULL );
+  assert( cmp_fn != NULL );
 
   if ( i_list == j_list )
     return 0;
@@ -241,8 +242,7 @@ void* slist_pop_front( slist_t *list ) {
 void slist_push_back( slist_t *list, void *data ) {
   assert( list != NULL );
   slist_node_t *const new_tail = MALLOC( slist_node_t, 1 );
-  new_tail->data = data;
-  new_tail->next = NULL;
+  *new_tail = (slist_node_t){ .data = data };
 
   if ( list->head == NULL ) {
     assert( list->tail == NULL );
@@ -259,8 +259,7 @@ void slist_push_back( slist_t *list, void *data ) {
 void slist_push_front( slist_t *list, void *data ) {
   assert( list != NULL );
   slist_node_t *const new_head = MALLOC( slist_node_t, 1 );
-  new_head->data = data;
-  new_head->next = list->head;
+  *new_head = (slist_node_t){ .data = data, .next = list->head };
   list->head = new_head;
   if ( list->tail == NULL )
     list->tail = new_head;
