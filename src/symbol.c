@@ -162,7 +162,7 @@ void sym_close_scope( void ) {
 }
 
 symbol_t* sym_find_name( char const *name ) {
-  SNAME_VAR_INIT_NAME( sname, name );
+  sname_t const sname = SNAME_LIT( name );
   return sym_find_sname( &sname );
 }
 

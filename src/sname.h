@@ -58,15 +58,15 @@ _GL_INLINE_HEADER_BEGIN
  */
 
 /**
- * Creates a scoped name variable \a VAR on the stack having a local \a NAME.
+ * Creates a scoped name literal with a local name of \a NAME.
  *
- * @param VAR The \ref sname_t variable.
- * @param NAME The name.
+ * @param NAME The local name.
+ * @return Returns said scoped name.
  *
- * @warning sname_cleanup() must _not_ be called on \a VAR.
+ * @warning c_sname_cleanup() must _not_ be called on the returned value.
  */
-#define SNAME_VAR_INIT_NAME(VAR,NAME) \
-  SLIST_VAR_INIT( VAR, (&(sname_scope_t){ .name = (NAME) }) )
+#define SNAME_LIT(NAME) \
+  SLIST_LIT( (&(sname_scope_t){ CONST_CAST( char*, (NAME) ), T_NONE }) )
 
 /**
  * Gets the data associated with \a SCOPE.
@@ -195,8 +195,6 @@ void sname_cleanup( sname_t *sname );
  * @param j_sname The second scoped name to compare.
  * @return Returns a number less than 0, 0, or greater than 0 if \a i_sname is
  * less than, equal to, or greater than \a j_sname, respectively.
- *
- * @sa sname_cmp_name()
  */
 NODISCARD SNAME_H_INLINE
 int sname_cmp( sname_t const *i_sname, sname_t const *j_sname ) {
@@ -204,19 +202,6 @@ int sname_cmp( sname_t const *i_sname, sname_t const *j_sname ) {
     i_sname, j_sname, POINTER_CAST( slist_cmp_fn_t, &sname_scope_cmp )
   );
 }
-
-/**
- * Compares a scoped name and a name.
- *
- * @param sname The scoped name to compare.
- * @param name The name to compare.
- * @return Returns a number less than 0, 0, or greater than 0 if \a sname is
- * less than, equal to, or greater than \a name, respectively.
- *
- * @sa sname_cmp()
- */
-NODISCARD
-int sname_cmp_name( sname_t const *sname, char const *name );
 
 /**
  * Gets the number of names of \a sname, e.g., `S::T::x` is 3.

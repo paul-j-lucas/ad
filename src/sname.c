@@ -115,14 +115,6 @@ void sname_cleanup( sname_t *sname ) {
   slist_cleanup( sname, POINTER_CAST( slist_free_fn_t, &sname_scope_free ) );
 }
 
-int sname_cmp_name( sname_t const *sname, char const *name ) {
-  assert( sname != NULL );
-  assert( name != NULL );
-
-  SNAME_VAR_INIT_NAME( name_sname, name );
-  return sname_cmp( sname, &name_sname );
-}
-
 void sname_free( sname_t *sname ) {
   sname_cleanup( sname );
   free( sname );
