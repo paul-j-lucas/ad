@@ -66,7 +66,7 @@ _GL_INLINE_HEADER_BEGIN
  * @warning c_sname_cleanup() must _not_ be called on the returned value.
  */
 #define SNAME_LIT(NAME) \
-  SLIST_LIT( (&(sname_scope_t){ CONST_CAST( char*, (NAME) ), T_NONE }) )
+  SLIST_LIT( (&(sname_scope_t){ CONST_CAST( char*, (NAME) ) }) )
 
 /**
  * Gets the data associated with \a SCOPE.

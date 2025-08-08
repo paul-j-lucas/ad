@@ -46,7 +46,7 @@ unsigned  sym_scope;
 static rb_tree_t  sym_table;
 
 // local functions
-static void sym_free( symbol_t* );
+static void synfo_free( synfo_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -82,7 +82,9 @@ static bool rb_close_scope_visitor( void *node_data, void *v_data ) {
  */
 static void sym_free( symbol_t *sym ) {
   if ( sym != NULL ) {
-    slist_cleanup( &sym->synfo_list, &free );
+    slist_cleanup(
+      &sym->synfo_list, POINTER_CAST( slist_free_fn_t, &synfo_free )
+    );
     sname_cleanup( &sym->sname );
     free( sym );
   }
@@ -121,6 +123,23 @@ static void sym_init( symbol_t *sym, sname_t *sname ) {
  */
 static void sym_table_cleanup( void ) {
   rb_tree_cleanup( &sym_table, POINTER_CAST( rb_free_fn_t, &sym_free ) );
+}
+
+/**
+ * Frees all memory associated with \a synfo.
+ *
+ * @param synfo The \ref synfo to free.  If NULL, does nothing.
+ */
+static void synfo_free( synfo_t *synfo ) {
+  if ( synfo != NULL ) {
+    switch ( synfo->kind ) {
+      case SYM_DECL:
+        break;
+      case SYM_TYPE:
+        ad_type_free( synfo->type );
+        break;
+    } // switch
+  }
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
