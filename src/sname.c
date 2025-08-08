@@ -72,7 +72,7 @@ static char const* sname_name_impl( strbuf_t *sbuf, sname_t const *sname,
   FOREACH_SNAME_SCOPE_UNTIL( scope, sname, end_scope ) {
     if ( true_or_set( &colon2 ) )
       strbuf_putsn( sbuf, "::", 2 );
-    sname_scope_t const *const data = sname_scope_data( scope );
+    sname_scope_t const *const data = sname_scope( scope );
     strbuf_puts( sbuf, data->name );
   } // for
 

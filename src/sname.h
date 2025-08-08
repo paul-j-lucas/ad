@@ -76,8 +76,7 @@ _GL_INLINE_HEADER_BEGIN
  * @note This is a macro instead of an inline function so it'll work with
  * either a `const` or non-`const` \a SCOPE.
  */
-#define sname_scope_data(SCOPE) \
-  POINTER_CAST( sname_scope_t*, (SCOPE)->data )
+#define sname_scope(SCOPE)        POINTER_CAST( sname_scope_t*, (SCOPE)->data )
 
 /**
  * Convenience macro for iterating over all scopes of an sname.
