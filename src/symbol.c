@@ -152,11 +152,11 @@ synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope ) {
   symbol_t tmp_sym;
   sym_init( &tmp_sym, sname );
 
-  rb_insert_rv_t const rbi_rv =
+  rb_insert_rv_t const rv_rbi =
     rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
-  symbol_t *const sym = RB_DINT( rbi_rv.node );
+  symbol_t *const sym = RB_DINT( rv_rbi.node );
 
-  if ( !rbi_rv.inserted ) {
+  if ( !rv_rbi.inserted ) {
     rv_synfo = slist_front( &sym->synfo_list );
     assert( rv_synfo != NULL );
     if ( rv_synfo->scope <= scope )
