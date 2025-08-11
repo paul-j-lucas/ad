@@ -653,7 +653,7 @@ static void yyerror( char const *msg ) {
 %token  <name>      Y_NAME
 %token  <str_val>   Y_STR_LIT
 %token              Y_TEMPLATE_END      // '>' matching '<'
-%token  <type>      Y_TYPEDEF_TYPE
+%token  <type>      Y_TYPE              // user-defined type
 
                     //
                     // When the lexer returns Y_LEXER_ERROR, it means that
@@ -1662,7 +1662,7 @@ type
       DUMP_TYPE( "$$_type", $$ );
       DUMP_END();
     }
-  | Y_TYPEDEF_TYPE
+  | Y_TYPE
   ;
 
 template_end_exp

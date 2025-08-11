@@ -304,7 +304,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                       return Y_DECL;
                     case SYM_TYPE:
                       yylval.type = synfo->type;
-                      return Y_TYPEDEF_TYPE;
+                      return Y_TYPE;
                   } // switch
                   UNEXPECTED_INT_VALUE( synfo->kind );
                 }
