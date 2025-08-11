@@ -159,7 +159,7 @@ synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope ) {
   if ( !rbi_rv.inserted ) {
     rv_synfo = slist_front( &sym->synfo_list );
     assert( rv_synfo != NULL );
-    if ( rv_synfo->scope == scope )
+    if ( rv_synfo->scope <= scope )
       return rv_synfo;
   }
 

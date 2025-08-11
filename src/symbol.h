@@ -105,11 +105,14 @@ extern unsigned sym_scope;              ///< The current scope level.
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
- * TODO
+ * Possibly adds \a obj to the symbol table.
  *
- * @param obj TODO
+ * @param obj A pointer to the object to add.
  * @param sname The scoped name for the symbol.
- * @return Returns TODO
+ * @param scope The scope of \a obj.
+ * @return Returns a pointer to either the \ref synfo for an existing symbol if
+ * that \ref synfo's scope is &le; \a scope (the object already exists at the
+ * same scope) or a new \ref synfo if added.
  */
 NODISCARD
 synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope );
