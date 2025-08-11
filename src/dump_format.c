@@ -29,7 +29,6 @@
 #include "lexer.h"
 #include "options.h"
 #include "symbol.h"
-#include "typedef.h"
 #include "util.h"
 #include "ad_parser.h"                  /* must go last */
 
@@ -271,7 +270,6 @@ void dump_file_format( char const *format_path ) {
 
   lexer_init();
   parser_init();
-  ad_typedefs_init();
   sym_table_init();
 
   yyrestart( file );

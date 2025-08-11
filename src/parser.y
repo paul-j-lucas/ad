@@ -48,7 +48,6 @@
 #include "slist.h"
 #include "sname.h"
 #include "symbol.h"
-#include "typedef.h"
 #include "types.h"
 #include "util.h"
 
@@ -369,14 +368,19 @@ slist_t               statement_list;   ///< List of non-declaration statements.
  * name.
  */
 NODISCARD
-static bool define_type( ad_type_t const *type ) {
+static bool define_type( ad_type_t *type ) {
   assert( type != NULL );
 
   if ( !ad_type_check( type ) )
     return false;                       // error message was already printed
 
-  ad_type_t const *const old_type = ad_typedef_add( type );
-  if ( ad_type_equal( old_type, type ) )
+  synfo_t *const synfo = sym_add( type, &type->sname, SYM_TYPE, /*scope=*/0 );
+  if ( synfo->kind != SYM_TYPE ) {
+    // TODO
+    return false;
+  }
+
+  if ( ad_type_equal( synfo->type, type ) )
     return true;
 
   //
@@ -386,7 +390,7 @@ static bool define_type( ad_type_t const *type ) {
   print_error( &type->loc, "type " );
   print_type_aka( type, stderr );
   EPUTS( " redefinition incompatible with original type \"" );
-  print_type( old_type, stderr );
+  print_type( synfo->type, stderr );
   EPUTS( "\"\n" );
   return false;
 }
@@ -1582,9 +1586,14 @@ unary_expr
       DUMP_START( "unary_expr", "SIZEOF '(' NAME ')'" );
       DUMP_STR( "NAME", $name );
 
-      ad_type_t const *const type = ad_typedef_find_name( $name );
-      if ( type == NULL ) {
+      synfo_t *const synfo = sym_find_name( $name );
+      if ( synfo == NULL ) {
         print_error( &@name, "\"%s\": no such type\n", $name );
+        free( $name );
+        PARSE_ABORT();
+      }
+      if ( synfo->kind != SYM_TYPE ) {
+        // TODO
         free( $name );
         PARSE_ABORT();
       }
@@ -1592,7 +1601,7 @@ unary_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .uval = ad_type_size( type )
+        .uval = ad_type_size( synfo->type )
       };
       free( $name );
 

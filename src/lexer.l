@@ -44,7 +44,6 @@
 #include "print.h"
 #include "strbuf.h"
 #include "symbol.h"
-#include "typedef.h"
 #include "util.h"
 #include "ad_parser.h"                  /* must go last */
 
@@ -297,9 +296,8 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 2. See if it's a type or declaration.
                 //
-                symbol_t const *const sym = sym_find_name( yytext );
-                if ( sym != NULL ) {
-                  synfo_t const *const synfo = slist_front( &sym->synfo_list );
+                synfo_t const *const synfo = sym_find_name( yytext );
+                if ( synfo != NULL ) {
                   switch ( synfo->kind ) {
                     case SYM_DECL:
                       yylval.decl = synfo->decl;

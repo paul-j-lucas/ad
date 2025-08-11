@@ -33,11 +33,26 @@
 #include "symbol.h"
 #include "util.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
+/// @endcond
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Data passed to our red-black tree visitor function.
+ */
+struct sym_rb_visit_data {
+  sym_visit_fn_t  visit_fn;             ///< Caller's visitor function.
+  void           *v_data;               ///< Caller's optional data.
+};
+typedef struct sym_rb_visit_data sym_rb_visit_data_t;
 
 // extern variables
 unsigned  sym_scope;
@@ -49,6 +64,26 @@ static rb_tree_t  sym_table;
 static void synfo_free( synfo_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Red-black tree visitor function that forwards to the \ref ad_type_visit_fn_t
+ * function.
+ *
+ * @param node_data A pointer to the node's data.
+ * @param v_data Data passed to to the visitor.
+ * @return Returning `true` will cause traversal to stop and the current node
+ * to be returned to the caller of rb_tree_visit().
+ */
+NODISCARD
+static bool rb_visit_visitor( void *node_data, void *v_data ) {
+  assert( node_data != NULL );
+  assert( v_data != NULL );
+
+  symbol_t const *const sym = node_data;
+  sym_rb_visit_data_t const *const srvd = v_data;
+
+  return (*srvd->visit_fn)( sym, srvd->v_data );
+}
 
 /**
  * Red-black tree visitor function for closing a scope for a symbol table.
@@ -144,13 +179,15 @@ static void synfo_free( synfo_t *synfo ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope ) {
+synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
+                  unsigned scope ) {
   assert( obj != NULL );
   assert( sname != NULL );
 
   synfo_t *rv_synfo;
   symbol_t tmp_sym;
-  sym_init( &tmp_sym, sname );
+  sname_t dup_sname = sname_dup( sname );
+  sym_init( &tmp_sym, &dup_sname );
 
   rb_insert_rv_t const rv_rbi =
     rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
@@ -180,22 +217,34 @@ void sym_close_scope( void ) {
   rb_tree_visit( &sym_table, &rb_close_scope_visitor, /*v_data=*/NULL );
 }
 
-symbol_t* sym_find_name( char const *name ) {
+synfo_t* sym_find_name( char const *name ) {
   sname_t const sname = SNAME_LIT( name );
   return sym_find_sname( &sname );
 }
 
-symbol_t* sym_find_sname( sname_t const *sname ) {
+synfo_t* sym_find_sname( sname_t const *sname ) {
   assert( sname != NULL );
-  symbol_t const sym = { .sname = *sname };
-  rb_node_t *const found_rb = rb_tree_find( &sym_table, &sym );
-  return found_rb != NULL ? RB_DPTR( found_rb ) : NULL;
+  symbol_t const find_sym = { .sname = *sname };
+  rb_node_t *const found_rb = rb_tree_find( &sym_table, &find_sym );
+  if ( found_rb == NULL )
+    return NULL;
+  symbol_t *const sym = RB_DPTR( found_rb );
+  assert( sym != NULL );
+  synfo_t *const synfo = slist_front( &sym->synfo_list );
+  assert( synfo != NULL );
+  return synfo;
 }
 
 void sym_table_init( void ) {
   ASSERT_RUN_ONCE();
   rb_tree_init( &sym_table, RB_DPTR, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
   ATEXIT( &sym_table_cleanup );
+}
+
+void sym_visit( sym_visit_fn_t visit_fn, void *v_data ) {
+  assert( visit_fn != NULL );
+  sym_rb_visit_data_t const srvd = { visit_fn, v_data };
+  rb_tree_visit( &sym_table, &rb_visit_visitor, &srvd );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

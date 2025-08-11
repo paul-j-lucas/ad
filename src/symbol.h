@@ -115,7 +115,8 @@ extern unsigned sym_scope;              ///< The current scope level.
  * same scope) or a new \ref synfo if added.
  */
 NODISCARD
-synfo_t* sym_add( void *obj, sname_t *sname, sym_kind_t kind, unsigned scope );
+synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
+                  unsigned scope );
 
 /**
  * Closes the current scope for the symbol table.
@@ -134,7 +135,7 @@ void sym_close_scope( void );
  * @sa sym_find_sname()
  */
 NODISCARD
-symbol_t* sym_find_name( char const *name );
+synfo_t* sym_find_name( char const *name );
 
 /**
  * Attempts to find a symbol in the symbol table having \a sname.
@@ -146,7 +147,7 @@ symbol_t* sym_find_name( char const *name );
  * @sa sym_find_name()
  */
 NODISCARD
-symbol_t* sym_find_sname( sname_t const *sname );
+synfo_t* sym_find_sname( sname_t const *sname );
 
 /**
  * Opens a new scope for the symbol table.

@@ -34,7 +34,6 @@
 #include "literals.h"
 #include "options.h"
 #include "strbuf.h"
-#include "typedef.h"
 #include "types.h"
 #include "util.h"
 

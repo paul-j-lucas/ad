@@ -30,7 +30,7 @@
 #include "dam_lev.h"
 #include "keyword.h"
 #include "options.h"
-#include "typedef.h"
+#include "symbol.h"
 #include "util.h"
 
 // standard
@@ -39,15 +39,15 @@
 #include <string.h>
 
 /**
- * Used by copy_types() and copy_type_visitor() to pass and return data.
+ * Used by copy_types() and copy_sym_visitor() to pass and return data.
  */
-struct copy_type_visit_data {
+struct copy_sym_visit_data {
   /// Pointer to a pointer to a candidate list or NULL to just get the count.
   did_you_mean_t  **pdym;
 
   size_t            count;              ///< The count.
 };
-typedef struct copy_type_visit_data copy_type_visit_data_t;
+typedef struct copy_sym_visit_data copy_sym_visitor_t;
 
 /**
  * The signature for a function passed to qsort().
@@ -114,41 +114,40 @@ static size_t copy_cli_options( did_you_mean_t **pdym ) {
 }
 
 /**
- * An \ref ad_type visitor function to copy names of types that are only valid
- * in the current language to the candidate list pointed to
+ * An \ref symbol visitor function to copy names of symbols.
  *
- * @param type The ad_type to visit.
- * @param data A pointer to a \ref copy_type_visit_data.
+ * @param sym The symbol to visit.
+ * @param data A pointer to a \ref copy_sym_visit_data.
  * @return Always returns `false`.
  */
 PJL_DISCARD
-static bool copy_type_visitor( ad_type_t const *type, void *data ) {
-  assert( type != NULL );
+static bool copy_sym_visitor( symbol_t const *sym, void *data ) {
+  assert( sym != NULL );
   assert( data != NULL );
 
-  copy_type_visit_data_t *const ctvd = data;
-  if ( ctvd->pdym != NULL ) {
-    char const *const name = sname_full_name( &type->sname );
-    (*ctvd->pdym)++->literal = check_strdup( name );
+  copy_sym_visitor_t *const csvd = data;
+  if ( csvd->pdym != NULL ) {
+    char const *const name = sname_full_name( &sym->sname );
+    (*csvd->pdym)++->literal = check_strdup( name );
   }
-  ++ctvd->count;
+  ++csvd->count;
 
   return false;
 }
 
 /**
- * Counts the number of `typedef`s that are only valid in the current language.
+ * Counts the number of symbols.
  *
  * @param pdym A pointer to the current \ref did_you_mean pointer or NULL to
- * just count typedefs, not copy.  If not NULL, on return, the pointed-to
+ * just count symbols, not copy.  If not NULL, on return, the pointed-to
  * pointer is incremented.
- * @return Returns said number of `typedef`s.
+ * @return Returns said number of symbols.
  */
 PJL_DISCARD
-static size_t copy_types( did_you_mean_t **const pdym ) {
-  copy_type_visit_data_t ctvd = { pdym, 0 };
-  ad_typedef_visit( &copy_type_visitor, &ctvd );
-  return ctvd.count;
+static size_t copy_symbols( did_you_mean_t **const pdym ) {
+  copy_sym_visitor_t csvd = { pdym, 0 };
+  sym_visit( &copy_sym_visitor, &csvd );
+  return csvd.count;
 }
 
 /**
@@ -232,7 +231,7 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_literal ) {
       copy_keywords( /*pdym=*/NULL, /*copy_types=*/false ) : 0) +
     ((kinds & DYM_TYPES) != DYM_NONE ?
       copy_keywords( /*pdym=*/NULL, /*copy_types=*/true ) +
-      copy_types( /*pdym=*/NULL ) : 0);
+      copy_symbols( /*pdym=*/NULL ) : 0);
 
   if ( dym_size == 0 )
     return NULL;
@@ -249,7 +248,7 @@ did_you_mean_t const* dym_new( dym_kind_t kinds, char const *unknown_literal ) {
   }
   if ( (kinds & DYM_TYPES) != DYM_NONE ) {
     copy_keywords( &dym, /*copy_types=*/true );
-    copy_types( &dym );
+    copy_symbols( &dym );
   }
   *dym = (did_you_mean_t){ 0 };         // one past last is zero'd
 
