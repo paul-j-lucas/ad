@@ -50,7 +50,7 @@
  */
 struct sym_rb_visit_data {
   sym_visit_fn_t  visit_fn;             ///< Caller's visitor function.
-  void           *v_data;               ///< Caller's optional data.
+  void           *visit_data;           ///< Caller's optional data.
 };
 typedef struct sym_rb_visit_data sym_rb_visit_data_t;
 
@@ -70,32 +70,32 @@ static void synfo_free( synfo_t* );
  * function.
  *
  * @param node_data A pointer to the node's data.
- * @param v_data Data passed to to the visitor.
+ * @param visit_data Data passed to to the visitor.
  * @return Returning `true` will cause traversal to stop and the current node
  * to be returned to the caller of rb_tree_visit().
  */
 NODISCARD
-static bool rb_visit_visitor( void *node_data, void *v_data ) {
+static bool rb_visit_visitor( void *node_data, void *visit_data ) {
   assert( node_data != NULL );
-  assert( v_data != NULL );
+  assert( visit_data != NULL );
 
   symbol_t const *const sym = node_data;
-  sym_rb_visit_data_t const *const srvd = v_data;
+  sym_rb_visit_data_t const *const srvd = visit_data;
 
-  return (*srvd->visit_fn)( sym, srvd->v_data );
+  return (*srvd->visit_fn)( sym, srvd->visit_data );
 }
 
 /**
  * Red-black tree visitor function for closing a scope for a symbol table.
  *
  * @param node_data A pointer to the node's data.
- * @param v_data Not used.
+ * @param visit_data Not used.
  * @return Always returns `false`.
  */
 NODISCARD
-static bool rb_close_scope_visitor( void *node_data, void *v_data ) {
+static bool rb_close_scope_visitor( void *node_data, void *visit_data ) {
   assert( node_data != NULL );
-  (void)v_data;
+  (void)visit_data;
 
   symbol_t *const sym = node_data;
 
@@ -214,7 +214,7 @@ synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
 
 void sym_close_scope( void ) {
   assert( sym_scope > 0 );
-  rb_tree_visit( &sym_table, &rb_close_scope_visitor, /*v_data=*/NULL );
+  rb_tree_visit( &sym_table, &rb_close_scope_visitor, /*visit_data=*/NULL );
 }
 
 synfo_t* sym_find_name( char const *name ) {
@@ -241,9 +241,9 @@ void sym_table_init( void ) {
   ATEXIT( &sym_table_cleanup );
 }
 
-void sym_visit( sym_visit_fn_t visit_fn, void *v_data ) {
+void sym_visit( sym_visit_fn_t visit_fn, void *visit_data ) {
   assert( visit_fn != NULL );
-  sym_rb_visit_data_t const srvd = { visit_fn, v_data };
+  sym_rb_visit_data_t const srvd = { visit_fn, visit_data };
   rb_tree_visit( &sym_table, &rb_visit_visitor, &srvd );
 }
 

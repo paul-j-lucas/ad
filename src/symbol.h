@@ -93,12 +93,12 @@ typedef struct symbol symbol_t;
  * The signature for a function passed to sym_visit().
  *
  * @param sym The \ref symbol to visit.
- * @param v_data Optional data passed to the visitor.
+ * @param visit_data Optional data passed to the visitor.
  * @return Returning `true` will cause traversal to stop and a pointer to the
  * \ref symbol the visitor stopped on to be returned to the caller of
  * sym_visit().
  */
-typedef bool (*sym_visit_fn_t)( symbol_t const *sym, void *v_data );
+typedef bool (*sym_visit_fn_t)( symbol_t const *sym, void *visit_data );
 
 extern unsigned sym_scope;              ///< The current scope level.
 
@@ -163,9 +163,9 @@ void sym_open_scope( void ) {
  * Does an in-order traversal of all \ref ad_type.
  *
  * @param visit_fn The visitor function to use.
- * @param v_data Optional data passed to \a visit_fn.
+ * @param visit_data Optional data passed to \a visit_fn.
  */
-void sym_visit( sym_visit_fn_t visit_fn, void *v_data );
+void sym_visit( sym_visit_fn_t visit_fn, void *visit_data );
 
 /**
  * Initializes the symbol table.
