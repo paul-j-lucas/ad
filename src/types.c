@@ -145,6 +145,12 @@ void ad_statement_free( ad_statement_t *statement ) {
       FREE( statement->decl_s.printf_fmt );
       break;
 
+    case AD_STMNT_IF:
+      ad_expr_free( statement->if_s.expr );
+      ad_statement_list_cleanup( &statement->if_s.if_list );
+      ad_statement_list_cleanup( &statement->if_s.else_list );
+      break;
+
     case AD_STMNT_SWITCH:
       ad_expr_free( statement->switch_s.expr );
       FOREACH_SWITCH_CASE( case_node, statement ) {

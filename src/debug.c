@@ -106,11 +106,14 @@ typedef enum json_state json_state_t;
 
 // local functions
 static void ad_expr_dump_impl( ad_expr_t const*, dump_state_t* );
+static void ad_if_dump_impl( ad_if_statement_t const*, dump_state_t* );
 static void ad_literal_expr_dump( ad_literal_expr_t const*, dump_state_t* );
 static void ad_loc_dump( ad_loc_t const*, FILE* );
 static void ad_rep_dump_impl( ad_rep_t const*, dump_state_t* );
 NODISCARD
 static char const* ad_statement_kind_name( ad_statement_kind_t );
+static void ad_statement_list_dump_impl( ad_statement_list_t const*,
+                                         dump_state_t* );
 static void ad_switch_dump_impl( ad_switch_statement_t const*, dump_state_t* );
 static void ad_tid_dump_impl( ad_tid_t, dump_state_t* );
 static void ad_type_dump_impl( ad_type_t const*, dump_state_t* );
@@ -250,6 +253,30 @@ static void ad_expr_dump_impl( ad_expr_t const *expr, dump_state_t *dump ) {
   } // switch
 
   json_object_end( expr_json, dump );
+}
+
+/**
+ * Dumps \a if_s in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param if_s The \ref ad_if_statement to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_if_dump_impl( ad_if_statement_t const *if_s,
+                             dump_state_t *dump ) {
+  assert( if_s != NULL );
+  assert( dump != NULL );
+
+  json_state_t const if_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_EXPR( dump, "expr", if_s->expr );
+  DUMP_STATEMENT_LIST( dump, "if-true", &if_s->if_list );
+  DUMP_STATEMENT_LIST( dump, "if-false", &if_s->else_list );
+
+  FPUTC( '\n', dump->fout );
+  DUMP_FORMAT( dump, "]" );
+
+  json_object_end( if_json, dump );
 }
 
 /**
@@ -414,6 +441,10 @@ static void ad_statement_dump_impl( ad_statement_t const *statement,
       DUMP_KEY( dump, "declaration: " );
       ad_decl_dump_impl( &statement->decl_s, dump );
       break;
+    case AD_STMNT_IF:
+      DUMP_KEY( dump, "if: " );
+      ad_if_dump_impl( &statement->if_s, dump );
+      break;
     case AD_STMNT_SWITCH:
       DUMP_KEY( dump, "switch: " );
       ad_switch_dump_impl( &statement->switch_s, dump );
@@ -459,9 +490,10 @@ static void ad_statement_list_dump_impl( ad_statement_list_t const *list,
  */
 static char const* ad_statement_kind_name( ad_statement_kind_t kind ) {
   switch ( kind ) {
-    case AD_STMNT_BREAK       : return "break";
+    case AD_STMNT_BREAK       : return L_break;
     case AD_STMNT_DECLARATION : return "declaration";
-    case AD_STMNT_SWITCH      : return "switch";
+    case AD_STMNT_IF          : return L_if;
+    case AD_STMNT_SWITCH      : return L_switch;
   } // switch
   UNEXPECTED_INT_VALUE( kind );
   return NULL;

@@ -168,6 +168,10 @@ static bool ad_statement_exec( ad_statement_t const *statement,
       if ( !ad_decl_exec( &statement->decl_s, dump ) )
         return false;
       break;
+    case AD_STMNT_IF:
+      if ( !ad_if_exec( &statement->if_s, dump ) )
+        return false;
+      break;
     case AD_STMNT_SWITCH:
       if ( !ad_switch_exec( &statement->switch_s, dump ) )
         return false;

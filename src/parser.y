@@ -564,9 +564,11 @@ static void yyerror( char const *msg ) {
 %token              Y_break
 %token              Y_case
 %token              Y_default
+%token              Y_else
 %token  <expr_kind> Y_enum
 %token  <expr_kind> Y_false
 %token  <expr_kind> Y_float
+%token              Y_if
 %token  <expr_kind> Y_int
 %token              Y_offsetof
 %token  <expr_kind> Y_struct
@@ -714,8 +716,10 @@ static void yyerror( char const *msg ) {
                     // Statements
 %type <statement>   break_statement
 %type <statement>   declaration
+%type <list>        else_statement_opt
 %type <statement>   enum_declaration
 %type <statement>   field_declaration
+%type <statement>   if_statement
 %type <statement>   statement
 %type <list>        statement_list statement_list_opt
 %type <statement>   struct_declaration
@@ -781,6 +785,7 @@ statement_list
 statement
   : break_statement semi_exp
   | declaration semi_exp
+  | if_statement
   | switch_statement
   | error
     {
@@ -807,6 +812,40 @@ break_statement
 
       DUMP_STATEMENT( "$$_statement", $$ );
       DUMP_END();
+    }
+  ;
+
+////////// if statement ///////////////////////////////////////////////////////
+
+if_statement
+  : Y_if lparen_exp expr rparen_exp
+    lbrace_exp statement_list_opt[if_list] '}'
+    else_statement_opt[else_list]
+    {
+      DUMP_START( "if_statement", "IF ( expr ) statement_list_opt" );
+      DUMP_EXPR( "expr", $expr );
+
+      $$ = MALLOC( ad_statement_t, 1 );
+      *$$ = (ad_statement_t){
+        .kind = AD_STMNT_IF,
+        .loc = @$,
+        .if_s = {
+          .expr = $expr,
+          .if_list = slist_move( &$if_list ),
+          .else_list = slist_move( &$else_list )
+        }
+      };
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
+    }
+  ;
+
+else_statement_opt
+  : /* empty */                   { slist_init( &$$ ); }
+  | Y_else lbrace_exp statement_list_opt[else_list] '}'
+    {
+      $$ = $else_list;
     }
   ;
 

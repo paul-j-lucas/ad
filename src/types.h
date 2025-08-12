@@ -233,20 +233,10 @@ enum ad_rep_kind {
  * Kinds of statements in the **ad** language.
  */
 enum ad_statement_kind {
-  /**
-   * A `break` statement.
-   */
-  AD_STMNT_BREAK,
-
-  /**
-   * A single declaration statement.
-   */
-  AD_STMNT_DECLARATION,
-
-  /**
-   * A `switch` statement.
-   */
-  AD_STMNT_SWITCH
+  AD_STMNT_BREAK,                       ///< `break`
+  AD_STMNT_DECLARATION,                 ///< Single declaration.
+  AD_STMNT_IF,                          ///< `if`
+  AD_STMNT_SWITCH                       /// `switch`
 };
 
 /**
@@ -286,6 +276,7 @@ typedef enum    ad_expr_err           ad_expr_err_t;
 typedef enum    ad_expr_kind          ad_expr_kind_t;
 typedef struct  ad_float_type         ad_float_type_t;
 typedef struct  ad_fmt_type           ad_fmt_type_t;
+typedef struct  ad_if_statement       ad_if_statement_t;
 typedef struct  ad_int_type           ad_int_type_t;
 typedef enum    ad_int_base           ad_int_base_t;
 typedef struct  ad_keyword            ad_keyword_t;
@@ -547,11 +538,20 @@ struct ad_decl {
 };
 
 /**
+ * A `if` statement in the **ad** language.
+ */
+struct ad_if_statement {
+  ad_expr_t            *expr;           ///< `if` expression.
+  ad_statement_list_t   if_list;        ///< `true` statement list.
+  ad_statement_list_t   else_list;      ///< `false` statement list.
+};
+
+/**
  * An individual `case` for an \ref ad_switch_statement.
  */
 struct ad_switch_case {
-  ad_expr_t                *expr;
-  ad_statement_list_t       statement_list;
+  ad_expr_t            *expr;
+  ad_statement_list_t   statement_list;
 };
 
 /**
@@ -576,6 +576,7 @@ struct ad_statement {
     // nothing needed for break statement
     // nothing needed for compound statement
     ad_decl_t               decl_s;     ///< \ref ad_decl members.
+    ad_if_statement_t       if_s;       ///< \ref ad_if_statement members.
     ad_switch_statement_t   switch_s;   ///< \ref ad_switch_statement members.
   };
 };
