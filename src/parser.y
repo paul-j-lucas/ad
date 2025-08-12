@@ -27,7 +27,7 @@
 /** @cond DOXYGEN_IGNORE */
 
 %define api.header.include { "parser.h" }
-%expect 4
+%expect 3
 
 %{
 /** @endcond */
@@ -375,24 +375,30 @@ static bool define_type( ad_type_t *type ) {
     return false;                       // error message was already printed
 
   synfo_t *const synfo = sym_add( type, &type->sname, SYM_TYPE, /*scope=*/0 );
+
   if ( synfo->kind != SYM_TYPE ) {
-    // TODO
+    print_error( &type->loc, "type " );
+    print_type_aka( type, stderr );
+    EPUTS( " previously declared as \"" );
+    print_decl( synfo->decl, stderr );
+    EPUTS( "\"\n" );
     return false;
   }
 
-  if ( ad_type_equal( synfo->type, type ) )
-    return true;
+  if ( !ad_type_equal( synfo->type, type ) ) {
+    //
+    // Type was NOT added because a previously declared type having the same
+    // name was returned and the types are NOT equal.
+    //
+    print_error( &type->loc, "type " );
+    print_type_aka( type, stderr );
+    EPUTS( " redefinition incompatible with original type \"" );
+    print_type( synfo->type, stderr );
+    EPUTS( "\"\n" );
+    return false;
+  }
 
-  //
-  // Type was NOT added because a previously declared type having the same
-  // name was returned and the types are NOT equal.
-  //
-  print_error( &type->loc, "type " );
-  print_type_aka( type, stderr );
-  EPUTS( " redefinition incompatible with original type \"" );
-  print_type( synfo->type, stderr );
-  EPUTS( "\"\n" );
-  return false;
+  return true;
 }
 
 /**
@@ -720,6 +726,7 @@ static void yyerror( char const *msg ) {
 %type <int_val>     alignas_opt
 %type <list>        argument_expr_list argument_expr_list_opt
 %type <expr_kind>   assign_op
+%type <type>        decl_or_type
 %type <str_val>     format_opt
 %type <int_val>     int_exp
 %type <name>        name_exp
@@ -1581,32 +1588,29 @@ unary_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | Y_sizeof '(' Y_NAME[name] rparen_exp
+  | Y_sizeof '(' decl_or_type[type] rparen_exp
     {
       DUMP_START( "unary_expr", "SIZEOF '(' NAME ')'" );
-      DUMP_STR( "NAME", $name );
-
-      synfo_t *const synfo = sym_find_name( $name );
-      if ( synfo == NULL ) {
-        print_error( &@name, "\"%s\": no such type\n", $name );
-        free( $name );
-        PARSE_ABORT();
-      }
-      if ( synfo->kind != SYM_TYPE ) {
-        // TODO
-        free( $name );
-        PARSE_ABORT();
-      }
+      DUMP_TYPE( "decl_or_type", $type );
 
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal = (ad_literal_expr_t){
         .type = &TB_UINT64,
-        .uval = ad_type_size( synfo->type )
+        .uval = ad_type_size( $type )
       };
-      free( $name );
 
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
+    }
+  ;
+
+decl_or_type
+  : Y_DECL                        { $$ = $1->type; }
+  | Y_TYPE
+  | error
+    {
+      $$ = NULL;
+      elaborate_error( "type or object name expected" );
     }
   ;
 

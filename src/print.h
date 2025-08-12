@@ -250,6 +250,14 @@ PJL_DISCARD
 bool print_suggestions( dym_kind_t kinds, char const *unknown_token );
 
 /**
+ * Prints \a decl.
+ *
+ * @param decl The \ref ad_decl to print.
+ * @param fout The `FILE` to print to.
+ */
+void print_decl( ad_decl_t const *decl, FILE *fout );
+
+/**
  * Prints \a type.
  *
  * @param type The \ref ad_type to print.
