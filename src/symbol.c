@@ -184,9 +184,10 @@ synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
   assert( obj != NULL );
   assert( sname != NULL );
 
+  sname_t  dup_sname = sname_dup( sname );
   synfo_t *rv_synfo;
   symbol_t tmp_sym;
-  sname_t dup_sname = sname_dup( sname );
+
   sym_init( &tmp_sym, &dup_sname );
 
   rb_insert_rv_t const rv_rbi =
@@ -196,7 +197,7 @@ synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
   if ( !rv_rbi.inserted ) {
     rv_synfo = slist_front( &sym->synfo_list );
     assert( rv_synfo != NULL );
-    if ( rv_synfo->scope <= scope )
+    if ( rv_synfo->scope >= scope )
       return rv_synfo;
   }
 
@@ -237,13 +238,13 @@ synfo_t* sym_find_sname( sname_t const *sname ) {
 
 void sym_table_init( void ) {
   ASSERT_RUN_ONCE();
-  rb_tree_init( &sym_table, RB_DPTR, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
+  rb_tree_init( &sym_table, RB_DINT, POINTER_CAST( rb_cmp_fn_t, &sym_cmp ) );
   ATEXIT( &sym_table_cleanup );
 }
 
 void sym_visit( sym_visit_fn_t visit_fn, void *visit_data ) {
   assert( visit_fn != NULL );
-  sym_rb_visit_data_t const srvd = { visit_fn, visit_data };
+  sym_rb_visit_data_t srvd = { visit_fn, visit_data };
   rb_tree_visit( &sym_table, &rb_visit_visitor, &srvd );
 }
 

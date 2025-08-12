@@ -160,19 +160,19 @@ void sym_open_scope( void ) {
 }
 
 /**
+ * Initializes the symbol table.
+ *
+ * @note This function must be called exactly once.
+ */
+void sym_table_init( void );
+
+/**
  * Does an in-order traversal of all \ref ad_type.
  *
  * @param visit_fn The visitor function to use.
  * @param visit_data Optional data passed to \a visit_fn.
  */
 void sym_visit( sym_visit_fn_t visit_fn, void *visit_data );
-
-/**
- * Initializes the symbol table.
- *
- * @note This function must be called exactly once.
- */
-void sym_table_init( void );
 
 ///////////////////////////////////////////////////////////////////////////////
 
