@@ -82,7 +82,7 @@ ad_keyword_t const* ad_keyword_find( char const *s ) {
   assert( s != NULL );
   return bsearch(
     &(ad_keyword_t){ .literal = s }, AD_KEYWORDS,
-    ARRAY_SIZE( AD_KEYWORDS ) - 1/*NULL*/, sizeof( AD_KEYWORDS[0] ),
+    ARRAY_SIZE( AD_KEYWORDS ) - 1/*NULL*/, sizeof AD_KEYWORDS[0],
     POINTER_CAST( bsearch_cmp_fn_t, &ad_keyword_cmp )
   );
 }
