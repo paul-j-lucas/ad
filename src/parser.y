@@ -1687,8 +1687,8 @@ decl_or_type
   | Y_TYPE
   | error
     {
-      $$ = NULL;
       elaborate_error( "type or object name expected" );
+      $$ = NULL;
     }
   ;
 
