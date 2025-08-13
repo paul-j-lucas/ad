@@ -27,7 +27,7 @@
 /** @cond DOXYGEN_IGNORE */
 
 %define api.header.include { "parser.h" }
-%expect 3
+%expect 4
 
 %{
 /** @endcond */
@@ -576,6 +576,7 @@ static void yyerror( char const *msg ) {
 %token  <expr_kind> Y_true
 %token  <expr_kind> Y_typedef
 %token  <expr_kind> Y_uint
+%token              Y_union
 %token  <expr_kind> Y_utf
 
                     //
@@ -725,6 +726,7 @@ static void yyerror( char const *msg ) {
 %type <statement>   struct_declaration
 %type <statement>   switch_statement
 %type <statement>   typedef_declaration
+%type <statement>   union_declaration
 
                     // Miscellaneous
 %type <int_val>     alignas_opt
@@ -938,6 +940,7 @@ declaration
     }
   | struct_declaration
   | typedef_declaration
+  | union_declaration
   ;
 
 match_expr_opt
@@ -1113,6 +1116,42 @@ typedef_declaration
 
       DUMP_TYPE( "$$_type", new_type );
       DUMP_END();
+    }
+  ;
+
+////////// union declaration //////////////////////////////////////////////////
+
+union_declaration
+  : Y_union name_exp[name] lbrace_exp
+    {
+      sname_append_name( &in_attr.scope_sname, $name );
+
+      in_attr.cur_type = MALLOC( ad_type_t, 1 );
+      *in_attr.cur_type = (ad_type_t){
+        .sname = sname_current( $name ),
+        .tid = T_UNION
+      };
+      PARSE_ASSERT( define_type( in_attr.cur_type ) );
+      sym_open_scope();
+    }
+    statement_list_opt[members] rbrace_exp
+    {
+      sym_close_scope();
+
+      DUMP_START( "union_declaration",
+                  "union NAME '{' statement_list_opt '}'" );
+      DUMP_SNAME( "in_attr__scope_sname", in_attr.scope_sname );
+      DUMP_STR( "name", $name );
+
+      in_attr.cur_type->loc = @$;
+      in_attr.cur_type->union_t.member_list = slist_move( &$members );
+
+      $$ = NULL;                        // do not add to statement_list
+
+      DUMP_TYPE( "$$_type", in_attr.cur_type );
+      DUMP_END();
+
+      in_attr.cur_type = NULL;
     }
   ;
 

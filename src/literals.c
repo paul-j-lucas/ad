@@ -43,6 +43,7 @@ char const L_switch[]   = "switch";
 char const L_true[]     = "true";
 char const L_typedef[]  = "typedef";
 char const L_uint[]     = "uint";
+char const L_union[]    = "union";
 char const L_utf[]      = "utf";
 
 ///////////////////////////////////////////////////////////////////////////////

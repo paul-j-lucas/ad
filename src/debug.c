@@ -591,21 +591,22 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
     DUMP_EXPR( dump, "endian_expr", type->endian_expr );
   DUMP_REP( dump, "rep", &type->rep );
 
-  switch ( ad_tid_kind( type->tid ) ) {
+  ad_tid_kind_t const kind = ad_tid_kind( type->tid );
+  switch ( kind ) {
     case T_NONE:
     case T_ERROR:
       break;
 
     case T_BOOL:;
       json_state_t const bool_json =
-        json_object_begin( JSON_INIT, "bool", dump );
+        json_object_begin( JSON_INIT, L_bool, dump );
       DUMP_STR( dump, "printf_fmt", type->bool_t.printf_fmt );
       json_object_end( bool_json, dump );
       break;
 
     case T_ENUM:;
       json_state_t const enum_json =
-        json_object_begin( JSON_INIT, "enum", dump );
+        json_object_begin( JSON_INIT, L_enum, dump );
       DUMP_STR( dump, "printf_fmt", type->enum_t.printf_fmt );
       DUMP_KEY( dump, "value_list" );
       if ( slist_empty( &type->enum_t.value_list ) ) {
@@ -632,21 +633,23 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
 
     case T_FLOAT:;
       json_state_t const float_json =
-        json_object_begin( JSON_INIT, "float", dump );
+        json_object_begin( JSON_INIT, L_float, dump );
       DUMP_STR( dump, "printf_fmt", type->float_t.printf_fmt );
       json_object_end( float_json, dump );
       break;
 
     case T_INT:;
       json_state_t const int_json =
-        json_object_begin( JSON_INIT, "int", dump );
+        json_object_begin( JSON_INIT, L_int, dump );
       DUMP_STR( dump, "printf_fmt", type->int_t.printf_fmt );
       json_object_end( int_json, dump );
       break;
 
-    case T_STRUCT:;
-      json_state_t const struct_json =
-        json_object_begin( JSON_INIT, "struct", dump );
+    case T_STRUCT:
+    case T_UNION:;
+      json_state_t const struct_json = json_object_begin(
+        JSON_INIT, kind == T_STRUCT ? L_struct : L_union, dump
+      );
       DUMP_KEY( dump, "member_list: " );
       if ( slist_empty( &type->struct_t.member_list ) ) {
         FPUTS( "[]", dump->fout );
@@ -667,14 +670,14 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
 
     case T_TYPEDEF:;
       json_state_t const typedef_json =
-        json_object_begin( JSON_INIT, "typedef", dump );
+        json_object_begin( JSON_INIT, L_typedef, dump );
       DUMP_TYPE( dump, "type", type->typedef_t.type );
       json_object_end( typedef_json, dump );
       break;
 
     case T_UTF:;
       json_state_t const utf_json =
-        json_object_begin( JSON_INIT, "utf", dump );
+        json_object_begin( JSON_INIT, L_utf, dump );
       DUMP_STR( dump, "printf_fmt", type->utf_t.printf_fmt );
       json_object_end( utf_json, dump );
       break;

@@ -252,6 +252,7 @@ enum ad_tid_kind {
   T_ENUM    = 6 << 4,                   ///< Enumeration.
   T_STRUCT  = 7 << 4,                   ///< Structure.
   T_TYPEDEF = 8 << 4,                   ///< `typedef`.
+  T_UNION   = 9 << 4,                   ///< Union.
 };
 
 /**
@@ -303,6 +304,7 @@ typedef struct  ad_switch_case        ad_switch_case_t;
 typedef struct  ad_ternary_expr       ad_ternary_expr_t;
 typedef struct  ad_type               ad_type_t;
 typedef struct  ad_typedef_type       ad_typedef_type_t;
+typedef struct  ad_union_type         ad_union_type_t;
 typedef struct  ad_utf_type           ad_utf_type_t;
 
 /**
@@ -466,7 +468,20 @@ struct ad_struct_type {
   DECL_UNUSED(char const*);
   /// @endcond
 
-  ad_type_list_t  member_list;          ///< Structure members.
+  ad_statement_list_t member_list;      ///< Structure members.
+};
+
+/**
+ * `union` type.
+ */
+struct ad_union_type {
+  /// @cond DOXYGEN_IGNORE
+  /// So members below does not occupy the bytes used for printf_fmt in other
+  /// types.
+  DECL_UNUSED(char const*);
+  /// @endcond
+
+  ad_statement_list_t member_list;      ///< Union members.
 };
 
 /**
@@ -513,6 +528,7 @@ struct ad_type {
     ad_int_type_t     int_t;            ///< #T_INT members.
     ad_struct_type_t  struct_t;         ///< #T_STRUCT members.
     ad_typedef_type_t typedef_t;        ///< #T_TYPEDEF members.
+    ad_union_type_t   union_t;          ///< #T_UNION members.
     ad_utf_type_t     utf_t;            ///< #T_UTF members.
   };
 };

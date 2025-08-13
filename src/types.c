@@ -24,6 +24,7 @@
 #define AD_TYPES_H_INLINE _GL_EXTERN_INLINE
 /// @endcond
 #include "expr.h"
+#include "literals.h"
 #include "slist.h"
 #include "types.h"
 
@@ -173,14 +174,15 @@ void ad_statement_list_cleanup( ad_statement_list_t *statement_list ) {
 char const* ad_tid_kind_name( ad_tid_kind_t kind ) {
   switch ( kind ) {
     case T_NONE   : return "none";
-    case T_BOOL   : return "bool";
-    case T_ENUM   : return "enum";
+    case T_BOOL   : return L_bool;
+    case T_ENUM   : return L_enum;
     case T_ERROR  : return "error";
-    case T_FLOAT  : return "float";
-    case T_INT    : return "int";
-    case T_STRUCT : return "struct";
-    case T_TYPEDEF: return "typedef";
-    case T_UTF    : return "utf";
+    case T_FLOAT  : return L_float;
+    case T_INT    : return L_int;
+    case T_STRUCT : return L_struct;
+    case T_TYPEDEF: return L_typedef;
+    case T_UNION  : return L_union;
+    case T_UTF    : return L_utf;
   } // switch
   UNEXPECTED_INT_VALUE( kind );
 }
@@ -222,9 +224,10 @@ void ad_type_free( ad_type_t *type ) {
       );
       break;
     case T_STRUCT:
+    case T_UNION:
       slist_cleanup(
-        &type->struct_t.member_list,
-        POINTER_CAST( slist_free_fn_t, &ad_type_free )
+        &type->union_t.member_list,
+        POINTER_CAST( slist_free_fn_t, &ad_statement_free )
       );
       break;
     case T_ERROR:

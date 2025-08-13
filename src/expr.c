@@ -1325,8 +1325,9 @@ bool ad_expr_eval_uint( ad_expr_t const *expr, uint64_t *rv ) {
       );
       return false;
     case T_STRUCT:
-      return false;
+    case T_UNION:
     case T_TYPEDEF:
+      return false;
   } // switch
 }
 
