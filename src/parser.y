@@ -338,7 +338,7 @@
  */
 struct in_attr {
   sname_t     scope_sname;              ///< Current scope name, if any.
-  ad_type_t  *cur_type;
+  ad_type_t  *cur_type;                 ///< Current type.
 };
 typedef struct in_attr in_attr_t;
 
@@ -1064,10 +1064,9 @@ struct_declaration
 
       in_attr.cur_type = MALLOC( ad_type_t, 1 );
       *in_attr.cur_type = (ad_type_t){
-        .sname = sname_current( $name ),
+        .sname = sname_dup( &in_attr.scope_sname ),
         .tid = T_STRUCT
       };
-      $name = NULL;
       PARSE_ASSERT( define_type( in_attr.cur_type ) );
       sym_open_scope();
     }
@@ -1128,10 +1127,9 @@ union_declaration
 
       in_attr.cur_type = MALLOC( ad_type_t, 1 );
       *in_attr.cur_type = (ad_type_t){
-        .sname = sname_current( $name ),
+        .sname = sname_dup( &in_attr.scope_sname ),
         .tid = T_UNION
       };
-      $name = NULL;
       PARSE_ASSERT( define_type( in_attr.cur_type ) );
       sym_open_scope();
     }
