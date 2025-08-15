@@ -157,7 +157,7 @@ void sname_scope_free( sname_scope_t *data );
  * @sa sname_prepend_sname()
  * @sa sname_set()
  */
-void sname_append_name( sname_t *sname, char const *name );
+void sname_append_name( sname_t *sname, char *name );
 
 /**
  * Appends \a src onto the end of \a dst.
@@ -299,7 +299,7 @@ void sname_init( sname_t *sname ) {
  * @sa sname_init()
  */
 SNAME_H_INLINE
-void sname_init_name( sname_t *sname, char const *name ) {
+void sname_init_name( sname_t *sname, char *name ) {
   slist_init( sname );
   sname_append_name( sname, name );
 }

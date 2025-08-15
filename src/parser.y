@@ -473,13 +473,11 @@ static void parse_cleanup( bool fatal_error ) {
  * and a \a name of `"unit_t"`, this function would return the scoped name of
  * `APP0::unit_t`.
  *
- * @param name The local name.
+ * @param name The local name.  Ownership is taken.
  * @return Returns the current full scoped name.
  */
-static sname_t sname_current( char const *name ) {
-  sname_t sname;
-  sname_init( &sname );
-  sname_append_sname( &sname, &in_attr.scope_sname );
+static sname_t sname_current( char *name ) {
+  sname_t sname = sname_dup( &in_attr.scope_sname );
   sname_append_name( &sname, name );
   return sname;
 }
@@ -967,6 +965,7 @@ enum_declaration
           .value_list = slist_move( &$values )
         }
       };
+      $name = NULL;
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
 
@@ -1068,6 +1067,7 @@ struct_declaration
         .sname = sname_current( $name ),
         .tid = T_STRUCT
       };
+      $name = NULL;
       PARSE_ASSERT( define_type( in_attr.cur_type ) );
       sym_open_scope();
     }
@@ -1104,7 +1104,7 @@ typedef_declaration
       ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = sname_current( decl->name ),
+        .sname = sname_current( check_strdup( decl->name ) ),
         .tid = T_TYPEDEF,
         .loc = @$,
         .rep = decl->rep,
@@ -1131,6 +1131,7 @@ union_declaration
         .sname = sname_current( $name ),
         .tid = T_UNION
       };
+      $name = NULL;
       PARSE_ASSERT( define_type( in_attr.cur_type ) );
       sym_open_scope();
     }
