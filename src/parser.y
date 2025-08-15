@@ -372,7 +372,7 @@ static bool define_type( ad_type_t *type ) {
   assert( type != NULL );
 
   if ( !ad_type_check( type ) )
-    return false;                       // error message was already printed
+    goto error;                         // error message was already printed
 
   synfo_t *const synfo = sym_add( type, &type->sname, SYM_TYPE, /*scope=*/0 );
 
@@ -382,7 +382,7 @@ static bool define_type( ad_type_t *type ) {
     EPUTS( " previously declared as \"" );
     print_decl( synfo->decl, stderr );
     EPUTS( "\"\n" );
-    return false;
+    goto error;
   }
 
   if ( !ad_type_equal( synfo->type, type ) ) {
@@ -395,10 +395,14 @@ static bool define_type( ad_type_t *type ) {
     EPUTS( " redefinition incompatible with original type \"" );
     print_type( synfo->type, stderr );
     EPUTS( "\"\n" );
-    return false;
+    goto error;
   }
 
   return true;
+
+error:
+  ad_type_free( type );
+  return false;
 }
 
 /**

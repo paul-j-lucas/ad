@@ -111,18 +111,32 @@ static bool rb_close_scope_visitor( void *node_data, void *visit_data ) {
 }
 
 /**
- * Frees all memory associated with \a sym.
+ * Cleans-up all memory associated with \a sym but does _not_ free \a sym
+ * itself.
  *
- * @param sym The \ref symbol to free.  If NULL, does nothing.
+ * @param sym The \ref symbol to clean up.  If NULL, does nothing.
+ *
+ * @sa sym_free()
  */
-static void sym_free( symbol_t *sym ) {
+static void sym_cleanup( symbol_t *sym ) {
   if ( sym != NULL ) {
     slist_cleanup(
       &sym->synfo_list, POINTER_CAST( slist_free_fn_t, &synfo_free )
     );
     sname_cleanup( &sym->sname );
-    free( sym );
   }
+}
+
+/**
+ * Frees all memory associated with \a sym.
+ *
+ * @param sym The \ref symbol to free.  If NULL, does nothing.
+ *
+ * @sa sym_cleanup()
+ */
+static void sym_free( symbol_t *sym ) {
+  sym_cleanup( sym );
+  free( sym );
 }
 
 /**
@@ -185,7 +199,6 @@ synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
   assert( sname != NULL );
 
   sname_t  dup_sname = sname_dup( sname );
-  synfo_t *rv_synfo;
   symbol_t tmp_sym;
 
   sym_init( &tmp_sym, &dup_sname );
@@ -194,11 +207,14 @@ synfo_t* sym_add( void *obj, sname_t const *sname, sym_kind_t kind,
     rb_tree_insert( &sym_table, &tmp_sym, sizeof tmp_sym );
   symbol_t *const sym = RB_DINT( rv_rbi.node );
 
+  synfo_t *rv_synfo;
   if ( !rv_rbi.inserted ) {
     rv_synfo = slist_front( &sym->synfo_list );
     assert( rv_synfo != NULL );
-    if ( rv_synfo->scope >= scope )
+    if ( rv_synfo->scope >= scope ) {
+      sym_cleanup( &tmp_sym );
       return rv_synfo;
+    }
   }
 
   rv_synfo = MALLOC( synfo_t, 1 );
