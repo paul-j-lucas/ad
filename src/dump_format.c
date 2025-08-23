@@ -113,9 +113,9 @@ static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
     // decl->type->struct_t.member_list
   }
 
-  if ( decl->match_expr != NULL ) {
+  if ( decl->if_expr != NULL ) {
     ad_expr_t match_rv_expr;
-    if ( !ad_expr_eval( decl->match_expr, &match_rv_expr ) )
+    if ( !ad_expr_eval( decl->if_expr, &match_rv_expr ) )
       return false;
     if ( ad_expr_is_zero( &match_rv_expr ) )
       return false;

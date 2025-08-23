@@ -706,9 +706,9 @@ static void yyerror( char const *msg ) {
 %type <expr>        conditional_expr
 %type <expr>        equality_expr
 %type <expr>        expr
+%type <expr>        if_expr_opt
 %type <expr>        logical_and_expr
 %type <expr>        logical_or_expr
-%type <expr>        match_expr_opt
 %type <expr>        multiplicative_expr
 %type <expr>        postfix_expr
 %type <expr>        primary_expr
@@ -927,14 +927,14 @@ switch_case
 
 declaration
   : enum_declaration
-  | field_declaration[field] match_expr_opt[match_expr]
+  | field_declaration[field] if_expr_opt[if_expr]
     {
-      DUMP_START( "declaration", "field_declaration match_expr_opt" );
+      DUMP_START( "declaration", "field_declaration if_expr_opt" );
       DUMP_STATEMENT( "field_declaration", $field );
-      DUMP_EXPR( "match_expr_opt", $match_expr );
+      DUMP_EXPR( "if_expr_opt", $if_expr );
 
       assert( $field->kind = AD_STMNT_DECLARATION );
-      $field->decl_s.match_expr = $match_expr;
+      $field->decl_s.if_expr = $if_expr;
       $$ = $field;
 
       DUMP_STATEMENT( "$$_statement", $$ );
@@ -945,9 +945,9 @@ declaration
   | union_declaration
   ;
 
-match_expr_opt
+if_expr_opt
   : /* empty */                   { $$ = NULL; }
-  | Y_EQUAL_EQUAL expr            { $$ = $expr; }
+  | Y_if postfix_expr             { $$ = $postfix_expr; }
   ;
 
 ////////// enum declaration ///////////////////////////////////////////////////
