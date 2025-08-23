@@ -1312,7 +1312,7 @@ conditional_expr
 
 equality_expr
   : relational_expr
-  | equality_expr[lhs_expr] "==" relational_expr[rhs_expr]
+  | equality_expr[lhs_expr] Y_EQUAL_EQUAL relational_expr[rhs_expr]
     {
       DUMP_START( "equality_expr",
                   "equality_expr '==' relational_expr" );
@@ -1326,7 +1326,7 @@ equality_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | equality_expr[lhs_expr] "!=" relational_expr[rhs_expr]
+  | equality_expr[lhs_expr] Y_EXCLAM_EQUAL relational_expr[rhs_expr]
     {
       DUMP_START( "equality_expr",
                   "equality_expr '!=' relational_expr" );
@@ -1344,7 +1344,7 @@ equality_expr
 
 logical_and_expr
   : bitwise_or_expr
-  | logical_and_expr[lhs_expr] "&&" bitwise_or_expr[rhs_expr]
+  | logical_and_expr[lhs_expr] Y_AMPER_AMPER bitwise_or_expr[rhs_expr]
     {
       DUMP_START( "logical_and_expr",
                   "logical_and_expr '||' bitwise_or_expr" );
@@ -1362,7 +1362,7 @@ logical_and_expr
 
 logical_or_expr
   : logical_and_expr
-  | logical_or_expr[lhs_expr] "||" logical_and_expr[rhs_expr]
+  | logical_or_expr[lhs_expr] Y_PIPE_PIPE logical_and_expr[rhs_expr]
     {
       DUMP_START( "logical_or_expr", "logical_or_expr '||' logical_and_expr" );
       DUMP_EXPR( "logical_or_expr", $lhs_expr );
@@ -1697,16 +1697,16 @@ decl_or_type
 
 assign_op
   : '='                           { $$ = AD_EXPR_ASSIGN; }
-  | "%="                          { $$ = AD_EXPR_MATH_MOD; }
-  | "&="                          { $$ = AD_EXPR_BIT_AND; }
-  | "*="                          { $$ = AD_EXPR_MATH_MUL; }
-  | "+="                          { $$ = AD_EXPR_MATH_ADD; }
-  | "-="                          { $$ = AD_EXPR_MATH_SUB; }
-  | "/="                          { $$ = AD_EXPR_MATH_DIV; }
-  | "<<="                         { $$ = AD_EXPR_BIT_SHIFT_LEFT; }
-  | ">>="                         { $$ = AD_EXPR_BIT_SHIFT_RIGHT; }
-  | "^="                          { $$ = AD_EXPR_BIT_XOR; }
-  | "|="                          { $$ = AD_EXPR_BIT_OR; }
+  | Y_PERCENT_EQUAL               { $$ = AD_EXPR_MATH_MOD; }
+  | Y_AMPER_EQUAL                 { $$ = AD_EXPR_BIT_AND; }
+  | Y_STAR_EQUAL                  { $$ = AD_EXPR_MATH_MUL; }
+  | Y_PLUS_EQUAL                  { $$ = AD_EXPR_MATH_ADD; }
+  | Y_MINUS_EQUAL                 { $$ = AD_EXPR_MATH_SUB; }
+  | Y_SLASH_EQUAL                 { $$ = AD_EXPR_MATH_DIV; }
+  | Y_LESS_LESS_EQUAL             { $$ = AD_EXPR_BIT_SHIFT_LEFT; }
+  | Y_GREATER_GREATER_EQUAL       { $$ = AD_EXPR_BIT_SHIFT_RIGHT; }
+  | Y_CIRC_EQUAL                  { $$ = AD_EXPR_BIT_XOR; }
+  | Y_PIPE_EQUAL                  { $$ = AD_EXPR_BIT_OR; }
   ;
 
 unary_op
