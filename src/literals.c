@@ -37,6 +37,7 @@ char const L_float[]    = "float";
 char const L_if[]       = "if";
 char const L_int[]      = "int";
 char const L_offsetof[] = "offsetof";
+char const L_requires[] = "requires";
 char const L_sizeof[]   = "sizeof";
 char const L_struct[]   = "struct";
 char const L_switch[]   = "switch";

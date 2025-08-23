@@ -51,6 +51,7 @@ static ad_keyword_t const AD_KEYWORDS[] = {
   { L_float,    Y_float,    T_FLOAT   },
   { L_int,      Y_int,      T_INT     },
   { L_offsetof, Y_offsetof, T_NONE    },
+  { L_requires, Y_requires, T_NONE    },
   { L_sizeof,   Y_sizeof,   T_NONE    },
   { L_struct,   Y_struct,   T_STRUCT  },
   { L_switch,   Y_switch,   T_NONE    },

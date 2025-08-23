@@ -339,6 +339,7 @@
 struct in_attr {
   sname_t     scope_sname;              ///< Current scope name, if any.
   ad_type_t  *cur_type;                 ///< Current type.
+  char const *field_name;               ///< Current field name, if any.
 };
 typedef struct in_attr in_attr_t;
 
@@ -573,6 +574,7 @@ static void yyerror( char const *msg ) {
 %token              Y_if
 %token  <expr_kind> Y_int
 %token              Y_offsetof
+%token              Y_requires
 %token  <expr_kind> Y_struct
 %token              Y_switch
 %token  <expr_kind> Y_true
@@ -1002,7 +1004,11 @@ enumerator
 ////////// field declaration //////////////////////////////////////////////////
 
 field_declaration
-  : alignas_opt[align] type name_exp[name] array_opt[rep] format_opt[format]
+  : alignas_opt[align] type name_exp[name]
+    {
+      in_attr.field_name = $name;
+    }
+    array_opt[rep] format_opt[format]
     {
       DUMP_START( "field_declaration",
                   "alignas_opt type name array_opt format_opt" );
@@ -1533,6 +1539,11 @@ primary_expr
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
       $$->literal.type = &TB_UTF8_0;
       $$->literal.s = $1;
+    }
+  | '$'
+    {
+      $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
+      $$->name = check_strdup( in_attr.field_name );
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;

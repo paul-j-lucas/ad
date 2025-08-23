@@ -40,6 +40,7 @@ extern char const L_float[];
 extern char const L_if[];
 extern char const L_int[];
 extern char const L_offsetof[];
+extern char const L_requires[];
 extern char const L_sizeof[];
 extern char const L_struct[];
 extern char const L_switch[];
