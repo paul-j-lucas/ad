@@ -1458,7 +1458,7 @@ postfix_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | postfix_expr[expr] "->" Y_NAME[name]
+  | postfix_expr[expr] Y_MINUS_GREATER Y_NAME[name]
     {
       DUMP_START( "postfix_expr", "postfix_expr '->' NAME" );
       DUMP_EXPR( "postfix_expr", $expr );
@@ -1474,7 +1474,7 @@ postfix_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | postfix_expr[expr] "++"
+  | postfix_expr[expr] Y_PLUS_PLUS
     {
       DUMP_START( "postfix_expr", "postfix_expr '++'" );
       DUMP_EXPR( "postfix_expr", $expr );
@@ -1485,7 +1485,7 @@ postfix_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | postfix_expr[expr] "--"
+  | postfix_expr[expr] Y_MINUS_MINUS
     {
       DUMP_START( "postfix_expr", "postfix_expr '--'" );
       DUMP_EXPR( "postfix_expr", $expr );
@@ -1565,7 +1565,7 @@ relational_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | relational_expr[lhs_expr] "<=" shift_expr[rhs_expr]
+  | relational_expr[lhs_expr] Y_LESS_EQUAL shift_expr[rhs_expr]
     {
       DUMP_START( "relational_expr", "relational_expr '<=' shift_expr" );
       DUMP_EXPR( "relational_expr", $lhs_expr );
@@ -1578,7 +1578,7 @@ relational_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | relational_expr[lhs_expr] ">=" shift_expr[rhs_expr]
+  | relational_expr[lhs_expr] Y_GREATER_EQUAL shift_expr[rhs_expr]
     {
       DUMP_START( "relational_expr", "relational_expr '>=' shift_expr" );
       DUMP_EXPR( "relational_expr", $lhs_expr );
@@ -1595,7 +1595,7 @@ relational_expr
 
 shift_expr
   : additive_expr
-  | shift_expr[lhs_expr] "<<" additive_expr[rhs_expr]
+  | shift_expr[lhs_expr] Y_LESS_LESS additive_expr[rhs_expr]
     {
       DUMP_START( "shift_expr", "shift_expr '<<' additive_expr" );
       DUMP_EXPR( "shift_expr", $lhs_expr );
@@ -1608,7 +1608,7 @@ shift_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | shift_expr[lhs_expr] ">>" additive_expr[rhs_expr]
+  | shift_expr[lhs_expr] Y_GREATER_GREATER additive_expr[rhs_expr]
     {
       DUMP_START( "shift_expr", "shift_expr '>>' additive_expr" );
       DUMP_EXPR( "shift_expr", $lhs_expr );
@@ -1625,7 +1625,7 @@ shift_expr
 
 unary_expr
   : postfix_expr
-  | "++" unary_expr[expr]
+  | Y_PLUS_PLUS unary_expr[expr]
     {
       DUMP_START( "unary_expr", "'++' unary_expr" );
       DUMP_EXPR( "unary_expr", $expr );
@@ -1636,7 +1636,7 @@ unary_expr
       DUMP_EXPR( "$$_expr", $$ );
       DUMP_END();
     }
-  | "--" unary_expr[expr]
+  | Y_MINUS_MINUS unary_expr[expr]
     {
       DUMP_START( "unary_expr", "'--' unary_expr" );
       DUMP_EXPR( "unary_expr", $expr );
