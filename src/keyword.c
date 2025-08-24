@@ -49,6 +49,7 @@ static ad_keyword_t const AD_KEYWORDS[] = {
   { L_enum,     Y_enum,     T_NONE    },
   { L_false,    Y_false,    T_NONE    },
   { L_float,    Y_float,    T_FLOAT   },
+  { L_if,       Y_if,       T_NONE    },
   { L_int,      Y_int,      T_INT     },
   { L_offsetof, Y_offsetof, T_NONE    },
   { L_requires, Y_requires, T_NONE    },
