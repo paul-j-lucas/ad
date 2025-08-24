@@ -1231,6 +1231,33 @@ NODISCARD
 char const* printable_char( char c );
 
 /**
+ * Gets a pointer with \a value stored in its lower \a nbits bits.
+ *
+ * @param p The pointer to store \a value into.
+ * @param nbits The number of low bits of \a p to use for \a value.
+ * @param value The value to add.  It must not require more than \a nbits bits.
+ * @return Returns \a p with the low \a nbits set to \a value.
+ *
+ * @sa ptr_without_bits()
+ */
+NODISCARD
+void* ptr_with_bits( void *p, unsigned nbits, uintptr_t value );
+
+/**
+ * Gets a pointer without its lower \a nbits bits.
+ *
+ * @param p The pointer to remove the low \a nbits bits from.
+ * @param nbits The number of low bits to remove.
+ * @param pvalue A pointer to receive the low \a nbits bits of \a p.  May be
+ * NULL.
+ * @return Returns \a p with the low \a nbits zeroed.
+ *
+ * @sa ptr_with_bits()
+ */
+NODISCARD
+void* ptr_without_bits( void *p, unsigned nbits, uintptr_t *pvalue );
+
+/**
  * Decrements \a *s_len as if to trim whitespace, if any, from the end of \a s.
  *
  * @param s The null-terminated string to trim.

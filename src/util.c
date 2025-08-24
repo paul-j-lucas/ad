@@ -376,6 +376,22 @@ void perror_exit( int status ) {
   exit( status );
 }
 
+void* ptr_with_bits( void *p, unsigned nbits, uintptr_t value ) {
+  uintptr_t const mask = (STATIC_CAST( uintptr_t, 1 ) << nbits) - 1;
+  uintptr_t const p_as_uint = STATIC_CAST( uintptr_t, p );
+  assert( (p_as_uint & mask) == 0 );
+  assert( (value & ~mask) == 0 );
+  return STATIC_CAST( void*, p_as_uint | value );
+}
+
+void* ptr_without_bits( void *p, unsigned nbits, uintptr_t *pvalue ) {
+  uintptr_t const mask = (STATIC_CAST( uintptr_t, 1 ) << nbits) - 1;
+  uintptr_t const p_as_uint = STATIC_CAST( uintptr_t, p );
+  if ( pvalue != NULL )
+    *pvalue = p_as_uint & mask;
+  return STATIC_CAST( void*, p_as_uint & ~mask );
+}
+
 char const* printable_char( char c ) {
   switch( c ) {
     case '\0': return "\\0";

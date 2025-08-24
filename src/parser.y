@@ -929,14 +929,23 @@ switch_case
 
 declaration
   : enum_declaration
-  | field_declaration[field] if_or_requires_expr_opt[if_expr]
+  | field_declaration[field] if_or_requires_expr_opt[expr_with_flag]
     {
-      DUMP_START( "declaration", "field_declaration if_expr_opt" );
+      uintptr_t is_requires;
+      ad_expr_t *const if_or_requires_expr =
+        ptr_without_bits( $expr_with_flag, 1, &is_requires );
+
+      DUMP_START( "declaration", "field_declaration if_or_requires_expr_opt" );
       DUMP_STATEMENT( "field_declaration", $field );
-      DUMP_EXPR( "if_expr_opt", $if_expr );
+      DUMP_EXPR( "if_or_requires_expr_opt", if_or_requires_expr );
+      DUMP_BOOL( "is_requires", is_requires );
 
       assert( $field->kind == AD_STMNT_DECLARATION );
-      $field->decl_s.if_expr = $if_expr;
+
+      if ( is_requires == 0 )
+        $field->decl_s.if_expr = if_or_requires_expr;
+      else
+        $field->decl_s.requires_expr = if_or_requires_expr;
       $$ = $field;
 
       DUMP_STATEMENT( "$$_statement", $$ );
@@ -950,7 +959,10 @@ declaration
 if_or_requires_expr_opt
   : /* empty */                   { $$ = NULL; }
   | Y_if postfix_expr             { $$ = $postfix_expr; }
-  | Y_requires postfix_expr       { $$ = $postfix_expr; }
+  | Y_requires postfix_expr
+    {
+      $$ = ptr_with_bits( $postfix_expr, 1, 1 );
+    }
   ;
 
 ////////// enum declaration ///////////////////////////////////////////////////
