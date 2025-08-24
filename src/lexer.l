@@ -367,6 +367,7 @@ hex_int       0[xX]{H}+{int_sfx}?
 
               /* Single-character operators and miscellaneous punctuation. */
 "!"           |
+"$"           |
 "%"           |
 "&"           |
 "("           |
