@@ -1539,6 +1539,12 @@ primary_expr
       $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
       $$->name = $name;
     }
+  | Y_CHAR_LIT
+    {
+      $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
+      $$->literal.type = &TB_UTF8_0;
+      $$->literal.s = $1;
+    }
   | Y_INT_LIT
     {
       $$ = ad_expr_new( AD_EXPR_LITERAL, &@$ );
