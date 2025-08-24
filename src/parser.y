@@ -958,10 +958,10 @@ declaration
 
 if_or_requires_expr_opt
   : /* empty */                   { $$ = NULL; }
-  | Y_if postfix_expr             { $$ = $postfix_expr; }
-  | Y_requires postfix_expr
+  | Y_if logical_or_expr[expr]    { $$ = $expr; }
+  | Y_requires logical_or_expr[expr]
     {
-      $$ = ptr_with_bits( $postfix_expr, 1, 1 );
+      $$ = ptr_with_bits( $expr, 1, 1 );
     }
   ;
 
@@ -1200,7 +1200,7 @@ additive_expr
   : multiplicative_expr
   | additive_expr[lhs_expr] '+' multiplicative_expr[rhs_expr]
     {
-      DUMP_START( "additive_expr", "unary_expr '+' assign_expr" );
+      DUMP_START( "additive_expr", "additive_expr '+' multiplicative_expr" );
       DUMP_EXPR( "additive_expr", $lhs_expr );
       DUMP_EXPR( "multiplicative_expr", $rhs_expr );
 
@@ -1213,7 +1213,7 @@ additive_expr
     }
   | additive_expr[lhs_expr] '-' multiplicative_expr[rhs_expr]
     {
-      DUMP_START( "additive_expr", "unary_expr '-' assign_expr" );
+      DUMP_START( "additive_expr", "unary_expr '-' multiplicative_expr" );
       DUMP_EXPR( "additive_expr", $lhs_expr );
       DUMP_EXPR( "multiplicative_expr", $rhs_expr );
 
