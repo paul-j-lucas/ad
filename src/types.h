@@ -550,6 +550,7 @@ struct ad_decl {
   unsigned          align;              ///< Alignment.
   ad_rep_t          rep;                ///< Repetition.
   ad_expr_t const  *if_expr;            ///< If expression, if any.
+  ad_expr_t const  *requires_expr;      ///< Requires expression, if any.
   char const       *printf_fmt;         ///< `printf` format, if any.
 };
 

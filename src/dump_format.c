@@ -121,6 +121,10 @@ static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
       return false;
   }
 
+  if ( decl->requires_expr != NULL ) {
+    // TODO
+  }
+
   // TODO
   // decl->name
   // decl->type

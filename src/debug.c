@@ -147,6 +147,8 @@ static void ad_decl_dump_impl( ad_decl_t const *decl, dump_state_t *dump ) {
   DUMP_REP( dump, "rep", &decl->rep );
   if ( decl->if_expr != NULL )
     DUMP_EXPR( dump, "if_expr", decl->if_expr );
+  if ( decl->requires_expr != NULL )
+    DUMP_EXPR( dump, "requires_expr", decl->requires_expr );
   DUMP_STR( dump, "printf_fmt", decl->printf_fmt );
 
   json_object_end( decl_json, dump );

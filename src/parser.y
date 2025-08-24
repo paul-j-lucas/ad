@@ -337,9 +337,9 @@
  * @sa ia_cleanup()
  */
 struct in_attr {
-  sname_t     scope_sname;              ///< Current scope name, if any.
-  ad_type_t  *cur_type;                 ///< Current type.
-  char const *field_name;               ///< Current field name, if any.
+  sname_t         scope_sname;          ///< Current scope name, if any.
+  ad_type_t      *cur_type;             ///< Current type.
+  ad_statement_t *statement;            ///< Current field name, if any.
 };
 typedef struct in_attr in_attr_t;
 
@@ -708,7 +708,7 @@ static void yyerror( char const *msg ) {
 %type <expr>        conditional_expr
 %type <expr>        equality_expr
 %type <expr>        expr
-%type <expr>        if_expr_opt
+%type <expr>        if_or_requires_expr_opt
 %type <expr>        logical_and_expr
 %type <expr>        logical_or_expr
 %type <expr>        multiplicative_expr
@@ -929,13 +929,13 @@ switch_case
 
 declaration
   : enum_declaration
-  | field_declaration[field] if_expr_opt[if_expr]
+  | field_declaration[field] if_or_requires_expr_opt[if_expr]
     {
       DUMP_START( "declaration", "field_declaration if_expr_opt" );
       DUMP_STATEMENT( "field_declaration", $field );
       DUMP_EXPR( "if_expr_opt", $if_expr );
 
-      assert( $field->kind = AD_STMNT_DECLARATION );
+      assert( $field->kind == AD_STMNT_DECLARATION );
       $field->decl_s.if_expr = $if_expr;
       $$ = $field;
 
@@ -947,9 +947,10 @@ declaration
   | union_declaration
   ;
 
-if_expr_opt
+if_or_requires_expr_opt
   : /* empty */                   { $$ = NULL; }
   | Y_if postfix_expr             { $$ = $postfix_expr; }
+  | Y_requires postfix_expr       { $$ = $postfix_expr; }
   ;
 
 ////////// enum declaration ///////////////////////////////////////////////////
@@ -1004,11 +1005,7 @@ enumerator
 ////////// field declaration //////////////////////////////////////////////////
 
 field_declaration
-  : alignas_opt[align] type name_exp[name]
-    {
-      in_attr.field_name = $name;
-    }
-    array_opt[rep] format_opt[format]
+  : alignas_opt[align] type name_exp[name] array_opt[rep] format_opt[format]
     {
       DUMP_START( "field_declaration",
                   "alignas_opt type name array_opt format_opt" );
@@ -1030,6 +1027,8 @@ field_declaration
           .printf_fmt = $format
         }
       };
+
+      in_attr.statement = $$;
 
       DUMP_STATEMENT( "$$_statement", $$ );
       DUMP_END();
@@ -1543,7 +1542,7 @@ primary_expr
   | '$'
     {
       $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
-      $$->name = check_strdup( in_attr.field_name );
+      $$->name = check_strdup( in_attr.statement->decl_s.name );
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;
