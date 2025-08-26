@@ -1,5 +1,22 @@
+2025-08-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * src/Makefile.am, type_traits.h, util.h: Split out type traits into
+     type_traits.h.
+
+2025-08-11  Paul J. Lucas <paul@lucasmail.org>
+
+   * util.c: Simplified check_realloc.
+
+2025-07-26  Paul J. Lucas <paul@lucasmail.org>
+
+   * reverse.c: Now using :;
+
 2025-07-24  Paul J. Lucas <paul@lucasmail.org>
 
+   * configure.ac, options.c: If `--max-lines` is set to `0`, now exits; if
+     `--max-bytes` is set, don't override it if `--max-lines` is also set.
+   * configure.ac, options.c, options.h, test/Makefile.am, ad-R_09.txt,
+     ad-R_09.sh: Added HAVE_RSRC_FORK and -R test.
    * options.c: No longer using PATH_MAX.
    * options.c: Added #include <limits.h> for PATH_MAX.
 
