@@ -33,6 +33,7 @@ ad_SOURCES = \
 	match.c match.h \
 	options.c options.h \
 	reverse.c \
+	type_traits.h \
 	unicode.c unicode.h \
 	util.c util.h
 

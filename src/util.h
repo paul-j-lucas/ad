@@ -29,6 +29,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
+#include "type_traits.h"
 #include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -135,7 +136,7 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define ARRAY_SIZE(ARRAY) (         \
   sizeof(ARRAY) / sizeof(0[ARRAY])  \
-  * STATIC_ASSERT_EXPR( IS_ARRAY(ARRAY), #ARRAY " must be an array" ))
+  * STATIC_ASSERT_EXPR( IS_ARRAY_EXPR(ARRAY), #ARRAY " must be an array" ))
 
 #ifndef NDEBUG
 /**
@@ -348,39 +349,6 @@ _GL_INLINE_HEADER_BEGIN
 #define INTERNAL_ERROR(FORMAT,...) \
   fatal_error( EX_SOFTWARE, "%s:%d: internal error: " FORMAT, __FILE__, __LINE__, __VA_ARGS__ )
 
-/**
- * Checks (at compile-time) whether \a A is an array.
- *
- * @param A The alleged array to check.
- * @return Returns 1 (true) only if \a A is an array; 0 (false) otherwise.
- *
- * @sa https://stackoverflow.com/a/77881417/99089
- */
-#ifdef HAVE___TYPEOF__
-# define IS_ARRAY(A)            \
-    _Generic( &(A),             \
-      __typeof__(*A) (*)[]: 1,  \
-      default             : 0   \
-    )
-#else
-# define IS_ARRAY(A)              1
-#endif /* HAVE___TYPEOF__ */
-
-/**
- * Checks (at compile-time) whether the type of \a T is a C string type, i.e.,
- * <code>char*</code> or <code>char const*</code>.
- *
- * @param T An expression. It is _not_ evaluated.
- * @return Returns 1 (true) only if \a T is a C string type; 0 (false)
- * otherwise.
- */
-#define IS_C_STR(T)   \
-  _Generic( (T),      \
-    char*       : 1,  \
-    char const* : 1,  \
-    default     : 0   \
-  )
-
 #ifdef __GNUC__
 
 /**
@@ -556,17 +524,6 @@ _GL_INLINE_HEADER_BEGIN
 #define SKIP_WS(S)                SKIP_CHARS( (S), WS_CHARS )
 
 /**
- * Like C11's `_Static_assert()` except that it can be used in an expression.
- *
- * @param EXPR The expression to check.
- * @param MSG The string literal of the error message to print only if \a EXPR
- * evaluates to 0 (false).
- * @return Always returns 1.
- */
-#define STATIC_ASSERT_EXPR(EXPR,MSG) \
-  (!!sizeof( struct { static_assert( (EXPR), MSG ); char c; } ))
-
-/**
  * C version of C++'s `static_cast`.
  *
  * @param T The type to cast to.
@@ -610,7 +567,8 @@ _GL_INLINE_HEADER_BEGIN
  * @return Returns said length.
  */
 #define STRLITLEN(S) \
-  (ARRAY_SIZE(S) - STATIC_ASSERT_EXPR( IS_C_STR(S), #S " must be a C string literal" ))
+  (ARRAY_SIZE( (S) ) \
+   - STATIC_ASSERT_EXPR( IS_C_STR_EXPR( (S) ), #S " must be a C string literal" ))
 
 /**
  * A special-case of #INTERNAL_ERROR() that prints an unexpected integer value.
