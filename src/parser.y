@@ -1035,7 +1035,7 @@ format_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp
     {
-      sname_append_name( &in_attr.scope_sname, $name );
+      sname_push_back_name( &in_attr.scope_sname, $name );
 
       in_attr.cur_type = MALLOC( ad_type_t, 1 );
       *in_attr.cur_type = (ad_type_t){
@@ -1099,7 +1099,7 @@ typedef_declaration
 union_declaration
   : Y_union name_exp[name] lbrace_exp
     {
-      sname_append_name( &in_attr.scope_sname, $name );
+      sname_push_back_name( &in_attr.scope_sname, $name );
 
       in_attr.cur_type = MALLOC( ad_type_t, 1 );
       *in_attr.cur_type = (ad_type_t){

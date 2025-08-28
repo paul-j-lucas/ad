@@ -40,7 +40,7 @@ void ia_cleanup( void ) {
 
 sname_t ia_sname( char *name ) {
   sname_t sname = sname_dup( &in_attr.scope_sname );
-  sname_append_name( &sname, name );
+  sname_push_back_name( &sname, name );
   return sname;
 }
 

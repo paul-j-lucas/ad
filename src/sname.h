@@ -148,31 +148,126 @@ sname_scope_t* sname_scope_dup( sname_scope_t const *data );
 void sname_scope_free( sname_scope_t *data );
 
 /**
+ * Frees all memory associated with \a sname _including_ \a sname itself.
+ *
+ * @param sname The scoped name to free.  If NULL, does nothing.
+ *
+ * @sa sname_cleanup()
+ * @sa sname_init()
+ * @sa sname_init_name()
+ * @sa sname_list_cleanup()
+ */
+void sname_free( sname_t *sname );
+
+/**
+ * Gets the fully scoped name of \a sname.
+ *
+ * @param sname The scoped name to get the full name of; may be NULL.
+ * @return Returns said name or the empty string if \a sname is empty or NULL.
+ *
+ * @warning The pointer returned is to a static buffer, so you can't do
+ * something like call this twice in the same `printf()` statement.
+ *
+ * @sa sname_english()
+ * @sa sname_local_name()
+ * @sa sname_name_atr()
+ * @sa sname_scope_name()
+ */
+NODISCARD
+char const* sname_full_name( sname_t const *sname );
+
+/**
+ * Cleans-up all memory associated with \a list but does _not_ free \a list
+ * itself.
+ *
+ * @param list The list of scoped names to clean up.  If NULL, does nothing;
+ * otherwise, reinitializes \a list upon completion.
+ *
+ * @sa sname_cleanup()
+ * @sa sname_free()
+ */
+void sname_list_cleanup( slist_t *list );
+
+/**
+ * Gets the local name of \a sname (which is the name of the last scope), for
+ * example the local name of `S::T::x` is `x`.
+ *
+ * @param sname The scoped name to get the local name of; may be NULL.
+ * @return Returns said name or the empty string if \a sname is empty or NULL.
+ *
+ * @sa sname_full_name()
+ * @sa sname_name_atr()
+ * @sa sname_scope_name()
+ */
+NODISCARD
+char const* sname_local_name( sname_t const *sname );
+
+/**
+ * Parses a scoped name, for example `a::b::c`.
+ *
+ * @param s The string to parse.
+ * @param rv_sname The scoped name to parse into.
+ * @return Returns the number of characters of \a s that were successfully
+ * parsed.
+ */
+NODISCARD
+size_t sname_parse( char const *s, sname_t *rv_sname );
+
+/**
+ * Pops the last name from \a sname.
+ *
+ * @param sname The scoped name to pop the last name from.
+ */
+void sname_pop_back( sname_t *sname );
+
+/**
  * Appends \a name onto the end of \a sname.
  *
  * @param sname The scoped name to append to.
  * @param name The name to append.  Ownership is taken.
  *
- * @sa sname_append_sname()
- * @sa sname_prepend_sname()
+ * @sa sname_push_back_sname()
+ * @sa sname_push_front_sname()
  * @sa sname_set()
  */
-void sname_append_name( sname_t *sname, char *name );
+void sname_push_back_name( sname_t *sname, char *name );
 
 /**
- * Appends \a src onto the end of \a dst.
+ * Gets just the scope name of \a sname.
+ * Examples:
+ *  + For `a::b::c`, returns `a::b`.
+ *  + For `c`, returns the empty string.
  *
- * @param dst The scoped name to append to.
- * @param src The scoped name to append.  Ownership is taken.
+ * @param sname The scoped name to get the scope name of; may be NULL.
+ * @return Returns said name or the empty string if \a sname is empty, NULL, or
+ * not within a scope.
  *
- * @sa sname_append_name()
- * @sa sname_prepend_sname()
- * @sa sname_set()
+ * @warning The pointer returned is to a static buffer, so you can't do
+ * something like call this twice in the same `printf()` statement.
+ *
+ * @sa sname_full_name()
+ * @sa sname_local_name()
+ * @sa sname_name_atr()
  */
-SNAME_H_INLINE
-void sname_append_sname( sname_t *dst, sname_t *src ) {
-  slist_push_list_back( dst, src );
-}
+NODISCARD
+char const* sname_scope_name( sname_t const *sname );
+
+/**
+ * Sets \a dst_sname to \a src_sname.
+ *
+ * @param dst_sname The scoped name to set.
+ * @param src_sname The scoped name to set \a dst_sname to. Ownership is taken.
+ *
+ * @note If \a dst_sname `==` \a src_name, does nothing.
+ *
+ * @sa sname_move()
+ * @sa sname_push_back_name()
+ * @sa sname_push_back_sname()
+ * @sa sname_push_front_sname()
+ */
+void sname_set( sname_t *dst_sname, sname_t *src_sname );
+
+////////// inline functions ///////////////////////////////////////////////////
 
 /**
  * Cleans-up all memory associated with \a sname but does _not_ free \a sname
@@ -243,35 +338,6 @@ bool sname_empty( sname_t const *sname ) {
 }
 
 /**
- * Frees all memory associated with \a sname _including_ \a sname itself.
- *
- * @param sname The scoped name to free.  If NULL, does nothing.
- *
- * @sa sname_cleanup()
- * @sa sname_init()
- * @sa sname_init_name()
- * @sa sname_list_cleanup()
- */
-void sname_free( sname_t *sname );
-
-/**
- * Gets the fully scoped name of \a sname.
- *
- * @param sname The scoped name to get the full name of; may be NULL.
- * @return Returns said name or the empty string if \a sname is empty or NULL.
- *
- * @warning The pointer returned is to a static buffer, so you can't do
- * something like call this twice in the same `printf()` statement.
- *
- * @sa sname_english()
- * @sa sname_local_name()
- * @sa sname_name_atr()
- * @sa sname_scope_name()
- */
-NODISCARD
-char const* sname_full_name( sname_t const *sname );
-
-/**
  * Initializes \a sname.
  *
  * @param sname The scoped name to initialize.
@@ -301,34 +367,8 @@ void sname_init( sname_t *sname ) {
 SNAME_H_INLINE
 void sname_init_name( sname_t *sname, char *name ) {
   slist_init( sname );
-  sname_append_name( sname, name );
+  sname_push_back_name( sname, name );
 }
-
-/**
- * Cleans-up all memory associated with \a list but does _not_ free \a list
- * itself.
- *
- * @param list The list of scoped names to clean up.  If NULL, does nothing;
- * otherwise, reinitializes \a list upon completion.
- *
- * @sa sname_cleanup()
- * @sa sname_free()
- */
-void sname_list_cleanup( slist_t *list );
-
-/**
- * Gets the local name of \a sname (which is the name of the last scope), for
- * example the local name of `S::T::x` is `x`.
- *
- * @param sname The scoped name to get the local name of; may be NULL.
- * @return Returns said name or the empty string if \a sname is empty or NULL.
- *
- * @sa sname_full_name()
- * @sa sname_name_atr()
- * @sa sname_scope_name()
- */
-NODISCARD
-char const* sname_local_name( sname_t const *sname );
 
 /**
  * Reinitializes \a sname and returns its former value so that it can be
@@ -373,22 +413,19 @@ char const* sname_name_atr( sname_t const *sname, size_t roffset ) {
 }
 
 /**
- * Parses a scoped name, for example `a::b::c`.
+ * Appends \a src onto the end of \a dst.
  *
- * @param s The string to parse.
- * @param rv_sname The scoped name to parse into.
- * @return Returns the number of characters of \a s that were successfully
- * parsed.
- */
-NODISCARD
-size_t sname_parse( char const *s, sname_t *rv_sname );
-
-/**
- * Pops the last name from \a sname.
+ * @param dst The scoped name to append to.
+ * @param src The scoped name to append.  Ownership is taken.
  *
- * @param sname The scoped name to pop the last name from.
+ * @sa sname_push_back_name()
+ * @sa sname_push_front_sname()
+ * @sa sname_set()
  */
-void sname_pop_back( sname_t *sname );
+SNAME_H_INLINE
+void sname_push_back_sname( sname_t *dst, sname_t *src ) {
+  slist_push_list_back( dst, src );
+}
 
 /**
  * Prepends \a src onto the beginning of \a dst.
@@ -396,48 +433,13 @@ void sname_pop_back( sname_t *sname );
  * @param dst The scoped name to prepend to.
  * @param src The name to prepend.  Ownership is taken.
  *
- * @sa sname_append_name()
- * @sa sname_append_sname()
+ * @sa sname_push_back_name()
+ * @sa sname_push_back_sname()
  */
 SNAME_H_INLINE
-void sname_prepend_sname( sname_t *dst, sname_t *src ) {
+void sname_push_front_sname( sname_t *dst, sname_t *src ) {
   slist_push_list_front( dst, src );
 }
-
-/**
- * Gets just the scope name of \a sname.
- * Examples:
- *  + For `a::b::c`, returns `a::b`.
- *  + For `c`, returns the empty string.
- *
- * @param sname The scoped name to get the scope name of; may be NULL.
- * @return Returns said name or the empty string if \a sname is empty, NULL, or
- * not within a scope.
- *
- * @warning The pointer returned is to a static buffer, so you can't do
- * something like call this twice in the same `printf()` statement.
- *
- * @sa sname_full_name()
- * @sa sname_local_name()
- * @sa sname_name_atr()
- */
-NODISCARD
-char const* sname_scope_name( sname_t const *sname );
-
-/**
- * Sets \a dst_sname to \a src_sname.
- *
- * @param dst_sname The scoped name to set.
- * @param src_sname The scoped name to set \a dst_sname to. Ownership is taken.
- *
- * @note If \a dst_sname `==` \a src_name, does nothing.
- *
- * @sa sname_append_name()
- * @sa sname_append_sname()
- * @sa sname_move()
- * @sa sname_prepend_sname()
- */
-void sname_set( sname_t *dst_sname, sname_t *src_sname );
 
 ///////////////////////////////////////////////////////////////////////////////
 

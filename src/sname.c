@@ -102,14 +102,6 @@ void sname_scope_free( sname_scope_t *data ) {
   }
 }
 
-void sname_append_name( sname_t *sname, char *name ) {
-  assert( sname != NULL );
-  assert( name != NULL );
-  sname_scope_t *const data = MALLOC( sname_scope_t, 1 );
-  data->name = name;
-  slist_push_back( sname, data );
-}
-
 void sname_cleanup( sname_t *sname ) {
   slist_cleanup( sname, POINTER_CAST( slist_free_fn_t, &sname_scope_free ) );
 }
@@ -162,7 +154,7 @@ size_t sname_parse( char const *s, sname_t *rv_sname ) {
         return 0;
       goto done;
     }
-    sname_append_name( &temp_sname, name );
+    sname_push_back_name( &temp_sname, name );
 
     prev_end = end;
     SKIP_WS( end );
@@ -187,6 +179,14 @@ done:
   return STATIC_CAST( size_t, prev_end - s_orig );
 }
 
+void sname_push_back_name( sname_t *sname, char *name ) {
+  assert( sname != NULL );
+  assert( name != NULL );
+  sname_scope_t *const data = MALLOC( sname_scope_t, 1 );
+  data->name = name;
+  slist_push_back( sname, data );
+}
+
 void sname_pop_back( sname_t *sname ) {
   assert( sname != NULL );
   switch ( sname_count( sname ) ) {
@@ -208,7 +208,7 @@ char const* sname_scope_name( sname_t const *sname ) {
 void sname_set( sname_t *dst_sname, sname_t *src_sname ) {
   if ( dst_sname != src_sname ) {
     sname_cleanup( dst_sname );
-    sname_append_sname( dst_sname, src_sname );
+    sname_push_back_sname( dst_sname, src_sname );
   }
 }
 
