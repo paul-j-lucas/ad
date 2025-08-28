@@ -245,7 +245,7 @@ synfo_t* sym_find_sname( sname_t const *sname ) {
   rb_node_t *const found_rb = rb_tree_find( &sym_table, &find_sym );
   if ( found_rb == NULL )
     return NULL;
-  symbol_t *const sym = RB_DPTR( found_rb );
+  symbol_t *const sym = RB_DINT( found_rb );
   assert( sym != NULL );
   synfo_t *const synfo = slist_front( &sym->synfo_list );
   assert( synfo != NULL );

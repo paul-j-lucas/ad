@@ -45,6 +45,7 @@ ad_SOURCES =	parser.y \
 		dump_c.c \
 		dump_format.c \
 		expr.c expr.h \
+		in_attr.c in_attr.h \
 		keyword.c keyword.h \
 		literals.c literals.h \
 		match.c match.h \

@@ -38,6 +38,7 @@
 
 // local
 #include "lexer.h"
+#include "in_attr.h"
 #include "keyword.h"
 #include "literals.h"
 #include "options.h"
@@ -296,7 +297,12 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 // 2. See if it's a type or declaration.
                 //
-                synfo_t const *const synfo = sym_find_name( yytext );
+                synfo_t const *synfo = sym_find_name( yytext );
+                if ( synfo == NULL ) {
+                  sname_t sname = ia_sname( check_strdup( yytext ) );
+                  synfo = sym_find_sname( &sname );
+                  sname_cleanup( &sname );
+                }
                 if ( synfo != NULL ) {
                   switch ( synfo->kind ) {
                     case SYM_DECL:

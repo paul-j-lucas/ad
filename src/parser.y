@@ -39,6 +39,7 @@
 #include "debug.h"
 #include "did_you_mean.h"
 #include "expr.h"
+#include "in_attr.h"
 #include "keyword.h"
 #include "lexer.h"
 #include "literals.h"
@@ -327,22 +328,6 @@
  * @{
  */
 
-/**
- * Inherited attributes.
- *
- * @remarks These are grouped into a `struct` (rather than having them as
- * separate global variables) so that they can all be reset (mostly) via a
- * single assignment from `{0}`.
- *
- * @sa ia_cleanup()
- */
-struct in_attr {
-  sname_t         scope_sname;          ///< Current scope name, if any.
-  ad_type_t      *cur_type;             ///< Current type.
-  ad_statement_t *statement;            ///< Current field name, if any.
-};
-typedef struct in_attr in_attr_t;
-
 // extern functions
 NODISCARD
 bool  ad_statement_list_check( slist_t const* ),
@@ -355,8 +340,7 @@ PJL_DISCARD
 static bool print_error_token( char const* );
 
 // local variables
-static in_attr_t      in_attr;          ///< Inherited attributes.
-slist_t               statement_list;   ///< List of non-declaration statements.
+slist_t statement_list;                 ///< List of non-declaration statements.
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -404,14 +388,6 @@ static bool define_type( ad_type_t *type ) {
 error:
   ad_type_free( type );
   return false;
-}
-
-/**
- * Cleans-up all resources used by \ref in_attr "inherited attributes".
- */
-static void ia_cleanup( void ) {
-  sname_cleanup( &in_attr.scope_sname );
-  in_attr = (in_attr_t){ 0 };
 }
 
 /**
@@ -463,28 +439,6 @@ static void parse_cleanup( bool fatal_error ) {
   lexer_reset( /*hard_reset=*/fatal_error );
 
   ia_cleanup();
-}
-
-/**
- * Gets the current full scoped name.
- *
- * @remarks
- * Given the declarations:
- * @code
- *  struct APP0 {
- *    enum unit_t : uint<8> {
- *      // ...
- * @endcode
- * and a \a name of `"unit_t"`, this function would return the scoped name of
- * `APP0::unit_t`.
- *
- * @param name The local name.  Ownership is taken.
- * @return Returns the current full scoped name.
- */
-static sname_t sname_current( char *name ) {
-  sname_t sname = sname_dup( &in_attr.scope_sname );
-  sname_append_name( &sname, name );
-  return sname;
 }
 
 /**
@@ -977,7 +931,7 @@ enum_declaration
 
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = sname_current( $name ),
+        .sname = ia_sname( $name ),
         .tid = T_ENUM | ($type->tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .loc = @$,
         .enum_t = {
@@ -1094,6 +1048,7 @@ struct_declaration
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
+      sname_pop_back( &in_attr.scope_sname );
 
       DUMP_START( "struct_declaration",
                   "struct NAME '{' statement_list_opt '}'" );
@@ -1124,7 +1079,7 @@ typedef_declaration
       ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = sname_current( check_strdup( decl->name ) ),
+        .sname = ia_sname( check_strdup( decl->name ) ),
         .tid = T_TYPEDEF,
         .loc = @$,
         .rep = decl->rep,
@@ -1157,6 +1112,7 @@ union_declaration
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
+      sname_pop_back( &in_attr.scope_sname );
 
       DUMP_START( "union_declaration",
                   "union NAME '{' statement_list_opt '}'" );
