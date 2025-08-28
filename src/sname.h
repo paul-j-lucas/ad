@@ -63,7 +63,7 @@ _GL_INLINE_HEADER_BEGIN
  * @param NAME The local name.
  * @return Returns said scoped name.
  *
- * @warning c_sname_cleanup() must _not_ be called on the returned value.
+ * @warning sname_cleanup() must _not_ be called on the returned value.
  */
 #define SNAME_LIT(NAME) \
   SLIST_LIT( (&(sname_scope_t){ CONST_CAST( char*, (NAME) ) }) )
