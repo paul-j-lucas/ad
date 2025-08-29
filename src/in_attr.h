@@ -27,11 +27,12 @@
  * for the format parser.
  */
 
-/** @cond DOXYGEN_IGNORE */
-
-#include "symbol.h"
+// local
+#include "pjl_config.h"                 /* must go first */
+#include "slist.h"
 #include "sname.h"
 #include "types.h"
+#include "util.h"
 
 /**
  * @addtogroup parser-group
@@ -58,14 +59,19 @@ typedef struct in_attr in_attr_t;
 
 ////////// extern variables ///////////////////////////////////////////////////
 
-extern in_attr_t in_attr;               ///< Inherited attributes.
+extern slist_t in_attr_list;            ///< Inherited attributes.
+
+#define IN_ATTR \
+  POINTER_CAST( in_attr_t*, slist_front( &in_attr_list ) )
 
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
- * Cleans-up all resources used by \ref in_attr "inherited attributes".
+ * Frees all memory used by \ref in_attr "inherited attributes".
+ *
+ * @param ia The \ref in_attr to free.
  */
-void ia_cleanup( void );
+void ia_free( in_attr_t *ia );
 
 /**
  * Gets the current full scoped name.
@@ -80,11 +86,12 @@ void ia_cleanup( void );
  * and a \a name of `"unit_t"`, this function would return the scoped name of
  * `APP0::unit_t`.
  *
+ * @param ia TODO.
  * @param name The local name.  Ownership is taken.
  * @return Returns the current full scoped name.
  */
 NODISCARD
-sname_t ia_sname( char *name );
+sname_t ia_sname( in_attr_t const *ia, char *name );
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -25,21 +25,27 @@
  */
 
 // local
-#include "ad.h"                         /* must go first */
+#include "pjl_config.h"                 /* must go first */
 #include "in_attr.h"
 
-// extern variables
-in_attr_t in_attr;
+// standard
+#include <assert.h>
+#include <stdlib.h>
+
+slist_t in_attr_list;
 
 /////////// extern functions //////////////////////////////////////////////////
 
-void ia_cleanup( void ) {
-  sname_cleanup( &in_attr.scope_sname );
-  in_attr = (in_attr_t){ 0 };
+void ia_free( in_attr_t *ia ) {
+  if ( ia != NULL ) {
+    sname_cleanup( &ia->scope_sname );
+    free( ia );
+  }
 }
 
-sname_t ia_sname( char *name ) {
-  sname_t sname = sname_dup( &in_attr.scope_sname );
+sname_t ia_sname( in_attr_t const *ia, char *name ) {
+  assert( ia != NULL );
+  sname_t sname = sname_dup( &ia->scope_sname );
   sname_push_back_name( &sname, name );
   return sname;
 }

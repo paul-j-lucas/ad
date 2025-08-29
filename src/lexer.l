@@ -299,7 +299,7 @@ hex_int       0[xX]{H}+{int_sfx}?
                 //
                 synfo_t const *synfo = sym_find_name( yytext );
                 if ( synfo == NULL ) {
-                  sname_t sname = ia_sname( check_strdup( yytext ) );
+                  sname_t sname = ia_sname( IN_ATTR, check_strdup( yytext ) );
                   synfo = sym_find_sname( &sname );
                   sname_cleanup( &sname );
                 }

@@ -342,6 +342,16 @@ static bool print_error_token( char const* );
 // local variables
 slist_t statement_list;                 ///< List of non-declaration statements.
 
+void ia_pop( void ) {
+  ia_free( slist_pop_front( &in_attr_list ) );
+}
+
+void ia_push( void ) {
+  in_attr_t *const ia = MALLOC( in_attr_t, 1 );
+  *ia = (in_attr_t){ 0 };
+  slist_push_front( &in_attr_list, ia );
+}
+
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -438,7 +448,7 @@ static void parse_cleanup( bool fatal_error ) {
   //
   lexer_reset( /*hard_reset=*/fatal_error );
 
-  ia_cleanup();
+  slist_cleanup( &in_attr_list, POINTER_CAST( slist_free_fn_t, &ia_free ) );
 }
 
 /**
@@ -931,7 +941,7 @@ enum_declaration
 
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = ia_sname( $name ),
+        .sname = ia_sname( IN_ATTR, $name ),
         .tid = T_ENUM | ($type->tid & (T_MASK_ENDIAN | T_MASK_SIZE)),
         .loc = @$,
         .enum_t = {
@@ -994,7 +1004,7 @@ field_declaration
         }
       };
 
-      in_attr.statement = $$;
+      IN_ATTR->statement = $$;
 
       DUMP_STATEMENT( "$$_statement", $$ );
       DUMP_END();
@@ -1035,35 +1045,36 @@ format_opt
 struct_declaration
   : Y_struct name_exp[name] lbrace_exp
     {
-      sname_push_back_name( &in_attr.scope_sname, $name );
+      ia_push();
+      sname_push_back_name( &IN_ATTR->scope_sname, $name );
 
-      in_attr.cur_type = MALLOC( ad_type_t, 1 );
-      *in_attr.cur_type = (ad_type_t){
-        .sname = sname_dup( &in_attr.scope_sname ),
+      IN_ATTR->cur_type = MALLOC( ad_type_t, 1 );
+      *IN_ATTR->cur_type = (ad_type_t){
+        .sname = sname_dup( &IN_ATTR->scope_sname ),
         .tid = T_STRUCT
       };
-      PARSE_ASSERT( define_type( in_attr.cur_type ) );
+      PARSE_ASSERT( define_type( IN_ATTR->cur_type ) );
       sym_open_scope();
     }
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
-      sname_pop_back( &in_attr.scope_sname );
+      ia_pop();
 
       DUMP_START( "struct_declaration",
                   "struct NAME '{' statement_list_opt '}'" );
-      DUMP_SNAME( "in_attr__scope_sname", in_attr.scope_sname );
+      DUMP_SNAME( "in_attr__scope_sname", IN_ATTR->scope_sname );
       DUMP_STR( "name", $name );
 
-      in_attr.cur_type->loc = @$;
-      in_attr.cur_type->struct_t.member_list = slist_move( &$members );
+      IN_ATTR->cur_type->loc = @$;
+      IN_ATTR->cur_type->struct_t.member_list = slist_move( &$members );
 
       $$ = NULL;                        // do not add to statement_list
 
-      DUMP_TYPE( "$$_type", in_attr.cur_type );
+      DUMP_TYPE( "$$_type", IN_ATTR->cur_type );
       DUMP_END();
 
-      in_attr.cur_type = NULL;
+      IN_ATTR->cur_type = NULL;
     }
   ;
 
@@ -1079,7 +1090,7 @@ typedef_declaration
       ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = ia_sname( check_strdup( decl->name ) ),
+        .sname = ia_sname( IN_ATTR, check_strdup( decl->name ) ),
         .tid = T_TYPEDEF,
         .loc = @$,
         .rep = decl->rep,
@@ -1099,35 +1110,36 @@ typedef_declaration
 union_declaration
   : Y_union name_exp[name] lbrace_exp
     {
-      sname_push_back_name( &in_attr.scope_sname, $name );
+      ia_push();
+      sname_push_back_name( &IN_ATTR->scope_sname, $name );
 
-      in_attr.cur_type = MALLOC( ad_type_t, 1 );
-      *in_attr.cur_type = (ad_type_t){
-        .sname = sname_dup( &in_attr.scope_sname ),
+      IN_ATTR->cur_type = MALLOC( ad_type_t, 1 );
+      *IN_ATTR->cur_type = (ad_type_t){
+        .sname = sname_dup( &IN_ATTR->scope_sname ),
         .tid = T_UNION
       };
-      PARSE_ASSERT( define_type( in_attr.cur_type ) );
+      PARSE_ASSERT( define_type( IN_ATTR->cur_type ) );
       sym_open_scope();
     }
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
-      sname_pop_back( &in_attr.scope_sname );
+      ia_pop();
 
       DUMP_START( "union_declaration",
                   "union NAME '{' statement_list_opt '}'" );
-      DUMP_SNAME( "in_attr__scope_sname", in_attr.scope_sname );
+      DUMP_SNAME( "in_attr__scope_sname", IN_ATTR->scope_sname );
       DUMP_STR( "name", $name );
 
-      in_attr.cur_type->loc = @$;
-      in_attr.cur_type->union_t.member_list = slist_move( &$members );
+      IN_ATTR->cur_type->loc = @$;
+      IN_ATTR->cur_type->union_t.member_list = slist_move( &$members );
 
       $$ = NULL;                        // do not add to statement_list
 
-      DUMP_TYPE( "$$_type", in_attr.cur_type );
+      DUMP_TYPE( "$$_type", IN_ATTR->cur_type );
       DUMP_END();
 
-      in_attr.cur_type = NULL;
+      IN_ATTR->cur_type = NULL;
     }
   ;
 
@@ -1516,7 +1528,7 @@ primary_expr
   | '$'
     {
       $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
-      $$->name = check_strdup( in_attr.statement->decl_s.name );
+      $$->name = check_strdup( IN_ATTR->statement->decl_s.name );
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;
@@ -2003,6 +2015,7 @@ static bool print_error_token( char const *token ) {
 
 void parser_init( void ) {
   ASSERT_RUN_ONCE();
+  ia_push();
   ATEXIT( &parser_cleanup );
 }
 
