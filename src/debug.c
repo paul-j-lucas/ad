@@ -553,19 +553,20 @@ static void ad_tid_dump_impl( ad_tid_t tid, dump_state_t *dump ) {
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   ad_tid_kind_t const kind = ad_tid_kind( tid );
+  unsigned const size = ad_tid_size( tid );
 
   DUMP_KEY( dump,
     "kind: { value: 0x%X, string: \"%s\" }",
     kind, ad_tid_kind_name( kind )
   );
 
-  if ( (kind & T_ANY_SIZED) != 0 )
+  if ( size > 0 )
     DUMP_KEY( dump, "size: %u", ad_tid_size( tid ) );
 
   if ( kind == T_INT )
     DUMP_BOOL( dump, "signed", ad_tid_is_signed( tid ) );
 
-  if ( (kind & T_ANY_SIZED) != 0 )
+  if ( size > 8 )
     DUMP_STR( dump, "endian", endian_name( ad_tid_endian( tid ) ) );
 
   json_object_end( tid_json, dump );
@@ -588,7 +589,9 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
   DUMP_TID( dump, "tid", type->tid );
   DUMP_LOC( dump, "loc", &type->loc );
 
-  if ( (ad_tid_kind( type->tid ) & T_ANY_SIZED) != 0 ) {
+  ad_tid_kind_t const kind = ad_tid_kind( type->tid );
+
+  if ( kind >= T_BOOL ) {
     if ( type->size_expr != NULL )
       DUMP_EXPR( dump, "size_expr", type->size_expr );
     if ( type->endian_expr != NULL )
@@ -596,7 +599,6 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
   }
   DUMP_REP( dump, "rep", &type->rep );
 
-  ad_tid_kind_t const kind = ad_tid_kind( type->tid );
   switch ( kind ) {
     case T_NONE:
     case T_ERROR:

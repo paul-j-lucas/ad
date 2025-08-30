@@ -245,23 +245,18 @@ enum ad_statement_kind {
 enum ad_tid_kind {
   T_NONE    = 0,                        ///< None.
   T_ERROR   = 1 << 4,                   ///< Error.
-  T_BOOL    = 2 << 4,                   ///< Boolean.
-  T_UTF     = 3 << 4,                   ///< Unicode character or string.
-  T_INT     = 4 << 4,                   ///< Integer.
-  T_FLOAT   = 5 << 4,                   ///< Floating point.
-  T_ENUM    = 6 << 4,                   ///< Enumeration.
-  T_STRUCT  = 7 << 4,                   ///< Structure.
-  T_UNION   = 8 << 4,                   ///< Union.
-  T_TYPEDEF = 9 << 4,                   ///< `typedef`.
+
+  T_STRUCT  = 2 << 4,                   ///< Structure.
+  T_UNION   = 3 << 4,                   ///< Union.
+  T_TYPEDEF = 4 << 4,                   ///< `typedef`.
+
+  // Types that have a preset size in bits.
+  T_BOOL    = 5 << 4,                   ///< Boolean.
+  T_UTF     = 6 << 4,                   ///< Unicode character or string.
+  T_INT     = 7 << 4,                   ///< Integer.
+  T_FLOAT   = 8 << 4,                   ///< Floating point.
+  T_ENUM    = 9 << 4,                   ///< Enumeration.
 };
-
-/**
- * Shorthand for any \ref ad_tid_kind that has a size: #T_BOOL, #T_FLOAT,
- * #T_INT, or #T_UTF.
- */
-#define T_ANY_SIZED               ( T_BOOL | T_FLOAT | T_INT | T_UTF )
-
-#define T_ANY_FORMAT              ( T_ANY_SIZED | T_ENUM )
 
 ////////// typedefs ///////////////////////////////////////////////////////////
 
