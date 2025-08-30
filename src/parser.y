@@ -526,7 +526,7 @@ static void yyerror( char const *msg ) {
 %union {
   ad_decl_t          *decl;
   endian_t            endian_val;
-  ad_enum_value_t     enum_val;
+  ad_enum_value_t    *enum_val;
   ad_expr_t          *expr;       // for the expression being built
   ad_expr_kind_t      expr_kind;  // expression kind
   int                 int_val;
@@ -725,6 +725,7 @@ static void yyerror( char const *msg ) {
 %type <expr_kind>   unary_op
 
 // Bison %destructors.
+%destructor { DTRACE; ad_enum_value_free( $$ ); } <enum_val>
 %destructor { DTRACE; FREE( $$ );               } <name>
 %destructor { DTRACE; free( $$ );               } <str_val>
 %destructor { DTRACE; ad_expr_free( $$ );       } <expr>
@@ -977,20 +978,20 @@ enumerator_list
   : enumerator_list[enum_list] ',' enumerator[enum]
     {
       $$ = $enum_list;
-      slist_push_back( &$$, &$enum );
+      slist_push_back( &$$, $enum );
     }
   | enumerator[enum]
     {
       slist_init( &$$ );
-      slist_push_back( &$$, &$enum );
+      slist_push_back( &$$, $enum );
     }
   ;
 
 enumerator
   : Y_NAME[name] equals_exp int_exp[value]
     {
-      $$.name = $name;
-      $$.value = $value;
+      $$ = MALLOC( ad_enum_value_t, 1 );
+      *$$ = (ad_enum_value_t){ .name = $name, .value = $value };
     }
   ;
 

@@ -751,6 +751,13 @@ union user_data {
 ////////// extern functions ///////////////////////////////////////////////////
 
 /**
+ * Frees all memory used by \a value _including_ \a value itself.
+ *
+ * @param value The \ref ad_enum_value to free.
+ */
+void ad_enum_value_free( ad_enum_value_t *value );
+
+/**
  * Gets the name of \a kind.
  *
  * @param kind The \ref ad_rep_kind to get the name of.

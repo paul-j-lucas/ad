@@ -104,21 +104,14 @@ ad_type_t const TB_UTF8_0 = {
   .int_t = { .printf_fmt = "%s" }
 };
 
-////////// local functions ////////////////////////////////////////////////////
+////////// extern functions ///////////////////////////////////////////////////
 
-/**
- * Frees all memory used by \a value _including_ \a value itself.
- *
- * @param value The \ref ad_enum_value to free.
- */
-static void ad_enum_value_free( ad_enum_value_t *value ) {
+void ad_enum_value_free( ad_enum_value_t *value ) {
   if ( value != NULL ) {
     FREE( value->name );
     free( value );
   }
 }
-
-////////// extern functions ///////////////////////////////////////////////////
 
 char const* ad_rep_kind_name( ad_rep_kind_t kind ) {
   switch ( kind ) {
