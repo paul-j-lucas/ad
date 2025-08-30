@@ -296,7 +296,7 @@ _GL_INLINE_HEADER_BEGIN
  * @sa #PUTS()
  */
 #define FPUTS(S,STREAM) \
-  PERROR_EXIT_IF( fputs( STATIC_CAST(char const*, (S)), (STREAM) ) == EOF, EX_IOERR )
+  PERROR_EXIT_IF( fputs( STATIC_CAST( char const*, (S) ), (STREAM) ) == EOF, EX_IOERR )
 
 /**
  * Frees the given memory.

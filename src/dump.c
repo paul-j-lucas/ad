@@ -182,7 +182,7 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
   // print offset & column separator
   if ( opt_offsets != OFFSETS_NONE ) {
     color_start( stdout, sgr_offset );
-    PRINTF( offset_format, STATIC_CAST(uint64_t, fin_offset) );
+    PRINTF( offset_format, STATIC_CAST( uint64_t, fin_offset ) );
     color_end( stdout, sgr_offset );
     color_start( stdout, sgr_sep );
     PUTC( ':' );
@@ -207,7 +207,7 @@ static void dump_row( char const *offset_format, row_buf_t const *curr,
       COLOR_START_IF( matches_changed, sgr_hex_match );
     else
       COLOR_END_IF( matches_changed, sgr_hex_match );
-    PRINTF( "%02X", STATIC_CAST(unsigned, curr->bytes[ curr_pos ]) );
+    PRINTF( "%02X", STATIC_CAST( unsigned, curr->bytes[ curr_pos ] ) );
     prev_matches = matches;
   } // for
   COLOR_END_IF( prev_matches, sgr_hex_match );
@@ -352,8 +352,9 @@ void dump_file( void ) {
           (opt_verbose || !is_same_row || is_last_row) &&
           //  + and if not -p or any printable bytes
           (!opt_only_printing ||
-            ascii_any_printable( (char*)curr->bytes, curr->len )) ) ) {
-
+            ascii_any_printable( STATIC_CAST( char*, curr->bytes ), curr->len )
+          )
+        ) ) {
         dump_row( offset_format, curr, next );
       }
 
