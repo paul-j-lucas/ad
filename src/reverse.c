@@ -170,7 +170,7 @@ static row_kind_t parse_row( size_t line, char const *buf, size_t buf_len,
         "expected '%c' followed by elided counts \"%s\"\n", ':', "(DD | 0xHH)"
       );
     }
-    *pbytes_len = STATIC_CAST(size_t, delta);
+    *pbytes_len = STATIC_CAST( size_t, delta );
     return ROW_ELIDED;
   }
 

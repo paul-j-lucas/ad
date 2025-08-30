@@ -74,7 +74,7 @@ static void dump_row_c( char const *offset_format, char8_t const *buf,
   // dump hex part
   char8_t const *const end = buf + buf_len;
   while ( buf < end )
-    PRINTF( " 0x%02X,", STATIC_CAST(unsigned, *buf++) );
+    PRINTF( " 0x%02X,", STATIC_CAST( unsigned, *buf++ ) );
   PUTC( '\n' );
 }
 
