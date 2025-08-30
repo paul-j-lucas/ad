@@ -142,7 +142,7 @@ void ad_statement_free( ad_statement_t *statement ) {
 
     case AD_STMNT_DECLARATION:
       FREE( statement->decl_s.name );
-      ad_type_free( statement->decl_s.type );
+      // statement->decl_s.type points to a type in a synfo in the symbol table
       FREE( statement->decl_s.printf_fmt );
       break;
 

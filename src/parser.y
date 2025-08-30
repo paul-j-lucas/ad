@@ -342,16 +342,6 @@ static bool print_error_token( char const* );
 // local variables
 slist_t statement_list;                 ///< List of non-declaration statements.
 
-void ia_pop( void ) {
-  ia_free( slist_pop_front( &in_attr_list ) );
-}
-
-void ia_push( void ) {
-  in_attr_t *const ia = MALLOC( in_attr_t, 1 );
-  *ia = (in_attr_t){ 0 };
-  slist_push_front( &in_attr_list, ia );
-}
-
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
@@ -398,6 +388,32 @@ static bool define_type( ad_type_t *type ) {
 error:
   ad_type_free( type );
   return false;
+}
+
+/**
+ * Pops an \ref in_attr from the stack.
+ *
+ * @sa ia_push()
+ */
+static void ia_pop( void ) {
+  ia_free( slist_pop_front( &in_attr_list ) );
+}
+
+/**
+ * Pushes a new a \ref in_attr into the stack.
+ *
+ * @sa ia_pop()
+ */
+static void ia_push( void ) {
+  in_attr_t *const new_ia = MALLOC( in_attr_t, 1 );
+  if ( slist_empty( &in_attr_list ) ) {
+    *new_ia = (in_attr_t){ 0 };
+  }
+  else {
+    in_attr_t *const old_ia = slist_front( &in_attr_list );
+    *new_ia = (in_attr_t){ .scope_sname = sname_dup( &old_ia->scope_sname ) };
+  }
+  slist_push_front( &in_attr_list, new_ia );
 }
 
 /**
@@ -1046,35 +1062,36 @@ struct_declaration
   : Y_struct name_exp[name] lbrace_exp
     {
       ia_push();
-      sname_push_back_name( &IN_ATTR->scope_sname, $name );
+      in_attr_t *const ia = slist_front( &in_attr_list );
+      sname_push_back_name( &ia->scope_sname, $name );
 
-      IN_ATTR->cur_type = MALLOC( ad_type_t, 1 );
-      *IN_ATTR->cur_type = (ad_type_t){
-        .sname = sname_dup( &IN_ATTR->scope_sname ),
+      ia->cur_type = MALLOC( ad_type_t, 1 );
+      *ia->cur_type = (ad_type_t){
+        .sname = sname_dup( &ia->scope_sname ),
         .tid = T_STRUCT
       };
-      PARSE_ASSERT( define_type( IN_ATTR->cur_type ) );
+      PARSE_ASSERT( define_type( ia->cur_type ) );
       sym_open_scope();
     }
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
-      ia_pop();
+      in_attr_t *const ia = slist_front( &in_attr_list );
 
       DUMP_START( "struct_declaration",
                   "struct NAME '{' statement_list_opt '}'" );
-      DUMP_SNAME( "in_attr__scope_sname", IN_ATTR->scope_sname );
+      DUMP_SNAME( "in_attr__scope_sname", ia->scope_sname );
       DUMP_STR( "name", $name );
 
-      IN_ATTR->cur_type->loc = @$;
-      IN_ATTR->cur_type->struct_t.member_list = slist_move( &$members );
+      ia->cur_type->loc = @$;
+      ia->cur_type->struct_t.member_list = slist_move( &$members );
 
       $$ = NULL;                        // do not add to statement_list
 
-      DUMP_TYPE( "$$_type", IN_ATTR->cur_type );
+      DUMP_TYPE( "$$_type", ia->cur_type );
       DUMP_END();
 
-      IN_ATTR->cur_type = NULL;
+      ia_pop();
     }
   ;
 
@@ -1086,11 +1103,14 @@ typedef_declaration
       DUMP_START( "typedef_declaration", "TYPEDEF field_declaration" );
       DUMP_STATEMENT( "field_declaration", $field );
 
+
       assert( $field->kind == AD_STMNT_DECLARATION );
+
+      in_attr_t *const ia = slist_front( &in_attr_list );
       ad_decl_t *const decl = &$field->decl_s;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
-        .sname = ia_sname( IN_ATTR, check_strdup( decl->name ) ),
+        .sname = ia_sname( ia, check_strdup( decl->name ) ),
         .tid = T_TYPEDEF,
         .loc = @$,
         .rep = decl->rep,
@@ -1111,35 +1131,36 @@ union_declaration
   : Y_union name_exp[name] lbrace_exp
     {
       ia_push();
-      sname_push_back_name( &IN_ATTR->scope_sname, $name );
+      in_attr_t *const ia = slist_front( &in_attr_list );
+      sname_push_back_name( &ia->scope_sname, $name );
 
-      IN_ATTR->cur_type = MALLOC( ad_type_t, 1 );
-      *IN_ATTR->cur_type = (ad_type_t){
-        .sname = sname_dup( &IN_ATTR->scope_sname ),
+      ia->cur_type = MALLOC( ad_type_t, 1 );
+      *ia->cur_type = (ad_type_t){
+        .sname = sname_dup( &ia->scope_sname ),
         .tid = T_UNION
       };
-      PARSE_ASSERT( define_type( IN_ATTR->cur_type ) );
+      PARSE_ASSERT( define_type( ia->cur_type ) );
       sym_open_scope();
     }
     statement_list_opt[members] rbrace_exp
     {
       sym_close_scope();
-      ia_pop();
+      in_attr_t *const ia = slist_front( &in_attr_list );
 
       DUMP_START( "union_declaration",
                   "union NAME '{' statement_list_opt '}'" );
-      DUMP_SNAME( "in_attr__scope_sname", IN_ATTR->scope_sname );
+      DUMP_SNAME( "in_attr__scope_sname", ia->scope_sname );
       DUMP_STR( "name", $name );
 
-      IN_ATTR->cur_type->loc = @$;
-      IN_ATTR->cur_type->union_t.member_list = slist_move( &$members );
+      ia->cur_type->loc = @$;
+      ia->cur_type->union_t.member_list = slist_move( &$members );
 
       $$ = NULL;                        // do not add to statement_list
 
-      DUMP_TYPE( "$$_type", IN_ATTR->cur_type );
+      DUMP_TYPE( "$$_type", ia->cur_type );
       DUMP_END();
 
-      IN_ATTR->cur_type = NULL;
+      ia_pop();
     }
   ;
 
@@ -1528,7 +1549,8 @@ primary_expr
   | '$'
     {
       $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
-      $$->name = check_strdup( IN_ATTR->statement->decl_s.name );
+      in_attr_t *const ia = slist_front( &in_attr_list );
+      $$->name = check_strdup( ia->statement->decl_s.name );
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;

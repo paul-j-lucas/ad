@@ -86,7 +86,7 @@ void ia_free( in_attr_t *ia );
  * and a \a name of `"unit_t"`, this function would return the scoped name of
  * `APP0::unit_t`.
  *
- * @param ia TODO.
+ * @param ia The \ref in_attr to use.
  * @param name The local name.  Ownership is taken.
  * @return Returns the current full scoped name.
  */

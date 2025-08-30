@@ -115,8 +115,6 @@ static bool rb_close_scope_visitor( void *node_data, void *visit_data ) {
  * itself.
  *
  * @param sym The \ref symbol to clean up.  If NULL, does nothing.
- *
- * @sa sym_free()
  */
 static void sym_cleanup( symbol_t *sym ) {
   if ( sym != NULL ) {
@@ -125,18 +123,6 @@ static void sym_cleanup( symbol_t *sym ) {
     );
     sname_cleanup( &sym->sname );
   }
-}
-
-/**
- * Frees all memory associated with \a sym.
- *
- * @param sym The \ref symbol to free.  If NULL, does nothing.
- *
- * @sa sym_cleanup()
- */
-static void sym_free( symbol_t *sym ) {
-  sym_cleanup( sym );
-  free( sym );
 }
 
 /**
@@ -171,7 +157,7 @@ static void sym_init( symbol_t *sym, sname_t *sname ) {
  * @sa sym_table_init()
  */
 static void sym_table_cleanup( void ) {
-  rb_tree_cleanup( &sym_table, POINTER_CAST( rb_free_fn_t, &sym_free ) );
+  rb_tree_cleanup( &sym_table, POINTER_CAST( rb_free_fn_t, &sym_cleanup ) );
 }
 
 /**
