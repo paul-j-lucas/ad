@@ -565,7 +565,8 @@ static void ad_tid_dump_impl( ad_tid_t tid, dump_state_t *dump ) {
   if ( kind == T_INT )
     DUMP_BOOL( dump, "signed", ad_tid_is_signed( tid ) );
 
-  DUMP_STR( dump, "endian", endian_name( ad_tid_endian( tid ) ) );
+  if ( (kind & T_ANY_SIZED) != 0 )
+    DUMP_STR( dump, "endian", endian_name( ad_tid_endian( tid ) ) );
 
   json_object_end( tid_json, dump );
 }
@@ -587,10 +588,12 @@ static void ad_type_dump_impl( ad_type_t const *type, dump_state_t *dump ) {
   DUMP_TID( dump, "tid", type->tid );
   DUMP_LOC( dump, "loc", &type->loc );
 
-  if ( type->size_expr != NULL )
-    DUMP_EXPR( dump, "size_expr", type->size_expr );
-  if ( type->endian_expr != NULL )
-    DUMP_EXPR( dump, "endian_expr", type->endian_expr );
+  if ( (ad_tid_kind( type->tid ) & T_ANY_SIZED) != 0 ) {
+    if ( type->size_expr != NULL )
+      DUMP_EXPR( dump, "size_expr", type->size_expr );
+    if ( type->endian_expr != NULL )
+      DUMP_EXPR( dump, "endian_expr", type->endian_expr );
+  }
   DUMP_REP( dump, "rep", &type->rep );
 
   ad_tid_kind_t const kind = ad_tid_kind( type->tid );

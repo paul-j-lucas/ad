@@ -251,8 +251,8 @@ enum ad_tid_kind {
   T_FLOAT   = 5 << 4,                   ///< Floating point.
   T_ENUM    = 6 << 4,                   ///< Enumeration.
   T_STRUCT  = 7 << 4,                   ///< Structure.
-  T_TYPEDEF = 8 << 4,                   ///< `typedef`.
-  T_UNION   = 9 << 4,                   ///< Union.
+  T_UNION   = 8 << 4,                   ///< Union.
+  T_TYPEDEF = 9 << 4,                   ///< `typedef`.
 };
 
 /**
@@ -336,7 +336,8 @@ typedef struct  ad_utf_type           ad_utf_type_t;
  *         5 = float
  *         6 = enum
  *         7 = struct
- *         8 = typedef
+ *         8 = union
+ *         9 = typedef
  *
  *      N[1] = null terminated:
  *         0 = single character

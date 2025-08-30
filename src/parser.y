@@ -251,7 +251,7 @@
  * @sa #DUMP_STR()
  */
 #define DUMP_SNAME(KEY,SNAME) IF_AD_DEBUG( \
-  DUMP_KEY_IMPL( KEY ": " ); sname_dump( &(SNAME), stdout ); )
+  DUMP_KEY_IMPL( KEY ": \"" ); sname_dump( &(SNAME), stdout ); PUTC( '"'); )
 
 /**
  * Dumps an \ref ad_statement.
