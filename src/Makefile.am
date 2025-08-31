@@ -36,6 +36,7 @@ ad_SOURCES =	parser.y \
 		pjl_config.h \
 		ad.c ad.h \
 		ad_parser.h \
+		array.c array.h \
 		check.c \
 		color.c color.h \
 		dam_lev.c dam_lev.h \
