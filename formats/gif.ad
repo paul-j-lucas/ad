@@ -1,0 +1,100 @@
+/*
+**      ad -- ASCII dump
+**      formats/gif.ad
+**
+**      Copyright (C) 2025  Paul J. Lucas
+**
+**      This program is free software: you can redistribute it and/or modify
+**      it under the terms of the GNU General Public License as published by
+**      the Free Software Foundation, either version 3 of the License, or
+**      (at your option) any later version.
+**
+**      This program is distributed in the hope that it will be useful,
+**      but WITHOUT ANY WARRANTY; without even the implied warranty of
+**      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**      GNU General Public License for more details.
+**
+**      You should have received a copy of the GNU General Public License
+**      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+struct SIGNATURE {
+  utf<8>      sig[] if $ == "GIF";
+  utf<8>      version[3];
+};
+
+struct SCREEN_DESCRIPTOR {
+  uint<16,l>  width;
+  uint<16,l>  height;
+
+  bool<1>     has_color_map;
+  uint<3>     color_bits;
+  uint<1>     reserved requires $ == 0;
+  uint<3>     pixel;
+
+  uint<8>     bg_color;
+  uint<8>     aspect_ratio;
+};
+
+struct EXTENSION_BLOCK {
+  struct FUNC_DATA {
+    uint<8>   byte_count if $ > 0;
+    uint<8>   data_bytes[ byte_count ];
+  };
+
+  utf<8>      introducer if $ == '!';
+  uint<8>     function_code;
+  FUNC_DATA   data[+];
+  uint<8>     zero requires $ == 0;
+};
+
+enum IMAGE_ORDER : bool<1> {
+  SEQUENTIAL = 0,
+  INTERLACED = 1
+};
+
+struct IMAGE_DESCRIPTOR {
+  utf<8>      character if $ == ',';
+  uint<16,l>  left;
+  uint<16,l>  top;
+  uint<16,l>  width;
+  uint<16,l>  height;
+
+  bool<1>     use_local_color_map;
+  IMAGE_ORDER order;
+  bool<1>     reserved[3];
+  uint<5,l>   pixel;
+};
+
+struct rgb {
+  uint<8> red;
+  uint<8> green;
+  uint<8> blue;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+SIGNATURE           sig;
+SCREEN_DESCRIPTOR   screen_desc;
+if ( sig.has_color_map ) {
+  rgb               global_color_map[ 1 << screen_desc.pixel ];
+}
+
+struct IMAGE {
+  IMAGE_DESCRIPTOR  image_desc[*];
+  if ( image_desc.use_local_color_map ) {
+    rgb             local_color_map[ 1 << image_desc.pixel ];
+  }
+  uint<8>           image_data[ screen_desc.width * screen_desc.height ];
+};
+
+union IMAGE_OR_EXTENSION {
+  IMAGE           image;
+  EXTENSION_BLOCK ext;
+};
+
+IMAGE_OR_EXTENSION  image_or_extension[*];
+
+utf<8>              terminator[] if $ == ';';
+
+/* vim:set syntax=c et sw=2 ts=2: */

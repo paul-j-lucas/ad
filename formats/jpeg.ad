@@ -1,6 +1,22 @@
-struct SOI {
-  uint<16,b> marker == 0xFFD8;
-};
+/*
+**      ad -- ASCII dump
+**      formats/jpeg.ad
+**
+**      Copyright (C) 2025  Paul J. Lucas
+**
+**      This program is free software: you can redistribute it and/or modify
+**      it under the terms of the GNU General Public License as published by
+**      the Free Software Foundation, either version 3 of the License, or
+**      (at your option) any later version.
+**
+**      This program is distributed in the hope that it will be useful,
+**      but WITHOUT ANY WARRANTY; without even the implied warranty of
+**      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**      GNU General Public License for more details.
+**
+**      You should have received a copy of the GNU General Public License
+**      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 struct APP0 {
   enum units_t : uint<8> {
@@ -46,14 +62,18 @@ struct DHT {
 struct SOF {
 };
 
-struct rgb {
+struct SOI {
+  uint<16,b> marker == 0xFFD8;
+};
+
+struct RGB {
   uint<8> r;
   uint<8> g;
   uint<8> b;
 };
 
 struct extension_APP0 {
-  enum thumbnail_format : uint<8> {
+  enum THUMB_FORMAT : uint<8> {
     THUMB_JPEG  = 0x10,
     THUMB_1BPP  = 0x11,
     THUMB_3BPP  = 0x13
@@ -62,7 +82,7 @@ struct extension_APP0 {
   uint<16,b>  marker == 0xFFE0;
   uint<16,b>  size                      "%u";
   utf<8>      jfxx[] == "JFXX";
-  thumbnail_format thumb_fmt;
+  THUMB_FORMAT thumb_fmt;
 
     switch ( thumb_fmt ) {
       case THUMB_JPEG:
@@ -73,7 +93,7 @@ struct extension_APP0 {
       case THUMB_1BPP:
         uint<8> x_thumb;
         uint<8> y_thumb;
-        rgb     palette[ 256 ];
+        RGB     palette[ 256 ];
         uint<8> pixel[ x_thumb * y_thumb ];
         break;
       case THUMB_3BPP:
@@ -89,17 +109,19 @@ struct EOI {
   uint<16,b> marker == 0xFFD9;
 };
 
-union body {
+union BODY {
   COM;
   DHT;
   SOF;
 };
 
-SOI;
-APP0;
-extension_APP0[?];
-body x[*];
-SOS;
-EOI;
+///////////////////////////////////////////////////////////////////////////////
+
+SOI                 soi;
+APP0                app0;
+extension_APP0[?]   ext_app0;
+BODY                body[*];
+SOS                 sos;
+EOI                 eoi;
 
 /* vim:set syntax=c et sw=2 ts=2: */
