@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>                     /* for memcpy(3) */
 
 ////////// extern functions ///////////////////////////////////////////////////
 
@@ -71,11 +72,12 @@ int array_cmp( array_t const *i_array, array_t const *j_array,
   return i_element == i_end ? (j_element == j_end ? 0 : -1) : 1;
 }
 
-void* array_push_back( array_t *array ) {
+void array_push_back( array_t *array, void *element ) {
   assert( array != NULL );
+  assert( element != NULL );
   size_t const index = array->len;
   array_reserve( array, ++array->len );
-  return array_at_nocheck( array, index );
+  memcpy( array_at_nocheck( array, index ), element, array->esize );
 }
 
 bool array_reserve( array_t *array, size_t res_len ) {

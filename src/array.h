@@ -23,7 +23,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "util.h"
 
 /// @cond DOXYGEN_IGNORE
 
@@ -49,6 +48,16 @@ _GL_INLINE_HEADER_BEGIN
  */
 #define ARRAY_LIT(ELEMENT) \
   (array_t const){ &(ELEMENT), sizeof( (ELEMENT) ), 1, 1 }
+
+/**
+ * Convenience macro for iterating over the elements of an \ref array.
+ *
+ * @param TYPE The type of element.
+ * @param VAR The element loop variable.
+ * @param ARRAY The array to iterate over.
+ */
+#define ARRAY_FOREACH_ELEMENT(TYPE,VAR,ARRAY) \
+  for ( TYPE *VAR = (ARRAY)->elements; VAR < (TYPE*)(ARRAY)->elements + array_len( (ARRAY) ); ++VAR )
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -144,12 +153,11 @@ array_t array_dup( array_t const *array, ssize_t n, array_dup_fn_t dup_fn );
  * Appends \a data onto the back of \a array.
  *
  * @param array The \ref array to push onto.
- * @param data The data to pushed.
+ * @param element The element to pushed.  It is copied.
  *
  * @note This is an O(1) operation.
  */
-NODISCARD
-void* array_push_back( array_t *array );
+void array_push_back( array_t *array, void *element );
 
 /**
  * Ensures at least \a res_len additional elements of capacity exist in \a
@@ -186,7 +194,7 @@ bool array_reserve( array_t *array, size_t res_len );
  */
 NODISCARD ARRAY_H_INLINE
 void* array_at_nocheck( array_t const *array, size_t index ) {
-  return POINTER_CAST( char*, array->elements ) + index * array->esize;
+  return (char*)array->elements + index * array->esize;
 }
 
 /**
