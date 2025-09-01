@@ -356,7 +356,6 @@ typedef struct  ad_utf_type           ad_utf_type_t;
 typedef uint16_t                      ad_tid_t;
 
 typedef enum    ad_tid_kind           ad_tid_kind_t;
-typedef slist_t                       ad_type_list_t;
 typedef struct  ad_unary_expr         ad_unary_expr_t;
 typedef struct  print_params          print_params_t;
 typedef slist_t                       sname_t;    ///< Scoped name.
