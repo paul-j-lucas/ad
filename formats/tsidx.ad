@@ -2,7 +2,7 @@ typedef int<32,b>  st_time_t;
 typedef uint<32,b> st_addr_t;
 
 struct tsidx_header {
-  utf<8>      magic[8] /= R"Splunk\d{2}";
+  utf<8>      magic[8] if $ == R"Splunk\d{2}";
   uint<32,b>  num_values;         // Number of events.
   uint<32,b>  num_postings;       // Sum: number of events for each term.
   uint<32,b>  num_terms;          // Number of terms (tokens).
@@ -52,11 +52,11 @@ alignas(1)  uint<32,b>            plo[ header.num_values ];
 alignas(1)  st_term_metadata      meta[ header.num_values ];
 alignas(1)  st_fclex_body         fclex_body;
 
-uint<32> num_blocks = (fclex_body.num_terms + fclex_body.terms_per_block - 1) / fclex_body.terms_per_block;
+let uint<32> num_blocks = (fclex_body.num_terms + fclex_body.terms_per_block - 1) / fclex_body.terms_per_block;
 
-            . uint<32>              block_offset[ num_blocks ];
+            uint<32>              block_offset[ num_blocks ];
 
-struct block {
+struct BLOCK {
   struct first_entry {
     vlq     remainder_len;
     uint<8> str[ remainder_len ];
@@ -72,6 +72,6 @@ struct block {
   remaining_entry remaining[ fclex_body.terms_per_block - 1 ];
 };
 
-block               blocks[ num_blocks ];
+BLOCK               blocks[ num_blocks ];
 
 /* vim:set syntax=c et sw=2 ts=2: */

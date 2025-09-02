@@ -25,9 +25,9 @@ struct APP0 {
     DOTS_CM   = 2
   };
 
-  uint<16,b>  marker == 0xFFE0;
+  uint<16,b>  marker if $ == 0xFFE0;
   uint<16,b>  size                      "%u";
-  utf<8>      jfif[] == "JFIF";
+  utf<8>      jfif[] if $ == "JFIF";
   uint<8>     major;
   uint<8>     minor;
   units_t     units;
@@ -63,7 +63,7 @@ struct SOF {
 };
 
 struct SOI {
-  uint<16,b> marker == 0xFFD8;
+  uint<16,b> marker if $ == 0xFFD8;
 };
 
 struct RGB {
@@ -79,9 +79,9 @@ struct extension_APP0 {
     THUMB_3BPP  = 0x13
   };
 
-  uint<16,b>  marker == 0xFFE0;
+  uint<16,b>  marker if $ == 0xFFE0;
   uint<16,b>  size                      "%u";
-  utf<8>      jfxx[] == "JFXX";
+  utf<8>      jfxx[] if $ == "JFXX";
   THUMB_FORMAT thumb_fmt;
 
     switch ( thumb_fmt ) {
@@ -102,11 +102,11 @@ struct extension_APP0 {
 };
 
 struct SOS {
-  uint<16,b> marker == 0xFFDA;
+  uint<16,b> marker if $ == 0xFFDA;
 };
 
 struct EOI {
-  uint<16,b> marker == 0xFFD9;
+  uint<16,b> marker if $ == 0xFFD9;
 };
 
 union BODY {
