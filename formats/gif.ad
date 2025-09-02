@@ -66,7 +66,7 @@ struct IMAGE_DESCRIPTOR {
   uint<5,l>   pixel;
 };
 
-struct rgb {
+struct RGB {
   uint<8> red;
   uint<8> green;
   uint<8> blue;
@@ -77,13 +77,13 @@ struct rgb {
 SIGNATURE           sig;
 SCREEN_DESCRIPTOR   screen_desc;
 if ( sig.has_color_map ) {
-  rgb               global_color_map[ 1 << screen_desc.pixel ];
+  RGB               global_color_map[ 1 << screen_desc.pixel ];
 }
 
 struct IMAGE {
   IMAGE_DESCRIPTOR  image_desc[*];
   if ( image_desc.use_local_color_map ) {
-    rgb             local_color_map[ 1 << image_desc.pixel ];
+    RGB             local_color_map[ 1 << image_desc.pixel ];
   }
   uint<8>           image_data[ screen_desc.width * screen_desc.height ];
 };
