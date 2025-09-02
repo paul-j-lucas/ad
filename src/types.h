@@ -520,6 +520,7 @@ struct ad_type {
     ad_enum_type_t    enum_t;           ///< #T_ENUM members.
                         // nothing needed for T_ERROR
     ad_float_type_t   float_t;          ///< #T_FLOAT members.
+    ad_fmt_type_t     fmt_t;            ///< Any format type.
     ad_int_type_t     int_t;            ///< #T_INT members.
     ad_struct_type_t  struct_t;         ///< #T_STRUCT members.
     ad_typedef_type_t typedef_t;        ///< #T_TYPEDEF members.

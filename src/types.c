@@ -208,7 +208,7 @@ void ad_type_free( ad_type_t *type ) {
     case T_FLOAT:
     case T_INT:
     case T_UTF:
-      FREE( type->bool_t.printf_fmt );
+      FREE( type->fmt_t.printf_fmt );
       FALLTHROUGH;
     case T_ENUM:
       slist_cleanup(
