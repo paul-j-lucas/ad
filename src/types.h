@@ -62,24 +62,42 @@ _GL_INLINE_HEADER_BEGIN
 /** (T)ype bitmask: `xxxx xxxx TTTT xxxx` */
 #define T_MASK_TYPE             0x00F0u
 
-#define T_BOOL8     (           T_BOOL  | T_08) /**< `bool`             */
+/** `bool` */
+#define T_BOOL8     (           (unsigned)T_BOOL  | T_08)
 
-#define T_UTF8      (           T_UTF   | T_08) /**< UTF-8 (multibyte). */
-#define T_UTF16HE   (T_END_H    T_UTF   | T_16) /**< UTF-16 host.       */
-#define T_UTF16BE   (T_END_B  | T_UTF   | T_16) /**< UTF-16 big.        */
-#define T_UTF16LE   (T_END_L  | T_UTF   | T_16) /**< UTF-16 little.     */
-#define T_UTF32HE   (T_END_H    T_UTF   | T_32) /**< UTF-32 host.       */
-#define T_UTF32BE   (T_END_B  | T_UTF   | T_32) /**< UTF-32 big.        */
-#define T_UTF32LE   (T_END_L  | T_UTF   | T_32) /**< UTF-32 little.     */
+/** UTF-8 (multibyte). */
+#define T_UTF8      (           (unsigned)T_UTF   | T_08)
+
+/** UTF-16 host. */
+#define T_UTF16HE   (T_END_H    (unsigned)T_UTF   | T_16)
+
+/** UTF-16 big. */
+#define T_UTF16BE   (T_END_B  | (unsigned)T_UTF   | T_16)
+
+/** UTF-16 little. */
+#define T_UTF16LE   (T_END_L  | (unsigned)T_UTF   | T_16)
+
+/** UTF-32 host. */
+#define T_UTF32HE   (T_END_H  | (unsigned)T_UTF   | T_32)
+
+/** UTF-32 big. */
+#define T_UTF32BE   (T_END_B  | (unsigned)T_UTF   | T_32)
+
+/** UTF-32 little. */
+#define T_UTF32LE   (T_END_L  | (unsigned)T_UTF   | T_32)
+
 
 #define T_NULL      T_MASK_NULL                 /**< Null-terminated.   */
-#define T_UTF_0     (T_NULL   | T_UTF)          /**< UTF string.        */
 
-/** UTF-8, null-terminated string. */
-#define T_UTF8_0    (           T_UTF_0 | T_08)
+/** UTF string. */
+#define T_UTF_0     (T_NULL   | (unsigned)T_UTF)
 
-/** UTF-16 host-endian, null-terminated string. */
-#define T_UTF16HE_0 (T_END_H  | T_UTF_0 | T_16)
+
+/** UTF-8, null-terminated strin(unsigned)g. */
+#define T_UTF8_0    (           (unsigned)T_UTF_0 | T_08)
+
+/** UTF-16 host-endian, null-ter(unsigned)minated string. */
+#define T_UTF16HE_0 (T_END_H  | (unsigned)T_UTF_0 | T_16)
 
 /** UTF-16 big-endian, null-terminated string. */
 #define T_UTF16BE_0 (T_END_B  | T_UTF_0 | T_16)
