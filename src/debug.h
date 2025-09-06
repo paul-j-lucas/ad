@@ -68,10 +68,10 @@ void ad_rep_dump( ad_rep_t const *rep, FILE *fout );
 /**
  * Dump \a statement in [JSON5](https://json5.org) format (for debugging).
  *
- * @param statement The \ref ad_statement to dump.
+ * @param statement The \ref ad_stmnt to dump.
  * @param fout The `FILE` to dump to.
  */
-void ad_statement_dump( ad_statement_t const *statement, FILE *fout );
+void ad_stmnt_dump( ad_stmnt_t const *statement, FILE *fout );
 
 /**
  * Dumps \a tid in [JSON5](https://json5.org) format (for debugging).

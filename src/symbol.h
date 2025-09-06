@@ -67,15 +67,15 @@ typedef enum sym_kind sym_kind_t;
  * SYmbol iNFO.
  */
 struct synfo {
-  unsigned      scope;                  ///< Scope level.
-  sym_kind_t    kind;                   ///< Kind of symbol information.
-  ad_loc_t      first_loc;              ///< Location first mentioned.
-  bool          is_used;                ///< True only if actually used.
+  unsigned            scope;            ///< Scope level.
+  sym_kind_t          kind;             ///< Kind of symbol information.
+  ad_loc_t            first_loc;        ///< Location first mentioned.
+  bool                is_used;          ///< True only if actually used.
   
   union {
-    ad_decl_t  *decl;
-    ad_type_t  *type;
-    void       *obj;
+    ad_decl_stmnt_t  *decl;
+    ad_type_t        *type;
+    void             *obj;
   };
 };
 typedef struct synfo synfo_t;

@@ -51,9 +51,9 @@
  * @sa ia_cleanup()
  */
 struct in_attr {
-  sname_t         scope_sname;          ///< Current scope name, if any.
-  ad_type_t      *cur_type;             ///< Current type.
-  ad_statement_t *statement;            ///< Current field name, if any.
+  sname_t     scope_sname;              ///< Current scope name, if any.
+  ad_type_t  *cur_type;                 ///< Current type.
+  ad_stmnt_t *statement;                ///< Current field name, if any.
 };
 typedef struct in_attr in_attr_t;
 

@@ -74,7 +74,7 @@ typedef struct dump_state dump_state_t;
 // local functions
 #if 0
 NODISCARD
-static bool ad_switch_exec( ad_switch_statement_t const*, dump_state_t* );
+static bool ad_switch_exec( ad_switch_stmnt_t const*, dump_state_t* );
 #endif
 
 // local constants
@@ -97,11 +97,12 @@ static bool ad_type_match( ad_type_t const *type, dump_state_t *dump ) {
 /**
  * Executes and **ad** declaration.
  *
- * @param decl The \ref ad_decl to execute.
+ * @param decl The \ref ad_decl_stmnt to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_decl_exec( ad_decl_t const *decl, dump_state_t *dump ) {
+static bool ad_decl_stmnt_exec( ad_decl_stmnt_t const *decl,
+                                dump_state_t *dump ) {
   assert( decl != NULL );
   assert( dump != NULL );
 
@@ -154,12 +155,11 @@ static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
 /**
  * Executes an **ad** statement.
  *
- * @param statement The \ref ad_statement to execute.
+ * @param statement The \ref ad_stmnt to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_statement_exec( ad_statement_t const *statement,
-                               dump_state_t *dump ) {
+static bool ad_stmnt_exec( ad_stmnt_t const *statement, dump_state_t *dump ) {
   assert( statement != NULL );
   assert( dump != NULL );
 
@@ -169,15 +169,15 @@ static bool ad_statement_exec( ad_statement_t const *statement,
       break;
     case AD_STMNT_DECLARATION:
       // TODO
-      if ( !ad_decl_exec( &statement->decl_s, dump ) )
+      if ( !ad_decl_stmnt_exec( &statement->decl_stmnt, dump ) )
         return false;
       break;
     case AD_STMNT_IF:
-      if ( !ad_if_exec( &statement->if_s, dump ) )
+      if ( !ad_if_exec( &statement->if_stmnt, dump ) )
         return false;
       break;
     case AD_STMNT_SWITCH:
-      if ( !ad_switch_exec( &statement->switch_s, dump ) )
+      if ( !ad_switch_exec( &statement->switch_stmnt, dump ) )
         return false;
       break;
   } // switch
@@ -190,11 +190,11 @@ static bool ad_statement_exec( ad_statement_t const *statement,
 /**
  * Executes an **ad** `switch` statement.
  *
- * @param switch_ The \ref ad_switch_statement to execute.
+ * @param switch_ The \ref ad_switch_stmnt to execute.
  * @return Returns `true` only if successful.
  */
 NODISCARD
-static bool ad_switch_exec( ad_switch_statement_t const *switch_,
+static bool ad_switch_exec( ad_switch_stmnt_t const *switch_,
                             dump_state_t *dump ) {
   assert( switch_ != NULL );
   assert( dump != NULL );
@@ -298,7 +298,7 @@ void dump_file_format( char const *format_path ) {
   dump_state_t dump = { .indent = 0 };
   extern slist_t statement_list;
   FOREACH_SLIST_NODE( statement_node, &statement_list ) {
-    if ( !ad_statement_exec( statement_node->data, &dump ) )
+    if ( !ad_stmnt_exec( statement_node->data, &dump ) )
       break;
   } // for
 #endif

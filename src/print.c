@@ -405,7 +405,7 @@ bool print_suggestions( dym_kind_t kinds, char const *unknown_token ) {
   return false;
 }
 
-void print_decl( ad_decl_t const *decl, FILE *fout ) {
+void print_decl( ad_decl_stmnt_t const *decl, FILE *fout ) {
   assert( decl != NULL );
   assert( fout != NULL );
 

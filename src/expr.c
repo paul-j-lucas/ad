@@ -1160,6 +1160,37 @@ static bool ad_expr_rel_not_eq( ad_expr_t const *expr, ad_expr_t *rv ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
+bool ad_expr_check_type( ad_expr_t const *expr ) {
+  assert( expr != NULL );
+  ad_tid_t cond_tid, false_tid, lhs_tid, rhs_tid;
+
+  switch ( expr->expr_kind & AD_EXPR_MASK ) {
+    case AD_EXPR_TERNARY:
+      cond_tid  = ad_expr_tid_base( expr->ternary.cond_expr  );
+      false_tid = ad_expr_tid_base( expr->ternary.false_expr );
+      if ( (cond_tid & false_tid) == T_NONE ) {
+        print_error( &expr->ternary.false_expr->loc,
+          "type of \"false\" expression incompatible with \"condition\"\n"
+        );
+        return false;
+      }
+      FALLTHROUGH;
+
+    case AD_EXPR_BINARY:
+      lhs_tid = ad_expr_tid_base( expr->binary.lhs_expr );
+      rhs_tid = ad_expr_tid_base( expr->binary.rhs_expr );
+      if ( (lhs_tid & rhs_tid) == T_NONE ) {
+        return false;
+      }
+      FALLTHROUGH;
+
+    case AD_EXPR_UNARY:
+      // nothing to do
+      break;
+  } // switch
+  return true;
+}
+
 char const* ad_expr_err_name( ad_expr_err_t err ) {
   switch ( err ) {
     case AD_ERR_NONE        : return "none";

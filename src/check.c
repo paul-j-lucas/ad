@@ -35,7 +35,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 NODISCARD
-static bool ad_statement_check( ad_statement_t const *statement ) {
+static bool ad_stmnt_check( ad_stmnt_t const *statement ) {
   assert( statement != NULL );
 
   // TODO
@@ -45,11 +45,11 @@ static bool ad_statement_check( ad_statement_t const *statement ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool ad_statement_list_check( slist_t const *statement_list ) {
+bool ad_stmnt_list_check( slist_t const *statement_list ) {
   assert( statement_list != NULL );
 
   FOREACH_SLIST_NODE( statement_node, statement_list ) {
-    if ( !ad_statement_check( statement_node->data ) )
+    if ( !ad_stmnt_check( statement_node->data ) )
       return false;
   } // for
 

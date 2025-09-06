@@ -39,6 +39,8 @@ _GL_INLINE_HEADER_BEGIN
 
 ///////////////////////////////////////////////////////////////////////////////
 
+bool ad_expr_check_type( ad_expr_t const *expr );
+
 /**
  * Gets the name of \a err.
  *

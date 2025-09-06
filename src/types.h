@@ -250,7 +250,7 @@ enum ad_rep_kind {
 /**
  * Kinds of statements in the **ad** language.
  */
-enum ad_statement_kind {
+enum ad_stmnt_kind {
   AD_STMNT_BREAK,                       ///< `break`
   AD_STMNT_DECLARATION,                 ///< Single declaration.
   AD_STMNT_IF,                          ///< `if`
@@ -278,24 +278,25 @@ enum ad_tid_kind {
 
 ////////// typedefs ///////////////////////////////////////////////////////////
 
-typedef struct  ad_binary_expr        ad_binary_expr_t;
-typedef unsigned                      ad_bits_t;
-typedef struct  ad_bool_type          ad_bool_type_t;
-typedef enum    ad_debug              ad_debug_t;
-typedef struct  ad_decl               ad_decl_t;
-typedef struct  ad_enum_type          ad_enum_type_t;
-typedef struct  ad_enum_value         ad_enum_value_t;
-typedef struct  ad_expr               ad_expr_t;
-typedef enum    ad_expr_err           ad_expr_err_t;
-typedef enum    ad_expr_kind          ad_expr_kind_t;
-typedef struct  ad_float_type         ad_float_type_t;
-typedef struct  ad_fmt_type           ad_fmt_type_t;
-typedef struct  ad_if_statement       ad_if_statement_t;
-typedef struct  ad_int_type           ad_int_type_t;
-typedef enum    ad_int_base           ad_int_base_t;
-typedef struct  ad_keyword            ad_keyword_t;
-typedef struct  ad_literal_expr       ad_literal_expr_t;
-typedef struct  ad_loc                ad_loc_t;
+typedef struct  ad_binary_expr  ad_binary_expr_t;
+typedef unsigned                ad_bits_t;
+typedef struct  ad_bool_type    ad_bool_type_t;
+typedef struct  ad_break_stmnt  ad_break_stmnt_t;
+typedef enum    ad_debug        ad_debug_t;
+typedef struct  ad_decl_stmnt   ad_decl_stmnt_t;
+typedef struct  ad_enum_type    ad_enum_type_t;
+typedef struct  ad_enum_value   ad_enum_value_t;
+typedef struct  ad_expr         ad_expr_t;
+typedef enum    ad_expr_err     ad_expr_err_t;
+typedef enum    ad_expr_kind    ad_expr_kind_t;
+typedef struct  ad_float_type   ad_float_type_t;
+typedef struct  ad_fmt_type     ad_fmt_type_t;
+typedef struct  ad_if_stmnt     ad_if_stmnt_t;
+typedef struct  ad_int_type     ad_int_type_t;
+typedef enum    ad_int_base     ad_int_base_t;
+typedef struct  ad_keyword      ad_keyword_t;
+typedef struct  ad_literal_expr ad_literal_expr_t;
+typedef struct  ad_loc          ad_loc_t;
 
 /**
  * Underlying source location numeric type for \ref ad_loc.
@@ -304,21 +305,21 @@ typedef struct  ad_loc                ad_loc_t;
  * that assumes it's signed.  Making it unsigned generates warnings; hence this
  * is kept as signed to prevent the warnings.
  */
-typedef short                         ad_loc_num_t;
+typedef short                   ad_loc_num_t;
 
-typedef struct  ad_rep                ad_rep_t;
-typedef enum    ad_rep_kind           ad_rep_kind_t;
-typedef struct  ad_statement          ad_statement_t;
-typedef enum    ad_statement_kind     ad_statement_kind_t;
-typedef slist_t                       ad_statement_list_t;
-typedef struct  ad_struct_type        ad_struct_type_t;
-typedef struct  ad_switch_statement   ad_switch_statement_t;
-typedef struct  ad_switch_case        ad_switch_case_t;
-typedef struct  ad_ternary_expr       ad_ternary_expr_t;
-typedef struct  ad_type               ad_type_t;
-typedef struct  ad_typedef_type       ad_typedef_type_t;
-typedef struct  ad_union_type         ad_union_type_t;
-typedef struct  ad_utf_type           ad_utf_type_t;
+typedef struct  ad_rep          ad_rep_t;
+typedef enum    ad_rep_kind     ad_rep_kind_t;
+typedef struct  ad_stmnt        ad_stmnt_t;
+typedef enum    ad_stmnt_kind   ad_stmnt_kind_t;
+typedef slist_t                 ad_stmnt_list_t;
+typedef struct  ad_struct_type  ad_struct_type_t;
+typedef struct  ad_switch_stmnt ad_switch_stmnt_t;
+typedef struct  ad_switch_case  ad_switch_case_t;
+typedef struct  ad_ternary_expr ad_ternary_expr_t;
+typedef struct  ad_type         ad_type_t;
+typedef struct  ad_typedef_type ad_typedef_type_t;
+typedef struct  ad_union_type   ad_union_type_t;
+typedef struct  ad_utf_type     ad_utf_type_t;
 
 /**
  * Type ID.
@@ -481,7 +482,7 @@ struct ad_struct_type {
   DECL_UNUSED(char const*);
   /// @endcond
 
-  ad_statement_list_t member_list;      ///< Structure members.
+  ad_stmnt_list_t member_list;          ///< Structure members.
 };
 
 /**
@@ -494,7 +495,7 @@ struct ad_union_type {
   DECL_UNUSED(char const*);
   /// @endcond
 
-  ad_statement_list_t member_list;      ///< Union members.
+  ad_stmnt_list_t member_list;          ///< Union members.
 };
 
 /**
@@ -558,7 +559,7 @@ extern ad_type_t const TB_UTF8_0;       ///< Built-in UTF-8 string type.
 /**
  * A declaration in the **ad** language.
  */
-struct ad_decl {
+struct ad_decl_stmnt {
   char const       *name;               ///< Name.
   ad_type_t        *type;               ///< Type.
   unsigned          align;              ///< Alignment.
@@ -569,26 +570,33 @@ struct ad_decl {
 };
 
 /**
- * A `if` statement in the **ad** language.
+ * A `break` statement in the **ad** language.
  */
-struct ad_if_statement {
-  ad_expr_t            *expr;           ///< `if` expression.
-  ad_statement_list_t   if_list;        ///< `true` statement list.
-  ad_statement_list_t   else_list;      ///< `false` statement list.
+struct ad_break_stmnt {
+  unsigned  goto_stmnt_idx;             ///< Statement index to go to.
 };
 
 /**
- * An individual `case` for an \ref ad_switch_statement.
+ * A `if` statement in the **ad** language.
+ */
+struct ad_if_stmnt {
+  ad_expr_t        *expr;               ///< `if` expression.
+  ad_stmnt_list_t   if_list;            ///< `true` statement list.
+  ad_stmnt_list_t   else_list;          ///< `false` statement list.
+};
+
+/**
+ * An individual `case` for an \ref ad_switch_stmnt.
  */
 struct ad_switch_case {
-  ad_expr_t            *expr;
-  ad_statement_list_t   statement_list;
+  ad_expr_t        *expr;
+  ad_stmnt_list_t   statement_list;
 };
 
 /**
  * A `switch` statement in the **ad** language.
  */
-struct ad_switch_statement {
+struct ad_switch_stmnt {
   ad_expr_t  *expr;                     ///< `switch` expression.
   slist_t     case_list;                ///< `switch` cases.
 };
@@ -596,19 +604,19 @@ struct ad_switch_statement {
 /**
  * A statement in the **ad** language.
  */
-struct ad_statement {
-  ad_statement_kind_t kind;             ///< Statement kind.
+struct ad_stmnt {
+  ad_stmnt_kind_t     kind;             ///< Statement kind.
   ad_loc_t            loc;              ///< Source location.
 
   /**
    * Additional data for each \ref kind.
    */
   union {
-    // nothing needed for break statement
+    ad_break_stmnt_t  break_stmnt;      ///< \ref ad_break_stmnt members.
     // nothing needed for compound statement
-    ad_decl_t               decl_s;     ///< \ref ad_decl members.
-    ad_if_statement_t       if_s;       ///< \ref ad_if_statement members.
-    ad_switch_statement_t   switch_s;   ///< \ref ad_switch_statement members.
+    ad_decl_stmnt_t   decl_stmnt;       ///< \ref ad_decl_stmnt members.
+    ad_if_stmnt_t     if_stmnt;         ///< \ref ad_if_stmnt members.
+    ad_switch_stmnt_t switch_stmnt;     ///< \ref ad_switch_stmnt members.
   };
 };
 
@@ -616,10 +624,10 @@ struct ad_statement {
  * Convenience macro to iterate over the cases of a `switch` statement.
  *
  * @param VAR The \ref slist_node loop variable.
- * @param STATEMENT The \ref ad_switch_statement to iterate the cases of.
+ * @param STATEMENT The \ref ad_switch_stmnt to iterate the cases of.
  */
 #define FOREACH_SWITCH_CASE(VAR,STATEMENT) \
-  FOREACH_SLIST_NODE( VAR, &(STATEMENT)->switch_s.case_list )
+  FOREACH_SLIST_NODE( VAR, &(STATEMENT)->switch_stmnt.case_list )
 
 ////////// expressions ////////////////////////////////////////////////////////
 
@@ -783,21 +791,21 @@ char const* ad_rep_kind_name( ad_rep_kind_t kind );
 /**
  * Frees all the memory used by \a statement.
  *
- * @param statement The `ad_statement` to free.  If NULL, does nothing.
+ * @param statement The \ref ad_stmnt to free.  If NULL, does nothing.
  *
- * @sa ad_statement_list_cleanup()
+ * @sa ad_stmnt_list_cleanup()
  */
-void ad_statement_free( ad_statement_t *statement );
+void ad_stmnt_free( ad_stmnt_t *statement );
 
 /**
  * Cleans-up all memory associated with \a statement_list.
  *
- * @param statement_list The \ref ad_statement_list_t to clean-up.  If NULL,
- * does nothing.
+ * @param statement_list The \ref ad_stmnt_list_t to clean-up.  If NULL, does
+ * nothing.
  *
- * @sa ad_statement_free()
+ * @sa ad_stmnt_free()
  */
-void ad_statement_list_cleanup( ad_statement_list_t *statement_list );
+void ad_stmnt_list_cleanup( ad_stmnt_list_t *statement_list );
 
 /**
  * Gets whether \a is a null-terminated string (as opposed to a single

@@ -124,7 +124,7 @@ char const* ad_rep_kind_name( ad_rep_kind_t kind ) {
   UNEXPECTED_INT_VALUE( kind );
 }
 
-void ad_statement_free( ad_statement_t *statement ) {
+void ad_stmnt_free( ad_stmnt_t *statement ) {
   if ( statement == NULL )
     return;
 
@@ -134,23 +134,23 @@ void ad_statement_free( ad_statement_t *statement ) {
       break;
 
     case AD_STMNT_DECLARATION:
-      FREE( statement->decl_s.name );
-      // statement->decl_s.type points to a type in a synfo in the symbol table
-      FREE( statement->decl_s.printf_fmt );
+      FREE( statement->decl_stmnt.name );
+      // statement->decl_stmnt.type points to a type in a synfo in the symbol table
+      FREE( statement->decl_stmnt.printf_fmt );
       break;
 
     case AD_STMNT_IF:
-      ad_expr_free( statement->if_s.expr );
-      ad_statement_list_cleanup( &statement->if_s.if_list );
-      ad_statement_list_cleanup( &statement->if_s.else_list );
+      ad_expr_free( statement->if_stmnt.expr );
+      ad_stmnt_list_cleanup( &statement->if_stmnt.if_list );
+      ad_stmnt_list_cleanup( &statement->if_stmnt.else_list );
       break;
 
     case AD_STMNT_SWITCH:
-      ad_expr_free( statement->switch_s.expr );
+      ad_expr_free( statement->switch_stmnt.expr );
       FOREACH_SWITCH_CASE( case_node, statement ) {
         ad_switch_case_t *const switch_case = case_node->data;
         ad_expr_free( switch_case->expr );
-        ad_statement_list_cleanup( &switch_case->statement_list );
+        ad_stmnt_list_cleanup( &switch_case->statement_list );
       } // for
       break;
   } // switch
@@ -158,9 +158,9 @@ void ad_statement_free( ad_statement_t *statement ) {
   free( statement );
 }
 
-void ad_statement_list_cleanup( ad_statement_list_t *statement_list ) {
+void ad_stmnt_list_cleanup( ad_stmnt_list_t *statement_list ) {
   slist_cleanup(
-    statement_list, POINTER_CAST( slist_free_fn_t, &ad_statement_free )
+    statement_list, POINTER_CAST( slist_free_fn_t, &ad_stmnt_free )
   );
 }
 
@@ -220,7 +220,7 @@ void ad_type_free( ad_type_t *type ) {
     case T_UNION:
       slist_cleanup(
         &type->union_t.member_list,
-        POINTER_CAST( slist_free_fn_t, &ad_statement_free )
+        POINTER_CAST( slist_free_fn_t, &ad_stmnt_free )
       );
       break;
     case T_ERROR:

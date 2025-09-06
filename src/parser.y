@@ -254,13 +254,13 @@
   DUMP_KEY_IMPL( KEY ": \"" ); sname_dump( &(SNAME), stdout ); PUTC( '"'); )
 
 /**
- * Dumps an \ref ad_statement.
+ * Dumps an \ref ad_stmnt.
  *
  * @param KEY The key name to print.
- * @param statement The \ref ad_statement to dump.
+ * @param statement The \ref ad_stmnt to dump.
  */
 #define DUMP_STATEMENT(KEY,STATEMENT) IF_AD_DEBUG( \
-  DUMP_KEY_IMPL( KEY ": " ); ad_statement_dump( (STATEMENT), stdout ); )
+  DUMP_KEY_IMPL( KEY ": " ); ad_stmnt_dump( (STATEMENT), stdout ); )
 
 /**
  * Dumps a C string.
@@ -330,7 +330,7 @@
 
 // extern functions
 NODISCARD
-bool  ad_statement_list_check( slist_t const* ),
+bool  ad_stmnt_list_check( slist_t const* ),
       ad_type_check( ad_type_t const* );
 
 // local functions
@@ -524,7 +524,7 @@ static void yyerror( char const *msg ) {
 %}
 
 %union {
-  ad_decl_t          *decl;
+  ad_decl_stmnt_t    *decl;
   endian_t            endian_val;
   ad_enum_value_t    *enum_val;
   ad_expr_t          *expr;       // for the expression being built
@@ -534,7 +534,7 @@ static void yyerror( char const *msg ) {
   char const         *literal;    // token literal
   char               *name;       // name being declared
   ad_rep_t            rep_val;
-  ad_statement_t     *statement;
+  ad_stmnt_t         *statement;
   char               *str_val;    // quoted string value
   ad_switch_case_t   *switch_case;
   ad_type_t          *type;
@@ -730,7 +730,7 @@ static void yyerror( char const *msg ) {
 %destructor { DTRACE; free( $$ );               } <str_val>
 %destructor { DTRACE; ad_expr_free( $$ );       } <expr>
 %destructor { DTRACE; ad_type_free( $$ );       } <type>
-%destructor { DTRACE; ad_statement_free( $$ );  } <statement>
+%destructor { DTRACE; ad_stmnt_free( $$ );      } <statement>
 
 /*****************************************************************************/
 %%
@@ -738,7 +738,7 @@ static void yyerror( char const *msg ) {
 ad_file
   : statement_list_opt Y_END
     {
-      PARSE_ASSERT( ad_statement_list_check( &statement_list ) );
+      PARSE_ASSERT( ad_stmnt_list_check( &statement_list ) );
     }
   | error
     {
@@ -791,8 +791,8 @@ break_statement
     {
       DUMP_START( "break_statement", "break" );
 
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
+      $$ = MALLOC( ad_stmnt_t, 1 );
+      *$$ = (ad_stmnt_t){
         .kind = AD_STMNT_BREAK,
         .loc = @$
       };
@@ -812,11 +812,11 @@ if_statement
       DUMP_START( "if_statement", "IF ( expr ) statement_list_opt" );
       DUMP_EXPR( "expr", $expr );
 
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
+      $$ = MALLOC( ad_stmnt_t, 1 );
+      *$$ = (ad_stmnt_t){
         .kind = AD_STMNT_IF,
         .loc = @$,
-        .if_s = {
+        .if_stmnt = {
           .expr = $expr,
           .if_list = slist_move( &$if_list ),
           .else_list = slist_move( &$else_list )
@@ -846,11 +846,11 @@ switch_statement
                   "switch '(' expr ')' '{' switch_case_list_opt '}'" );
       DUMP_EXPR( "expr", $expr );
 
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
+      $$ = MALLOC( ad_stmnt_t, 1 );
+      *$$ = (ad_stmnt_t){
         .kind = AD_STMNT_SWITCH,
         .loc = @$,
-        .switch_s = {
+        .switch_stmnt = {
           .expr = $expr,
           .case_list = slist_move( &$case_list )
         }
@@ -924,9 +924,9 @@ declaration
       assert( $field->kind == AD_STMNT_DECLARATION );
 
       if ( is_requires == 0 )
-        $field->decl_s.if_expr = if_or_requires_expr;
+        $field->decl_stmnt.if_expr = if_or_requires_expr;
       else
-        $field->decl_s.requires_expr = if_or_requires_expr;
+        $field->decl_stmnt.requires_expr = if_or_requires_expr;
       $$ = $field;
 
       DUMP_STATEMENT( "$$_statement", $$ );
@@ -1008,11 +1008,11 @@ field_declaration
       DUMP_REP( "rep", &$rep );
       DUMP_STR( "format", $format );
 
-      $$ = MALLOC( ad_statement_t, 1 );
-      *$$ = (ad_statement_t){
+      $$ = MALLOC( ad_stmnt_t, 1 );
+      *$$ = (ad_stmnt_t){
         .kind = AD_STMNT_DECLARATION,
         .loc = @$,
-        .decl_s = {
+        .decl_stmnt = {
           .name = $name,
           .type = $type,
           .align = $align,
@@ -1108,7 +1108,7 @@ typedef_declaration
       assert( $field->kind == AD_STMNT_DECLARATION );
 
       in_attr_t *const ia = slist_front( &in_attr_list );
-      ad_decl_t *const decl = &$field->decl_s;
+      ad_decl_stmnt_t *const decl = &$field->decl_stmnt;
       ad_type_t *const new_type = MALLOC( ad_type_t, 1 );
       *new_type = (ad_type_t){
         .sname = ia_sname( ia, check_strdup( decl->name ) ),
@@ -1117,7 +1117,7 @@ typedef_declaration
         .rep = decl->rep,
         .typedef_t = { .type = decl->type }
       };
-      ad_statement_free( $field );
+      ad_stmnt_free( $field );
       PARSE_ASSERT( define_type( new_type ) );
       $$ = NULL;                        // do not add to statement_list
 
@@ -1551,7 +1551,7 @@ primary_expr
     {
       $$ = ad_expr_new( AD_EXPR_NAME, &@$ );
       in_attr_t *const ia = slist_front( &in_attr_list );
-      $$->name = check_strdup( ia->statement->decl_s.name );
+      $$->name = check_strdup( ia->statement->decl_stmnt.name );
     }
   | '(' expr ')'                  { $$ = $expr; }
   ;
@@ -1999,7 +1999,7 @@ static void l_elaborate_error( int line, dym_kind_t dym_kinds,
  * Cleans up global parser data at program termination.
  */
 static void parser_cleanup( void ) {
-  ad_statement_list_cleanup( &statement_list );
+  ad_stmnt_list_cleanup( &statement_list );
 }
 
 /**
