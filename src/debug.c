@@ -459,7 +459,7 @@ static void ad_stmnt_dump_impl( ad_stmnt_t const *statement,
       DUMP_KEY( dump, "break: " );
       ad_break_stmnt_dump_impl( &statement->break_stmnt, dump );
       break;
-    case AD_STMNT_DECLARATION:
+    case AD_STMNT_DECL:
       DUMP_KEY( dump, "declaration: " );
       ad_decl_stmnt_dump_impl( &statement->decl_stmnt, dump );
       break;
@@ -512,10 +512,10 @@ static void ad_stmnt_list_dump_impl( ad_stmnt_list_t const *list,
  */
 static char const* ad_stmnt_kind_name( ad_stmnt_kind_t kind ) {
   switch ( kind ) {
-    case AD_STMNT_BREAK       : return L_break;
-    case AD_STMNT_DECLARATION : return "declaration";
-    case AD_STMNT_IF          : return L_if;
-    case AD_STMNT_SWITCH      : return L_switch;
+    case AD_STMNT_BREAK : return L_break;
+    case AD_STMNT_DECL  : return "declaration";
+    case AD_STMNT_IF    : return L_if;
+    case AD_STMNT_SWITCH: return L_switch;
   } // switch
   UNEXPECTED_INT_VALUE( kind );
   return NULL;

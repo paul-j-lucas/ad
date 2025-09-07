@@ -133,7 +133,7 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
       // nothing to do
       break;
 
-    case AD_STMNT_DECLARATION:
+    case AD_STMNT_DECL:
       FREE( statement->decl_stmnt.name );
       // statement->decl_stmnt.type points to a type in a synfo in the symbol table
       FREE( statement->decl_stmnt.printf_fmt );

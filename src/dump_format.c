@@ -167,7 +167,7 @@ static bool ad_stmnt_exec( ad_stmnt_t const *statement, dump_state_t *dump ) {
     case AD_STMNT_BREAK:
       // TODO
       break;
-    case AD_STMNT_DECLARATION:
+    case AD_STMNT_DECL:
       // TODO
       if ( !ad_decl_stmnt_exec( &statement->decl_stmnt, dump ) )
         return false;

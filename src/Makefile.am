@@ -39,6 +39,7 @@ ad_SOURCES =	parser.y \
 		array.c array.h \
 		check.c \
 		color.c color.h \
+		compile.c \
 		dam_lev.c dam_lev.h \
 		did_you_mean.c did_you_mean.h \
 		debug.c debug.h \

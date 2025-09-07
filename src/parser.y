@@ -921,7 +921,7 @@ declaration
       DUMP_EXPR( "if_or_requires_expr_opt", if_or_requires_expr );
       DUMP_BOOL( "is_requires", is_requires );
 
-      assert( $field->kind == AD_STMNT_DECLARATION );
+      assert( $field->kind == AD_STMNT_DECL );
 
       if ( is_requires == 0 )
         $field->decl_stmnt.if_expr = if_or_requires_expr;
@@ -1010,7 +1010,7 @@ field_declaration
 
       $$ = MALLOC( ad_stmnt_t, 1 );
       *$$ = (ad_stmnt_t){
-        .kind = AD_STMNT_DECLARATION,
+        .kind = AD_STMNT_DECL,
         .loc = @$,
         .decl_stmnt = {
           .name = $name,
@@ -1104,8 +1104,7 @@ typedef_declaration
       DUMP_START( "typedef_declaration", "TYPEDEF field_declaration" );
       DUMP_STATEMENT( "field_declaration", $field );
 
-
-      assert( $field->kind == AD_STMNT_DECLARATION );
+      assert( $field->kind == AD_STMNT_DECL );
 
       in_attr_t *const ia = slist_front( &in_attr_list );
       ad_decl_stmnt_t *const decl = &$field->decl_stmnt;

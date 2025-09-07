@@ -252,7 +252,7 @@ enum ad_rep_kind {
  */
 enum ad_stmnt_kind {
   AD_STMNT_BREAK,                       ///< `break`
-  AD_STMNT_DECLARATION,                 ///< Single declaration.
+  AD_STMNT_DECL,                        ///< Single declaration.
   AD_STMNT_IF,                          ///< `if`
   AD_STMNT_SWITCH                       /// `switch`
 };
