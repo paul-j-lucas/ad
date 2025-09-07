@@ -32,29 +32,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-///////////////////////////////////////////////////////////////////////////////
-
-NODISCARD
-static bool ad_stmnt_check( ad_stmnt_t const *statement ) {
-  assert( statement != NULL );
-
-  // TODO
-
-  return true;
-}
-
 ////////// extern functions ///////////////////////////////////////////////////
-
-bool ad_stmnt_list_check( slist_t const *statement_list ) {
-  assert( statement_list != NULL );
-
-  FOREACH_SLIST_NODE( statement_node, statement_list ) {
-    if ( !ad_stmnt_check( statement_node->data ) )
-      return false;
-  } // for
-
-  return true;
-}
 
 bool ad_type_check( ad_type_t const *type ) {
   assert( type != NULL );
