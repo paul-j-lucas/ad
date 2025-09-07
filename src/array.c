@@ -72,12 +72,12 @@ int array_cmp( array_t const *i_array, array_t const *j_array,
   return i_element == i_end ? (j_element == j_end ? 0 : -1) : 1;
 }
 
-void array_push_back( array_t *array, void *element ) {
+void* array_push_back( array_t *array, void const *src ) {
   assert( array != NULL );
-  assert( element != NULL );
+  assert( src != NULL );
   size_t const index = array->len;
   array_reserve( array, ++array->len );
-  memcpy( array_at_nocheck( array, index ), element, array->esize );
+  return memcpy( array_at_nocheck( array, index ), src, array->esize );
 }
 
 bool array_reserve( array_t *array, size_t res_len ) {

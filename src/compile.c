@@ -42,9 +42,11 @@ typedef struct compile_ctx compile_ctx_t;
  * Compile context.
  */
 struct compile_ctx {
-  bool  in_switch;                      ///< True only if within `switch`.
+  bool    in_switch;                    ///< True only if within `switch`.
+  slist_t break_list;                   ///< TODO.
 };
 
+// local functions
 static bool ad_compile_switch( ad_stmnt_t const*, array_t*, compile_ctx_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -61,13 +63,19 @@ static bool ad_compile_break( ad_stmnt_t const *in_statement,
                               array_t *out_statements,
                               compile_ctx_t *ctx ) {
   assert( in_statement != NULL );
+  assert( in_statement->kind == AD_STMNT_BREAK );
   assert( out_statements != NULL );
   assert( ctx != NULL );
 
   if ( !ctx->in_switch ) {
-    print_error( &in_statement->loc, "\"break\" must be within \"switch\"\n" );
+    print_error( &in_statement->loc, "\"break\" not within \"switch\"\n" );
     return false;
   }
+
+  slist_push_back(
+    &ctx->break_list,
+    array_push_back( out_statements, in_statement )
+  );
 
   return true;
 }
@@ -83,6 +91,7 @@ static bool ad_compile_break( ad_stmnt_t const *in_statement,
 static bool ad_compile_decl( ad_stmnt_t const *in_statement,
                              array_t *out_statements, compile_ctx_t *ctx ) {
   assert( in_statement != NULL );
+  assert( in_statement->kind == AD_STMNT_DECL );
   assert( out_statements != NULL );
   assert( ctx != NULL );
 
@@ -100,6 +109,7 @@ static bool ad_compile_decl( ad_stmnt_t const *in_statement,
 static bool ad_compile_if( ad_stmnt_t const *in_statement,
                            array_t *out_statements, compile_ctx_t *ctx ) {
   assert( in_statement != NULL );
+  assert( in_statement->kind == AD_STMNT_IF );
   assert( out_statements != NULL );
   assert( ctx != NULL );
 
@@ -156,8 +166,18 @@ static bool ad_compile_impl( slist_t const *in_statements,
 static bool ad_compile_switch( ad_stmnt_t const *in_statement,
                                array_t *out_statements, compile_ctx_t *ctx ) {
   assert( in_statement != NULL );
+  assert( in_statement->kind == AD_STMNT_SWITCH );
   assert( out_statements != NULL );
   assert( ctx != NULL );
+
+  compile_ctx_t switch_ctx = { .in_switch = true };
+
+  // TODO: eval expr
+
+  FOREACH_SWITCH_CASE( case_node, in_statement ) {
+    ad_switch_case_t *const case_ = case_node->data;
+    (void)case_;
+  } // for
 
   return true;
 }

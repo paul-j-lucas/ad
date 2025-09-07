@@ -153,11 +153,13 @@ array_t array_dup( array_t const *array, ssize_t n, array_dup_fn_t dup_fn );
  * Appends \a data onto the back of \a array.
  *
  * @param array The \ref array to push onto.
- * @param element The element to pushed.  It is copied.
+ * @param src The element to pushed.  It is copied.
+ * @return Returns a pointer to the copied element.
  *
  * @note This is an O(1) operation.
  */
-void array_push_back( array_t *array, void *element );
+PJL_DISCARD
+void* array_push_back( array_t *array, void const *src );
 
 /**
  * Ensures at least \a res_len additional elements of capacity exist in \a
