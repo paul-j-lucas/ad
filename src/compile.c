@@ -47,7 +47,9 @@ struct compile_ctx {
 };
 
 // local functions
-static bool ad_compile_switch( ad_stmnt_t const*, array_t*, compile_ctx_t* );
+NODISCARD
+static bool ad_compile_let( ad_stmnt_t const*, array_t*, compile_ctx_t* ),
+            ad_compile_switch( ad_stmnt_t const*, array_t*, compile_ctx_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -116,24 +118,6 @@ static bool ad_compile_if( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
 }
 
 /**
- * Compile an **ad** `let` statement.
- *
- * @param in_stmnt The input statement to compile.
- * @param out_stmnts The array of output statements to append to.
- * @param ctx The \ref compile_ctx to use.
- * @return Returns `true` only if the statement compiled successfully.
- */
-static bool ad_compile_let( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
-                            compile_ctx_t *ctx ) {
-  assert( in_stmnt != NULL );
-  assert( in_stmnt->kind == AD_STMNT_LET );
-  assert( out_stmnts != NULL );
-  assert( ctx != NULL );
-
-  return true;
-}
-
-/**
  * TODO
  *
  * @param in_stmnts The list of input statements to compile.
@@ -171,6 +155,24 @@ static bool ad_compile_impl( slist_t const *in_stmnts, array_t *out_stmnts,
     if ( !ok )
       return false;
   } // for
+
+  return true;
+}
+
+/**
+ * Compile an **ad** `let` statement.
+ *
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
+ * @param ctx The \ref compile_ctx to use.
+ * @return Returns `true` only if the statement compiled successfully.
+ */
+static bool ad_compile_let( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
+                            compile_ctx_t *ctx ) {
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_LET );
+  assert( out_stmnts != NULL );
+  assert( ctx != NULL );
 
   return true;
 }
