@@ -54,27 +54,26 @@ static bool ad_compile_switch( ad_stmnt_t const*, array_t*, compile_ctx_t* );
 /**
  * Compile an **ad** `break` statement.
  *
- * @param in_statement The input statement to compile.
- * @param out_statements The array of output statements to append to.
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
  * @param ctx The \ref compile_ctx to use.
  * @return Returns `true` only if the statement compiled successfully.
  */
-static bool ad_compile_break( ad_stmnt_t const *in_statement,
-                              array_t *out_statements,
+static bool ad_compile_break( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
                               compile_ctx_t *ctx ) {
-  assert( in_statement != NULL );
-  assert( in_statement->kind == AD_STMNT_BREAK );
-  assert( out_statements != NULL );
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_BREAK );
+  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
   if ( !ctx->in_switch ) {
-    print_error( &in_statement->loc, "\"break\" not within \"switch\"\n" );
+    print_error( &in_stmnt->loc, "\"break\" not within \"switch\"\n" );
     return false;
   }
 
   slist_push_back(
     &ctx->break_list,
-    array_push_back( out_statements, in_statement )
+    array_push_back( out_stmnts, in_stmnt )
   );
 
   return true;
@@ -83,16 +82,16 @@ static bool ad_compile_break( ad_stmnt_t const *in_statement,
 /**
  * Compile an **ad** declaration statement.
  *
- * @param in_statement The input statement to compile.
- * @param out_statements The array of output statements to append to.
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
  * @param ctx The \ref compile_ctx to use.
  * @return Returns `true` only if the statement compiled successfully.
  */
-static bool ad_compile_decl( ad_stmnt_t const *in_statement,
-                             array_t *out_statements, compile_ctx_t *ctx ) {
-  assert( in_statement != NULL );
-  assert( in_statement->kind == AD_STMNT_DECL );
-  assert( out_statements != NULL );
+static bool ad_compile_decl( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
+                             compile_ctx_t *ctx ) {
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_DECL );
+  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
   return true;
@@ -101,16 +100,34 @@ static bool ad_compile_decl( ad_stmnt_t const *in_statement,
 /**
  * Compile an **ad** `if` statement.
  *
- * @param in_statement The input statement to compile.
- * @param out_statements The array of output statements to append to.
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
  * @param ctx The \ref compile_ctx to use.
  * @return Returns `true` only if the statement compiled successfully.
  */
-static bool ad_compile_if( ad_stmnt_t const *in_statement,
-                           array_t *out_statements, compile_ctx_t *ctx ) {
-  assert( in_statement != NULL );
-  assert( in_statement->kind == AD_STMNT_IF );
-  assert( out_statements != NULL );
+static bool ad_compile_if( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
+                           compile_ctx_t *ctx ) {
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_IF );
+  assert( out_stmnts != NULL );
+  assert( ctx != NULL );
+
+  return true;
+}
+
+/**
+ * Compile an **ad** `let` statement.
+ *
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
+ * @param ctx The \ref compile_ctx to use.
+ * @return Returns `true` only if the statement compiled successfully.
+ */
+static bool ad_compile_let( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
+                            compile_ctx_t *ctx ) {
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_LET );
+  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
   return true;
@@ -119,33 +136,36 @@ static bool ad_compile_if( ad_stmnt_t const *in_statement,
 /**
  * TODO
  *
- * @param in_statements The list of input statements to compile.
- * @param out_statements The array of output statements to append to.
+ * @param in_stmnts The list of input statements to compile.
+ * @param out_stmnts The array of output statements to append to.
  * @param ctx The \ref compile_ctx to use.
  * @return Returns `true` only if the statements compiled successfully.
  */
-static bool ad_compile_impl( slist_t const *in_statements,
-                             array_t *out_statements, compile_ctx_t *ctx ) {
-  assert( in_statements != NULL );
-  assert( out_statements != NULL );
+static bool ad_compile_impl( slist_t const *in_stmnts, array_t *out_stmnts,
+                             compile_ctx_t *ctx ) {
+  assert( in_stmnts != NULL );
+  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
   bool ok = true;
 
-  FOREACH_SLIST_NODE( in_statement_node, in_statements ) {
-    ad_stmnt_t *const in_statement = in_statement_node->data;
-    switch ( in_statement->kind ) {
+  FOREACH_SLIST_NODE( in_stmnt_node, in_stmnts ) {
+    ad_stmnt_t *const in_stmnt = in_stmnt_node->data;
+    switch ( in_stmnt->kind ) {
       case AD_STMNT_BREAK:
-        ok = ad_compile_break( in_statement, out_statements, ctx );
+        ok = ad_compile_break( in_stmnt, out_stmnts, ctx );
         break;
       case AD_STMNT_DECL:
-        ok = ad_compile_decl( in_statement, out_statements, ctx );
+        ok = ad_compile_decl( in_stmnt, out_stmnts, ctx );
         break;
       case AD_STMNT_IF:
-        ok = ad_compile_if( in_statement, out_statements, ctx );
+        ok = ad_compile_if( in_stmnt, out_stmnts, ctx );
+        break;
+      case AD_STMNT_LET:
+        ok = ad_compile_let( in_stmnt, out_stmnts, ctx );
         break;
       case AD_STMNT_SWITCH:
-        ok = ad_compile_switch( in_statement, out_statements, ctx );
+        ok = ad_compile_switch( in_stmnt, out_stmnts, ctx );
         break;
     } // switch
     if ( !ok )
@@ -158,23 +178,23 @@ static bool ad_compile_impl( slist_t const *in_statements,
 /**
  * Compile an **ad** `switch` statement.
  *
- * @param in_statement The input statement to compile.
- * @param out_statements The array of output statements to append to.
+ * @param in_stmnt The input statement to compile.
+ * @param out_stmnts The array of output statements to append to.
  * @param ctx The \ref compile_ctx to use.
  * @return Returns `true` only if the statement compiled successfully.
  */
-static bool ad_compile_switch( ad_stmnt_t const *in_statement,
-                               array_t *out_statements, compile_ctx_t *ctx ) {
-  assert( in_statement != NULL );
-  assert( in_statement->kind == AD_STMNT_SWITCH );
-  assert( out_statements != NULL );
+static bool ad_compile_switch( ad_stmnt_t const *in_stmnt, array_t *out_stmnts,
+                               compile_ctx_t *ctx ) {
+  assert( in_stmnt != NULL );
+  assert( in_stmnt->kind == AD_STMNT_SWITCH );
+  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
   compile_ctx_t switch_ctx = { .in_switch = true };
 
   // TODO: eval expr
 
-  FOREACH_SWITCH_CASE( case_node, in_statement ) {
+  FOREACH_SWITCH_CASE( case_node, in_stmnt ) {
     ad_switch_case_t *const case_ = case_node->data;
     (void)case_;
   } // for
@@ -184,12 +204,12 @@ static bool ad_compile_switch( ad_stmnt_t const *in_statement,
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool ad_compile( slist_t const *in_statements, array_t *out_statements ) {
-  assert( in_statements != NULL );
-  assert( out_statements != NULL );
+bool ad_compile( slist_t const *in_stmnts, array_t *out_stmnts ) {
+  assert( in_stmnts != NULL );
+  assert( out_stmnts != NULL );
 
   compile_ctx_t ctx = { 0 };
-  return ad_compile_impl( in_statements, out_statements, &ctx );
+  return ad_compile_impl( in_stmnts, out_stmnts, &ctx );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
