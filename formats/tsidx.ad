@@ -52,7 +52,7 @@ alignas(1)  uint<32,b>            plo[ header.num_values ];
 alignas(1)  st_term_metadata      meta[ header.num_values ];
 alignas(1)  st_fclex_body         fclex_body;
 
-let uint<32> num_blocks = (fclex_body.num_terms + fclex_body.terms_per_block - 1) / fclex_body.terms_per_block;
+let num_blocks = (fclex_body.num_terms + fclex_body.terms_per_block - 1) / fclex_body.terms_per_block;
 
             uint<32>              block_offset[ num_blocks ];
 
