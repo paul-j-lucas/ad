@@ -555,6 +555,7 @@ static void yyerror( char const *msg ) {
 %token  <expr_kind> Y_float
 %token              Y_if
 %token  <expr_kind> Y_int
+%token              Y_let
 %token              Y_offsetof
 %token              Y_requires
 %token  <expr_kind> Y_struct
@@ -707,6 +708,7 @@ static void yyerror( char const *msg ) {
 %type <statement>   enum_declaration
 %type <statement>   field_declaration
 %type <statement>   if_statement
+%type <statement>   let_statement
 %type <statement>   statement
 %type <list>        statement_list statement_list_opt
 %type <statement>   struct_declaration
@@ -775,6 +777,7 @@ statement
   : break_statement semi_exp
   | declaration semi_exp
   | if_statement
+  | let_statement semi_exp
   | switch_statement
   | error
     {
@@ -835,6 +838,30 @@ else_statement_opt
   | Y_else lbrace_exp statement_list_opt[else_list] '}'
     {
       $$ = $else_list;
+    }
+  ;
+
+////////// let statement //////////////////////////////////////////////////////
+
+let_statement
+  : Y_let name_exp[name] equals_exp expr
+    {
+      DUMP_START( "let_statement", "let NAME '=' expr" );
+      DUMP_STR( "name", $name );
+      DUMP_EXPR( "expr", $expr );
+
+      $$ = MALLOC( ad_stmnt_t, 1 );
+      *$$ = (ad_stmnt_t){
+        .kind = AD_STMNT_LET,
+        .loc = @$,
+        .let_stmnt = {
+          .name = $name,
+          .expr = $expr
+        }
+      };
+
+      DUMP_STATEMENT( "$$_statement", $$ );
+      DUMP_END();
     }
   ;
 

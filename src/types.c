@@ -135,7 +135,8 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
 
     case AD_STMNT_DECL:
       FREE( statement->decl_stmnt.name );
-      // statement->decl_stmnt.type points to a type in a synfo in the symbol table
+      // statement->decl_stmnt.type points to a type in a synfo in the symbol
+      // table
       FREE( statement->decl_stmnt.printf_fmt );
       break;
 
@@ -143,6 +144,11 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
       ad_expr_free( statement->if_stmnt.expr );
       ad_stmnt_list_cleanup( &statement->if_stmnt.if_list );
       ad_stmnt_list_cleanup( &statement->if_stmnt.else_list );
+      break;
+
+    case AD_STMNT_LET:
+      FREE( statement->let_stmnt.name );
+      ad_expr_free( statement->let_stmnt.expr );
       break;
 
     case AD_STMNT_SWITCH:

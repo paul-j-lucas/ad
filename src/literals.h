@@ -39,6 +39,7 @@ extern char const L_false[];
 extern char const L_float[];
 extern char const L_if[];
 extern char const L_int[];
+extern char const L_let[];
 extern char const L_offsetof[];
 extern char const L_requires[];
 extern char const L_sizeof[];

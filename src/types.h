@@ -254,6 +254,7 @@ enum ad_stmnt_kind {
   AD_STMNT_BREAK,                       ///< `break`
   AD_STMNT_DECL,                        ///< Single declaration.
   AD_STMNT_IF,                          ///< `if`
+  AD_STMNT_LET,                         ///< `let`
   AD_STMNT_SWITCH                       /// `switch`
 };
 
@@ -295,6 +296,7 @@ typedef struct  ad_if_stmnt     ad_if_stmnt_t;
 typedef struct  ad_int_type     ad_int_type_t;
 typedef enum    ad_int_base     ad_int_base_t;
 typedef struct  ad_keyword      ad_keyword_t;
+typedef struct  ad_let_stmnt    ad_let_stmnt_t;
 typedef struct  ad_literal_expr ad_literal_expr_t;
 typedef struct  ad_loc          ad_loc_t;
 
@@ -586,6 +588,14 @@ struct ad_if_stmnt {
 };
 
 /**
+ * A `let` statement in the **ad** language.
+ */
+struct ad_let_stmnt {
+  char const *name;                     ///< Name.
+  ad_expr_t  *expr;                     ///< Expression.
+};
+
+/**
  * An individual `case` for an \ref ad_switch_stmnt.
  */
 struct ad_switch_case {
@@ -616,6 +626,7 @@ struct ad_stmnt {
     // nothing needed for compound statement
     ad_decl_stmnt_t   decl_stmnt;       ///< \ref ad_decl_stmnt members.
     ad_if_stmnt_t     if_stmnt;         ///< \ref ad_if_stmnt members.
+    ad_let_stmnt_t    let_stmnt;        ///< \ref ad_let_stmnt members.
     ad_switch_stmnt_t switch_stmnt;     ///< \ref ad_switch_stmnt members.
   };
 };

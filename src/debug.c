@@ -300,6 +300,29 @@ static void ad_if_dump_impl( ad_if_stmnt_t const *if_stmnt,
 }
 
 /**
+ * Dumps \a let_stmnt in [JSON5](https://json5.org) format (for debugging).
+ *
+ * @param let_stmnt The \ref ad_let_stmnt to dump.
+ * @param dump The dump_state to use.
+ */
+static void ad_let_dump_impl( ad_let_stmnt_t const *let_stmnt,
+                              dump_state_t *dump ) {
+  assert( let_stmnt != NULL );
+  assert( dump != NULL );
+
+  json_state_t const let_json =
+    json_object_begin( JSON_INIT, /*key=*/NULL, dump );
+
+  DUMP_STR( dump, "name", let_stmnt->name );
+  DUMP_EXPR( dump, "expr", let_stmnt->expr );
+
+  FPUTC( '\n', dump->fout );
+  DUMP_FORMAT( dump, "]" );
+
+  json_object_end( let_json, dump );
+}
+
+/**
  * Dumps \a literal in [JSON5](https://json5.org) format (for debugging).
  *
  * @param literal The \ref ad_literal_expr to dump.
@@ -467,6 +490,10 @@ static void ad_stmnt_dump_impl( ad_stmnt_t const *statement,
       DUMP_KEY( dump, "if: " );
       ad_if_dump_impl( &statement->if_stmnt, dump );
       break;
+    case AD_STMNT_LET:
+      DUMP_KEY( dump, "let: " );
+      ad_let_dump_impl( &statement->let_stmnt, dump );
+      break;
     case AD_STMNT_SWITCH:
       DUMP_KEY( dump, "switch: " );
       ad_switch_dump_impl( &statement->switch_stmnt, dump );
@@ -515,6 +542,7 @@ static char const* ad_stmnt_kind_name( ad_stmnt_kind_t kind ) {
     case AD_STMNT_BREAK : return L_break;
     case AD_STMNT_DECL  : return "declaration";
     case AD_STMNT_IF    : return L_if;
+    case AD_STMNT_LET   : return L_let;
     case AD_STMNT_SWITCH: return L_switch;
   } // switch
   UNEXPECTED_INT_VALUE( kind );
