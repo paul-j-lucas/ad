@@ -599,7 +599,7 @@ struct ad_let_stmnt {
  */
 struct ad_switch_case {
   ad_expr_t        *expr;
-  ad_stmnt_list_t   statement_list;
+  ad_stmnt_list_t   stmnts;
 };
 
 /**

@@ -156,7 +156,7 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
       FOREACH_SWITCH_CASE( case_node, statement ) {
         ad_switch_case_t *const switch_case = case_node->data;
         ad_expr_free( switch_case->expr );
-        ad_stmnt_list_cleanup( &switch_case->statement_list );
+        ad_stmnt_list_cleanup( &switch_case->stmnts );
       } // for
       break;
   } // switch
@@ -164,10 +164,8 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
   free( statement );
 }
 
-void ad_stmnt_list_cleanup( ad_stmnt_list_t *statement_list ) {
-  slist_cleanup(
-    statement_list, POINTER_CAST( slist_free_fn_t, &ad_stmnt_free )
-  );
+void ad_stmnt_list_cleanup( ad_stmnt_list_t *stmnts ) {
+  slist_cleanup( stmnts, POINTER_CAST( slist_free_fn_t, &ad_stmnt_free ) );
 }
 
 char const* ad_tid_kind_name( ad_tid_kind_t kind ) {

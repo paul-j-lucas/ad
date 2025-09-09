@@ -191,16 +191,28 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
   assert( stmnt->kind == AD_STMNT_SWITCH );
   assert( ctx != NULL );
 
+  uint64_t switch_val;
+  if ( !ad_expr_eval_uint( stmnt->switch_stmnt.expr, &switch_val ) )
+    return EXEC_ERROR;
+
+  ad_exec_rv_t rv = EXEC_OK;
   ad_exec_ctx_t switch_ctx = { .in_switch = true };
 
-  // TODO: eval expr
-
   FOREACH_SWITCH_CASE( case_node, stmnt ) {
-    ad_switch_case_t *const case_ = case_node->data;
-    (void)case_;
+    ad_switch_case_t const *const case_ = case_node->data;
+
+    uint64_t case_val;
+    if ( !ad_expr_eval_uint( case_->expr, &case_val ) )
+      return EXEC_ERROR;
+
+    if ( case_val == switch_val ) {
+      if ( !ad_stmnt_exec_impl( &case_->stmnts, &switch_ctx ) )
+        rv = EXEC_ERROR;
+      break;
+    }
   } // for
 
-  return EXEC_OK;
+  return rv;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////

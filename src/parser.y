@@ -914,7 +914,7 @@ switch_case
       $$ = MALLOC( ad_switch_case_t, 1 );
       *$$ = (ad_switch_case_t){
         .expr = $expr,
-        .statement_list = slist_move( &$statement_list )
+        .stmnts = slist_move( &$statement_list )
       };
 
       DUMP_END();
@@ -924,7 +924,7 @@ switch_case
     {
       $$ = MALLOC( ad_switch_case_t, 1 );
       *$$ = (ad_switch_case_t){
-        .statement_list = slist_move( &$statement_list )
+        .stmnts = slist_move( &$statement_list )
       };
     }
   ;

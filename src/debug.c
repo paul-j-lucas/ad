@@ -578,7 +578,7 @@ static void ad_switch_dump_impl( ad_switch_stmnt_t const *switch_stmnt,
       json_state_t const case_json =
         json_object_begin( JSON_INIT, /*key=*/NULL, &list_dump );
       DUMP_EXPR( &list_dump, "expr", case_s->expr );
-      DUMP_STATEMENT_LIST( &list_dump, "statements", &case_s->statement_list );
+      DUMP_STATEMENT_LIST( &list_dump, "statements", &case_s->stmnts );
       json_object_end( case_json, &list_dump );
     } // for
     FPUTC( '\n', dump->fout );
