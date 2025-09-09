@@ -27,7 +27,6 @@
 #include "pjl_config.h"                 /* must go first */
 #include "expr.h"
 #include "print.h"
-#include "slist.h"
 #include "types.h"
 
 // standard
@@ -47,9 +46,9 @@ struct ad_exec_ctx {
  * Statement execution return value.
  */
 enum ad_exec_rv {
-  EXEC_ERROR,                           ///< An error occurred.
-  EXEC_BREAK,                           ///< Break.
-  EXEC_CONTINUE                         ///< Continue to next statement.
+  EXEC_OK,                              ///< Executed successfully.
+  EXEC_BREAK,                           ///< Executed successfully, but break.
+  EXEC_ERROR                            ///< An error occurred.
 };
 
 typedef struct  ad_exec_ctx ad_exec_ctx_t;
@@ -57,8 +56,9 @@ typedef enum    ad_exec_rv  ad_exec_rv_t;
 
 // local functions
 NODISCARD
-static bool ad_let_exec( ad_stmnt_t const*, ad_exec_ctx_t* ),
-            ad_switch_exec( ad_stmnt_t const*, ad_exec_ctx_t* );
+static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t* ),
+                    ad_stmnt_let( ad_stmnt_t const*, ad_exec_ctx_t* ),
+                    ad_stmnt_switch( ad_stmnt_t const*, ad_exec_ctx_t* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -69,8 +69,8 @@ static bool ad_let_exec( ad_stmnt_t const*, ad_exec_ctx_t* ),
  * @param ctx The \ref ad_exec_ctx to use.
  * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv ad_stmnt_break( ad_stmnt_t const *stmnt,
-                                  ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_break( ad_stmnt_t const *stmnt,
+                                    ad_exec_ctx_t *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_BREAK );
   assert( ctx != NULL );
@@ -90,69 +90,48 @@ static ad_exec_rv ad_stmnt_break( ad_stmnt_t const *stmnt,
  * @param ctx The \ref ad_exec_ctx to use.
  * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv ad_stmnt_decl( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
+                                   ad_exec_ctx_t *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_DECL );
-  assert( out_stmnts != NULL );
   assert( ctx != NULL );
 
-  return EXEC_CONTINUE;
-}
+  // TODO
 
-/**
- * Compile an **ad** `if` statement.
- *
- * @param stmnt The input statement to compile.
- * @param ctx The \ref ad_exec_ctx to use.
- * @return Returns \ref ad_exec_rv.
- */
-static ad_exec_rv ad_stmnt_if( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
-  assert( stmnt != NULL );
-  assert( stmnt->kind == AD_STMNT_IF );
-  assert( ctx != NULL );
-
-  uint64_t val;
-  if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &val ) )
-    return EXEC_ERROR;
-
-  ad_stmnt_list_t *const stmnts = val != 0 ?
-    &stmnt->if_stmnt.if_list :
-    &stmnt->if_stmnt.else_list;
-
-  return ad_stmnt_exec_impl( stmnts, ctx );
+  return EXEC_OK;
 }
 
 /**
  * TODO
  *
- * @param stmnts The list of input statements to compile.
+ * @param stmnts The list of statements to execute.
  * @param ctx The \ref ad_exec_ctx to use.
- * @return Returns `true` only if the statements compiled successfully.
+ * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
-                                      ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
+                                        ad_exec_ctx_t *ctx ) {
   assert( stmnts != NULL );
   assert( ctx != NULL );
 
-  ad_exec_rv rv = EXEC_CONTINUE;
+  ad_exec_rv_t rv = EXEC_OK;
 
   FOREACH_SLIST_NODE( stmnt_node, stmnts ) {
     ad_stmnt_t *const stmnt = stmnt_node->data;
     switch ( stmnt->kind ) {
       case AD_STMNT_BREAK:
-        rv = ad_stmnt_break( stmnt, out_stmnts, ctx );
+        rv = ad_stmnt_break( stmnt, ctx );
         break;
       case AD_STMNT_DECL:
-        rv = ad_stmnt_decl( stmnt, out_stmnts, ctx );
+        rv = ad_stmnt_decl( stmnt, ctx );
         break;
       case AD_STMNT_IF:
-        rv = ad_stmnt_if( stmnt, out_stmnts, ctx );
+        rv = ad_stmnt_if( stmnt, ctx );
         break;
       case AD_STMNT_LET:
-        rv = ad_stmnt_let( stmnt, out_stmnts, ctx );
+        rv = ad_stmnt_let( stmnt, ctx );
         break;
       case AD_STMNT_SWITCH:
-        rv = ad_stmnt_switch( stmnt, out_stmnts, ctx );
+        rv = ad_stmnt_switch( stmnt, ctx );
         break;
     } // switch
     if ( rv == EXEC_BREAK )
@@ -163,18 +142,44 @@ static ad_exec_rv ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
 }
 
 /**
+ * Compile an **ad** `if` statement.
+ *
+ * @param stmnt The input statement to compile.
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
+  assert( stmnt != NULL );
+  assert( stmnt->kind == AD_STMNT_IF );
+  assert( ctx != NULL );
+
+  uint64_t val;
+  if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &val ) )
+    return EXEC_ERROR;
+
+  ad_stmnt_list_t const *const stmnts = val != 0 ?
+    &stmnt->if_stmnt.if_list :
+    &stmnt->if_stmnt.else_list;
+
+  return ad_stmnt_exec_impl( stmnts, ctx );
+}
+
+/**
  * Executes an **ad** `let` statement.
  *
  * @param stmnt The \ref ad_let_stmnt to execute.
  * @param ctx The \ref ad_exec_ctx to use.
- * @return Returns `true` only if the statement executed successfully.
+ * @return Returns \ref ad_exec_rv.
  */
-static bool ad_stmnt_let( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_let( ad_stmnt_t const *stmnt,
+                                  ad_exec_ctx_t *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_LET );
   assert( ctx != NULL );
 
-  return true;
+  // TODO
+
+  return EXEC_OK;
 }
 
 /**
@@ -182,9 +187,10 @@ static bool ad_stmnt_let( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
  *
  * @param stmnt The input statement to execute.
  * @param ctx The \ref ad_exec_ctx to use.
- * @return Returns `true` only if the statement compiled successfully.
+ * @return Returns \ref ad_exec_rv.
  */
-static bool ad_stmnt_switch( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
+                                     ad_exec_ctx_t *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_SWITCH );
   assert( ctx != NULL );
@@ -198,7 +204,7 @@ static bool ad_stmnt_switch( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
     (void)case_;
   } // for
 
-  return true;
+  return EXEC_OK;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
