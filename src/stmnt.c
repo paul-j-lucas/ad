@@ -56,9 +56,9 @@ typedef enum    ad_exec_rv  ad_exec_rv_t;
 
 // local functions
 NODISCARD
-static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t* ),
-                    ad_stmnt_let( ad_stmnt_t const*, ad_exec_ctx_t* ),
-                    ad_stmnt_switch( ad_stmnt_t const*, ad_exec_ctx_t* );
+static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t const* ),
+                    ad_stmnt_let( ad_stmnt_t const*, ad_exec_ctx_t const* ),
+                    ad_stmnt_switch( ad_stmnt_t const*, ad_exec_ctx_t const* );
 
 ////////// local functions ////////////////////////////////////////////////////
 
@@ -70,7 +70,7 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t* ),
  * @return Returns \ref ad_exec_rv.
  */
 static ad_exec_rv_t ad_stmnt_break( ad_stmnt_t const *stmnt,
-                                    ad_exec_ctx_t *ctx ) {
+                                    ad_exec_ctx_t const *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_BREAK );
   assert( ctx != NULL );
@@ -91,7 +91,7 @@ static ad_exec_rv_t ad_stmnt_break( ad_stmnt_t const *stmnt,
  * @return Returns \ref ad_exec_rv.
  */
 static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
-                                   ad_exec_ctx_t *ctx ) {
+                                   ad_exec_ctx_t const *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_DECL );
   assert( ctx != NULL );
@@ -109,7 +109,7 @@ static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
  * @return Returns \ref ad_exec_rv.
  */
 static ad_exec_rv_t ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
-                                        ad_exec_ctx_t *ctx ) {
+                                        ad_exec_ctx_t const *ctx ) {
   assert( stmnts != NULL );
   assert( ctx != NULL );
 
@@ -148,7 +148,8 @@ static ad_exec_rv_t ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
  * @param ctx The \ref ad_exec_ctx to use.
  * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
+static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt,
+                                 ad_exec_ctx_t const *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_IF );
   assert( ctx != NULL );
@@ -168,7 +169,7 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
  * @return Returns \ref ad_exec_rv.
  */
 static ad_exec_rv_t ad_stmnt_let( ad_stmnt_t const *stmnt,
-                                  ad_exec_ctx_t *ctx ) {
+                                  ad_exec_ctx_t const *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_LET );
   assert( ctx != NULL );
@@ -186,7 +187,7 @@ static ad_exec_rv_t ad_stmnt_let( ad_stmnt_t const *stmnt,
  * @return Returns \ref ad_exec_rv.
  */
 static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
-                                     ad_exec_ctx_t *ctx ) {
+                                     ad_exec_ctx_t const *ctx ) {
   assert( stmnt != NULL );
   assert( stmnt->kind == AD_STMNT_SWITCH );
   assert( ctx != NULL );
@@ -194,9 +195,6 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
   uint64_t switch_val;
   if ( !ad_expr_eval_uint( stmnt->switch_stmnt.expr, &switch_val ) )
     return EXEC_ERROR;
-
-  ad_exec_rv_t rv = EXEC_OK;
-  ad_exec_ctx_t switch_ctx = { .in_switch = true };
 
   FOREACH_SWITCH_CASE( case_node, stmnt ) {
     ad_switch_case_t const *const case_ = case_node->data;
@@ -206,22 +204,21 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
       return EXEC_ERROR;
 
     if ( case_val == switch_val ) {
+      ad_exec_ctx_t const switch_ctx = { .in_switch = true };
       if ( !ad_stmnt_exec_impl( &case_->stmnts, &switch_ctx ) )
-        rv = EXEC_ERROR;
+        return EXEC_ERROR;
       break;
     }
   } // for
 
-  return rv;
+  return EXEC_OK;
 }
 
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool ad_stmnt_exec( ad_stmnt_list_t const *stmnts ) {
   assert( stmnts != NULL );
-
-  ad_exec_ctx_t ctx = { 0 };
-  return ad_stmnt_exec_impl( stmnts, &ctx );
+  return ad_stmnt_exec_impl( stmnts, &(ad_exec_ctx_t){ 0 } );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
