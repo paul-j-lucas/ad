@@ -35,7 +35,6 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
-#include "array.h"
 #include "color.h"
 #include "debug.h"
 #include "did_you_mean.h"
@@ -331,8 +330,7 @@
 
 // extern functions
 NODISCARD
-bool  ad_compile( slist_t const*, array_t* ),
-      ad_type_check( ad_type_t const* );
+bool ad_type_check( ad_type_t const* );
 
 // local functions
 PJL_PRINTF_LIKE_FUNC(3)
@@ -341,7 +339,6 @@ PJL_DISCARD
 static bool print_error_token( char const* );
 
 // local variables
-array_t statement_array;
 slist_t statement_list;                 ///< List of non-declaration statements.
 
 ////////// local functions ////////////////////////////////////////////////////
@@ -741,9 +738,6 @@ static void yyerror( char const *msg ) {
 
 ad_file
   : statement_list_opt Y_END
-    {
-      PARSE_ASSERT( ad_compile( &statement_list, &statement_array ) );
-    }
   | error
     {
       elaborate_error( "statement list expected" );

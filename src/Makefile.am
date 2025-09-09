@@ -39,7 +39,6 @@ ad_SOURCES =	parser.y \
 		array.c array.h \
 		check.c \
 		color.c color.h \
-		compile.c \
 		dam_lev.c dam_lev.h \
 		did_you_mean.c did_you_mean.h \
 		debug.c debug.h \
@@ -57,6 +56,7 @@ ad_SOURCES =	parser.y \
 		reverse.c \
 		slist.c slist.h \
 		sname.c sname.h \
+		stmnt.c \
 		strbuf.c strbuf.h \
 		symbol.c symbol.h \
 		type_traits.h \
