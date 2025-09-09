@@ -142,8 +142,8 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
 
     case AD_STMNT_IF:
       ad_expr_free( statement->if_stmnt.expr );
-      ad_stmnt_list_cleanup( &statement->if_stmnt.if_list );
-      ad_stmnt_list_cleanup( &statement->if_stmnt.else_list );
+      ad_stmnt_list_cleanup( &statement->if_stmnt.list[ true  ] );
+      ad_stmnt_list_cleanup( &statement->if_stmnt.list[ false ] );
       break;
 
     case AD_STMNT_LET:

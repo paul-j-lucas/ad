@@ -157,11 +157,7 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt, ad_exec_ctx_t *ctx ) {
   if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &val ) )
     return EXEC_ERROR;
 
-  ad_stmnt_list_t const *const stmnts = val != 0 ?
-    &stmnt->if_stmnt.if_list :
-    &stmnt->if_stmnt.else_list;
-
-  return ad_stmnt_exec_impl( stmnts, ctx );
+  return ad_stmnt_exec_impl( &stmnt->if_stmnt.list[ val != 0 ], ctx );
 }
 
 /**

@@ -583,8 +583,7 @@ struct ad_break_stmnt {
  */
 struct ad_if_stmnt {
   ad_expr_t        *expr;               ///< `if` expression.
-  ad_stmnt_list_t   if_list;            ///< `true` statement list.
-  ad_stmnt_list_t   else_list;          ///< `false` statement list.
+  ad_stmnt_list_t   list[2];            ///< 1 = `if`; 0 = `else`.
 };
 
 /**

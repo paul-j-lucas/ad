@@ -290,8 +290,8 @@ static void ad_if_dump_impl( ad_if_stmnt_t const *if_stmnt,
     json_object_begin( JSON_INIT, /*key=*/NULL, dump );
 
   DUMP_EXPR( dump, "expr", if_stmnt->expr );
-  DUMP_STATEMENT_LIST( dump, "if-true", &if_stmnt->if_list );
-  DUMP_STATEMENT_LIST( dump, "if-false", &if_stmnt->else_list );
+  DUMP_STATEMENT_LIST( dump, "if-true" , &if_stmnt->list[ true  ] );
+  DUMP_STATEMENT_LIST( dump, "if-false", &if_stmnt->list[ false ] );
 
   FPUTC( '\n', dump->fout );
   DUMP_FORMAT( dump, "]" );

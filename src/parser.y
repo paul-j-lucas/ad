@@ -817,8 +817,10 @@ if_statement
         .loc = @$,
         .if_stmnt = {
           .expr = $expr,
-          .if_list = slist_move( &$if_list ),
-          .else_list = slist_move( &$else_list )
+          .list = {
+            slist_move( &$else_list ),
+            slist_move( &$if_list )
+          }
         }
       };
 
