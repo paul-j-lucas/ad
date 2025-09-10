@@ -36,7 +36,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Compile context.
+ * Execution context.
  */
 struct ad_exec_ctx {
   bool    in_switch;                    ///< True only if within `switch`.
@@ -154,11 +154,10 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt,
   assert( stmnt->kind == AD_STMNT_IF );
   assert( ctx != NULL );
 
-  uint64_t val;
-  if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &val ) )
+  uint64_t if_val;
+  if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &if_val ) )
     return EXEC_ERROR;
-
-  return ad_stmnt_exec_impl( &stmnt->if_stmnt.list[ val != 0 ], ctx );
+  return ad_stmnt_exec_impl( &stmnt->if_stmnt.list[ if_val != 0 ], ctx );
 }
 
 /**
