@@ -196,15 +196,15 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
     return EXEC_ERROR;
 
   FOREACH_SWITCH_CASE( case_node, stmnt ) {
-    ad_switch_case_t const *const case_ = case_node->data;
+    ad_switch_case_t const *const switch_case = case_node->data;
 
     uint64_t case_val;
-    if ( !ad_expr_eval_uint( case_->expr, &case_val ) )
+    if ( !ad_expr_eval_uint( switch_case->expr, &case_val ) )
       return EXEC_ERROR;
 
     if ( case_val == switch_val ) {
       ad_exec_ctx_t const switch_ctx = { .in_switch = true };
-      if ( !ad_stmnt_exec_impl( &case_->stmnts, &switch_ctx ) )
+      if ( !ad_stmnt_exec_impl( &switch_case->stmnts, &switch_ctx ) )
         return EXEC_ERROR;
       break;
     }

@@ -124,36 +124,35 @@ char const* ad_rep_kind_name( ad_rep_kind_t kind ) {
   UNEXPECTED_INT_VALUE( kind );
 }
 
-void ad_stmnt_free( ad_stmnt_t *statement ) {
-  if ( statement == NULL )
+void ad_stmnt_free( ad_stmnt_t *stmnt ) {
+  if ( stmnt == NULL )
     return;
 
-  switch ( statement->kind ) {
+  switch ( stmnt->kind ) {
     case AD_STMNT_BREAK:
       // nothing to do
       break;
 
     case AD_STMNT_DECL:
-      FREE( statement->decl_stmnt.name );
-      // statement->decl_stmnt.type points to a type in a synfo in the symbol
-      // table
-      FREE( statement->decl_stmnt.printf_fmt );
+      FREE( stmnt->decl_stmnt.name );
+      // stmnt->decl_stmnt.type points to a type in a synfo in the symbol table
+      FREE( stmnt->decl_stmnt.printf_fmt );
       break;
 
     case AD_STMNT_IF:
-      ad_expr_free( statement->if_stmnt.expr );
-      ad_stmnt_list_cleanup( &statement->if_stmnt.list[ true  ] );
-      ad_stmnt_list_cleanup( &statement->if_stmnt.list[ false ] );
+      ad_expr_free( stmnt->if_stmnt.expr );
+      ad_stmnt_list_cleanup( &stmnt->if_stmnt.list[ true  ] );
+      ad_stmnt_list_cleanup( &stmnt->if_stmnt.list[ false ] );
       break;
 
     case AD_STMNT_LET:
-      FREE( statement->let_stmnt.name );
-      ad_expr_free( statement->let_stmnt.expr );
+      FREE( stmnt->let_stmnt.name );
+      ad_expr_free( stmnt->let_stmnt.expr );
       break;
 
     case AD_STMNT_SWITCH:
-      ad_expr_free( statement->switch_stmnt.expr );
-      FOREACH_SWITCH_CASE( case_node, statement ) {
+      ad_expr_free( stmnt->switch_stmnt.expr );
+      FOREACH_SWITCH_CASE( case_node, stmnt ) {
         ad_switch_case_t *const switch_case = case_node->data;
         ad_expr_free( switch_case->expr );
         ad_stmnt_list_cleanup( &switch_case->stmnts );
@@ -161,7 +160,7 @@ void ad_stmnt_free( ad_stmnt_t *statement ) {
       break;
   } // switch
 
-  free( statement );
+  free( stmnt );
 }
 
 void ad_stmnt_list_cleanup( ad_stmnt_list_t *stmnts ) {
