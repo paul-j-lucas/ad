@@ -26,6 +26,7 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "expr.h"
+#include "options.h"
 #include "print.h"
 #include "types.h"
 
@@ -39,7 +40,9 @@
  * Execution context.
  */
 struct ad_exec_ctx {
-  bool    in_switch;                    ///< True only if within `switch`.
+  size_t    total_bytes_read;
+  unsigned  indent;                     ///< Current indentation.
+  bool      in_switch;                  ///< True only if within `switch`.
 };
 
 /**
@@ -96,13 +99,22 @@ static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
   assert( stmnt->kind == AD_STMNT_DECL );
   assert( ctx != NULL );
 
-  // TODO
+  if ( ctx->total_bytes_read >= opt_max_bytes )
+    return EXEC_BREAK;
+
+  unsigned const size = ad_type_size( stmnt->decl_stmnt.type );
+
+  if ( unlikely( ferror( stdin ) != 0 ) ) {
+    fatal_error( EX_IOERR,
+      "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
+    );
+  }
 
   return EXEC_OK;
 }
 
 /**
- * TODO
+ * Executes a series of statements.
  *
  * @param stmnts The list of statements to execute.
  * @param ctx The \ref ad_exec_ctx to use.
@@ -142,7 +154,7 @@ static ad_exec_rv_t ad_stmnt_exec_impl( ad_stmnt_list_t const *stmnts,
 }
 
 /**
- * Compile an **ad** `if` statement.
+ * Executes an **ad** `if` statement.
  *
  * @param stmnt The input statement to compile.
  * @param ctx The \ref ad_exec_ctx to use.
@@ -154,10 +166,11 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const *stmnt,
   assert( stmnt->kind == AD_STMNT_IF );
   assert( ctx != NULL );
 
-  uint64_t if_val;
-  if ( !ad_expr_eval_uint( stmnt->if_stmnt.expr, &if_val ) )
+  ad_expr_t if_expr;
+  if ( !ad_expr_eval( stmnt->if_stmnt.expr, &if_expr ) )
     return EXEC_ERROR;
-  return ad_stmnt_exec_impl( &stmnt->if_stmnt.list[ if_val != 0 ], ctx );
+  bool const is_zero = ad_expr_is_zero( &if_expr );
+  return ad_stmnt_exec_impl( &stmnt->if_stmnt.list[ is_zero ], ctx );
 }
 
 /**
@@ -217,7 +230,11 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
 
 bool ad_stmnt_exec( ad_stmnt_list_t const *stmnts ) {
   assert( stmnts != NULL );
+#if 0
   return ad_stmnt_exec_impl( stmnts, &(ad_exec_ctx_t){ 0 } );
+#else
+  return true;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

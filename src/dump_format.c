@@ -25,10 +25,9 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "expr.h"
 #include "lexer.h"
-#include "options.h"
 #include "symbol.h"
+#include "types.h"
 #include "util.h"
 #include "ad_parser.h"                  /* must go last */
 
@@ -36,232 +35,19 @@
 
 // standard
 #include <assert.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
-#define DUMP_FORMAT(D,...) BLOCK(               \
-  FPUTNSP( (D)->indent * DUMP_INDENT, stdout ); \
-  PRINTF( __VA_ARGS__ ); )
-
-#define DUMP_INT(D,KEY,INT) \
-  DUMP_KEY( (D), KEY ": %lld", STATIC_CAST( long long, (INT) ) )
-
-#define DUMP_KEY(D,...) BLOCK(                \
-  DUMP_FORMAT( (D), __VA_ARGS__ ); )
-
-#define DUMP_STR(D,KEY,STR) BLOCK( \
-  DUMP_KEY( (D), KEY ": " ); fputs_quoted( (STR), '"', stdout ); )
-
 /// @endcond
+
+// extern function declarations
+bool ad_stmnt_exec( ad_stmnt_list_t const* );
 
 /**
  * @addtogroup dump-group
  * @{
  */
-
-///////////////////////////////////////////////////////////////////////////////
-
-/**
- * Dump state.
- */
-struct dump_state {
-  unsigned indent;                      ///< Current indentation.
-};
-typedef struct dump_state dump_state_t;
-
-// local functions
-#if 0
-NODISCARD
-static bool ad_switch_exec( ad_switch_stmnt_t const*, dump_state_t* );
-#endif
-
-// local constants
-#if 0
-static unsigned const DUMP_INDENT = 2;  ///< Spaces per dump indent level.
-#endif
-
-////////// local functions ////////////////////////////////////////////////////
-
-#if 0
-NODISCARD
-static bool ad_type_match( ad_type_t const *type, dump_state_t *dump ) {
-  (void)type;
-  (void)dump;
-  return false;
-}
-#endif
-
-#if 0
-/**
- * Executes and **ad** declaration.
- *
- * @param decl The \ref ad_decl_stmnt to execute.
- * @return Returns `true` only if successful.
- */
-NODISCARD
-static bool ad_decl_stmnt_exec( ad_decl_stmnt_t const *decl,
-                                dump_state_t *dump ) {
-  assert( decl != NULL );
-  assert( dump != NULL );
-
-  if ( decl->rep.kind == AD_REP_EXPR ) {
-    // TODO
-  }
-
-  if ( ad_tid_kind( decl->type->tid ) == T_STRUCT ) {
-    // decl->type->struct_t.member_list
-  }
-
-  if ( decl->if_expr != NULL ) {
-    ad_expr_t match_rv_expr;
-    if ( !ad_expr_eval( decl->if_expr, &match_rv_expr ) )
-      return false;
-    if ( ad_expr_is_zero( &match_rv_expr ) )
-      return false;
-  }
-
-  if ( decl->requires_expr != NULL ) {
-    // TODO
-  }
-
-  // TODO
-  // decl->name
-  // decl->type
-  // decl->rep
-
-  return true;
-}
-#endif
-
-#if 0
-/**
- * Dumps \a literal.
- *
- * @param literal The \ref ad_literal_expr to dump.
- * @param dump The dump_state to use.
- */
-static void ad_literal_expr_dump( ad_literal_expr_t const *literal,
-                                  dump_state_t *dump ) {
-  assert( literal != NULL );
-  assert( dump != NULL );
-
-  // TODO
-}
-#endif
-
-#if 0
-/**
- * Executes an **ad** statement.
- *
- * @param statement The \ref ad_stmnt to execute.
- * @return Returns `true` only if successful.
- */
-NODISCARD
-static bool ad_stmnt_exec( ad_stmnt_t const *statement, dump_state_t *dump ) {
-  assert( statement != NULL );
-  assert( dump != NULL );
-
-  switch ( statement->kind ) {
-    case AD_STMNT_BREAK:
-      // TODO
-      break;
-    case AD_STMNT_DECL:
-      // TODO
-      if ( !ad_decl_stmnt_exec( &statement->decl_stmnt, dump ) )
-        return false;
-      break;
-    case AD_STMNT_IF:
-      if ( !ad_if_exec( &statement->if_stmnt, dump ) )
-        return false;
-      break;
-    case AD_STMNT_SWITCH:
-      if ( !ad_switch_exec( &statement->switch_stmnt, dump ) )
-        return false;
-      break;
-  } // switch
-
-  return true;
-}
-#endif
-
-#if 0
-/**
- * Executes an **ad** `switch` statement.
- *
- * @param switch_ The \ref ad_switch_stmnt to execute.
- * @return Returns `true` only if successful.
- */
-NODISCARD
-static bool ad_switch_exec( ad_switch_stmnt_t const *switch_,
-                            dump_state_t *dump ) {
-  assert( switch_ != NULL );
-  assert( dump != NULL );
-
-  ad_expr_t switch_rv_expr;
-  if ( !ad_expr_eval( switch_->expr, &switch_rv_expr ) )
-    return false;
-  FOREACH_SLIST_NODE( case_expr_node, &switch_->case_list ) {
-    ad_expr_t const *const case_expr = case_expr_node->data;
-    ad_expr_t case_rv_expr;
-    if ( !ad_expr_eval( case_expr, &case_rv_expr ) )
-      return false;
-    // TODO
-  } // for
-
-  return true;
-}
-#endif
-
-#if 0
-/**
- * Gets a byte.
- *
- * @param pbyte A pointer to the byte to receive the newly read byte.
- * @return Returns `true` only if a byte was read successfully.
- */
-NODISCARD
-static bool get_byte( char8_t *pbyte ) {
-  assert( pbyte != NULL );
-
-  int const c = getchar();
-  if ( unlikely( c == EOF ) ) {
-    if ( unlikely( ferror( stdin ) ) ) {
-      fatal_error( EX_IOERR,
-        "\"%s\": read byte failed: %s\n", fin_path, STRERROR()
-      );
-    }
-    return false;
-  }
-
-  *pbyte = STATIC_CAST( char8_t, c );
-  return true;
-}
-#endif
-
-#if 0
-/**
- * TODO.
- *
- * @param buf TODO
- * @param size The number of bytes to read.
- * @return TODO
- */
-NODISCARD
-static bool get_buf( char8_t *buf, size_t size ) {
-  assert( buf != NULL );
-
-  size_t const bytes_read = fread( buf, size, 1, stdin );
-  if ( unlikely( ferror( stdin ) ) ) {
-    fatal_error( EX_IOERR,
-      "\"%s\": read bytes failed: %s\n", fin_path, STRERROR()
-    );
-  }
-
-  return true;
-}
-#endif
 
 /////////// extern functions //////////////////////////////////////////////////
 
@@ -294,14 +80,8 @@ void dump_file_format( char const *format_path ) {
   if ( rv != 0 )
     exit( EX_DATAERR );
 
-#if 0
-  dump_state_t dump = { .indent = 0 };
-  extern slist_t statement_list;
-  FOREACH_SLIST_NODE( statement_node, &statement_list ) {
-    if ( !ad_stmnt_exec( statement_node->data, &dump ) )
-      break;
-  } // for
-#endif
+  extern ad_stmnt_list_t statement_list;
+  exit( ad_stmnt_exec( &statement_list ) ? EX_OK : EX_DATAERR );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

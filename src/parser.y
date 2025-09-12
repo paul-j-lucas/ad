@@ -339,7 +339,7 @@ PJL_DISCARD
 static bool print_error_token( char const* );
 
 // local variables
-slist_t statement_list;                 ///< List of non-declaration statements.
+ad_stmnt_list_t statement_list;         ///< List of non-declaration statements.
 
 ////////// local functions ////////////////////////////////////////////////////
 
