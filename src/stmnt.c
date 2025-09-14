@@ -26,13 +26,18 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "expr.h"
+#include "filebuf.h"
 #include "options.h"
 #include "print.h"
 #include "types.h"
 
+/// @cond DOXYGEN_IGNORE
+
 // standard
 #include <assert.h>
 #include <stdbool.h>
+
+/// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +45,8 @@
  * Execution context.
  */
 struct ad_exec_ctx {
-  size_t    total_bytes_read;
+  filebuf_t fbuf;                       ///< File buffer.
+  size_t    total_bytes_read;           ///< Total bytes read.
   unsigned  indent;                     ///< Current indentation.
   bool      in_switch;                  ///< True only if within `switch`.
 };
@@ -51,6 +57,7 @@ struct ad_exec_ctx {
 enum ad_exec_rv {
   EXEC_OK,                              ///< Executed successfully.
   EXEC_BREAK,                           ///< Executed successfully, but break.
+  EXEC_NO_MATCH,                        ///< Declaration doesn't match.
   EXEC_ERROR                            ///< An error occurred.
 };
 
@@ -64,6 +71,21 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t const* ),
                     ad_stmnt_switch( ad_stmnt_t const*, ad_exec_ctx_t const* );
 
 ////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Attempts to match bytes read against an \ref ad_enum_type.
+ *
+ * @param type TODO
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t ad_enum_match( ad_type_t const *type,
+                                   ad_exec_ctx_t const *ctx ) {
+  assert( type != NULL );
+  assert( ctx != NULL );
+
+  return EXEC_OK;
+}
 
 /**
  * Executes an **ad** `break` statement.
@@ -87,6 +109,36 @@ static ad_exec_rv_t ad_stmnt_break( ad_stmnt_t const *stmnt,
 }
 
 /**
+ * Attempts to match bytes read against an \ref ad_struct_type.
+ *
+ * @param type TODO
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t ad_struct_match( ad_type_t const *type,
+                                     ad_exec_ctx_t const *ctx ) {
+  assert( type != NULL );
+  assert( ctx != NULL );
+
+  return EXEC_OK;
+}
+
+/**
+ * Attempts to match bytes read against an \ref ad_union_type.
+ *
+ * @param type TODO
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t ad_union_match( ad_type_t const *type,
+                                    ad_exec_ctx_t const *ctx ) {
+  assert( type != NULL );
+  assert( ctx != NULL );
+
+  return EXEC_OK;
+}
+
+/**
  * Executes an **ad** declaration statement.
  *
  * @param stmnt The \ref ad_stmnt_decl to execute.
@@ -102,7 +154,26 @@ static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
   if ( ctx->total_bytes_read >= opt_max_bytes )
     return EXEC_BREAK;
 
-  unsigned const size = ad_type_size( stmnt->decl_stmnt.type );
+  ad_decl_stmnt_t const *const decl_stmnt = &stmnt->decl_stmnt;
+
+  switch ( ad_tid_kind( decl_stmnt->type->tid ) ) {
+    case T_BOOL:
+    case T_ENUM:
+      return ad_enum_match( decl_stmnt->type, ctx );
+    case T_FLOAT:
+    case T_INT:
+    case T_UTF:
+      // TODO
+      break;
+    case T_STRUCT:
+      return ad_struct_match( stmnt->decl_stmnt.type, ctx );
+    case T_UNION:
+      return ad_union_match( stmnt->decl_stmnt.type, ctx );
+    case T_ERROR:
+    case T_NONE:
+    case T_TYPEDEF:
+      unreachable();
+  } // switch
 
   if ( unlikely( ferror( stdin ) != 0 ) ) {
     fatal_error( EX_IOERR,
@@ -231,7 +302,9 @@ static ad_exec_rv_t ad_stmnt_switch( ad_stmnt_t const *stmnt,
 bool ad_stmnt_exec( ad_stmnt_list_t const *stmnts ) {
   assert( stmnts != NULL );
 #if 0
-  return ad_stmnt_exec_impl( stmnts, &(ad_exec_ctx_t){ 0 } );
+  ad_exec_ctx_t ctx = { 0 };
+  filebuf_init( &ctx.fbuf, stdin );
+  return ad_stmnt_exec_impl( stmnts, &ctx );
 #else
   return true;
 #endif

@@ -41,6 +41,30 @@
 
 /// @endcond
 
+////////// local functions ////////////////////////////////////////////////////
+
+/**
+ * Ensures at least \a res_len additional bytes of capacity exist in \a fbuf.
+ *
+ * @param fbuf A pointer to the \ref filebuf to reserve \a res_len additional
+ * bytes for.
+ * @param res_len The number of additional bytes to reserve.
+ * @return Returns `true` only if a memory reallocation was necessary.
+ */
+PJL_DISCARD
+static bool filebuf_reserve( filebuf_t *fbuf, size_t res_len ) {
+  assert( fbuf != NULL );
+  if ( res_len < fbuf->cap - fbuf->len )
+    return false;
+  if ( fbuf->cap == 0 )
+    fbuf->cap = 2;
+  size_t const new_len = fbuf->len + res_len;
+  while ( fbuf->cap <= new_len )
+    fbuf->cap <<= 1;
+  REALLOC( fbuf->buf, fbuf->cap );
+  return true;
+}
+
 ////////// extern functions ///////////////////////////////////////////////////
 
 bool filebuf_advance( filebuf_t *fbuf, size_t size ) {
@@ -73,20 +97,21 @@ bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size ) {
   assert( dst != NULL );
 
   size_t dst_pos = 0;
-  size_t fbuf_pos;
 
   for (;;) {
     size_t const avail = fbuf->len - fbuf->pos;
     if ( avail < size ) {
-      if ( avail == 0 ) {
-        size_t const bytes_read = fread( fbuf->buf, size, 1, fbuf->file );
-        if ( unlikely( ferror( fbuf->file ) ) )
-          return false;
-      }
-      else {
-        memcpy( dst + dst_pos, fbuf->buf, avail );
-      }
+
+      filebuf_reserve( fbuf, size );
+      size_t const rest = size - avail;
+      size_t const bytes_read = fread( fbuf->buf + fbuf->pos, rest, 1, fbuf->file );
+      if ( unlikely( ferror( fbuf->file ) ) )
+        return false;
+
+      memcpy( dst, fbuf->buf, avail );
+      dst_pos += avail;
     }
+    memcpy( dst + dst_pos, fbuf->buf, avail );
 
   } // for
 
