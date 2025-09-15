@@ -67,25 +67,6 @@ static bool filebuf_reserve( filebuf_t *fbuf, size_t res_len ) {
 
 ////////// extern functions ///////////////////////////////////////////////////
 
-bool filebuf_advance( filebuf_t *fbuf, size_t size ) {
-  assert( fbuf != NULL );
-
-  size_t advanced = 0;
-
-  while ( advanced < size ) {
-    if ( fbuf->pos == fbuf->len ) {
-      fbuf->len = fread( fbuf->buf, 1, fbuf->cap, stdin );
-      if ( fbuf->len < fbuf->cap )
-        return false;
-      fbuf->pos = 0;
-    }
-
-    size_t avail = fbuf->len - fbuf->pos;
-  } // while
-
-  return true;
-}
-
 void filebuf_cleanup( filebuf_t *fbuf ) {
   assert( fbuf != NULL );
   free( fbuf->buf );
@@ -100,7 +81,14 @@ bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size ) {
 
   for (;;) {
     size_t const avail = fbuf->len - fbuf->pos;
-    if ( avail < size ) {
+
+    if ( size <= avail ) {
+      memcpy( dst, fbuf->buf + fbuf->pos, size );
+    }
+    else {
+      memcpy( dst, fbuf->buf + fbuf->pos, avail );
+      dst_pos += avail;
+      size -= avail;
 
       filebuf_reserve( fbuf, size );
       size_t const rest = size - avail;
@@ -108,14 +96,25 @@ bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size ) {
       if ( unlikely( ferror( fbuf->file ) ) )
         return false;
 
-      memcpy( dst, fbuf->buf, avail );
-      dst_pos += avail;
     }
     memcpy( dst + dst_pos, fbuf->buf, avail );
 
   } // for
 
   return true;
+}
+
+void filebuf_skip( filebuf_t *fbuf, size_t bytes_to_skip ) {
+  assert( fbuf != NULL );
+
+  size_t const avail = fbuf->len - fbuf->pos;
+  if ( bytes_to_skip <= avail ) {
+    fbuf->pos += bytes_to_skip;
+  }
+  else {
+    fskip( STATIC_CAST( off_t, bytes_to_skip - avail ), fbuf->file );
+    fbuf->len = fbuf->pos = 0;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

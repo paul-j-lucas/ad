@@ -60,16 +60,6 @@ typedef struct filebuf filebuf_t;
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * TODO
- *
- * @param fbuf A pointer to the \ref filebuf to advance the position of.
- * @param size The number of bytes to advance.
- *
- * @sa filebuf_read()
- */
-bool filebuf_advance( filebuf_t *fbuf, size_t size );
-
-/**
  * Cleans-up all memory associated with \a fbuf but does _not_ free \a fbuf
  * itself.
  *
@@ -92,16 +82,29 @@ void filebuf_init( filebuf_t *fbuf, FILE *file ) {
 }
 
 /**
- * TODO
+ * Reads \a size bytes from \a fbuf into \a dst.
+ *
+ * @warning The file position is _not_ advanced.
  *
  * @param fbuf A pointer to the \ref filebuf to read from.
- * @param dst TODO.
+ * @param dst A pointer to the buffer to receive the bytes read.
  * @param size The number of bytes to read.
  * @return Returns `true` only if \a size bytes were read successfully.
  *
- * @sa filebuf_advance()
+ * @sa filebuf_skip()
  */
 bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size );
+
+/**
+ * Skips over \a bytes_to_skip bytes.
+ * If an error occurs, prints an error message and exits.
+ *
+ * @param fbuf A pointer to the \ref filebuf to skip from.
+ * @param bytes_to_skip The number of bytes to skip.
+ *
+ * @sa filebuf_read()
+ */
+void filebuf_skip( filebuf_t *fbuf, size_t bytes_to_skip );
 
 ///////////////////////////////////////////////////////////////////////////////
 
