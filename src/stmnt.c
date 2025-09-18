@@ -73,21 +73,6 @@ static ad_exec_rv_t ad_stmnt_if( ad_stmnt_t const*, ad_exec_ctx_t const* ),
 ////////// local functions ////////////////////////////////////////////////////
 
 /**
- * Attempts to match bytes read against an \ref ad_enum_type.
- *
- * @param type TODO
- * @param ctx The \ref ad_exec_ctx to use.
- * @return Returns \ref ad_exec_rv.
- */
-static ad_exec_rv_t ad_enum_match( ad_type_t const *type,
-                                   ad_exec_ctx_t const *ctx ) {
-  assert( type != NULL );
-  assert( ctx != NULL );
-
-  return EXEC_OK;
-}
-
-/**
  * Executes an **ad** `break` statement.
  *
  * @param stmnt The \ref ad_stmnt_break to execute.
@@ -109,14 +94,44 @@ static ad_exec_rv_t ad_stmnt_break( ad_stmnt_t const *stmnt,
 }
 
 /**
+ * Attempts to match bytes read against an \ref ad_enum_type.
+ *
+ * @param type TODO
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t match_enum( ad_type_t const *type,
+                                ad_exec_ctx_t const *ctx ) {
+  assert( type != NULL );
+  assert( ctx != NULL );
+
+  return EXEC_OK;
+}
+
+/**
+ * Attempts to match bytes read against an \ref ad_int_type.
+ *
+ * @param type TODO
+ * @param ctx The \ref ad_exec_ctx to use.
+ * @return Returns \ref ad_exec_rv.
+ */
+static ad_exec_rv_t match_int( ad_type_t const *type,
+                               ad_exec_ctx_t const *ctx ) {
+  assert( type != NULL );
+  assert( ctx != NULL );
+
+  return EXEC_OK;
+}
+
+/**
  * Attempts to match bytes read against an \ref ad_struct_type.
  *
  * @param type TODO
  * @param ctx The \ref ad_exec_ctx to use.
  * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv_t ad_struct_match( ad_type_t const *type,
-                                     ad_exec_ctx_t const *ctx ) {
+static ad_exec_rv_t match_struct( ad_type_t const *type,
+                                  ad_exec_ctx_t const *ctx ) {
   assert( type != NULL );
   assert( ctx != NULL );
 
@@ -130,8 +145,8 @@ static ad_exec_rv_t ad_struct_match( ad_type_t const *type,
  * @param ctx The \ref ad_exec_ctx to use.
  * @return Returns \ref ad_exec_rv.
  */
-static ad_exec_rv_t ad_union_match( ad_type_t const *type,
-                                    ad_exec_ctx_t const *ctx ) {
+static ad_exec_rv_t match_union( ad_type_t const *type,
+                                 ad_exec_ctx_t const *ctx ) {
   assert( type != NULL );
   assert( ctx != NULL );
 
@@ -159,16 +174,17 @@ static ad_exec_rv_t ad_stmnt_decl( ad_stmnt_t const *stmnt,
   switch ( ad_tid_kind( decl_stmnt->type->tid ) ) {
     case T_BOOL:
     case T_ENUM:
-      return ad_enum_match( decl_stmnt->type, ctx );
+      return match_enum( decl_stmnt->type, ctx );
     case T_FLOAT:
     case T_INT:
+      return match_int( stmnt->decl_stmnt.type, ctx );
     case T_UTF:
       // TODO
       break;
     case T_STRUCT:
-      return ad_struct_match( stmnt->decl_stmnt.type, ctx );
+      return match_struct( stmnt->decl_stmnt.type, ctx );
     case T_UNION:
-      return ad_union_match( stmnt->decl_stmnt.type, ctx );
+      return match_union( stmnt->decl_stmnt.type, ctx );
     case T_ERROR:
     case T_NONE:
     case T_TYPEDEF:
