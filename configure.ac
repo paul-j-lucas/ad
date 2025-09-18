@@ -137,7 +137,6 @@ AX_CHECK_COMPILE_FLAG([-Wsometimes-uninitialized], [AD_CFLAGS="$AD_CFLAGS -Wsome
 AX_CHECK_COMPILE_FLAG([-Wstring-conversion], [AD_CFLAGS="$AD_CFLAGS -Wstring-conversion"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wtautological-compare], [AD_CFLAGS="$AD_CFLAGS -Wtautological-compare"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wtautological-type-limit-compare], [AD_CFLAGS="$AD_CFLAGS -Wtautological-type-limit-compare"], [], [-Werror])
-AX_CHECK_COMPILE_FLAG([-Wundef], [AD_CFLAGS="$AD_CFLAGS -Wundef"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wuninitialized], [AD_CFLAGS="$AD_CFLAGS -Wuninitialized"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wunreachable-code-break], [AD_CFLAGS="$AD_CFLAGS -Wunreachable-code-break"], [], [-Werror])
 AX_CHECK_COMPILE_FLAG([-Wunreachable-code-return], [AD_CFLAGS="$AD_CFLAGS -Wunreachable-code-return"], [], [-Werror])
