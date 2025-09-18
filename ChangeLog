@@ -1,3 +1,7 @@
+2025-09-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Removed -Wundef.
+
 2025-08-26  Paul J. Lucas <paul@lucasmail.org>
 
    * src/Makefile.am, type_traits.h, util.h: Split out type traits into
