@@ -73,33 +73,27 @@ void filebuf_cleanup( filebuf_t *fbuf ) {
   *fbuf = (filebuf_t){ 0 };
 }
 
-bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size ) {
+bool filebuf_read( filebuf_t *fbuf, char *dst, size_t bytes_to_read ) {
   assert( fbuf != NULL );
   assert( dst != NULL );
 
-  size_t dst_pos = 0;
+  size_t const avail = fbuf->len - fbuf->pos;
+  if ( bytes_to_read <= avail ) {
+    memcpy( dst, fbuf->buf + fbuf->pos, bytes_to_read );
+  }
+  else {
+    memcpy( dst, fbuf->buf + fbuf->pos, avail );
+    bytes_to_read -= avail;
 
-  for (;;) {
-    size_t const avail = fbuf->len - fbuf->pos;
-
-    if ( size <= avail ) {
-      memcpy( dst, fbuf->buf + fbuf->pos, size );
-    }
-    else {
-      memcpy( dst, fbuf->buf + fbuf->pos, avail );
-      dst_pos += avail;
-      size -= avail;
-
-      filebuf_reserve( fbuf, size );
-      size_t const rest = size - avail;
-      size_t const bytes_read = fread( fbuf->buf + fbuf->pos, rest, 1, fbuf->file );
-      if ( unlikely( ferror( fbuf->file ) ) )
-        return false;
-
-    }
-    memcpy( dst + dst_pos, fbuf->buf, avail );
-
-  } // for
+    filebuf_reserve( fbuf, bytes_to_read );
+    size_t const bytes_read = fread( fbuf->buf, bytes_to_read, 1, fbuf->file );
+    if ( unlikely( ferror( fbuf->file ) ) )
+      return false;
+    if ( unlikely( bytes_read < bytes_to_read ) )
+      return false;
+    memcpy( dst + avail, fbuf->buf, bytes_to_read );
+    fbuf->len = fbuf->pos = 0;
+  }
 
   return true;
 }

@@ -46,7 +46,8 @@ _GL_INLINE_HEADER_BEGIN
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * TODO
+ * <code>%filebuf</code> keeps a buffer read from a file that may not be
+ * seekable, e.g., from a pipe.
  */
 struct filebuf {
   FILE   *file;                         ///< The `FILE` to read from.
@@ -82,18 +83,19 @@ void filebuf_init( filebuf_t *fbuf, FILE *file ) {
 }
 
 /**
- * Reads \a size bytes from \a fbuf into \a dst.
+ * Reads \a bytes_to_read bytes from \a fbuf into \a dst.
  *
  * @warning The file position is _not_ advanced.
  *
  * @param fbuf A pointer to the \ref filebuf to read from.
  * @param dst A pointer to the buffer to receive the bytes read.
- * @param size The number of bytes to read.
- * @return Returns `true` only if \a size bytes were read successfully.
+ * @param bytes_to_read The number of bytes to read.
+ * @return Returns `true` only if \a bytes_to_read bytes were read
+ * successfully.
  *
  * @sa filebuf_skip()
  */
-bool filebuf_read( filebuf_t *fbuf, char *dst, size_t size );
+bool filebuf_read( filebuf_t *fbuf, char *dst, size_t bytes_to_read );
 
 /**
  * Skips over \a bytes_to_skip bytes.
