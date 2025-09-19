@@ -14,3 +14,7 @@
 /sys
 /sysexits.h
 /unistd.h
+/fseterr.c
+/fseterr.h
+/stdio-consolesafe.c
+/stdio-impl.h
