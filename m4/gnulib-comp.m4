@@ -54,6 +54,7 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_USE_AIX_EXTENSIONS])
   # Code from module extern-inline:
   # Code from module fcntl-h:
+  # Code from module fseterr:
   # Code from module gen-header:
   # Code from module getdelim:
   # Code from module getline:
@@ -122,6 +123,8 @@ AC_DEFUN([gl_INIT],
   gl_FCNTL_H
   gl_FCNTL_H_REQUIRE_DEFAULTS
   AC_PROG_MKDIR_P
+  gl_FUNC_FSETERR
+  gl_CONDITIONAL([GL_COND_OBJ_FSETERR], [test $ac_cv_func___fseterr = no])
   gl_FUNC_GETDELIM
   gl_CONDITIONAL([GL_COND_OBJ_GETDELIM],
                  [test $HAVE_GETDELIM = 0 || test $REPLACE_GETDELIM = 1])
@@ -151,8 +154,7 @@ AC_DEFUN([gl_INIT],
   ])
   gl_UNISTD_MODULE_INDICATOR([getopt-posix])
   gl_MUSL_LIBC
-  AC_SUBST([LIBINTL])
-  AC_SUBST([LTLIBINTL])
+  gl_GETTEXT_H
   GNULIB_I18N
   gl_LIMITS_H
   gl_CONDITIONAL_HEADER([limits.h])
@@ -182,6 +184,18 @@ AC_DEFUN([gl_INIT],
   gl_STDIO_H
   gl_STDIO_H_REQUIRE_DEFAULTS
   AC_PROG_MKDIR_P
+  USES_MSVCRT=0
+  case "$host_os" in
+    mingw* | windows*)
+      AC_EGREP_CPP([Special], [
+  #ifndef _UCRT
+   Special
+  #endif
+        ],
+        [USES_MSVCRT=1])
+      ;;
+  esac
+  gl_CONDITIONAL([GL_COND_OBJ_STDIO_CONSOLESAFE], [test $USES_MSVCRT = 1])
   gl_CONDITIONAL([GL_COND_OBJ_STDIO_READ], [test $REPLACE_STDIO_READ_FUNCS = 1])
   gl_CONDITIONAL([GL_COND_OBJ_STDIO_WRITE], [test $REPLACE_STDIO_WRITE_FUNCS = 1])
   dnl No need to create extra modules for these functions. Everyone who uses
@@ -440,6 +454,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/c++defs.h
   lib/errno.in.h
   lib/fcntl.in.h
+  lib/fseterr.c
+  lib/fseterr.h
   lib/getdelim.c
   lib/getline.c
   lib/getopt-cdefs.in.h
@@ -460,6 +476,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/stdckdint.in.h
   lib/stddef.in.h
   lib/stdint.in.h
+  lib/stdio-consolesafe.c
+  lib/stdio-impl.h
   lib/stdio-read.c
   lib/stdio-write.c
   lib/stdio.in.h
@@ -489,9 +507,11 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/extern-inline.m4
   m4/fcntl-o.m4
   m4/fcntl_h.m4
+  m4/fseterr.m4
   m4/getdelim.m4
   m4/getline.m4
   m4/getopt.m4
+  m4/gettext_h.m4
   m4/gnulib-common.m4
   m4/gnulib-i18n.m4
   m4/include_next.m4
