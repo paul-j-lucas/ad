@@ -354,7 +354,6 @@ static void rb_node_rotate( rb_tree_t *tree, rb_node_t *x_node, rb_dir_t dir ) {
 NODISCARD
 static rb_node_t* rb_node_visit( rb_tree_t const *tree, rb_node_t *node,
                                  rb_visit_fn_t visit_fn, void *visit_data ) {
-  assert( tree != NULL );
   assert( node != NULL );
 
   while ( node != &tree->nil ) {
@@ -441,7 +440,7 @@ static void rb_tree_check( rb_tree_t const *tree ) {
  * 4th ed., &sect; 12.2, p. 318.
  */
 NODISCARD
-static rb_node_t* rb_tree_minimum( rb_tree_t *tree, rb_node_t *x_node ) {
+static rb_node_t* rb_tree_minimum( rb_tree_t const *tree, rb_node_t *x_node ) {
   assert( tree != NULL );
   assert( x_node != NULL );
 
@@ -601,6 +600,7 @@ rb_insert_rv_t rb_tree_insert( rb_tree_t *tree, void *data, size_t data_size ) {
 
 rb_node_t* rb_tree_visit( rb_tree_t const *tree, rb_visit_fn_t visit_fn,
                           void *visit_data ) {
+  assert( tree != NULL );
   assert( visit_fn != NULL );
   return rb_node_visit( tree, tree->root, visit_fn, visit_data );
 }
