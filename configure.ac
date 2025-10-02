@@ -86,20 +86,13 @@ esac
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([ctype.h])
-AC_CHECK_HEADERS([errno.h])
-AC_CHECK_HEADERS([fcntl.h])
 AC_CHECK_HEADERS([getopt.h])
-AC_CHECK_HEADERS([inttypes.h])
 AC_CHECK_HEADERS([langinfo.h])
 AC_CHECK_HEADERS([libgen.h])
 AC_CHECK_HEADERS([locale.h])
-AC_CHECK_HEADERS([stddef.h])
-AC_CHECK_HEADERS([stdint.h])
 AC_CHECK_HEADERS([sys/stat.h])
 AC_CHECK_HEADERS([sys/types.h])
 AC_CHECK_HEADERS([sysexits.h])
-AC_CHECK_HEADERS([unistd.h])
 AC_HEADER_ASSERT
 AC_HEADER_STDBOOL
 gl_INIT
