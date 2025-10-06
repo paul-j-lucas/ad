@@ -37,11 +37,6 @@
 // standard
 #include <stdio.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef COLOR_H_INLINE
-# define COLOR_H_INLINE _GL_INLINE
-#endif /* COLOR_H_INLINE */
-
 /// @endcond
 
 /**
@@ -124,8 +119,7 @@ extern char const  *sgr_sep;            ///< Separator color.
  *
  * @sa color_start()
  */
-COLOR_H_INLINE
-void color_end( FILE *file, char const *sgr_color ) {
+inline void color_end( FILE *file, char const *sgr_color ) {
   if ( sgr_color != NULL )
     FPUTS( SGR_END SGR_EL, file );
 }
@@ -138,8 +132,7 @@ void color_end( FILE *file, char const *sgr_color ) {
  *
  * @sa color_end()
  */
-COLOR_H_INLINE
-void color_start( FILE *file, char const *sgr_color ) {
+inline void color_start( FILE *file, char const *sgr_color ) {
   if ( sgr_color != NULL )
     FPRINTF( file, SGR_START SGR_EL, sgr_color );
 }
@@ -154,8 +147,6 @@ void colors_init( void );
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_color_H */
 /* vim:set et sw=2 ts=2: */

@@ -25,7 +25,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#define AD_UNICODE_H_INLINE _GL_EXTERN_INLINE
 #include "unicode.h"
 #include "util.h"
 
@@ -107,5 +106,10 @@ bool utf32c_8c( char32_t cp, char8_t u8c[static UTF8_CHAR_SIZE_MAX] ) {
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
+
+extern inline bool cp_is_valid( unsigned long long );
+extern inline unsigned utf8c_len( char8_t );
+extern inline bool utf8_is_start( char8_t );
+extern inline bool utf8_is_cont( char8_t );
 
 /* vim:set et sw=2 ts=2: */

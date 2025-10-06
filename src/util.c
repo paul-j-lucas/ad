@@ -26,7 +26,6 @@
 // local
 #include "pjl_config.h"                 /* must go first */
 #include "ad.h"
-#define AD_UTIL_H_INLINE _GL_EXTERN_INLINE
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -345,5 +344,9 @@ char* tolower_s( char *s ) {
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
+
+extern inline bool ascii_is_graph( char8_t );
+extern inline bool ascii_is_print( char );
+extern inline char const* null_if_empty( char const* );
 
 /* vim:set et sw=2 ts=2: */

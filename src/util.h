@@ -44,11 +44,6 @@
 #include <sys/types.h>                  /* for off_t */
 #include <sysexits.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef AD_UTIL_H_INLINE
-# define AD_UTIL_H_INLINE _GL_INLINE
-#endif /* AD_UTIL_H_INLINE */
-
 /// @endcond
 
 /**
@@ -626,8 +621,8 @@ bool ascii_any_printable( char const *s, size_t s_len );
  *
  * @sa ascii_is_print()
  */
-NODISCARD AD_UTIL_H_INLINE
-bool ascii_is_graph( char8_t c ) {
+NODISCARD
+inline bool ascii_is_graph( char8_t c ) {
   return c >= '!' && c <= '~';
 }
 
@@ -644,8 +639,8 @@ bool ascii_is_graph( char8_t c ) {
  *
  * @sa ascii_is_graph()
  */
-NODISCARD AD_UTIL_H_INLINE
-bool ascii_is_print( char c ) {
+NODISCARD
+inline bool ascii_is_print( char c ) {
   return c >= ' ' && c <= '~';
 }
 
@@ -801,8 +796,8 @@ void int_rearrange_bytes( uint64_t *n, size_t bytes, endian_t endian );
  * @sa empty_if_null()
  * @sa str_is_empty()
  */
-NODISCARD AD_UTIL_H_INLINE
-char const* null_if_empty( char const *s ) {
+NODISCARD
+inline char const* null_if_empty( char const *s ) {
   return s != NULL && *SKIP_WS( s ) == '\0' ? NULL : s;
 }
 
@@ -862,8 +857,6 @@ char* tolower_s( char *s );
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_util_H */
 /* vim:set et sw=2 ts=2: */
