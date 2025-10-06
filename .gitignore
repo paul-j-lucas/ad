@@ -24,5 +24,6 @@ tags
 /conftest*
 /depcomp
 /docs/
+/INSTALL
 /install-sh
 /missing

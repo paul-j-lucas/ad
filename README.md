@@ -32,8 +32,8 @@ you can generate `configure` yourself by doing:
 
     ./bootstrap
 
-then follow the generic installation instructions given in
-[`INSTALL`](https://github.com/paul-j-lucas/ad/blob/master/INSTALL).
+then follow the generic installation instructions
+given in `INSTALL`.
 
 If you would like to generate the developer documentation,
 you will also need
