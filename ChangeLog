@@ -1,3 +1,15 @@
+2025-10-06  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Now letting Autotools add INSTALL.
+
+2025-10-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * ax_cflags_warn_all.m4, ax_check_compile_flag.m4: Updated.
+
+2025-10-02  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac: Removed unnecessary AC_CHECK_HEADERS.
+
 2025-09-18  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac: Removed -Wundef.
