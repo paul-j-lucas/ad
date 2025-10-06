@@ -1,5 +1,7 @@
 2025-10-06  Paul J. Lucas <paul@lucasmail.org>
 
+   * lib/Makefile.am, gnulib-cache.m4, color.c, color.h, unicode.c, unicode.h,
+     util.c, util.h: Now using standard C99 inline.
    * configure.ac: Now letting Autotools add INSTALL.
 
 2025-10-05  Paul J. Lucas <paul@lucasmail.org>

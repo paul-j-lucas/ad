@@ -50,11 +50,6 @@ typedef uint16_t char16_t;              /* C11's char16_t */
 typedef uint32_t char32_t;              /* C11's char32_t */
 #endif /* !HAVE_CHAR32_T */
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef AD_UNICODE_H_INLINE
-# define AD_UNICODE_H_INLINE _GL_INLINE
-#endif /* AD_UNICODE_H_INLINE */
-
 /// @endcond
 
 /**
@@ -110,8 +105,8 @@ bool cp_is_ascii( char32_t cp ) {
  * @param cp_candidate The Unicode code-point candidate value to check.
  * @return Returns `true` only if \a cp_candidate is a valid code-point.
  */
-NODISCARD AD_UNICODE_H_INLINE
-bool cp_is_valid( unsigned long long cp_candidate ) {
+NODISCARD
+inline bool cp_is_valid( unsigned long long cp_candidate ) {
   return  cp_candidate < CP_SURROGATE_HIGH_START
       || (cp_candidate > CP_SURROGATE_LOW_END && cp_candidate <= CP_VALID_MAX);
 }
@@ -200,8 +195,8 @@ char32_t utf8c_32c( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
  * @return Returns the number of bytes needed for the UTF-8 character in the
  * range [1,6] or 0 if \a start is not a valid start byte.
  */
-NODISCARD AD_UNICODE_H_INLINE
-unsigned utf8c_len( char8_t start ) {
+NODISCARD
+inline unsigned utf8c_len( char8_t start ) {
   extern char8_t const UTF8C_LEN_TABLE[];
   return UTF8C_LEN_TABLE[ start ];
 }
@@ -231,8 +226,8 @@ bool utf8c_equal( utf8c_t const u8c_i, utf8c_t const u8c_j ) {
  *
  * @sa utf8_is_cont()
  */
-NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_start( char8_t c ) {
+NODISCARD
+inline bool utf8_is_start( char8_t c ) {
   return c < 0x80 || (c >= 0xC2 && c < 0xFE);
 }
 
@@ -248,16 +243,14 @@ bool utf8_is_start( char8_t c ) {
  *
  * @sa utf8_is_start().
  */
-NODISCARD AD_UNICODE_H_INLINE
-bool utf8_is_cont( char8_t c ) {
+NODISCARD
+inline bool utf8_is_cont( char8_t c ) {
   return c >= 0x80 && c < 0xC0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_unicode_H */
 /* vim:set et sw=2 ts=2: */
