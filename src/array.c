@@ -20,9 +20,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define ARRAY_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "array.h"
 #include "util.h"
 
@@ -94,4 +91,16 @@ bool array_reserve( array_t *array, size_t res_len ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern inline void* array_at_nocheck( array_t const*, size_t );
+extern inline void* array_at( array_t const*, size_t );
+extern inline void* array_atr( array_t const*, size_t );
+extern inline void* array_back( array_t const* );
+extern inline bool array_empty( array_t const* );
+extern inline void* array_front( array_t const* );
+extern inline void array_init( array_t*, size_t );
+extern inline size_t array_len( array_t const* );
+extern inline array_t array_move( array_t* );
+extern inline void* array_pop_back( array_t* );
+
 /* vim:set et sw=2 ts=2: */

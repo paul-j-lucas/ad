@@ -36,11 +36,6 @@
 #include <stddef.h>                     /* for size_t */
 #include <stdio.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef FILEBUF_H_INLINE
-# define FILEBUF_H_INLINE _GL_INLINE
-#endif /* FILEBUF_H_INLINE */
-
 /// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,8 +72,7 @@ void filebuf_cleanup( filebuf_t *fbuf );
  *
  * @sa filebuf_cleanup()
  */
-FILEBUF_H_INLINE
-void filebuf_init( filebuf_t *fbuf, FILE *file ) {
+inline void filebuf_init( filebuf_t *fbuf, FILE *file ) {
   *fbuf = (filebuf_t){ .file = file };
 }
 
@@ -111,8 +105,6 @@ void filebuf_skip( filebuf_t *fbuf, size_t bytes_to_skip );
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* pjl_filebuf_H */
 /* vim:set et sw=2 ts=2: */

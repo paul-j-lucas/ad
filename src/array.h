@@ -31,11 +31,6 @@
 #include <stddef.h>
 #include <unistd.h>                     /* for ssize_t */
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef ARRAY_H_INLINE
-# define ARRAY_H_INLINE _GL_INLINE
-#endif /* ARRAY_H_INLINE */
-
 /// @endcond
 
 /**
@@ -194,8 +189,8 @@ bool array_reserve( array_t *array, size_t res_len );
  * @sa array_back()
  * @sa array_front()
  */
-NODISCARD ARRAY_H_INLINE
-void* array_at_nocheck( array_t const *array, size_t index ) {
+NODISCARD
+inline void* array_at_nocheck( array_t const *array, size_t index ) {
   return (char*)array->elements + index * array->esize;
 }
 
@@ -214,8 +209,8 @@ void* array_at_nocheck( array_t const *array, size_t index ) {
  * @sa array_back()
  * @sa array_front()
  */
-NODISCARD ARRAY_H_INLINE
-void* array_at( array_t const *array, size_t index ) {
+NODISCARD
+inline void* array_at( array_t const *array, size_t index ) {
   return index < array->len ? array_at_nocheck( array, index ) : NULL;
 }
 
@@ -235,8 +230,8 @@ void* array_at( array_t const *array, size_t index ) {
  * @sa array_back()
  * @sa array_front()
  */
-NODISCARD ARRAY_H_INLINE
-void* array_atr( array_t const *array, size_t rindex ) {
+NODISCARD
+inline void* array_atr( array_t const *array, size_t rindex ) {
   return rindex < array->len ?
     array_at_nocheck( array, array->len - (rindex + 1) ) : NULL;
 }
@@ -255,8 +250,8 @@ void* array_atr( array_t const *array, size_t rindex ) {
  * @sa array_atr()
  * @sa array_front()
  */
-NODISCARD ARRAY_H_INLINE
-void* array_back( array_t const *array ) {
+NODISCARD
+inline void* array_back( array_t const *array ) {
   return array->len > 0 ? array_at_nocheck( array, array->len - 1 ) : NULL;
 }
 
@@ -270,8 +265,8 @@ void* array_back( array_t const *array ) {
  *
  * @sa array_len()
  */
-NODISCARD ARRAY_H_INLINE
-bool array_empty( array_t const *array ) {
+NODISCARD
+inline bool array_empty( array_t const *array ) {
   return array->len == 0;
 }
 
@@ -289,8 +284,8 @@ bool array_empty( array_t const *array ) {
  * @sa array_atr()
  * @sa array_back()
  */
-NODISCARD ARRAY_H_INLINE
-void* array_front( array_t const *array ) {
+NODISCARD
+inline void* array_front( array_t const *array ) {
   return array->len > 0 ? array->elements : NULL;
 }
 
@@ -302,8 +297,7 @@ void* array_front( array_t const *array ) {
  * @sa array_cleanup()
  * @sa array_move()
  */
-ARRAY_H_INLINE
-void array_init( array_t *array, size_t esize ) {
+inline void array_init( array_t *array, size_t esize ) {
   *array = (array_t){ .esize = esize };
 }
 
@@ -317,8 +311,8 @@ void array_init( array_t *array, size_t esize ) {
  *
  * @sa array_empty()
  */
-NODISCARD ARRAY_H_INLINE
-size_t array_len( array_t const *array ) {
+NODISCARD
+inline size_t array_len( array_t const *array ) {
   return array->len;
 }
 
@@ -344,8 +338,8 @@ size_t array_len( array_t const *array ) {
  *
  * @sa array_init()
  */
-NODISCARD ARRAY_H_INLINE
-array_t array_move( array_t *array ) {
+NODISCARD
+inline array_t array_move( array_t *array ) {
   array_t const rv_array = *array;
   array_init( array, array->esize );
   return rv_array;
@@ -360,14 +354,12 @@ array_t array_move( array_t *array ) {
  *
  * @note This is an O(1) operation.
  */
-NODISCARD ARRAY_H_INLINE
-void* array_pop_back( array_t *array ) {
+NODISCARD
+inline void* array_pop_back( array_t *array ) {
   return array->len > 0 ? array_at_nocheck( array, --array->len ) : NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-_GL_INLINE_HEADER_END
 
 #endif /* pjl_array_H */
 /* vim:set et sw=2 ts=2: */

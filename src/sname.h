@@ -38,11 +38,6 @@
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef SNAME_H_INLINE
-# define SNAME_H_INLINE _GL_INLINE
-#endif /* SNAME_H_INLINE */
-
 /// @endcond
 
 /**
@@ -290,8 +285,8 @@ void sname_cleanup( sname_t *sname );
  * @return Returns a number less than 0, 0, or greater than 0 if \a i_sname is
  * less than, equal to, or greater than \a j_sname, respectively.
  */
-NODISCARD SNAME_H_INLINE
-int sname_cmp( sname_t const *i_sname, sname_t const *j_sname ) {
+NODISCARD
+inline int sname_cmp( sname_t const *i_sname, sname_t const *j_sname ) {
   return slist_cmp(
     i_sname, j_sname, POINTER_CAST( slist_cmp_fn_t, &sname_scope_cmp )
   );
@@ -306,8 +301,8 @@ int sname_cmp( sname_t const *i_sname, sname_t const *j_sname ) {
  * @note This is named "count" rather than "len" to avoid misinterpretation
  * that "len" would be the total length of the strings and `::` separators.
  */
-NODISCARD SNAME_H_INLINE
-size_t sname_count( sname_t const *sname ) {
+NODISCARD
+inline size_t sname_count( sname_t const *sname ) {
   return slist_len( sname );
 }
 
@@ -319,8 +314,8 @@ size_t sname_count( sname_t const *sname ) {
  * @return Returns a duplicate of \a sname or an empty scoped name if \a sname
  * is NULL.
  */
-NODISCARD SNAME_H_INLINE
-sname_t sname_dup( sname_t const *sname ) {
+NODISCARD
+inline sname_t sname_dup( sname_t const *sname ) {
   return slist_dup(
     sname, -1, POINTER_CAST( slist_dup_fn_t, &sname_scope_dup )
   );
@@ -332,8 +327,8 @@ sname_t sname_dup( sname_t const *sname ) {
  * @param sname The scoped name to check.
  * @return Returns `true` only if \a sname is empty.
  */
-NODISCARD SNAME_H_INLINE
-bool sname_empty( sname_t const *sname ) {
+NODISCARD
+inline bool sname_empty( sname_t const *sname ) {
   return slist_empty( sname );
 }
 
@@ -349,8 +344,7 @@ bool sname_empty( sname_t const *sname ) {
  * @sa sname_init_name()
  * @sa sname_move()
  */
-SNAME_H_INLINE
-void sname_init( sname_t *sname ) {
+inline void sname_init( sname_t *sname ) {
   slist_init( sname );
 }
 
@@ -364,8 +358,7 @@ void sname_init( sname_t *sname ) {
  * @sa sname_free()
  * @sa sname_init()
  */
-SNAME_H_INLINE
-void sname_init_name( sname_t *sname, char *name ) {
+inline void sname_init_name( sname_t *sname, char *name ) {
   slist_init( sname );
   sname_push_back_name( sname, name );
 }
@@ -390,8 +383,7 @@ void sname_init_name( sname_t *sname, char *name ) {
  * @sa sname_init()
  * @sa sname_set()
  */
-NODISCARD SNAME_H_INLINE
-sname_t sname_move( sname_t *sname ) {
+inline sname_t sname_move( sname_t *sname ) {
   return slist_move( sname );
 }
 
@@ -406,8 +398,8 @@ sname_t sname_move( sname_t *sname ) {
  * @sa sname_full_name()
  * @sa sname_scope_name()
  */
-NODISCARD SNAME_H_INLINE
-char const* sname_name_atr( sname_t const *sname, size_t roffset ) {
+NODISCARD
+inline char const* sname_name_atr( sname_t const *sname, size_t roffset ) {
   sname_scope_t const *const data = slist_atr( sname, roffset );
   return data != NULL ? data->name : "";
 }
@@ -422,8 +414,7 @@ char const* sname_name_atr( sname_t const *sname, size_t roffset ) {
  * @sa sname_push_front_sname()
  * @sa sname_set()
  */
-SNAME_H_INLINE
-void sname_push_back_sname( sname_t *dst, sname_t *src ) {
+inline void sname_push_back_sname( sname_t *dst, sname_t *src ) {
   slist_push_list_back( dst, src );
 }
 
@@ -436,16 +427,13 @@ void sname_push_back_sname( sname_t *dst, sname_t *src ) {
  * @sa sname_push_back_name()
  * @sa sname_push_back_sname()
  */
-SNAME_H_INLINE
-void sname_push_front_sname( sname_t *dst, sname_t *src ) {
+inline void sname_push_front_sname( sname_t *dst, sname_t *src ) {
   slist_push_list_front( dst, src );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_c_sname_H */
 /* vim:set et sw=2 ts=2: */

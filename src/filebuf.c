@@ -25,9 +25,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define FILEBUF_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "filebuf.h"
 #include "util.h"
 
@@ -112,5 +109,8 @@ void filebuf_skip( filebuf_t *fbuf, size_t bytes_to_skip ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern inline void filebuf_init( filebuf_t*, FILE* );
+
 /* vim:set et sw=2 ts=2: */
 

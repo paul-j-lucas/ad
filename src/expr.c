@@ -20,9 +20,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define AD_EXPR_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "expr.h"
 #include "print.h"
 #include "util.h"
@@ -1499,4 +1496,9 @@ void ad_literal_free( ad_literal_expr_t *value ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern bool ad_expr_is_literal( ad_expr_t const* );
+extern inline ad_tid_t ad_expr_tid( ad_expr_t const* );
+extern inline ad_tid_t ad_expr_tid_base( ad_expr_t const* );
+
 /* vim:set et sw=2 ts=2: */

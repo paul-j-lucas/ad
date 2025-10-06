@@ -20,9 +20,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define AD_TYPES_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "expr.h"
 #include "literals.h"
 #include "slist.h"
@@ -264,4 +261,11 @@ ad_type_t const* ad_type_untypedef( ad_type_t const *type ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern inline bool ad_tid_is_null_term( ad_tid_t );
+extern inline bool ad_tid_is_signed( ad_tid_t );
+extern inline unsigned ad_tid_size( ad_tid_t );
+extern inline endian_t ad_tid_endian( ad_tid_t );
+extern inline ad_tid_kind_t ad_tid_kind( ad_tid_t );
+
 /* vim:set et sw=2 ts=2: */

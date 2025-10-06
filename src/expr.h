@@ -30,11 +30,6 @@
 // standard
 #include <stdbool.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef AD_EXPR_H_INLINE
-# define AD_EXPR_H_INLINE _GL_INLINE
-#endif /* AD_EXPR_H_INLINE */
-
 /// @endcond
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,8 +82,8 @@ void ad_expr_free( ad_expr_t *expr );
  * @parm expr The expression to check.
  * @return Returns `true` only if \a expr is a value.
  */
-NODISCARD AD_EXPR_H_INLINE
-bool ad_expr_is_literal( ad_expr_t const *expr ) {
+NODISCARD 
+inline bool ad_expr_is_literal( ad_expr_t const *expr ) {
   return expr->expr_kind == AD_EXPR_LITERAL;
 }
 
@@ -168,8 +163,8 @@ void ad_expr_set_u( ad_expr_t *expr, uint64_t ival );
  *
  * @sa ad_expr_base_tid()
  */
-NODISCARD AD_EXPR_H_INLINE
-ad_tid_t ad_expr_tid( ad_expr_t const *expr ) {
+NODISCARD
+inline ad_tid_t ad_expr_tid( ad_expr_t const *expr ) {
   return ad_expr_is_literal( expr ) ? expr->literal.type->tid : T_NONE;
 }
 
@@ -180,8 +175,8 @@ ad_tid_t ad_expr_tid( ad_expr_t const *expr ) {
  * @param expr The expression to get the base type of.
  * @return Returns said base type.
  */
-NODISCARD AD_EXPR_H_INLINE
-ad_tid_t ad_expr_tid_base( ad_expr_t const *expr ) {
+NODISCARD
+inline ad_tid_t ad_expr_tid_base( ad_expr_t const *expr ) {
   return ad_expr_tid( expr ) & T_MASK_TYPE;
 }
 
@@ -193,8 +188,6 @@ ad_tid_t ad_expr_tid_base( ad_expr_t const *expr ) {
 void ad_literal_free( ad_literal_expr_t *value );
 
 ///////////////////////////////////////////////////////////////////////////////
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_expr_H */
 /* vim:set et sw=2 ts=2: */

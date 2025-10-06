@@ -458,6 +458,17 @@ char* tolower_s( char *s ) {
 
 extern inline bool ascii_is_graph( char8_t );
 extern inline bool ascii_is_print( char );
+extern inline char const* empty_if_null( char const* );
+extern inline void fput_sep( char const*, bool*, FILE* );
+extern inline bool is_ident( char );
+extern inline bool is_ident_first( char );
 extern inline char const* null_if_empty( char const* );
+extern inline bool true_or_set( bool* );
+extern inline uint16_t uint16be_16he( uint16_t );
+extern inline uint16_t uint16le_16he( uint16_t );
+extern inline uint16_t uint16xx_16he( uint16_t, endian_t );
+extern inline uint32_t uint32be_32he( uint32_t );
+extern inline uint32_t uint32le_32he( uint32_t );
+extern inline uint32_t uint32xx_32he( uint32_t, endian_t );
 
 /* vim:set et sw=2 ts=2: */

@@ -31,11 +31,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef AD_TYPES_H_INLINE
-# define AD_TYPES_H_INLINE _GL_INLINE
-#endif /* AD_TYPES_H_INLINE */
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #define T_END_B                 ENDIAN_BIG
@@ -824,8 +819,8 @@ void ad_stmnt_list_cleanup( ad_stmnt_list_t *statement_list );
  * @param tid The type ID to use.
  * @return Returns `true` only if \a tid is null-terminated.
  */
-NODISCARD AD_TYPES_H_INLINE
-bool ad_tid_is_null_term( ad_tid_t tid ) {
+NODISCARD
+inline bool ad_tid_is_null_term( ad_tid_t tid ) {
   return (tid & T_NULL) != 0;
 }
 
@@ -835,8 +830,8 @@ bool ad_tid_is_null_term( ad_tid_t tid ) {
  * @param tid The type ID to use.
  * @return Returns `true` only if \a tid is signed.
  */
-NODISCARD AD_TYPES_H_INLINE
-bool ad_tid_is_signed( ad_tid_t tid ) {
+NODISCARD
+inline bool ad_tid_is_signed( ad_tid_t tid ) {
   return (tid & T_SIGNED) != 0;
 }
 
@@ -846,8 +841,8 @@ bool ad_tid_is_signed( ad_tid_t tid ) {
  * @param tid The type ID to use.
  * @return Returns said size.
  */
-NODISCARD AD_TYPES_H_INLINE
-unsigned ad_tid_size( ad_tid_t tid ) {
+NODISCARD
+inline unsigned ad_tid_size( ad_tid_t tid ) {
   return (tid & T_MASK_SIZE) >> 8;
 }
 
@@ -857,8 +852,8 @@ unsigned ad_tid_size( ad_tid_t tid ) {
  * @param tid The type ID to use.
  * @return Returns said endianness.
  */
-NODISCARD AD_TYPES_H_INLINE
-endian_t ad_tid_endian( ad_tid_t tid ) {
+NODISCARD
+inline endian_t ad_tid_endian( ad_tid_t tid ) {
   return tid & T_MASK_ENDIAN;
 }
 
@@ -870,8 +865,8 @@ endian_t ad_tid_endian( ad_tid_t tid ) {
  *
  * @sa ad_tid_kind_name()
  */
-NODISCARD AD_TYPES_H_INLINE
-ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
+NODISCARD
+inline ad_tid_kind_t ad_tid_kind( ad_tid_t tid ) {
   return tid & T_MASK_TYPE;
 }
 

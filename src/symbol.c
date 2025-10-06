@@ -25,9 +25,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define SYMBOL_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "red_black.h"
 #include "lexer.h"
 #include "symbol.h"
@@ -251,4 +248,7 @@ void sym_visit( sym_visit_fn_t visit_fn, void *visit_data ) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+extern inline void sym_open_scope( void );
+
 /* vim:set et sw=2 ts=2: */

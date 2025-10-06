@@ -94,8 +94,8 @@ typedef uint8_t utf8c_t[ UTF8_CHAR_SIZE_MAX ];
  * @param cp The Unicode code-point to check.
  * @return Returns \c true only if \a cp is an ASCII character.
  */
-NODISCARD AD_UNICODE_H_INLINE
-bool cp_is_ascii( char32_t cp ) {
+NODISCARD
+inline bool cp_is_ascii( char32_t cp ) {
   return cp <= 0x7F;
 }
 
@@ -182,8 +182,8 @@ char8_t* utf32s_8s( char32_t const *u32s, size_t u32_len );
  *
  * @sa utf32c_8c()
  */
-NODISCARD AD_UNICODE_H_INLINE
-char32_t utf8c_32c( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
+NODISCARD
+inline char32_t utf8c_32c( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
   extern char32_t utf8c_32c_impl( char8_t const[static UTF8_CHAR_SIZE_MAX] );
   return cp_is_ascii( *u8c ) ? *u8c : utf8c_32c_impl( u8c );
 }
@@ -208,8 +208,8 @@ inline unsigned utf8c_len( char8_t start ) {
  * @param u8c_j The second UTF-8 character.
  * @return Returns `true` only if \a u8c_i equals \a u8c_j.
  */
-NODISCARD AD_UNICODE_H_INLINE
-bool utf8c_equal( utf8c_t const u8c_i, utf8c_t const u8c_j ) {
+NODISCARD
+inline bool utf8c_equal( utf8c_t u8c_i, utf8c_t u8c_j ) {
   extern uint8_t const UTF8C_LEN_TABLE[];
   return memcmp( u8c_i, u8c_j, UTF8C_LEN_TABLE[ u8c_i[0] ] ) == 0;
 }

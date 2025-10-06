@@ -26,9 +26,6 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-/// @cond DOXYGEN_IGNORE
-#define SNAME_H_INLINE _GL_EXTERN_INLINE
-/// @endcond
 #include "sname.h"
 #include "keyword.h"
 #include "literals.h"
@@ -215,5 +212,16 @@ void sname_set( sname_t *dst_sname, sname_t *src_sname ) {
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
+
+extern inline int sname_cmp( sname_t const*, sname_t const* );
+extern inline size_t sname_count( sname_t const* );
+extern inline sname_t sname_dup( sname_t const* );
+extern inline bool sname_empty( sname_t const* );
+extern inline void sname_init( sname_t* );
+extern inline void sname_init_name( sname_t*, char* );
+extern inline sname_t sname_move( sname_t* );
+extern inline char const* sname_name_atr( sname_t const*, size_t );
+extern inline void sname_push_back_sname( sname_t*, sname_t* );
+extern inline void sname_push_front_sname( sname_t*, sname_t* );
 
 /* vim:set et sw=2 ts=2: */

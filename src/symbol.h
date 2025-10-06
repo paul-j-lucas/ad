@@ -39,11 +39,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-_GL_INLINE_HEADER_BEGIN
-#ifndef SYMBOL_H_INLINE
-# define SYMBOL_H_INLINE _GL_INLINE
-#endif /* SYMBOL_H_INLINE */
-
 /// @endcond
 
 /**
@@ -154,8 +149,7 @@ synfo_t* sym_find_sname( sname_t const *sname );
  *
  * @sa sym_close_scope()
  */
-SYMBOL_H_INLINE
-void sym_open_scope( void ) {
+inline void sym_open_scope( void ) {
   ++sym_scope;
 }
 
@@ -177,8 +171,6 @@ void sym_visit( sym_visit_fn_t visit_fn, void *visit_data );
 ///////////////////////////////////////////////////////////////////////////////
 
 /** @} */
-
-_GL_INLINE_HEADER_END
 
 #endif /* ad_symbol_H */
 /* vim:set et sw=2 ts=2: */

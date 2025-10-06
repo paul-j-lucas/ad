@@ -199,8 +199,11 @@ char32_t utf8c_32c_impl( char8_t const u8c[static UTF8_CHAR_SIZE_MAX] ) {
 
 /** @} */
 
+extern inline bool cp_is_ascii( char32_t );
 extern inline bool cp_is_valid( unsigned long long );
+extern inline char32_t utf8c_32c( char8_t const[static UTF8_CHAR_SIZE_MAX] );
 extern inline unsigned utf8c_len( char8_t );
+extern inline bool utf8c_equal( utf8c_t, utf8c_t );
 extern inline bool utf8_is_start( char8_t );
 extern inline bool utf8_is_cont( char8_t );
 
