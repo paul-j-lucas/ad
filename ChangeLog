@@ -1,5 +1,6 @@
 2025-10-18  Paul J. Lucas <paul@lucasmail.org>
 
+   * configure.ac: Removed -Wzero-as-null-pointer-constant -- not valid for C.
    * Makefile.am: Added --no-vc-files.
 
 2025-10-15  Paul J. Lucas <paul@lucasmail.org>
