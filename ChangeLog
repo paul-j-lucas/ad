@@ -1,5 +1,9 @@
 2025-10-18  Paul J. Lucas <paul@lucasmail.org>
 
+   * fseterr.c, fseterr.h, stdio-consolesafe.c, stdio-impl.h: Added missing
+     files.
+   * ax_compiler_vendor.m4, ax_prepend_flag.m4, ax_require_defined.m4:
+     Apparently, these are required now.
    * configure.ac: Removed -Wzero-as-null-pointer-constant -- not valid for C.
    * Makefile.am: Added --no-vc-files.
 
