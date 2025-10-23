@@ -125,7 +125,7 @@ char* check_strndup( char const *s, size_t n ) {
 }
 
 void fatal_error( int status, char const *format, ... ) {
-  EPRINTF( "%s: ", me );
+  EPRINTF( "%s: ", prog_name );
   va_list args;
   va_start( args, format );
   vfprintf( stderr, format, args );
@@ -371,7 +371,7 @@ unsigned long long parse_ull( char const *s ) {
 }
 
 void perror_exit( int status ) {
-  perror( me );
+  perror( prog_name );
   exit( status );
 }
 

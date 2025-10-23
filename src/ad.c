@@ -49,7 +49,7 @@ void reverse_dump_file( void );
 // extern variable definitions
 off_t       fin_offset;
 char const *fin_path = "-";
-char const *me;
+char const *prog_name;
 unsigned    row_bytes = ROW_BYTES_DEFAULT;
 
 /////////// local functions ///////////////////////////////////////////////////
@@ -73,7 +73,7 @@ static void ad_cleanup( void ) {
  * @return Returns 0 on success, non-zero on failure.
  */
 int main( int argc, char const *argv[const] ) {
-  me = base_name( argv[0] );
+  prog_name = base_name( argv[0] );
   ATEXIT( ad_cleanup );
   options_init( argc, argv );
   colors_init();

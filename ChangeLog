@@ -1,3 +1,11 @@
+2025-10-23  Paul J. Lucas <paul@lucasmail.org>
+
+   * ad.c, ad.h, options.c, util.c: s/me/prog_name/
+
+2025-10-20  Paul J. Lucas <paul@lucasmail.org>
+
+   * configure.ac, pjl_config.h: s/__typeof__/typeof/
+
 2025-10-19  Paul J. Lucas <paul@lucasmail.org>
 
    * pjl_compile.m4: Removed AC_REQUIRE.
