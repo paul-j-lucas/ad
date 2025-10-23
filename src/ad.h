@@ -82,7 +82,7 @@ typedef enum endian endian_t;
 
 extern off_t        fin_offset;         ///< Current input file offset.
 extern char const  *fin_path;           ///< Input file path name.
-extern char const  *me;                 ///< Program name.
+extern char const  *prog_name;          ///< Program name.
 extern unsigned     row_bytes;          ///< Bytes dumped on a row.
 
 ///////////////////////////////////////////////////////////////////////////////

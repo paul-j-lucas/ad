@@ -923,7 +923,7 @@ static void print_usage( int status ) {
 "       %s --help\n"
 "       %s --version\n"
 "options:\n",
-    me, me, me, me
+    prog_name, prog_name, prog_name, prog_name
   );
 
   for ( struct option const *opt = OPTIONS; opt->name != NULL; ++opt ) {
@@ -1393,7 +1393,7 @@ void options_init( int argc, char const *argv[] ) {
 invalid_opt:;
   // Determine whether the invalid option was short or long.
   char const *const invalid_opt = argv[ optind - 1 ];
-  EPRINTF( "%s: ", me );
+  EPRINTF( "%s: ", prog_name );
   if ( invalid_opt != NULL && strncmp( invalid_opt, "--", 2 ) == 0 )
     EPRINTF( "\"%s\"", invalid_opt + 2/*skip over "--"*/ );
   else
