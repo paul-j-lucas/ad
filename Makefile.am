@@ -28,14 +28,16 @@ EXTRA_DIST =	ad.css \
 		makedoc.sh \
 		README.md
 
+DOCS_DIR =	docs
+
 .PHONY:	doc docs \
 	update-gnulib
 
 doc docs:
-	@./makedoc.sh
+	@./makedoc.sh $(PACKAGE) $(DOCS_DIR)
 
 clean-local:
-	rm -fr docs
+	rm -fr $(DOCS_DIR)
 
 update-gnulib:
 	gnulib-tool --add-import --no-vc-files

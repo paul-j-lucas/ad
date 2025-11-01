@@ -171,8 +171,6 @@
  * @param MSG The string literal of the error message to print only if \a EXPR
  * evaluates to 0 (false).
  * @return Always returns 1.
- *
- * @sa #ASSERT_EXPR()
  */
 #define STATIC_ASSERT_EXPR(EXPR,MSG) \
   (!!sizeof( struct { _Static_assert( (EXPR), MSG ); char c; } ))
