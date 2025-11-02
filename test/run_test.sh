@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /usr/bin/env bash
 ##
 #       ad -- ASCII dump
 #       test/run_test.sh
@@ -53,21 +53,20 @@ pass() {
 }
 
 fail() {
-  RESULT=$1
-  [ "$RESULT" ] || RESULT=FAIL
-  print_result $RESULT $TEST_NAME
+  result=$1; shift; [ -n "$result" ] || result=FAIL
+  print_result $result $TEST_NAME $*
   {
-    echo ":test-result: $RESULT"
+    echo ":test-result: $result"
     echo ":copy-in-global-log: yes"
   } > $TRS_FILE
 }
 
 print_result() {
-  RESULT=$1; shift
-  COLOR=`eval echo \\$COLOR_$RESULT`
+  result=$1; shift
+  COLOR=`eval echo \\$COLOR_$result`
   if [ "$COLOR" ]
-  then echo $COLOR$RESULT$COLOR_NONE: $*
-  else echo $RESULT: $*
+  then echo $COLOR$result$COLOR_NONE: $*
+  else echo $result: $*
   fi
 }
 
@@ -86,7 +85,7 @@ END
 
 ########## Begin ##############################################################
 
-ME=`local_basename "$0"`
+ME=$(local_basename "$0")
 
 [ "$BUILD_SRC" ] || {
   echo "$ME: \$BUILD_SRC not set" >&2
@@ -102,19 +101,19 @@ do
     COLOR_TESTS=$2; shift
     ;;
   --color-tests=*)
-    COLOR_TESTS=`expr "x$1" : 'x--color-tests=\(.*\)'`
+    COLOR_TESTS=$(expr "x$1" : 'x--color-tests=\(.*\)')
     ;;
   --enable-hard-errors)
     ENABLE_HARD_ERRORS=$2; shift
     ;;
   --enable-hard-errors=*)
-    ENABLE_HARD_ERRORS=`expr "x$1" : 'x--enable-hard-errors=\(.*\)'`
+    ENABLE_HARD_ERRORS=$(expr "x$1" : 'x--enable-hard-errors=\(.*\)')
     ;;
   --expect-failure)
     EXPECT_FAILURE=$2; shift
     ;;
   --expect-failure=*)
-    EXPECT_FAILURE=`expr "x$1" : 'x--expect-failure=\(.*\)'`
+    EXPECT_FAILURE=$(expr "x$1" : 'x--expect-failure=\(.*\)')
     ;;
   --help)
     usage
@@ -123,19 +122,19 @@ do
     LOG_FILE=$2; shift
     ;;
   --log-file=*)
-    LOG_FILE=`expr "x$1" : 'x--log-file=\(.*\)'`
+    LOG_FILE=$(expr "x$1" : 'x--log-file=\(.*\)')
     ;;
   --test-name)
     TEST_NAME=$2; shift
     ;;
   --test-name=*)
-    TEST_NAME=`expr "x$1" : 'x--test-name=\(.*\)'`
+    TEST_NAME=$(expr "x$1" : 'x--test-name=\(.*\)')
     ;;
   --trs-file)
     TRS_FILE=$2; shift
     ;;
   --trs-file=*)
-    TRS_FILE=`expr "x$1" : 'x--trs-file=\(.*\)'`
+    TRS_FILE=$(expr "x$1" : 'x--trs-file=\(.*\)')
     ;;
   --)
     shift
@@ -157,7 +156,7 @@ TEST=$1
 [ "$TRS_FILE"  ] || usage "required --trs-file not given"
 [ $# -ge 1     ] || usage "required test-file not given"
 
-TEST_NAME=`local_basename "$TEST_NAME"`
+TEST_NAME=$(local_basename "$TEST_NAME")
 
 ########## Initialize #########################################################
 
@@ -183,15 +182,29 @@ yes) EXPECT_FAILURE=1 ;;
   *) EXPECT_FAILURE=0 ;;
 esac
 
+[ -n "$TMPDIR" ] || TMPDIR=/tmp
+trap "x=$?; rm -f $TMPDIR/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
+
 ##
 # The automake framework sets $srcdir. If it's empty, it means this script was
 # called by hand, so set it ourselves.
 ##
-[ "$srcdir" ] || srcdir="."
+[ -n "$srcdir" ] || srcdir="."
 
-DATA_DIR=$srcdir/data
-EXPECTED_DIR=$srcdir/expected
-ACTUAL_OUTPUT=/tmp/ad_test_output_$$_
+DATA_DIR="$srcdir/data"
+EXPECTED_DIR="$srcdir/expected"
+ACTUAL_OUTPUT="$TMPDIR/ad_test_output_$$_"
+
+##
+# Must put BUILD_SRC first in PATH so we get the correct version of ad.
+##
+PATH=$BUILD_SRC:$PATH
+
+##
+# Disable core dumps so we won't fill up the disk with them if a bunch of tests
+# crash.
+##
+ulimit -c 0
 
 ########## Run test ###########################################################
 
@@ -251,19 +264,12 @@ run_test_file() {
 }
 
 ##
-# Must put BUILD_SRC first in PATH so we get the correct version of ad.
-##
-PATH=$BUILD_SRC:$PATH
-
-##
 # Must unset these so we get the default colors in test output.
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
-
-assert_exists $TEST
-case $TEST in
+assert_exists "$TEST"
+case "$TEST" in
 *.sh)   run_sh_file ;;
 *.test) run_test_file ;;
 esac
