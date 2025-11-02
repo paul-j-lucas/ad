@@ -73,7 +73,7 @@ print_result() {
 usage() {
   [ "$1" ] && { echo "$ME: $*" >&2; usage; }
   cat >&2 <<END
-usage: $ME --log-file=PATH --trs-file=PATH [options] TEST-FILE
+usage: $ME --test-name=NAME --log-file=PATH --trs-file=PATH [options] TEST-FILE
 options:
   --color-tests={yes|no}
   --enable-hard-errors={yes|no}
