@@ -1,5 +1,6 @@
 2025-11-02  Paul J. Lucas <paul@lucasmail.org>
 
+   * run_test.sh: Added --test-name to usage message.
    * run_test.sh: Updated to match cdecl version.
 
 2025-11-01  Paul J. Lucas <paul@lucasmail.org>
