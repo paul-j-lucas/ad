@@ -194,7 +194,7 @@ ulimit -c 0
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST $ACTUAL_OUTPUT $LOG_FILE
+  if $TEST "$ACTUAL_OUTPUT" "$LOG_FILE"
   then pass
   else fail
   fi
@@ -205,16 +205,16 @@ run_test_file() {
   IFS='|'; read COMMAND OPTIONS INPUT OUTFILE EXPECTED_EXIT < $TEST
   [ "$IFS_old" ] && IFS=$IFS_old
 
-  COMMAND=`echo $COMMAND`               # trims whitespace
-  INPUT=$DATA_DIR/`echo $INPUT`         # trims whitespace
-  OUTFILE=`echo $OUTFILE`               # trims whitespace
-  EXPECTED_EXIT=`echo $EXPECTED_EXIT`   # trims whitespace
+  COMMAND=$(echo $COMMAND)              # trims whitespace
+  INPUT="$DATA_DIR/$(echo $INPUT)"      # trims whitespace
+  OUTFILE=$(echo $OUTFILE)              # trims whitespace
+  EXPECTED_EXIT=$(echo $EXPECTED_EXIT)  # trims whitespace
 
-  > $LOG_FILE
+  > "$LOG_FILE"
   case "$OUTFILE" in
-  outfile) $COMMAND $OPTIONS $INPUT $ACTUAL_OUTPUT >> $LOG_FILE 2>&1 ;;
-   stderr) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>&1 ;;
-        *) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>> $LOG_FILE ;;
+  outfile) $COMMAND $OPTIONS "$INPUT" "$ACTUAL_OUTPUT" >> "$LOG_FILE" 2>&1 ;;
+   stderr) $COMMAND $OPTIONS "$INPUT" > "$ACTUAL_OUTPUT" 2>&1 ;;
+        *) $COMMAND $OPTIONS "$INPUT" > "$ACTUAL_OUTPUT" 2>> $LOG_FILE ;;
   esac
   ACTUAL_EXIT=$?
 
@@ -222,14 +222,14 @@ run_test_file() {
   then                                  # success: diff output file
     if [ 0 -eq $EXPECTED_EXIT ]
     then
-      EXPECTED_TXT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
-      EXPECTED_BIN="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/bin/'`"
-      if [ -f $EXPECTED_TXT ]
+      EXPECTED_TXT="$EXPECTED_DIR/$(echo $TEST_NAME | sed 's/test$/txt/')"
+      EXPECTED_BIN="$EXPECTED_DIR/$(echo $TEST_NAME | sed 's/test$/bin/')"
+      if [ -f "$EXPECTED_TXT" ]
       then EXPECTED_OUTPUT=$EXPECTED_TXT
       else EXPECTED_OUTPUT=$EXPECTED_BIN
       fi
-      if diff $EXPECTED_OUTPUT $ACTUAL_OUTPUT >> $LOG_FILE
-      then pass; mv $ACTUAL_OUTPUT $LOG_FILE
+      if diff "$EXPECTED_OUTPUT" "$ACTUAL_OUTPUT" >> "$LOG_FILE"
+      then pass; mv "$ACTUAL_OUTPUT" "$LOG_FILE"
       else fail
       fi
     else
