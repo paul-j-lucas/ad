@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /usr/bin/env bash
 ##
 #       ad -- ASCII dump
 #       test/run_test.sh
@@ -53,40 +53,39 @@ pass() {
 }
 
 fail() {
-  RESULT=$1
-  [ "$RESULT" ] || RESULT=FAIL
-  print_result $RESULT $TEST_NAME
+  result=$1; shift; [ -n "$result" ] || result=FAIL
+  print_result $result $TEST_NAME $*
   {
-    echo ":test-result: $RESULT"
+    echo ":test-result: $result"
     echo ":copy-in-global-log: yes"
   } > $TRS_FILE
 }
 
 print_result() {
-  RESULT=$1; shift
-  COLOR=`eval echo \\$COLOR_$RESULT`
+  result=$1; shift
+  COLOR=`eval echo \\$COLOR_$result`
   if [ "$COLOR" ]
-  then echo $COLOR$RESULT$COLOR_NONE: $*
-  else echo $RESULT: $*
+  then echo $COLOR$result$COLOR_NONE: $*
+  else echo $result: $*
   fi
 }
 
 usage() {
   [ "$1" ] && { echo "$ME: $*" >&2; usage; }
   cat >&2 <<END
-usage: $ME --log-file=PATH --trs-file=PATH [options] TEST-FILE
+usage: $ME --test-name NAME --log-file PATH --trs-file PATH [options] TEST-FILE
 options:
-  --color-tests={yes|no}
-  --enable-hard-errors={yes|no}
-  --expect-failure={yes|no}
-  --test-name=NAME
+  --collect-skipped-logs {yes|no}
+  --color-tests {yes|no}
+  --enable-hard-errors {yes|no}
+  --expect-failure {yes|no}
 END
   exit 1
 }
 
 ########## Begin ##############################################################
 
-ME=`local_basename "$0"`
+ME=$(local_basename "$0")
 
 [ "$BUILD_SRC" ] || {
   echo "$ME: \$BUILD_SRC not set" >&2
@@ -98,23 +97,17 @@ ME=`local_basename "$0"`
 while [ $# -gt 0 ]
 do
   case $1 in
+  --collect-skipped-logs)
+    COLLECT_SKIPPED_LOGS=$2; shift
+    ;;
   --color-tests)
     COLOR_TESTS=$2; shift
-    ;;
-  --color-tests=*)
-    COLOR_TESTS=`expr "x$1" : 'x--color-tests=\(.*\)'`
     ;;
   --enable-hard-errors)
     ENABLE_HARD_ERRORS=$2; shift
     ;;
-  --enable-hard-errors=*)
-    ENABLE_HARD_ERRORS=`expr "x$1" : 'x--enable-hard-errors=\(.*\)'`
-    ;;
   --expect-failure)
     EXPECT_FAILURE=$2; shift
-    ;;
-  --expect-failure=*)
-    EXPECT_FAILURE=`expr "x$1" : 'x--expect-failure=\(.*\)'`
     ;;
   --help)
     usage
@@ -122,20 +115,11 @@ do
   --log-file)
     LOG_FILE=$2; shift
     ;;
-  --log-file=*)
-    LOG_FILE=`expr "x$1" : 'x--log-file=\(.*\)'`
-    ;;
   --test-name)
     TEST_NAME=$2; shift
     ;;
-  --test-name=*)
-    TEST_NAME=`expr "x$1" : 'x--test-name=\(.*\)'`
-    ;;
   --trs-file)
     TRS_FILE=$2; shift
-    ;;
-  --trs-file=*)
-    TRS_FILE=`expr "x$1" : 'x--trs-file=\(.*\)'`
     ;;
   --)
     shift
@@ -157,7 +141,7 @@ TEST=$1
 [ "$TRS_FILE"  ] || usage "required --trs-file not given"
 [ $# -ge 1     ] || usage "required test-file not given"
 
-TEST_NAME=`local_basename "$TEST_NAME"`
+TEST_NAME=$(local_basename "$TEST_NAME")
 
 ########## Initialize #########################################################
 
@@ -183,20 +167,34 @@ yes) EXPECT_FAILURE=1 ;;
   *) EXPECT_FAILURE=0 ;;
 esac
 
+[ -n "$TMPDIR" ] || TMPDIR=/tmp
+trap "x=$?; rm -f $TMPDIR/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
+
 ##
 # The automake framework sets $srcdir. If it's empty, it means this script was
 # called by hand, so set it ourselves.
 ##
-[ "$srcdir" ] || srcdir="."
+[ -n "$srcdir" ] || srcdir="."
 
-DATA_DIR=$srcdir/data
-EXPECTED_DIR=$srcdir/expected
-ACTUAL_OUTPUT=/tmp/ad_test_output_$$_
+DATA_DIR="$srcdir/data"
+EXPECTED_DIR="$srcdir/expected"
+ACTUAL_OUTPUT="$TMPDIR/ad_test_output_$$_"
+
+##
+# Must put BUILD_SRC first in PATH so we get the correct version of ad.
+##
+PATH=$BUILD_SRC:$PATH
+
+##
+# Disable core dumps so we won't fill up the disk with them if a bunch of tests
+# crash.
+##
+ulimit -c 0
 
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST $ACTUAL_OUTPUT $LOG_FILE
+  if $TEST "$ACTUAL_OUTPUT" "$LOG_FILE"
   then pass
   else fail
   fi
@@ -207,16 +205,16 @@ run_test_file() {
   IFS='|'; read COMMAND OPTIONS INPUT OUTFILE EXPECTED_EXIT < $TEST
   [ "$IFS_old" ] && IFS=$IFS_old
 
-  COMMAND=`echo $COMMAND`               # trims whitespace
-  INPUT=$DATA_DIR/`echo $INPUT`         # trims whitespace
-  OUTFILE=`echo $OUTFILE`               # trims whitespace
-  EXPECTED_EXIT=`echo $EXPECTED_EXIT`   # trims whitespace
+  COMMAND=$(echo $COMMAND)              # trims whitespace
+  INPUT="$DATA_DIR/$(echo $INPUT)"      # trims whitespace
+  OUTFILE=$(echo $OUTFILE)              # trims whitespace
+  EXPECTED_EXIT=$(echo $EXPECTED_EXIT)  # trims whitespace
 
-  > $LOG_FILE
+  > "$LOG_FILE"
   case "$OUTFILE" in
-  outfile) $COMMAND $OPTIONS $INPUT $ACTUAL_OUTPUT >> $LOG_FILE 2>&1 ;;
-   stderr) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>&1 ;;
-        *) $COMMAND $OPTIONS $INPUT > $ACTUAL_OUTPUT 2>> $LOG_FILE ;;
+  outfile) $COMMAND $OPTIONS "$INPUT" "$ACTUAL_OUTPUT" >> "$LOG_FILE" 2>&1 ;;
+   stderr) $COMMAND $OPTIONS "$INPUT" > "$ACTUAL_OUTPUT" 2>&1 ;;
+        *) $COMMAND $OPTIONS "$INPUT" > "$ACTUAL_OUTPUT" 2>> $LOG_FILE ;;
   esac
   ACTUAL_EXIT=$?
 
@@ -224,14 +222,14 @@ run_test_file() {
   then                                  # success: diff output file
     if [ 0 -eq $EXPECTED_EXIT ]
     then
-      EXPECTED_TXT="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/txt/'`"
-      EXPECTED_BIN="$EXPECTED_DIR/`echo $TEST_NAME | sed 's/test$/bin/'`"
-      if [ -f $EXPECTED_TXT ]
+      EXPECTED_TXT="$EXPECTED_DIR/$(echo $TEST_NAME | sed 's/test$/txt/')"
+      EXPECTED_BIN="$EXPECTED_DIR/$(echo $TEST_NAME | sed 's/test$/bin/')"
+      if [ -f "$EXPECTED_TXT" ]
       then EXPECTED_OUTPUT=$EXPECTED_TXT
       else EXPECTED_OUTPUT=$EXPECTED_BIN
       fi
-      if diff $EXPECTED_OUTPUT $ACTUAL_OUTPUT >> $LOG_FILE
-      then pass; mv $ACTUAL_OUTPUT $LOG_FILE
+      if diff "$EXPECTED_OUTPUT" "$ACTUAL_OUTPUT" >> "$LOG_FILE"
+      then pass; mv "$ACTUAL_OUTPUT" "$LOG_FILE"
       else fail
       fi
     else
@@ -251,19 +249,12 @@ run_test_file() {
 }
 
 ##
-# Must put BUILD_SRC first in PATH so we get the correct version of ad.
-##
-PATH=$BUILD_SRC:$PATH
-
-##
 # Must unset these so we get the default colors in test output.
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-trap "x=$?; rm -f /tmp/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
-
-assert_exists $TEST
-case $TEST in
+assert_exists "$TEST"
+case "$TEST" in
 *.sh)   run_sh_file ;;
 *.test) run_test_file ;;
 esac
