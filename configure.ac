@@ -29,8 +29,8 @@ AM_INIT_AUTOMAKE
 AC_LANG(C)
 AC_PROG_CC
 AS_IF([test "x$ac_cv_prog_cc_c11" = xno],
-  [AC_MSG_ERROR([a C11 compiler is required to compile $PACKAGE_NAME])
-])
+  [AC_MSG_ERROR([a C11 compiler is required to compile $PACKAGE_NAME])]
+)
 gl_EARLY
 
 # Check if this is a maintainer tree (has .git directory).
