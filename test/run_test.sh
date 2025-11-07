@@ -30,7 +30,25 @@ error() {
   exit $exit_status
 }
 
-assert_exists() {
+assert_opt_is_yes_no() {
+  assert_opt_not_empty "$1" "$2"
+  case "$2" in
+  yes|no)
+    ;;
+  *)
+    error 64 "\"$2\": invalid argument; must be either \"yes\" or \"no\""
+    ;;
+  esac
+}
+
+assert_opt_not_empty() {
+  case "x$2" in
+  x|x--*)
+    error 64 "$1 requires an argument" ;;
+  esac
+}
+
+assert_path_exists() {
   [ -e "$1" ] || error 66 $1: file not found
 }
 
@@ -98,27 +116,34 @@ while [ $# -gt 0 ]
 do
   case $1 in
   --collect-skipped-logs)
+    assert_opt_is_yes_no "$1" "$2"
     COLLECT_SKIPPED_LOGS=$2; shift
     ;;
   --color-tests)
+    assert_opt_is_yes_no "$1" "$2"
     COLOR_TESTS=$2; shift
     ;;
   --enable-hard-errors)
+    assert_opt_is_yes_no "$1" "$2"
     ENABLE_HARD_ERRORS=$2; shift
     ;;
   --expect-failure)
+    assert_opt_is_yes_no "$1" "$2"
     EXPECT_FAILURE=$2; shift
     ;;
   --help)
     usage
     ;;
   --log-file)
+    assert_opt_not_empty "$1" "$2"
     LOG_FILE=$2; shift
     ;;
   --test-name)
+    assert_opt_not_empty "$1" "$2"
     TEST_NAME=$2; shift
     ;;
   --trs-file)
+    assert_opt_not_empty "$1" "$2"
     TRS_FILE=$2; shift
     ;;
   --)
@@ -141,6 +166,7 @@ TEST=$1
 [ "$TRS_FILE"  ] || usage "required --trs-file not given"
 [ $# -ge 1     ] || usage "required test-file not given"
 
+assert_path_exists "$TEST"
 TEST_NAME=$(local_basename "$TEST_NAME")
 
 ########## Initialize #########################################################
@@ -173,7 +199,6 @@ trap "x=$?; rm -f $TMPDIR/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 
 DATA_DIR="$srcdir/data"
 EXPECTED_DIR="$srcdir/expected"
-ACTUAL_OUTPUT="$TMPDIR/ad_test_output_$$_"
 
 ##
 # Must put BUILD_SRC first in PATH so we get the correct version of ad.
@@ -189,7 +214,7 @@ ulimit -c 0
 ########## Run test ###########################################################
 
 run_sh_file() {
-  if $TEST "$ACTUAL_OUTPUT" "$LOG_FILE"
+  if $TEST > "$LOG_FILE"
   then pass
   else fail
   fi
@@ -204,6 +229,7 @@ run_test_file() {
   INPUT="$DATA_DIR/$(echo $INPUT)"      # trims whitespace
   OUTFILE=$(echo $OUTFILE)              # trims whitespace
   EXPECTED_EXIT=$(echo $EXPECTED_EXIT)  # trims whitespace
+  ACTUAL_OUTPUT="$TMPDIR/ad_stdout_$$_"
 
   > "$LOG_FILE"
   case "$OUTFILE" in
@@ -248,7 +274,6 @@ run_test_file() {
 ##
 unset AD_COLORS GREP_COLOR GREP_COLORS
 
-assert_exists "$TEST"
 case "$TEST" in
 *.sh)   run_sh_file ;;
 *.test) run_test_file ;;
