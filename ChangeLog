@@ -1,5 +1,6 @@
 2025-11-07  Paul J. Lucas <paul@lucasmail.org>
 
+   * run_test.sh: Better quoting.
    * run_test.sh, ad-R_09.sh, ad-r_02.sh: More robust option checking; shell
      tests no longer need arguments.
 
