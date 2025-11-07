@@ -49,7 +49,7 @@ assert_opt_not_empty() {
 }
 
 assert_path_exists() {
-  [ -e "$1" ] || error 66 $1: file not found
+  [ -e "$1" ] || error 66 "$1: file not found"
 }
 
 local_basename() {
@@ -195,7 +195,7 @@ trap "x=$?; rm -f $TMPDIR/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
 # The automake framework sets $srcdir. If it's empty, it means this script was
 # called by hand, so set it ourselves.
 ##
-[ -n "$srcdir" ] || srcdir="."
+[ "$srcdir" ] || srcdir="."
 
 DATA_DIR="$srcdir/data"
 EXPECTED_DIR="$srcdir/expected"
@@ -203,7 +203,7 @@ EXPECTED_DIR="$srcdir/expected"
 ##
 # Must put BUILD_SRC first in PATH so we get the correct version of ad.
 ##
-PATH=$BUILD_SRC:$PATH
+PATH="$BUILD_SRC:$PATH"
 
 ##
 # Disable core dumps so we won't fill up the disk with them if a bunch of tests
