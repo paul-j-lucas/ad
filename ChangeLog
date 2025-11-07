@@ -1,5 +1,19 @@
+2025-11-07  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh, ad-R_09.sh, ad-r_02.sh: More robust option checking; shell
+     tests no longer need arguments.
+
+2025-11-05  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: Eliminated EXPECT_FAILURE -- not used.
+
+2025-11-03  Paul J. Lucas <paul@lucasmail.org>
+
+   * run_test.sh: Added quotes.
+
 2025-11-02  Paul J. Lucas <paul@lucasmail.org>
 
+   * run_test.sh: Argument processing clean-up; added --collect-skipped-logs.
    * run_test.sh: Added --test-name to usage message.
    * run_test.sh: Updated to match cdecl version.
 
