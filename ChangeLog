@@ -1,3 +1,9 @@
+2025-11-15  Paul J. Lucas <paul@lucasmail.org>
+
+   * Makefile.am: Added update_m4.sh to EXTRA_DIST.
+   * ax_append_flag.m4: Updated.
+   * update_m4.sh: New script.
+
 2025-11-07  Paul J. Lucas <paul@lucasmail.org>
 
    * run_test.sh: Better quoting.
@@ -96,12 +102,6 @@
 
    * dump.c, match.c, match.h: Moved kmp_new().
    * dump_c.c: Now using sizeof.
-   * Doxyfile, Makefile.am, ad.css, bootstrap, configure.ac,
-     pjl_check_typedef.m4, pjl_compile.m4, makedoc.sh, man/Makefile.am,
-     man/man1/Makefile.am, ad.1, src/Makefile.am, ad.c, ad.h, color.c, color.h,
-     dump.c, dump_c.c, match.c, match.h, options.c, options.h, pjl_config.h,
-     reverse.c, unicode.c, unicode.h, util.c, util.h, test/Makefile.am,
-     run_test.sh: Updated copyright year.
 
 2025-07-18  Paul J. Lucas <paul@lucasmail.org>
 
@@ -505,14 +505,6 @@
    * configure.ac, ax_check_compile_flag.m4: Now using AX_CHECK_COMPILE_FLAG
      instead of AX_CFLAGS_GCC_OPTION.
 
-2021-01-16  Paul J. Lucas <paul@lucasmail.org>
-
-   * Makefile.am, configure.ac, pjl_compile.m4, man/Makefile.am,
-     man/man1/Makefile.am, ad.1, src/Makefile.am, ad.c, color.c, color.h,
-     common.h, dump.c, match.c, match.h, options.c, options.h, pjl_config.h,
-     reverse.c, unicode.c, unicode.h, util.c, util.h, test/Makefile.am,
-     run_test.sh: Updated copyright year.
-
 2021-01-15  Paul J. Lucas <paul@lucasmail.org>
 
    * configure.ac: s/AC_PROG_CC_C99/AC_PROG_CC/; moved AC_LANG(C) earlier.
@@ -528,10 +520,6 @@
 
 2020-11-28  Paul J. Lucas <paul@lucasmail.org>
 
-   * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am, ad.1,
-     src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
-     match.h, options.c, options.h, reverse.c, unicode.c, unicode.h, util.c,
-     util.h, test/Makefile.am, run_test.sh: Updated copyright year.
    * color.c, color.h, dump.c, match.c, match.h, options.c, options.h,
      pjl_config.h, reverse.c, unicode.h, util.c, util.h: s/AD_/PJL_/ for
      pjl_config.h macros.
@@ -652,9 +640,6 @@
 
 2018-12-07  Paul J. Lucas <paul@lucasmail.org>
 
-   * ad.c, color.c, color.h, common.h, dump.c, match.c, match.h, options.c,
-     options.h, reverse.c, utf8.c, utf8.h, util.c, util.h: Updated copyright
-     year.
    * configure.ac, src/Makefile.am, ad.c, ad.h, color.c, color.h, common.h,
      dump.c, match.c, match.h, options.c, options.h, reverse.c, utf8.c, utf8.h,
      util.c, util.h: Now handling "inline" properly on Mac OS X; header
@@ -824,13 +809,6 @@
 2017-01-23  Paul J. Lucas <paul@lucasmail.org>
 
    * src/Makefile.am: Now using global LDADD; remove -L from AM_CPPFLAGS.
-
-2017-01-22  Paul J. Lucas <paul@lucasmail.org>
-
-   * Makefile.am, configure.ac, man/Makefile.am, man/man1/Makefile.am,
-     src/Makefile.am, ad.c, color.c, color.h, common.h, dump.c, match.c,
-     match.h, options.c, options.h, reverse.c, utf8.c, utf8.h, util.c, util.h,
-     test/Makefile.am, run_test.sh: Updated copyright year.
 
 2017-01-21  Paul J. Lucas <paul@lucasmail.org>
 
@@ -1067,7 +1045,6 @@
 2015-08-09  Paul J. Lucas <paul@lucasmail.org>
 
    * reverse.c: Fixed comment.
-   * dump.c: Fixed copyright years.
    * util.c: Simplified skip_ws().
    * ad.c, dump.c, options.c, reverse.c, util.c: Added comments; clean-up.
    * color.h, options.c, utf8.h: Now consitent about "; must"; added
