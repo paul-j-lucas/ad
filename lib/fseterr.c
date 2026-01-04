@@ -1,5 +1,5 @@
 /* Set the error indicator of a stream.
-   Copyright (C) 2007-2025 Free Software Foundation, Inc.
+   Copyright (C) 2007-2026 Free Software Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
    it under the terms of the GNU Lesser General Public License as
@@ -24,7 +24,7 @@
 #include "stdio-impl.h"
 
 /* This file is not used on systems that have the __fseterr function,
-   namely musl libc, Haiku >= hrev58760.  */
+   namely OpenBSD >= 7.6, musl libc, Haiku >= hrev58760.  */
 
 void
 fseterr (FILE *fp)
@@ -35,8 +35,8 @@ fseterr (FILE *fp)
 #if defined _IO_EOF_SEEN || defined _IO_ftrylockfile || __GNU_LIBRARY__ == 1
   /* GNU libc, BeOS, Haiku, Linux libc5 */
   fp->_flags |= _IO_ERR_SEEN;
-#elif defined __sferror || defined __OpenBSD__ || defined __DragonFly__ || defined __ANDROID__
-  /* FreeBSD, NetBSD, OpenBSD, DragonFly, Mac OS X, Cygwin, Minix 3, Android */
+#elif defined __sferror || defined __DragonFly__ || defined __ANDROID__
+  /* FreeBSD, NetBSD, OpenBSD < 7.6, DragonFly, Mac OS X, Cygwin, Minix 3, Android */
   fp_->_flags |= __SERR;
 #elif defined __EMX__               /* emx+gcc */
   fp->_flags |= _IOERR;
@@ -59,14 +59,10 @@ fseterr (FILE *fp)
      Not activated on any system, because there is no way to repair FP when
      the sequence of system calls fails, and library code should not call
      abort().  */
-  int saved_errno;
-  int fd;
-  int fd2;
-
-  saved_errno = errno;
+  int saved_errno = errno;
   fflush (fp);
-  fd = fileno (fp);
-  fd2 = dup (fd);
+  int fd = fileno (fp);
+  int fd2 = dup (fd);
   if (fd2 >= 0)
     {
       close (fd);

@@ -1,5 +1,5 @@
 /* getdelim.c --- Implementation of replacement getdelim function.
-   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2025 Free Software
+   Copyright (C) 1994, 1996-1998, 2001, 2003, 2005-2026 Free Software
    Foundation, Inc.
 
    This file is free software: you can redistribute it and/or modify
@@ -62,16 +62,21 @@ alloc_failed (void)
 ssize_t
 getdelim (char **lineptr, size_t *n, int delimiter, FILE *fp)
 {
-  ssize_t result;
-  size_t cur_len = 0;
-
-  if (lineptr == NULL || n == NULL || fp == NULL)
+  if (lineptr == NULL || n == NULL
+      /* glibc already declares this function as __nonnull ((4)).
+         Avoid a gcc warning "‘nonnull’ argument ‘fp’ compared to NULL".  */
+#if !(__GLIBC__ >= 2)
+      || fp == NULL
+#endif
+     )
     {
       errno = EINVAL;
       return -1;
     }
 
   flockfile (fp);
+
+  ssize_t result;
 
   if (*lineptr == NULL || *n == 0)
     {
@@ -87,6 +92,7 @@ getdelim (char **lineptr, size_t *n, int delimiter, FILE *fp)
       *lineptr = new_lineptr;
     }
 
+  size_t cur_len = 0;
   for (;;)
     {
       int i;
@@ -104,7 +110,6 @@ getdelim (char **lineptr, size_t *n, int delimiter, FILE *fp)
           size_t needed_max =
             SSIZE_MAX < SIZE_MAX ? (size_t) SSIZE_MAX + 1 : SIZE_MAX;
           size_t needed = 2 * *n + 1;   /* Be generous. */
-          char *new_lineptr;
 
           if (needed_max < needed)
             needed = needed_max;
@@ -115,7 +120,7 @@ getdelim (char **lineptr, size_t *n, int delimiter, FILE *fp)
               goto unlock_return;
             }
 
-          new_lineptr = (char *) realloc (*lineptr, needed);
+          char *new_lineptr = (char *) realloc (*lineptr, needed);
           if (new_lineptr == NULL)
             {
               alloc_failed ();

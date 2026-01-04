@@ -1,10 +1,8 @@
-#! /bin/sh
-
+#! /usr/bin/env bash
 ##
-#       ad -- ASCII dump
-#       bootstrap
+#       update_m4.sh
 #
-#       Copyright (C) 2022-2026  Paul J. Lucas
+#       Copyright (C) 2025  Paul J. Lucas
 #
 #       This program is free software: you can redistribute it and/or modify
 #       it under the terms of the GNU General Public License as published by
@@ -20,23 +18,12 @@
 #       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+set -eo pipefail
+
 # Uncomment the following line for shell tracing.
 #set -x
 
 ########## Functions ##########################################################
-
-error() {
-  echo $ME: $*
-  exit 1
-}
-
-assert_exists() {
-  for command in $*
-  do
-    command -v $command > /dev/null 2>&1 ||
-      error "required command \"$command\" not in \$PATH"
-  done
-}
 
 local_basename() {
   ##
@@ -48,13 +35,38 @@ local_basename() {
   expr "//$1" : '.*/\(.*\)'
 }
 
+if command -v curl >/dev/null 2>&1
+then
+  download() {
+    curl -fsSL "$1" -o "$2"
+  }
+elif command -v wget >/dev/null 2>&1
+then
+  download() {
+    wget -qO "$2" "$1"
+  }
+else
+  echo "$ME: neither curl nor wget is available" >&2
+  exit 1
+fi
+
 ########## Begin ##############################################################
 
-ME=`local_basename "$0"`
+ME=$(local_basename "$0")
 
-assert_exists autoreconf automake m4
+[ "$TMPDIR" ] || TMPDIR=/tmp
+trap "x=$?; rm -f $TMPDIR/*_$$_* 2>/dev/null; exit $x" EXIT HUP INT TERM
+TMP_FILE=$TMPDIR/${ME}__$$__
 
-echo "Generating \"configure\"..."
-autoreconf -fi
+for file in ax_*.m4
+do
+  url="https://gitweb.git.savannah.gnu.org/gitweb/?p=autoconf-archive.git;a=blob_plain;f=m4/$file"
+
+  echo "$ME: checking $file ..."
+  download "$url" "$TMP_FILE" || continue
+  diff -q "$file" "$TMP_FILE" >/dev/null 2>&1 && continue
+  mv "$TMP_FILE" "$file"
+  echo "-> updated"
+done
 
 # vim:set et sw=2 ts=2:
