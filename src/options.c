@@ -348,6 +348,209 @@ static void check_number_size( size_t given_size, size_t actual_size,
 }
 
 /**
+ * If \a opt was given, checks that _only_ it was given and, if not, prints an
+ * error message and exits; if \a opt was not given, does nothing.
+ *
+ * @param opt The option to check for.
+ *
+ * @sa check_opt_mutually_exclusive()
+ */
+static void check_opt_exclusive( char opt ) {
+  if ( !opts_given[ STATIC_CAST( unsigned, opt ) ] )
+    return;
+  for ( size_t i = '0'; i < ARRAY_SIZE( opts_given ); ++i ) {
+    char const curr_opt = STATIC_CAST( char, i );
+    if ( curr_opt == opt )
+      continue;
+    if ( opts_given[ STATIC_CAST( unsigned, curr_opt ) ] ) {
+      char opt_buf[ OPT_BUF_SIZE ];
+      fatal_error( EX_USAGE,
+        "%s can be given only by itself\n",
+        opt_format( opt, opt_buf, sizeof opt_buf )
+      );
+    }
+  } // for
+}
+
+/**
+ * Checks that no options were given that are among the two given mutually
+ * exclusive sets of short options.
+ * Prints an error message and exits if any such options are found.
+ *
+ * @param opts1 The first set of short options.
+ * @param opts2 The second set of short options.
+ *
+ * @sa check_opt_exclusive()
+ */
+static void check_opt_mutually_exclusive( char const *opts1,
+                                          char const *opts2 ) {
+  assert( opts1 != NULL );
+  assert( opts2 != NULL );
+
+  unsigned gave_count = 0;
+  char const *opt = opts1;
+  char gave_opt1 = '\0';
+
+  for ( unsigned i = 0; i < 2; ++i ) {
+    for ( ; *opt != '\0'; ++opt ) {
+      if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
+        if ( ++gave_count > 1 ) {
+          char const gave_opt2 = *opt;
+          char opt1_buf[ OPT_BUF_SIZE ];
+          char opt2_buf[ OPT_BUF_SIZE ];
+          fatal_error( EX_USAGE,
+            "%s and %s are mutually exclusive\n",
+            opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
+            opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
+          );
+        }
+        gave_opt1 = *opt;
+        break;
+      }
+    } // for
+    if ( gave_count == 0 )
+      break;
+    opt = opts2;
+  } // for
+}
+
+/**
+ * For each option in \a opts that was given, checks that at least one of
+ * \a req_opts was also given.
+ * If not, prints an error message and exits.
+ *
+ * @param opts The set of short options.
+ * @param req_opts The set of required options for \a opts.
+ */
+static void check_opt_required( char const *opts, char const *req_opts ) {
+  assert( opts != NULL );
+  assert( opts[0] != '\0' );
+  assert( req_opts != NULL );
+  assert( req_opts[0] != '\0' );
+
+  for ( char const *opt = opts; *opt; ++opt ) {
+    if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
+      for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
+        if ( opts_given[ STATIC_CAST( char8_t, *req_opt ) ] )
+          return;
+      char opt_buf[ OPT_BUF_SIZE ];
+      bool const reqs_multiple = req_opts[1] != '\0';
+      fatal_error( EX_USAGE,
+        "%s requires %sthe -%s option%s to be given also\n",
+        opt_format( *opt, opt_buf, sizeof opt_buf ),
+        (reqs_multiple ? "one of " : ""),
+        req_opts, (reqs_multiple ? "s" : "")
+      );
+    }
+  } // for
+}
+
+/**
+ * Checks option combinations for semantic errors.
+ */
+static void check_options( void ) {
+  // check for exclusive options
+  check_opt_exclusive( COPT(HELP) );
+  check_opt_exclusive( COPT(VERSION) );
+
+  // check for mutually exclusive options
+  check_opt_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
+  check_opt_mutually_exclusive( SOPT(C_ARRAY),
+    SOPT(BIG_ENDIAN)
+    SOPT(COLOR)
+    SOPT(GROUP_BY)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(PRINTING_ONLY)
+    SOPT(STRING)
+    SOPT(STRINGS)
+    SOPT(STRINGS_OPTS)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
+  check_opt_mutually_exclusive( SOPT(BIG_ENDIAN),
+    SOPT(HOST_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+  );
+  check_opt_mutually_exclusive( SOPT(DECIMAL), SOPT(HEXADECIMAL) SOPT(OCTAL) );
+  check_opt_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
+    SOPT(NO_OFFSETS)
+    SOPT(PLAIN)
+  );
+  check_opt_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
+  check_opt_mutually_exclusive( SOPT(HOST_ENDIAN),
+    SOPT(BIG_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+  );
+  check_opt_mutually_exclusive( SOPT(LITTLE_ENDIAN),
+    SOPT(BIG_ENDIAN)
+    SOPT(HOST_ENDIAN)
+  );
+  check_opt_mutually_exclusive(
+    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
+    SOPT(STRING) SOPT(STRINGS) SOPT(STRINGS_OPTS)
+  );
+  check_opt_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
+  check_opt_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
+  check_opt_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
+    SOPT(VERBOSE)
+  );
+  check_opt_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
+  check_opt_mutually_exclusive( SOPT(REVERSE),
+    SOPT(BIG_ENDIAN)
+    SOPT(BITS)
+    SOPT(BYTES)
+    SOPT(COLOR)
+    SOPT(C_ARRAY)
+    SOPT(GROUP_BY)
+    SOPT(IGNORE_CASE)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(MATCHING_ONLY)
+    SOPT(MAX_BYTES)
+    SOPT(MAX_LINES)
+    SOPT(NO_ASCII)
+    SOPT(NO_OFFSETS)
+    SOPT(PLAIN)
+    SOPT(PRINTING_ONLY)
+#if HAVE_RSRC_FORK
+    SOPT(RESOURCE_FORK)
+#endif /* HAVE_RSRC_FORK */
+    SOPT(STRING)
+    SOPT(STRINGS)
+    SOPT(STRINGS_OPTS)
+    SOPT(TOTAL_MATCHES)
+    SOPT(TOTAL_MATCHES_ONLY)
+    SOPT(UTF8)
+    SOPT(UTF8_PADDING)
+    SOPT(VERBOSE)
+  );
+  check_opt_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
+  check_opt_mutually_exclusive( SOPT(STRINGS),
+    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN)
+    SOPT(IGNORE_CASE)
+    SOPT(STRING)
+  );
+
+  // check for options that require other options
+  check_opt_required( SOPT(BITS) SOPT(BYTES),
+    SOPT(BIG_ENDIAN) SOPT(LITTLE_ENDIAN)
+  );
+  check_opt_required( SOPT(IGNORE_CASE), SOPT(STRING) );
+  check_opt_required(
+    SOPT(MATCHING_ONLY) SOPT(TOTAL_MATCHES) SOPT(TOTAL_MATCHES_ONLY),
+    SOPT(BIG_ENDIAN)
+    SOPT(LITTLE_ENDIAN)
+    SOPT(STRING)
+    SOPT(STRINGS)
+  );
+  check_opt_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
+}
+
+/**
  * Gets the minimum number of bytes required to contain the given `uint64_t`
  * value.
  *
@@ -398,104 +601,6 @@ static char const* make_short_opts( struct option const opts[static const 2] ) {
   *s = '\0';
 
   return short_opts;
-}
-
-/**
- * If \a opt was given, checks that _only_ it was given and, if not, prints an
- * error message and exits; if \a opt was not given, does nothing.
- *
- * @param opt The option to check for.
- *
- * @sa opt_check_mutually_exclusive()
- */
-static void opt_check_exclusive( char opt ) {
-  if ( !opts_given[ STATIC_CAST( unsigned, opt ) ] )
-    return;
-  for ( size_t i = '0'; i < ARRAY_SIZE( opts_given ); ++i ) {
-    char const curr_opt = STATIC_CAST( char, i );
-    if ( curr_opt == opt )
-      continue;
-    if ( opts_given[ STATIC_CAST( unsigned, curr_opt ) ] ) {
-      char opt_buf[ OPT_BUF_SIZE ];
-      fatal_error( EX_USAGE,
-        "%s can be given only by itself\n",
-        opt_format( opt, opt_buf, sizeof opt_buf )
-      );
-    }
-  } // for
-}
-
-/**
- * Checks that no options were given that are among the two given mutually
- * exclusive sets of short options.
- * Prints an error message and exits if any such options are found.
- *
- * @param opts1 The first set of short options.
- * @param opts2 The second set of short options.
- *
- * @sa opt_check_exclusive()
- */
-static void opt_check_mutually_exclusive( char const *opts1,
-                                          char const *opts2 ) {
-  assert( opts1 != NULL );
-  assert( opts2 != NULL );
-
-  unsigned gave_count = 0;
-  char const *opt = opts1;
-  char gave_opt1 = '\0';
-
-  for ( unsigned i = 0; i < 2; ++i ) {
-    for ( ; *opt != '\0'; ++opt ) {
-      if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
-        if ( ++gave_count > 1 ) {
-          char const gave_opt2 = *opt;
-          char opt1_buf[ OPT_BUF_SIZE ];
-          char opt2_buf[ OPT_BUF_SIZE ];
-          fatal_error( EX_USAGE,
-            "%s and %s are mutually exclusive\n",
-            opt_format( gave_opt1, opt1_buf, sizeof opt1_buf ),
-            opt_format( gave_opt2, opt2_buf, sizeof opt2_buf  )
-          );
-        }
-        gave_opt1 = *opt;
-        break;
-      }
-    } // for
-    if ( gave_count == 0 )
-      break;
-    opt = opts2;
-  } // for
-}
-
-/**
- * For each option in \a opts that was given, checks that at least one of
- * \a req_opts was also given.
- * If not, prints an error message and exits.
- *
- * @param opts The set of short options.
- * @param req_opts The set of required options for \a opts.
- */
-static void opt_check_required( char const *opts, char const *req_opts ) {
-  assert( opts != NULL );
-  assert( opts[0] != '\0' );
-  assert( req_opts != NULL );
-  assert( req_opts[0] != '\0' );
-
-  for ( char const *opt = opts; *opt; ++opt ) {
-    if ( opts_given[ STATIC_CAST( char8_t, *opt ) ] ) {
-      for ( char const *req_opt = req_opts; req_opt[0] != '\0'; ++req_opt )
-        if ( opts_given[ STATIC_CAST( char8_t, *req_opt ) ] )
-          return;
-      char opt_buf[ OPT_BUF_SIZE ];
-      bool const reqs_multiple = req_opts[1] != '\0';
-      fatal_error( EX_USAGE,
-        "%s requires %sthe -%s option%s to be given also\n",
-        opt_format( *opt, opt_buf, sizeof opt_buf ),
-        (reqs_multiple ? "one of " : ""),
-        req_opts, (reqs_multiple ? "s" : "")
-      );
-    }
-  } // for
 }
 
 /**
@@ -1174,105 +1279,7 @@ void options_init( int argc, char const *argv[] ) {
     ++argv;
   }
 
-  // check for exclusive options
-  opt_check_exclusive( COPT(HELP) );
-  opt_check_exclusive( COPT(VERSION) );
-
-  // check for mutually exclusive options
-  opt_check_mutually_exclusive( SOPT(BITS), SOPT(BYTES) );
-  opt_check_mutually_exclusive( SOPT(C_ARRAY),
-    SOPT(BIG_ENDIAN)
-    SOPT(COLOR)
-    SOPT(GROUP_BY)
-    SOPT(IGNORE_CASE)
-    SOPT(LITTLE_ENDIAN)
-    SOPT(MATCHING_ONLY)
-    SOPT(PRINTING_ONLY)
-    SOPT(STRING)
-    SOPT(STRINGS)
-    SOPT(STRINGS_OPTS)
-    SOPT(TOTAL_MATCHES)
-    SOPT(TOTAL_MATCHES_ONLY)
-    SOPT(UTF8)
-    SOPT(UTF8_PADDING)
-    SOPT(VERBOSE)
-  );
-  opt_check_mutually_exclusive( SOPT(BIG_ENDIAN),
-    SOPT(HOST_ENDIAN)
-    SOPT(LITTLE_ENDIAN)
-  );
-  opt_check_mutually_exclusive( SOPT(DECIMAL), SOPT(HEXADECIMAL) SOPT(OCTAL) );
-  opt_check_mutually_exclusive( SOPT(DECIMAL) SOPT(HEXADECIMAL) SOPT(OCTAL),
-    SOPT(NO_OFFSETS)
-    SOPT(PLAIN)
-  );
-  opt_check_mutually_exclusive( SOPT(GROUP_BY), SOPT(PLAIN) );
-  opt_check_mutually_exclusive( SOPT(HOST_ENDIAN),
-    SOPT(BIG_ENDIAN)
-    SOPT(LITTLE_ENDIAN)
-  );
-  opt_check_mutually_exclusive( SOPT(LITTLE_ENDIAN),
-    SOPT(BIG_ENDIAN)
-    SOPT(HOST_ENDIAN)
-  );
-  opt_check_mutually_exclusive(
-    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN),
-    SOPT(STRING) SOPT(STRINGS) SOPT(STRINGS_OPTS)
-  );
-  opt_check_mutually_exclusive( SOPT(HEXADECIMAL), SOPT(DECIMAL) SOPT(OCTAL) );
-  opt_check_mutually_exclusive( SOPT(MATCH_BYTES), SOPT(MAX_LINES) );
-  opt_check_mutually_exclusive( SOPT(MATCHING_ONLY) SOPT(PRINTING_ONLY),
-    SOPT(VERBOSE)
-  );
-  opt_check_mutually_exclusive( SOPT(OCTAL), SOPT(DECIMAL) SOPT(HEXADECIMAL) );
-  opt_check_mutually_exclusive( SOPT(REVERSE),
-    SOPT(BIG_ENDIAN)
-    SOPT(BITS)
-    SOPT(BYTES)
-    SOPT(COLOR)
-    SOPT(C_ARRAY)
-    SOPT(GROUP_BY)
-    SOPT(IGNORE_CASE)
-    SOPT(LITTLE_ENDIAN)
-    SOPT(MATCHING_ONLY)
-    SOPT(MAX_BYTES)
-    SOPT(MAX_LINES)
-    SOPT(NO_ASCII)
-    SOPT(NO_OFFSETS)
-    SOPT(PLAIN)
-    SOPT(PRINTING_ONLY)
-#if HAVE_RSRC_FORK
-    SOPT(RESOURCE_FORK)
-#endif /* HAVE_RSRC_FORK */
-    SOPT(STRING)
-    SOPT(STRINGS)
-    SOPT(STRINGS_OPTS)
-    SOPT(TOTAL_MATCHES)
-    SOPT(TOTAL_MATCHES_ONLY)
-    SOPT(UTF8)
-    SOPT(UTF8_PADDING)
-    SOPT(VERBOSE)
-  );
-  opt_check_mutually_exclusive( SOPT(TOTAL_MATCHES), SOPT(TOTAL_MATCHES_ONLY) );
-  opt_check_mutually_exclusive( SOPT(STRINGS),
-    SOPT(LITTLE_ENDIAN) SOPT(BIG_ENDIAN) SOPT(HOST_ENDIAN)
-    SOPT(IGNORE_CASE)
-    SOPT(STRING)
-  );
-
-  // check for options that require other options
-  opt_check_required( SOPT(BITS) SOPT(BYTES),
-    SOPT(BIG_ENDIAN) SOPT(LITTLE_ENDIAN)
-  );
-  opt_check_required( SOPT(IGNORE_CASE), SOPT(STRING) );
-  opt_check_required(
-    SOPT(MATCHING_ONLY) SOPT(TOTAL_MATCHES) SOPT(TOTAL_MATCHES_ONLY),
-    SOPT(BIG_ENDIAN)
-    SOPT(LITTLE_ENDIAN)
-    SOPT(STRING)
-    SOPT(STRINGS)
-  );
-  opt_check_required( SOPT(UTF8_PADDING), SOPT(UTF8) );
+  check_options();
 
   if ( opt_help )
     print_usage( argc > 0 ? EX_USAGE : EX_OK );
