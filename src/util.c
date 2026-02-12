@@ -200,32 +200,6 @@ void fput_list( FILE *out, void const *elt,
   } // for
 }
 
-void fskip( off_t bytes_to_skip, FILE *file ) {
-  assert( bytes_to_skip >= 0 );
-  assert( file != NULL );
-
-  if ( bytes_to_skip == 0 )
-    return;
-
-  if ( fd_is_file( fileno( file ) ) ) {
-    if ( FSEEK_FN( file, bytes_to_skip, SEEK_CUR ) == 0 )
-      return;
-    clearerr( file );                   // fall back to reading bytes
-  }
-
-  char    buf[ 8192 ];
-  size_t  bytes_to_read = sizeof buf;
-
-  while ( bytes_to_skip > 0 && !feof( file ) ) {
-    if ( bytes_to_read > STATIC_CAST( size_t, bytes_to_skip ) )
-      bytes_to_read = STATIC_CAST( size_t, bytes_to_skip );
-    size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
-    if ( unlikely( ferror( file ) != 0 ) )
-      fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
-    bytes_to_skip -= STATIC_CAST( off_t, bytes_read );
-  } // while
-}
-
 void fputs_quoted( char const *s, char quote, FILE *fout ) {
   assert( quote == '\'' || quote == '"' );
   assert( fout != NULL );
@@ -269,6 +243,32 @@ void fputs_quoted( char const *s, char quote, FILE *fout ) {
     FPUTC( *s, fout );
   } // for
   FPUTC( quote, fout );
+}
+
+void fskip( off_t bytes_to_skip, FILE *file ) {
+  assert( bytes_to_skip >= 0 );
+  assert( file != NULL );
+
+  if ( bytes_to_skip == 0 )
+    return;
+
+  if ( fd_is_file( fileno( file ) ) ) {
+    if ( FSEEK_FN( file, bytes_to_skip, SEEK_CUR ) == 0 )
+      return;
+    clearerr( file );                   // fall back to reading bytes
+  }
+
+  char    buf[ 8192 ];
+  size_t  bytes_to_read = sizeof buf;
+
+  while ( bytes_to_skip > 0 && !feof( file ) ) {
+    if ( bytes_to_read > STATIC_CAST( size_t, bytes_to_skip ) )
+      bytes_to_read = STATIC_CAST( size_t, bytes_to_skip );
+    size_t const bytes_read = fread( buf, 1, bytes_to_read, file );
+    if ( unlikely( ferror( file ) != 0 ) )
+      fatal_error( EX_IOERR, "can not read: %s\n", STRERROR() );
+    bytes_to_skip -= STATIC_CAST( off_t, bytes_read );
+  } // while
 }
 
 char* identify( char const *s ) {
