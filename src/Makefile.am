@@ -18,23 +18,30 @@
 #	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-bin_PROGRAMS = ad
+bin_PROGRAMS =		ad
 
-AM_CFLAGS = $(AD_CFLAGS)
-AM_CPPFLAGS = -I$(top_srcdir)/lib -I$(top_builddir)/lib
-LDADD = $(top_builddir)/lib/libgnu.a
+AM_CFLAGS =		$(AD_CFLAGS)
+AM_CPPFLAGS =		-I$(top_srcdir)/lib -I$(top_builddir)/lib
+LDADD =			$(top_builddir)/lib/libgnu.a
 
-ad_SOURCES = \
-	pjl_config.h \
-	ad.c ad.h \
-	color.c color.h \
-	dump.c \
-	dump_c.c \
-	match.c match.h \
-	options.c options.h \
-	reverse.c \
-	type_traits.h \
-	unicode.c unicode.h \
-	util.c util.h
+INVOKE_TIDY_FLAGS =	-Xtidy --verbose=f -Xtidy --error=never
+INVOKE_TIDY_CFLAGS =	$(CFLAGS) $(AM_CFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
+
+ad_SOURCES =		pjl_config.h \
+			ad.c ad.h \
+			color.c color.h \
+			dump.c \
+			dump_c.c \
+			match.c match.h \
+			options.c options.h \
+			reverse.c \
+			type_traits.h \
+			unicode.c unicode.h \
+			util.c util.h
+
+tidy:
+	@for file in *.h *.c; \
+	do include-tidy $(INVOKE_TIDY_FLAGS) $(INVOKE_TIDY_CFLAGS) $$file; \
+	done
 
 # vim:set noet sw=8 ts=8:

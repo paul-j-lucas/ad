@@ -33,8 +33,7 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
-#include <stdlib.h>                     /* for atexit() */
-#include <sys/types.h>                  /* for off_t */
+#include <stdio.h>                      /* for off_t */
 
 /// @endcond
 

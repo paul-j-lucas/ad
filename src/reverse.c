@@ -35,11 +35,13 @@
 // standard
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>                   /* for SCNu64 */
+#include <stdbool.h>
 #include <stddef.h>                     /* fir size_t */
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
-#include <string.h>                     /* for str...() */
 #include <sysexits.h>
 
 #ifdef FWRITE

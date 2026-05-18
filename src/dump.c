@@ -36,13 +36,13 @@
 
 // standard
 #include <assert.h>
-#include <ctype.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
+#include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
-#include <sysexits.h>
 
 /// @endcond
 

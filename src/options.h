@@ -38,7 +38,6 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
-#include <stdint.h>                     /* for uint64_t */
 
 /// @endcond
 

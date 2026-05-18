@@ -25,21 +25,24 @@
 
 // local
 #include "pjl_config.h"                 /* must go first */
-#include "ad.h"
 #include "util.h"
+#include "ad.h"
+#include "unicode.h"
 
 /// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for isalnum(), isalpha() */
-#include <fcntl.h>                      /* for open() */
+#include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>                     /* for exit(), strtoull(), ... */
 #include <string.h>
 #include <sys/stat.h>                   /* for fstat() */
 #include <sysexits.h>
-#include <unistd.h>                     /* for lseek() */
 
 /// @endcond
 

@@ -28,6 +28,7 @@
 #include "ad.h"
 #include "match.h"
 #include "options.h"
+#include "unicode.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE

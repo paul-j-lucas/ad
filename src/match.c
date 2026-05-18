@@ -28,6 +28,7 @@
 #include "ad.h"
 #include "match.h"
 #include "options.h"
+#include "unicode.h"
 #include "util.h"
 
 /// @cond DOXYGEN_IGNORE
@@ -35,7 +36,9 @@
 // standard
 #include <assert.h>
 #include <ctype.h>                      /* for tolower() */
+#include <stdbool.h>
 #include <stdint.h>                     /* for SIZE_MAX */
+#include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 

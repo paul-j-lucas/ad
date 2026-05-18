@@ -35,6 +35,7 @@
 /// @cond DOXYGEN_IGNORE
 
 // standard
+#include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */

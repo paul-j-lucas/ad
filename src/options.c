@@ -29,12 +29,14 @@
 #include "color.h"
 #include "options.h"
 #include "unicode.h"
+#include "util.h"
 
 /// @cond DOXYGEN_IGNORE
 
 // standard
 #include <assert.h>
-#include <ctype.h>                      /* for islower(), toupper() */
+#include <ctype.h>                      /* for isprint() */
+#include <errno.h>
 #include <fcntl.h>                      /* for O_CREAT, O_RDONLY, O_WRONLY */
 #include <getopt.h>
 #include <inttypes.h>                   /* for PRIu64, etc. */
@@ -44,15 +46,15 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif /* HAVE_LOCALE_H */
+#include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
-#include <stdio.h>                      /* for fdopen() */
+#include <stdint.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
 #include <sys/types.h>
 #include <sysexits.h>
 #include <unistd.h>                     /* for close(2), STDOUT_FILENO */
-#include <string.h>
 
 // Undefine these since they clash with our command-line options.
 #ifdef BIG_ENDIAN
@@ -1256,10 +1258,11 @@ void options_init( int argc, char const *argv[] ) {
         goto invalid_opt;
 
       default:
-        if ( isprint( opt ) )
+        if ( isprint( opt ) ) {
           INTERNAL_ERROR(
             "'%c': unaccounted-for getopt_long() return value\n", opt
           );
+        }
         INTERNAL_ERROR(
           "%d: unaccounted-for getopt_long() return value\n", opt
         );
