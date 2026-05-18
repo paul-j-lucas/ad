@@ -39,7 +39,6 @@
 #include <stdbool.h>
 #include <stdint.h>                     /* for SIZE_MAX */
 #include <stdio.h>
-#include <stdlib.h>                     /* for exit() */
 #include <sysexits.h>
 
 /// @endcond

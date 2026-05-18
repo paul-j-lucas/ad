@@ -49,6 +49,7 @@
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>                     /* for exit() */
 #include <string.h>                     /* for str...() */
 #include <sys/stat.h>                   /* for fstat() */
