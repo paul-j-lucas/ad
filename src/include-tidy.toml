@@ -29,4 +29,9 @@ proxy = [
     "config.h",
 ]
 
+[reverse.c]
+# reverse.c #undef's and re-#define's FWRITE that's originally declared in
+# sys/fcntl.h via unistd.h, so we don't care about FWRITE.
+ignore-symbols = "FWRITE"
+
 # vim:se et sw=4 ts=4:
