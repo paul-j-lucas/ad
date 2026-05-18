@@ -65,7 +65,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module include_next:
   # Code from module intprops:
   # Code from module limits-h:
-  # Code from module locale-h:
   # Code from module malloc-posix:
   # Code from module multiarch:
   # Code from module nocrash:
@@ -160,9 +159,6 @@ AC_DEFUN([gl_INIT],
   gl_LIMITS_H
   gl_CONDITIONAL_HEADER([limits.h])
   AC_PROG_MKDIR_P
-  gl_LOCALE_H
-  gl_LOCALE_H_REQUIRE_DEFAULTS
-  AC_PROG_MKDIR_P
   AC_REQUIRE([gl_FUNC_MALLOC_POSIX])
   if test $REPLACE_MALLOC_FOR_MALLOC_POSIX = 1; then
     AC_LIBOBJ([malloc])
@@ -223,7 +219,7 @@ AC_DEFUN([gl_INIT],
       ;;
   esac
   gl_CONDITIONAL([GL_COND_OBJ_STDIO_CONSOLESAFE], [test $USES_MSVCRT = 1])
-  AC_CHECK_FUNCS([vasprintf])
+  AC_CHECK_FUNCS_ONCE([vasprintf])
   gl_STDLIB_H
   gl_STDLIB_H_REQUIRE_DEFAULTS
   AC_PROG_MKDIR_P
@@ -474,7 +470,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/intprops-internal.h
   lib/intprops.h
   lib/limits.in.h
-  lib/locale.in.h
   lib/malloc.c
   lib/stdckdint.in.h
   lib/stddef.in.h
@@ -520,7 +515,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/include_next.m4
   m4/limits-h.m4
   m4/locale-en.m4
-  m4/locale_h.m4
   m4/malloc.m4
   m4/multiarch.m4
   m4/musl.m4
