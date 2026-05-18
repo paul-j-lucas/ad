@@ -1,3 +1,11 @@
+2026-05-18  Paul J. Lucas <paul@lucasmail.org>
+
+   * include-tidy.toml: Added ignore-symbols = "FWRITE".
+   * match.c, options.c: #include fixes.
+   * src/Makefile.am, ad.c, ad.h, color.c, dump.c, dump_c.c, include-tidy.toml,
+     match.c, options.c, options.h, reverse.c, unicode.c, util.c, util.h: Now
+     using include-tidy.
+
 2025-11-15  Paul J. Lucas <paul@lucasmail.org>
 
    * Makefile.am: Added update_m4.sh to EXTRA_DIST.
