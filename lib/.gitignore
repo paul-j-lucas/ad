@@ -1,10 +1,8 @@
 /assert.h
-/errno.h
 /fcntl.h
 /getopt-cdefs.h
 /getopt.h
 /limits.h
-/locale.h
 /stdckdint.h
 /stddef.h
 /stdint.h
