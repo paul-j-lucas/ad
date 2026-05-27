@@ -24,8 +24,8 @@ AM_CFLAGS =		$(AD_CFLAGS)
 AM_CPPFLAGS =		-I$(top_srcdir)/lib -I$(top_builddir)/lib
 LDADD =			$(top_builddir)/lib/libgnu.a
 
-INVOKE_TIDY_FLAGS =	-Xtidy --verbose=f -Xtidy --error=never
-INVOKE_TIDY_CFLAGS =	$(CFLAGS) $(AM_CFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
+TIDY_FLAGS =		-Xtidy --verbose=f -Xtidy --error=never
+TIDY_CFLAGS =		$(CFLAGS) $(AM_CFLAGS) $(CPPFLAGS) $(AM_CPPFLAGS)
 
 ad_SOURCES =		pjl_config.h \
 			ad.c ad.h \
@@ -40,8 +40,9 @@ ad_SOURCES =		pjl_config.h \
 			util.c util.h
 
 tidy:
-	@for file in *.h *.c; \
-	do include-tidy $(INVOKE_TIDY_FLAGS) $(INVOKE_TIDY_CFLAGS) $$file; \
+	@for file in *.h *.c; do \
+	  [ ! -f "$$file" ] || \
+	    include-tidy $(TIDY_FLAGS) $(TIDY_CFLAGS) "$$file" || exit $$?; \
 	done
 
 # vim:set noet sw=8 ts=8:
