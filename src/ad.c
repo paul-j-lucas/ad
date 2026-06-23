@@ -72,7 +72,7 @@ static void ad_cleanup( void ) {
  */
 int main( int argc, char const *argv[const] ) {
   prog_name = base_name( argv[0] );
-  ATEXIT( ad_cleanup );
+  ATEXIT( &ad_cleanup );
   options_init( argc, argv );
   colors_init();
 
