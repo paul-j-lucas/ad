@@ -157,7 +157,8 @@
  *
  * @param FN The pointer to the function to call **atexit**(3) with.
  */
-#define ATEXIT(FN)                PERROR_EXIT_IF( atexit( FN ) != 0, EX_OSERR )
+#define ATEXIT(FN) \
+  PERROR_EXIT_IF( atexit( (FN) ) != 0, EX_OSERR )
 
 /**
  * Embeds the given statements into a compound statement block.
