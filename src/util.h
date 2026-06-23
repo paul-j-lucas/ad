@@ -42,7 +42,6 @@
 #include <stdint.h>                     /* for uint64_t */
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
-#include <sys/types.h>                  /* for off_t */
 #include <sysexits.h>
 
 /// @endcond
