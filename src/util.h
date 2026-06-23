@@ -40,6 +40,7 @@
 #include <stdbool.h>
 #include <stddef.h>                     /* for size_t */
 #include <stdint.h>                     /* for uint64_t */
+#include <stdlib.h>
 #include <stdio.h>                      /* for FILE */
 #include <string.h>                     /* for strerror() */
 #include <sysexits.h>
